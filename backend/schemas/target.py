@@ -10,6 +10,8 @@ class Target(BaseModel):
     type: str
     period_days: float | None = None
     magnitude_range: str
+    transit_depth_pct: float | None = None
+    transit_duration_hours: float | None = None
     description: str
     topic_id: str
     data_source: str | None = None

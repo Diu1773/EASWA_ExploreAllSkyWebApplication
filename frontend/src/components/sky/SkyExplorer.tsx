@@ -5,9 +5,11 @@ import { TargetPopup } from './TargetPopup';
 import { useAppStore } from '../../stores/useAppStore';
 import { useSkyTargets } from '../../hooks/useSkyTargets';
 import type { Target } from '../../types/target';
+import { useT } from '../../i18n';
 
 export function SkyExplorer() {
   const { targets, loading, selectedTopic } = useSkyTargets();
+  const t = useT();
   const [nameSearch, setNameSearch] = useState('');
   const [popupTarget, setPopupTarget] = useState<Target | null>(null);
   const [gotoMessage, setGotoMessage] = useState<string | null>(null);
@@ -61,13 +63,13 @@ export function SkyExplorer() {
       setCurrentTarget(popupTarget);
       setGotoReadyTargetId(popupTarget.id);
       if (result === 'already-there') {
-        setGotoMessage('이미 대상에 와있다.');
+        setGotoMessage(t('popup.alreadyThere'));
         setGotoMessageTone('info');
       }
     } catch (error) {
       console.error('Failed to slew to target', error);
       setGotoMessage(
-        error instanceof Error ? error.message : 'Failed to slew to target.'
+        error instanceof Error ? error.message : t('popup.slewFailed')
       );
       setGotoMessageTone('error');
     } finally {
@@ -90,7 +92,7 @@ export function SkyExplorer() {
           <input
             type="search"
             className="sky-search-input"
-            placeholder="이름 / 별자리 검색…"
+            placeholder={t('explorer.searchPlaceholder')}
             value={nameSearch}
             onChange={(e) => setNameSearch(e.target.value)}
           />
@@ -104,12 +106,12 @@ export function SkyExplorer() {
         {loading && (
           <div className="sky-loading-overlay">
             <span className="sky-loading-spinner" />
-            <span>대상 불러오는 중…</span>
+            <span>{t('explorer.loading')}</span>
           </div>
         )}
         {!loading && selectedTopic === 'exoplanet_transit' && targets.length === 0 && (
           <div className="transit-empty-state">
-            No transit targets matched the current filters. Reset filters or lower Min Depth.
+            {t('explorer.noTransitTargets')}
           </div>
         )}
         {popupTarget && (

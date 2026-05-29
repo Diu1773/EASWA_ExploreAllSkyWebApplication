@@ -144,6 +144,8 @@ def _build_live_target(row: dict[str, Any]) -> dict[str, Any]:
         "type": "Transit Planet",
         "period_days": float(row["pl_orbper"]),
         "magnitude_range": f"{host_vmag:.2f} V host",
+        "transit_depth_pct": depth_pct,
+        "transit_duration_hours": duration_hours,
         "description": description,
         "topic_id": "exoplanet_transit",
         "data_source": "nasa_exoplanet_archive",

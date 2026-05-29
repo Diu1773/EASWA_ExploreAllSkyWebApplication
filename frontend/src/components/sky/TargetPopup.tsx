@@ -1,16 +1,17 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import type { Target } from '../../types/target';
+import { useT, useLangStore } from '../../i18n';
+import {
+  formatTargetSource,
+  formatTargetType,
+  formatMagnitude,
+  formatConstellation,
+  buildTargetDescription,
+} from '../../utils/targetFormat';
 import {
   buildTargetHref,
   getExplorerContext,
 } from '../../utils/explorerNavigation';
-
-function formatTargetSource(source?: string | null): string | null {
-  if (!source) return null;
-  if (source === 'nasa_exoplanet_archive') return 'NASA Exoplanet Archive';
-  if (source === 'curated_fallback') return 'Curated fallback';
-  return source.replace(/_/g, ' ');
-}
 
 interface TargetPopupProps {
   target: Target;
@@ -33,40 +34,42 @@ export function TargetPopup({
 }: TargetPopupProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const t = useT();
+  const lang = useLangStore((s) => s.lang);
   const context = getExplorerContext(new URLSearchParams(location.search), {
     topicId: target.topic_id,
   });
-  const sourceLabel = formatTargetSource(target.data_source);
+  const sourceLabel = formatTargetSource(target.data_source, t);
 
   return (
     <div className="target-popup">
       <div className="target-popup-header">
         <h3>{target.name}</h3>
-        <button className="close-btn" onClick={onClose} aria-label="닫기">
+        <button className="close-btn" onClick={onClose} aria-label={t('popup.close')}>
           &times;
         </button>
       </div>
       <div className="target-popup-body">
         <p>
-          <strong>Type:</strong> {target.type}
+          <strong>{t('popup.type')}:</strong> {formatTargetType(target.type, t)}
         </p>
         <p>
-          <strong>Constellation:</strong> {target.constellation}
+          <strong>{t('popup.constellation')}:</strong> {formatConstellation(target.constellation, lang)}
         </p>
         <p>
-          <strong>Magnitude:</strong> {target.magnitude_range}
+          <strong>{t('popup.magnitude')}:</strong> {formatMagnitude(target.magnitude_range, t)}
         </p>
         {target.period_days && (
           <p>
-            <strong>Period:</strong> {target.period_days} days
+            <strong>{t('popup.period')}:</strong> {target.period_days} {t('popup.days')}
           </p>
         )}
         {sourceLabel && (
           <p>
-            <strong>Source:</strong> {sourceLabel}
+            <strong>{t('popup.source')}:</strong> {sourceLabel}
           </p>
         )}
-        <p className="target-desc">{target.description}</p>
+        <p className="target-desc">{buildTargetDescription(target, lang)}</p>
       </div>
       <div className="target-popup-actions">
         <button
@@ -74,14 +77,14 @@ export function TargetPopup({
           disabled={gotoInProgress}
           onClick={onGoto}
         >
-          {gotoInProgress ? 'GOTO: Slewing & Zooming...' : 'GOTO'}
+          {gotoInProgress ? t('popup.gotoSlewing') : 'GOTO'}
         </button>
         <button
           className="btn-secondary"
           disabled={!gotoUnlocked || gotoInProgress}
           onClick={() => navigate(buildTargetHref(target.id, context))}
         >
-          View Details &amp; Observations
+          {t('popup.viewDetails')}
         </button>
       </div>
       {gotoHint ? (
@@ -94,11 +97,11 @@ export function TargetPopup({
         </p>
       ) : !gotoUnlocked ? (
         <p className="target-popup-hint">
-          Run GOTO first. The detail button unlocks after slew and zoom finish.
+          {t('popup.gotoHint')}
         </p>
       ) : (
         <p className="target-popup-hint success-text">
-          Detail view is unlocked.
+          {t('popup.detailUnlocked')}
         </p>
       )}
     </div>

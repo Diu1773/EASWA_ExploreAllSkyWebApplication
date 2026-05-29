@@ -6,6 +6,14 @@ import { ObservationTable } from './ObservationTable';
 import { AnalysisLauncher } from './AnalysisLauncher';
 import type { Target, Observation } from '../../types/target';
 import { buildDssPreviewUrl } from '../../utils/surveys';
+import { useT, useLangStore } from '../../i18n';
+import {
+  formatTargetSource,
+  formatTargetType,
+  formatMagnitude,
+  formatConstellation,
+  buildTargetDescription,
+} from '../../utils/targetFormat';
 import {
   alignExplorerContext,
   buildExplorerContextSearchParams,
@@ -14,13 +22,6 @@ import {
   getExplorerContext,
 } from '../../utils/explorerNavigation';
 
-function formatTargetSource(source?: string | null): string | null {
-  if (!source) return null;
-  if (source === 'nasa_exoplanet_archive') return 'NASA Exoplanet Archive';
-  if (source === 'curated_fallback') return 'Curated fallback';
-  return source.replace(/_/g, ' ');
-}
-
 export function TargetDetail() {
   const { targetId } = useParams<{ targetId: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -28,6 +29,8 @@ export function TargetDetail() {
   const [observations, setObservations] = useState<Observation[]>([]);
   const [loading, setLoading] = useState(true);
   const setCurrentTarget = useAppStore((s) => s.setCurrentTarget);
+  const t = useT();
+  const lang = useLangStore((s) => s.lang);
 
   useEffect(() => {
     if (!targetId) return;
@@ -57,10 +60,10 @@ export function TargetDetail() {
   }, [navigationContext, searchParams, setSearchParams, target]);
 
   if (loading || !target) {
-    return <div className="loading">Loading target data...</div>;
+    return <div className="loading">{t('detail.loading')}</div>;
   }
 
-  const sourceLabel = formatTargetSource(target.data_source);
+  const sourceLabel = formatTargetSource(target.data_source, t);
   const explorerHref = buildExplorerHref(navigationContext);
   const explorerLabel = getExplorerBackLabel(navigationContext);
 
@@ -74,15 +77,15 @@ export function TargetDetail() {
           <div className="detail-summary">
             <h2>{target.name}</h2>
             <div className="target-meta">
-              <span className="badge">{target.type}</span>
-              <span>{target.constellation}</span>
-              <span>RA: {target.ra.toFixed(4)}&deg;</span>
-              <span>Dec: {target.dec.toFixed(4)}&deg;</span>
-              <span>Mag: {target.magnitude_range}</span>
-              {target.period_days && <span>P = {target.period_days} d</span>}
-              {sourceLabel && <span>Source: {sourceLabel}</span>}
+              <span className="badge">{formatTargetType(target.type, t)}</span>
+              <span>{formatConstellation(target.constellation, lang)}</span>
+              <span>{t('detail.ra')}: {target.ra.toFixed(4)}&deg;</span>
+              <span>{t('detail.dec')}: {target.dec.toFixed(4)}&deg;</span>
+              <span>{t('detail.mag')}: {formatMagnitude(target.magnitude_range, t)}</span>
+              {target.period_days && <span>{t('detail.period')} = {target.period_days} {lang === 'ko' ? '일' : 'd'}</span>}
+              {sourceLabel && <span>{t('detail.source')}: {sourceLabel}</span>}
             </div>
-            <p className="target-description">{target.description}</p>
+            <p className="target-description">{buildTargetDescription(target, lang)}</p>
           </div>
 
           <div className="detail-survey-card">
@@ -93,7 +96,7 @@ export function TargetDetail() {
             />
             <div className="detail-survey-meta">
               <span>DSS2</span>
-              <span>{target.constellation}</span>
+              <span>{formatConstellation(target.constellation, lang)}</span>
             </div>
           </div>
         </div>

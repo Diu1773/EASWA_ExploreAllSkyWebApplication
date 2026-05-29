@@ -7,6 +7,7 @@ import {
   TESS_MODULE_IMAGE,
 } from '../../data/imageSources';
 import { buildExplorerHref } from '../../utils/explorerNavigation';
+import { useLangStore, type Lang } from '../../i18n';
 
 const TESS_EXPLORER = buildExplorerHref({
   moduleId: 'tess',
@@ -18,38 +19,73 @@ const MODULES = [
   {
     id: 'tess',
     image: TESS_MODULE_IMAGE,
-    imageAlt: 'TESS 우주망원경 아티스트 컨셉 이미지',
+    imageAlt: { ko: 'TESS 우주망원경 아티스트 컨셉 이미지', en: 'Artist concept of the TESS space telescope' },
     imageCredit: 'NASA',
     chip: 'NASA TESS · Space Telescope',
     title: 'TESS Transit Lab',
-    description:
-      '우주에서 하늘 전체를 스캔하는 TESS 위성의 측광 자료로 외계행성 식현상을 직접 분석합니다. 대상 선택 → 광도곡선 → Transit Fit까지 한 흐름으로 진행됩니다.',
+    description: {
+      ko: '우주에서 하늘 전체를 스캔하는 TESS 위성의 측광 자료로 외계행성 식현상을 직접 분석합니다. 대상 선택 → 광도곡선 → Transit Fit까지 한 흐름으로 진행됩니다.',
+      en: 'Analyze exoplanet transits directly with photometric data from the all-sky TESS satellite. Move through target selection → light curve → transit fit in one flow.',
+    },
     tags: ['Exoplanet Transit', 'Light Curve', 'Sector Cutout'],
     href: '/tess',
-    cta: 'TESS 탐구 시작',
+    cta: { ko: 'TESS 탐구 시작', en: 'Start TESS Lab' },
   },
   {
     id: 'kmtnet',
     image: KMT_MODULE_IMAGE,
-    imageAlt: 'KMTNet 소개 배너 이미지',
+    imageAlt: { ko: 'KMTNet 소개 배너 이미지', en: 'KMTNet introduction banner image' },
     imageCredit: 'KMTNet official website',
     chip: 'KASI KMTNet · Ground Network',
     title: 'KMTNet Microlensing Lab',
-    description:
-      '칠레 · 남아프리카 · 호주 3개 관측소를 연결한 KMTNet으로 은하 벌지의 미시중력렌즈 이벤트를 24시간 추적합니다. 관측소 맥락부터 이벤트 해석까지 탐구합니다.',
+    description: {
+      ko: '칠레 · 남아프리카 · 호주 3개 관측소를 연결한 KMTNet으로 은하 벌지의 미시중력렌즈 이벤트를 24시간 추적합니다. 관측소 맥락부터 이벤트 해석까지 탐구합니다.',
+      en: 'Track microlensing events in the galactic bulge around the clock with KMTNet, linking observatories in Chile, South Africa, and Australia. Explore from observatory context to event interpretation.',
+    },
     tags: ['Microlensing', 'CTIO / SAAO / SSO', 'Galactic Bulge'],
     href: '/kmtnet',
-    cta: 'KMTNet 탐구 보기',
+    cta: { ko: 'KMTNet 탐구 보기', en: 'Explore KMTNet' },
   },
-];
+] as const;
 
 const FEATURES = [
-  { icon: '🔭', label: '실제 천문 데이터', desc: 'NASA TESS · KASI KMTNet 관측 자료' },
-  { icon: '📈', label: '웹 기반 분석', desc: '설치 없이 브라우저에서 바로 실행' },
-  { icon: '🎓', label: '탐구 활동 중심', desc: '단계별 가이드와 해석 포인트 제공' },
-];
+  {
+    icon: '🔭',
+    label: { ko: '실제 천문 데이터', en: 'Real astronomy data' },
+    desc: { ko: 'NASA TESS · KASI KMTNet 관측 자료', en: 'NASA TESS · KASI KMTNet observations' },
+  },
+  {
+    icon: '📈',
+    label: { ko: '웹 기반 분석', en: 'Web-based analysis' },
+    desc: { ko: '설치 없이 브라우저에서 바로 실행', en: 'Runs in the browser, no install needed' },
+  },
+  {
+    icon: '🎓',
+    label: { ko: '탐구 활동 중심', en: 'Inquiry-driven activities' },
+    desc: { ko: '단계별 가이드와 해석 포인트 제공', en: 'Step-by-step guides and interpretation points' },
+  },
+] as const;
+
+const HERO = {
+  credit: 'Image: ESA / Hubble — Ultra Deep Field',
+  brandSub: 'Exploring All-Sky Web App',
+  kicker: { ko: '천문 데이터 탐구 플랫폼', en: 'Astronomy data inquiry platform' },
+  title: {
+    ko: ['실제 천문 데이터로', '외계행성을 직접 분석하는', '탐구 플랫폼'],
+    en: ['An inquiry platform', 'to analyze exoplanets yourself', 'with real astronomy data'],
+  },
+  desc: {
+    ko: '코딩 없이 웹에서 바로 — NASA TESS 위성의 광도곡선으로 외계행성 식현상을 확인하고, KMTNet 관측소 네트워크로 미시중력렌즈 이벤트를 추적합니다. 학생과 시민이 직접 데이터를 보고 해석하는 과학 탐구 경험을 제공합니다.',
+    en: 'Right in the browser, no coding — confirm exoplanet transits with light curves from the NASA TESS satellite, and track microlensing events through the KMTNet observatory network. A science inquiry experience where students and citizens view and interpret data themselves.',
+  },
+  ctaStart: { ko: '탐구 바로 시작 →', en: 'Start exploring →' },
+  ctaTess: { ko: 'TESS 소개 보기', en: 'About TESS' },
+  modulesLabel: { ko: '탐구 모듈 선택', en: 'Choose an inquiry module' },
+} as const;
 
 export function HomePage() {
+  const lang = useLangStore((s) => s.lang);
+  const L = (v: { ko: string; en: string } | Record<Lang, string>): string => v[lang];
   return (
     <div className="home-page">
 
@@ -64,7 +100,7 @@ export function HomePage() {
             aria-hidden="true"
           />
           <div className="home-hero-bg-overlay" />
-          <span className="home-hero-bg-credit">Image: ESA / Hubble — Ultra Deep Field</span>
+          <span className="home-hero-bg-credit">{HERO.credit}</span>
         </div>
 
         <div className="home-hero-content">
@@ -103,37 +139,35 @@ export function HomePage() {
               </svg>
               <div className="home-hero-brand-text">
                 <span className="home-hero-brand-name">EASWA</span>
-                <span className="home-hero-brand-sub">Exploring All-Sky Web App</span>
+                <span className="home-hero-brand-sub">{HERO.brandSub}</span>
               </div>
             </div>
-            <span className="home-hero-kicker">천문 데이터 탐구 플랫폼</span>
+            <span className="home-hero-kicker">{L(HERO.kicker)}</span>
             <h1 className="home-hero-title">
-              실제 천문 데이터로<br />
-              외계행성을 직접 분석하는<br />
-              탐구 플랫폼
+              {HERO.title[lang][0]}<br />
+              {HERO.title[lang][1]}<br />
+              {HERO.title[lang][2]}
             </h1>
             <p className="home-hero-desc">
-              코딩 없이 웹에서 바로 — NASA TESS 위성의 광도곡선으로 외계행성 식현상을 확인하고,
-              KMTNet 관측소 네트워크로 미시중력렌즈 이벤트를 추적합니다.
-              학생과 시민이 직접 데이터를 보고 해석하는 과학 탐구 경험을 제공합니다.
+              {L(HERO.desc)}
             </p>
             <div className="home-hero-actions">
               <Link to={TESS_EXPLORER} className="btn-primary">
-                탐구 바로 시작 →
+                {L(HERO.ctaStart)}
               </Link>
               <Link to="/tess" className="btn-secondary">
-                TESS 소개 보기
+                {L(HERO.ctaTess)}
               </Link>
             </div>
           </div>
 
           <ul className="home-feature-list">
             {FEATURES.map((f) => (
-              <li key={f.label} className="home-feature-item">
+              <li key={f.label.ko} className="home-feature-item">
                 <span className="home-feature-icon">{f.icon}</span>
                 <div>
-                  <strong>{f.label}</strong>
-                  <span>{f.desc}</span>
+                  <strong>{L(f.label)}</strong>
+                  <span>{L(f.desc)}</span>
                 </div>
               </li>
             ))}
@@ -143,7 +177,7 @@ export function HomePage() {
 
       {/* ── 탐구 모듈 카드 ──────────────────────────── */}
       <section className="home-modules">
-        <p className="home-modules-label">탐구 모듈 선택</p>
+        <p className="home-modules-label">{L(HERO.modulesLabel)}</p>
         <div className="module-stack">
           {MODULES.map((mod) => (
             <article key={mod.id} className="module-row-card">
@@ -151,7 +185,7 @@ export function HomePage() {
                 <ImageWithFallback
                   src={mod.image}
                   fallbackSrc={ASTRO_FALLBACK_IMAGE}
-                  alt={mod.imageAlt}
+                  alt={L(mod.imageAlt)}
                   className="module-row-image"
                   loading="lazy"
                 />
@@ -161,14 +195,14 @@ export function HomePage() {
               <div className="module-row-body">
                 <span className="module-row-chip">{mod.chip}</span>
                 <h2 className="module-row-title">{mod.title}</h2>
-                <p className="module-row-desc">{mod.description}</p>
+                <p className="module-row-desc">{L(mod.description)}</p>
                 <ul className="module-row-tags">
                   {mod.tags.map((tag) => (
                     <li key={tag}>{tag}</li>
                   ))}
                 </ul>
                 <Link to={mod.href} className="btn-primary module-row-cta">
-                  {mod.cta} →
+                  {L(mod.cta)} →
                 </Link>
               </div>
             </article>

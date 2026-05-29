@@ -7,6 +7,7 @@ import {
 } from '../../api/client';
 import { useAppStore } from '../../stores/useAppStore';
 import { useAuthStore } from '../../stores/useAuthStore';
+import { useLangStore } from '../../i18n';
 import type { Observation, Target } from '../../types/target';
 import type {
   ApertureParams,
@@ -81,41 +82,138 @@ function defaultFitDisplayXAxis(
   return fitDataSource === 'phase_fold' ? 'orbital_phase' : 'btjd';
 }
 
+type I18nString = string | { ko: string; en: string };
 type GuideQuestion =
-  | { type: 'open'; id: string; text: string }
-  | { type: 'ox'; id: string; text: string; correct: 'O' | 'X'; explanation: string }
-  | { type: 'choice'; id: string; text: string; options: string[]; correct: string; explanation: string };
+  | { type: 'open'; id: string; text: I18nString }
+  | { type: 'ox'; id: string; text: I18nString; correct: 'O' | 'X'; explanation: I18nString }
+  | { type: 'choice'; id: string; text: I18nString; options: I18nString[]; correct: string; explanation: I18nString };
 
 const STEP_GUIDES: Record<TransitStep, GuideQuestion[]> = {
   select: [
-    { type: 'ox', id: 'select_q1', text: '비교성은 목표 별보다 밝을수록 좋다.', correct: 'X', explanation: '비교성은 목표 별과 비슷한 밝기여야 측정 오차가 최소화됩니다. 너무 밝거나 어두우면 검출기의 선형 범위를 벗어나 오차가 커집니다.' },
-    { type: 'choice', id: 'select_q2', text: '좋은 비교성의 조건으로 가장 중요한 것은?', options: ['목표 별과 비슷한 밝기', '목표 별에서 최대한 멀리', '색깔이 붉은 별', '가장 밝은 별'], correct: '목표 별과 비슷한 밝기', explanation: '밝기가 비슷한 별을 비교성으로 쓰면 대기·기기 효과가 동일하게 적용되어 차등 측광이 정확해집니다.' },
-    { type: 'open', id: 'select_q3', text: '관측 이미지에서 목표 별과 비교성을 어떻게 구별할 수 있을까?' },
+    {
+      type: 'ox', id: 'select_q1',
+      text: { ko: '비교성은 목표 별보다 밝을수록 좋다.', en: 'A comparison star should be as bright as possible — the brighter the better.' },
+      correct: 'X',
+      explanation: { ko: '비교성은 목표 별과 비슷한 밝기여야 측정 오차가 최소화됩니다. 너무 밝거나 어두우면 검출기의 선형 범위를 벗어나 오차가 커집니다.', en: 'A comparison star should have similar brightness to the target. Too bright or too faint pushes the detector out of its linear range and increases errors.' },
+    },
+    {
+      type: 'choice', id: 'select_q2',
+      text: { ko: '좋은 비교성의 조건으로 가장 중요한 것은?', en: 'What is the most important criterion for a good comparison star?' },
+      options: [
+        { ko: '목표 별과 비슷한 밝기', en: 'Similar brightness to the target star' },
+        { ko: '목표 별에서 최대한 멀리', en: 'As far from the target as possible' },
+        { ko: '색깔이 붉은 별', en: 'A red-colored star' },
+        { ko: '가장 밝은 별', en: 'The brightest star available' },
+      ],
+      correct: '목표 별과 비슷한 밝기',
+      explanation: { ko: '밝기가 비슷한 별을 비교성으로 쓰면 대기·기기 효과가 동일하게 적용되어 차등 측광이 정확해집니다.', en: 'Using a star of similar brightness ensures atmospheric and instrumental effects apply equally to both stars, making differential photometry accurate.' },
+    },
+    { type: 'open', id: 'select_q3', text: { ko: '관측 이미지에서 목표 별과 비교성을 어떻게 구별할 수 있을까?', en: 'How can you distinguish the target star from comparison stars in the observation image?' } },
   ],
   run: [
-    { type: 'ox', id: 'run_q1', text: '비교성이 많을수록 광도 측정의 정밀도가 항상 높아진다.', correct: 'X', explanation: '품질이 낮은 비교성(변광성, RMS 높음)을 포함하면 오히려 정밀도가 떨어집니다. 좋은 비교성을 선별하는 것이 핵심입니다.' },
-    { type: 'choice', id: 'run_q2', text: '앙상블 측광(ensemble photometry)이 단일 비교성 방식보다 유리한 이유는?', options: ['계산이 빠르다', '개별 비교성의 오차가 평균화된다', '더 많은 별을 탐색할 수 있다', '대기 효과를 완전히 제거한다'], correct: '개별 비교성의 오차가 평균화된다', explanation: '여러 비교성의 평균을 사용하면 특정 별의 우발적 변화가 희석되어 기준 플럭스가 안정됩니다.' },
-    { type: 'open', id: 'run_q3', text: '구경(aperture) 크기가 측정값에 어떤 영향을 미칠까?' },
+    {
+      type: 'ox', id: 'run_q1',
+      text: { ko: '비교성이 많을수록 광도 측정의 정밀도가 항상 높아진다.', en: 'The more comparison stars used, the higher the photometric precision will always be.' },
+      correct: 'X',
+      explanation: { ko: '품질이 낮은 비교성(변광성, RMS 높음)을 포함하면 오히려 정밀도가 떨어집니다. 좋은 비교성을 선별하는 것이 핵심입니다.', en: 'Including poor-quality comparison stars (variables, high RMS) actually reduces precision. Selecting good comparison stars is the key.' },
+    },
+    {
+      type: 'choice', id: 'run_q2',
+      text: { ko: '앙상블 측광(ensemble photometry)이 단일 비교성 방식보다 유리한 이유는?', en: 'Why is ensemble photometry advantageous over using a single comparison star?' },
+      options: [
+        { ko: '계산이 빠르다', en: 'Computation is faster' },
+        { ko: '개별 비교성의 오차가 평균화된다', en: 'Individual comparison star errors are averaged out' },
+        { ko: '더 많은 별을 탐색할 수 있다', en: 'More stars can be searched' },
+        { ko: '대기 효과를 완전히 제거한다', en: 'Atmospheric effects are completely eliminated' },
+      ],
+      correct: '개별 비교성의 오차가 평균화된다',
+      explanation: { ko: '여러 비교성의 평균을 사용하면 특정 별의 우발적 변화가 희석되어 기준 플럭스가 안정됩니다.', en: 'Using the average of multiple comparison stars dilutes accidental variations of any single star, stabilizing the reference flux.' },
+    },
+    { type: 'open', id: 'run_q3', text: { ko: '구경(aperture) 크기가 측정값에 어떤 영향을 미칠까?', en: 'How does aperture size affect the measured values?' } },
   ],
   comparisonqc: [
-    { type: 'ox', id: 'qc_q1', text: '변광성(variable star)은 비교성으로 사용할 수 있다.', correct: 'X', explanation: '변광성은 자체적으로 밝기가 바뀌므로 기준으로 쓰면 목표 별의 변화와 구별할 수 없어 비교성으로 부적합합니다.' },
-    { type: 'choice', id: 'qc_q2', text: '비교성 품질 지표(RMS)가 높다는 것은 무엇을 의미하는가?', options: ['측정이 정밀하다', '밝기 변화가 불규칙하다', '목표 별에 가깝다', '대기가 안정적이다'], correct: '밝기 변화가 불규칙하다', explanation: 'RMS(산포도)가 높다는 것은 해당 비교성의 밝기 측정값이 일정하지 않다는 뜻으로, 신뢰할 수 없는 기준임을 의미합니다.' },
-    { type: 'open', id: 'qc_q3', text: '제외한 비교성이 있다면, 제외 이유를 설명해보자.' },
+    {
+      type: 'ox', id: 'qc_q1',
+      text: { ko: '변광성(variable star)은 비교성으로 사용할 수 있다.', en: 'A variable star can be used as a comparison star.' },
+      correct: 'X',
+      explanation: { ko: '변광성은 자체적으로 밝기가 바뀌므로 기준으로 쓰면 목표 별의 변화와 구별할 수 없어 비교성으로 부적합합니다.', en: 'Variable stars change brightness on their own. Using one as a reference makes it impossible to distinguish its variation from the target\'s signal.' },
+    },
+    {
+      type: 'choice', id: 'qc_q2',
+      text: { ko: '비교성 품질 지표(RMS)가 높다는 것은 무엇을 의미하는가?', en: 'What does a high RMS quality metric for a comparison star indicate?' },
+      options: [
+        { ko: '측정이 정밀하다', en: 'Measurements are precise' },
+        { ko: '밝기 변화가 불규칙하다', en: 'Brightness variations are irregular' },
+        { ko: '목표 별에 가깝다', en: 'It is close to the target star' },
+        { ko: '대기가 안정적이다', en: 'The atmosphere is stable' },
+      ],
+      correct: '밝기 변화가 불규칙하다',
+      explanation: { ko: 'RMS(산포도)가 높다는 것은 해당 비교성의 밝기 측정값이 일정하지 않다는 뜻으로, 신뢰할 수 없는 기준임을 의미합니다.', en: 'High RMS means the comparison star\'s brightness measurements are inconsistent — it is an unreliable reference.' },
+    },
+    { type: 'open', id: 'qc_q3', text: { ko: '제외한 비교성이 있다면, 제외 이유를 설명해보자.', en: 'If you excluded any comparison stars, explain your reasoning.' } },
   ],
   lightcurve: [
-    { type: 'ox', id: 'lc_q1', text: '외계행성 식현상 중에는 별의 밝기가 감소한다.', correct: 'O', explanation: '행성이 별 앞을 지나가면 별빛 일부를 가려 관측되는 밝기가 일시적으로 감소합니다. 이것이 식(transit) 신호입니다.' },
-    { type: 'choice', id: 'lc_q2', text: '밝기 감소량(dip depth)이 클수록 무엇을 의미하는가?', options: ['행성의 공전 주기가 길다', '행성이 별에 비해 크다', '행성의 질량이 크다', '식현상 지속 시간이 짧다'], correct: '행성이 별에 비해 크다', explanation: '식 깊이는 (Rp/R*)²에 비례합니다. 행성이 별에 비해 클수록 더 많은 빛을 가려 밝기 감소가 커집니다.' },
-    { type: 'open', id: 'lc_q3', text: '광도 곡선에서 식의 시작과 끝 지점을 어떻게 찾았는가?' },
+    {
+      type: 'ox', id: 'lc_q1',
+      text: { ko: '외계행성 식현상 중에는 별의 밝기가 감소한다.', en: 'During an exoplanet transit, the star\'s observed brightness decreases.' },
+      correct: 'O',
+      explanation: { ko: '행성이 별 앞을 지나가면 별빛 일부를 가려 관측되는 밝기가 일시적으로 감소합니다. 이것이 식(transit) 신호입니다.', en: 'When a planet passes in front of the star, it blocks some starlight, temporarily reducing the observed brightness. This is the transit signal.' },
+    },
+    {
+      type: 'choice', id: 'lc_q2',
+      text: { ko: '밝기 감소량(dip depth)이 클수록 무엇을 의미하는가?', en: 'What does a larger dip depth (greater brightness decrease) indicate?' },
+      options: [
+        { ko: '행성의 공전 주기가 길다', en: 'The planet has a longer orbital period' },
+        { ko: '행성이 별에 비해 크다', en: 'The planet is larger relative to the star' },
+        { ko: '행성의 질량이 크다', en: 'The planet has greater mass' },
+        { ko: '식현상 지속 시간이 짧다', en: 'The transit duration is shorter' },
+      ],
+      correct: '행성이 별에 비해 크다',
+      explanation: { ko: '식 깊이는 (Rp/R*)²에 비례합니다. 행성이 별에 비해 클수록 더 많은 빛을 가려 밝기 감소가 커집니다.', en: 'Transit depth is proportional to (Rp/R*)². A larger planet blocks more light, creating a deeper dip in the light curve.' },
+    },
+    { type: 'open', id: 'lc_q3', text: { ko: '광도 곡선에서 식의 시작과 끝 지점을 어떻게 찾았는가?', en: 'How did you identify the start and end points of the transit in the light curve?' } },
   ],
   transitfit: [
-    { type: 'ox', id: 'fit_q1', text: 'χ²_red 값이 1보다 훨씬 크면 모델이 데이터와 잘 맞는다는 뜻이다.', correct: 'X', explanation: 'χ²_red ≫ 1이면 모델이 데이터를 잘 설명하지 못하거나 오차를 과소평가한 것입니다. 좋은 적합도는 χ²_red ≈ 1입니다.' },
-    { type: 'choice', id: 'fit_q2', text: 'Rp/R* = 0.1이 의미하는 것은?', options: ['행성 반지름이 별 반지름의 10%', '행성이 별보다 10배 크다', '식 깊이가 10%', '공전 주기가 0.1일'], correct: '행성 반지름이 별 반지름의 10%', explanation: 'Rp/R*는 행성 반지름과 별 반지름의 비율입니다. 0.1이면 행성이 별의 10% 크기이고, 식 깊이는 0.1² = 1%가 됩니다.' },
-    { type: 'open', id: 'fit_q3', text: '적합 결과가 기대값과 다르다면 그 원인이 무엇일지 생각해보자.' },
+    {
+      type: 'ox', id: 'fit_q1',
+      text: { ko: 'χ²_red 값이 1보다 훨씬 크면 모델이 데이터와 잘 맞는다는 뜻이다.', en: 'A χ²_red value much greater than 1 means the model fits the data well.' },
+      correct: 'X',
+      explanation: { ko: 'χ²_red ≫ 1이면 모델이 데이터를 잘 설명하지 못하거나 오차를 과소평가한 것입니다. 좋은 적합도는 χ²_red ≈ 1입니다.', en: 'χ²_red >> 1 means the model poorly explains the data or errors are underestimated. A good fit has χ²_red ≈ 1.' },
+    },
+    {
+      type: 'choice', id: 'fit_q2',
+      text: { ko: 'Rp/R* = 0.1이 의미하는 것은?', en: 'What does Rp/R* = 0.1 mean?' },
+      options: [
+        { ko: '행성 반지름이 별 반지름의 10%', en: 'Planet radius is 10% of the star\'s radius' },
+        { ko: '행성이 별보다 10배 크다', en: 'The planet is 10 times larger than the star' },
+        { ko: '식 깊이가 10%', en: 'Transit depth is 10%' },
+        { ko: '공전 주기가 0.1일', en: 'Orbital period is 0.1 days' },
+      ],
+      correct: '행성 반지름이 별 반지름의 10%',
+      explanation: { ko: 'Rp/R*는 행성 반지름과 별 반지름의 비율입니다. 0.1이면 행성이 별의 10% 크기이고, 식 깊이는 0.1² = 1%가 됩니다.', en: 'Rp/R* is the ratio of planet radius to star radius. At 0.1, the planet is 10% the size of the star, and transit depth is 0.1² = 1%.' },
+    },
+    { type: 'open', id: 'fit_q3', text: { ko: '적합 결과가 기대값과 다르다면 그 원인이 무엇일지 생각해보자.', en: 'If the fit result differs from the expected value, think about what might be causing the discrepancy.' } },
   ],
   record: [
-    { type: 'ox', id: 'rec_q1', text: '측정한 Rp/R* 값이 출판된 논문값과 완전히 일치할 것이다.', correct: 'X', explanation: 'TESS 데이터 노이즈, 비교성 선택, 구경 설정 등 여러 요인으로 측정값에는 항상 불확실성이 있습니다. 오차 범위 내에 있으면 좋은 결과입니다.' },
-    { type: 'choice', id: 'rec_q2', text: '이번 분석에서 측정 오차의 주요 원인은 무엇이라고 생각하는가?', options: ['비교성 수 부족', '대기 불안정', '구경 크기 설정', '데이터 품질(TESS 노이즈)'], correct: '데이터 품질(TESS 노이즈)', explanation: '지상 관측과 달리 TESS는 우주 망원경이라 대기 영향은 없지만, TESS 자체의 픽셀 크기(21"/px)로 인한 혼입(contamination)이 주요 오차 원인입니다.' },
-    { type: 'open', id: 'rec_q3', text: '이번 탐구에서 가장 흥미로웠던 점이나 추가로 알고 싶은 것을 적어보자.' },
+    {
+      type: 'ox', id: 'rec_q1',
+      text: { ko: '측정한 Rp/R* 값이 출판된 논문값과 완전히 일치할 것이다.', en: 'The measured Rp/R* value will perfectly match the published literature value.' },
+      correct: 'X',
+      explanation: { ko: 'TESS 데이터 노이즈, 비교성 선택, 구경 설정 등 여러 요인으로 측정값에는 항상 불확실성이 있습니다. 오차 범위 내에 있으면 좋은 결과입니다.', en: 'TESS data noise, comparison star selection, and aperture settings all introduce uncertainty. Being within the error range is a good result.' },
+    },
+    {
+      type: 'choice', id: 'rec_q2',
+      text: { ko: '이번 분석에서 측정 오차의 주요 원인은 무엇이라고 생각하는가?', en: 'What do you think is the main source of measurement error in this analysis?' },
+      options: [
+        { ko: '비교성 수 부족', en: 'Too few comparison stars' },
+        { ko: '대기 불안정', en: 'Atmospheric instability' },
+        { ko: '구경 크기 설정', en: 'Aperture size setting' },
+        { ko: '데이터 품질(TESS 노이즈)', en: 'Data quality (TESS noise)' },
+      ],
+      correct: '데이터 품질(TESS 노이즈)',
+      explanation: { ko: '지상 관측과 달리 TESS는 우주 망원경이라 대기 영향은 없지만, TESS 자체의 픽셀 크기(21"/px)로 인한 혼입(contamination)이 주요 오차 원인입니다.', en: 'Unlike ground-based observations, TESS avoids atmospheric effects as a space telescope. However, its large pixel scale (21\"/px) causes flux contamination, which is the main error source.' },
+    },
+    { type: 'open', id: 'rec_q3', text: { ko: '이번 탐구에서 가장 흥미로웠던 점이나 추가로 알고 싶은 것을 적어보자.', en: 'Write down the most interesting aspect of this investigation, or what you would like to explore further.' } },
   ],
 };
 
@@ -200,6 +298,7 @@ function StepGuide({
   defaultOpen?: boolean;
   storageKeySuffix?: string;
 }) {
+  const lang = useLangStore((s) => s.lang);
   const storageKey = `easwa_guide_open_${step}_${storageKeySuffix}`;
   const [open, setOpen] = useState(() => {
     try {
@@ -214,11 +313,24 @@ function StepGuide({
   const questions = STEP_GUIDES[step];
   if (!questions?.length) return null;
 
+  /** I18nString → current-lang string */
+  const i18n = (s: I18nString): string =>
+    typeof s === 'string' ? s : (s[lang] ?? s.ko);
+
+  /** canonical key for choice options — always use ko text */
+  const canonicalKey = (opt: I18nString): string =>
+    typeof opt === 'string' ? opt : opt.ko;
+
   const handleAnswer = (id: string, value: string) => {
     const next = { ...answers, [id]: value };
     setAnswers(next);
     onAnswersChange?.(next);
   };
+
+  const toggleLabel = lang === 'ko' ? '🤔 생각해보기' : '🤔 Think About It';
+  const placeholderText = lang === 'ko' ? '여기에 생각을 적어보세요...' : 'Write your thoughts here…';
+  const correctLabel = lang === 'ko' ? '정답!' : 'Correct!';
+  const wrongLabel = lang === 'ko' ? '오답 — 정답:' : 'Incorrect — Answer:';
 
   return (
     <div className={`transit-guide ${open ? 'open' : ''}`}>
@@ -231,7 +343,7 @@ function StepGuide({
           try { localStorage.setItem(storageKey, String(next)); } catch { /* ignore */ }
         }}
       >
-        <span>생각해보기</span>
+        <span>{toggleLabel}</span>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>
           <polyline points="6 9 12 15 18 9" />
         </svg>
@@ -240,7 +352,7 @@ function StepGuide({
         <div className="transit-guide-questions">
           {questions.map((q) => (
             <div key={q.id} className="transit-guide-item">
-              <p className="transit-guide-text">{q.text}</p>
+              <p className="transit-guide-text">{i18n(q.text)}</p>
               {q.type === 'ox' && (() => {
                 const answered = answers[q.id];
                 const isCorrect = answered === q.correct;
@@ -260,8 +372,8 @@ function StepGuide({
                     </div>
                     {answered && (
                       <div className={`transit-guide-feedback ${isCorrect ? 'correct' : 'wrong'}`}>
-                        <strong>{isCorrect ? '정답!' : `오답 — 정답: ${q.correct}`}</strong>
-                        <span>{q.explanation}</span>
+                        <strong>{isCorrect ? correctLabel : `${wrongLabel} ${q.correct}`}</strong>
+                        <span>{i18n(q.explanation)}</span>
                       </div>
                     )}
                   </>
@@ -273,21 +385,24 @@ function StepGuide({
                 return (
                   <>
                     <div className="transit-guide-choices">
-                      {q.options.map((opt) => (
-                        <button
-                          key={opt}
-                          type="button"
-                          className={`transit-guide-choice-btn ${answered === opt ? (isCorrect ? 'correct' : 'wrong') : (answered && opt === q.correct ? 'reveal' : '')}`}
-                          onClick={() => handleAnswer(q.id, answered === opt ? '' : opt)}
-                        >
-                          {opt}
-                        </button>
-                      ))}
+                      {q.options.map((opt) => {
+                        const key = canonicalKey(opt);
+                        return (
+                          <button
+                            key={key}
+                            type="button"
+                            className={`transit-guide-choice-btn ${answered === key ? (isCorrect ? 'correct' : 'wrong') : (answered && key === q.correct ? 'reveal' : '')}`}
+                            onClick={() => handleAnswer(q.id, answered === key ? '' : key)}
+                          >
+                            {i18n(opt)}
+                          </button>
+                        );
+                      })}
                     </div>
                     {answered && (
                       <div className={`transit-guide-feedback ${isCorrect ? 'correct' : 'wrong'}`}>
-                        <strong>{isCorrect ? '정답!' : `오답 — 정답: ${q.correct}`}</strong>
-                        <span>{q.explanation}</span>
+                        <strong>{isCorrect ? correctLabel : `${wrongLabel} ${q.correct}`}</strong>
+                        <span>{i18n(q.explanation)}</span>
                       </div>
                     )}
                   </>
@@ -296,7 +411,7 @@ function StepGuide({
               {q.type === 'open' && (
                 <textarea
                   className="transit-guide-textarea"
-                  placeholder="여기에 생각을 적어보세요..."
+                  placeholder={placeholderText}
                   value={answers[q.id] ?? ''}
                   onChange={(e) => handleAnswer(q.id, e.target.value)}
                   rows={3}
@@ -1527,6 +1642,29 @@ export function TransitLab({
           ? 'Draft save failed'
           : 'Draft session';
 
+  const blockingPreviewLoadCard = showBlockingPreviewLoad ? (
+    <div className="transit-progress-card">
+      <div className="transit-progress-head">
+        <strong>Loading TESS cutout</strong>
+        <span>{Math.round(previewProgress * 100)}%</span>
+      </div>
+      <div className="transit-progress-bar">
+        <div
+          className="transit-progress-fill"
+          style={{ width: `${Math.max(4, previewProgress * 100)}%` }}
+        />
+      </div>
+      <p className="hint">
+        {previewMessage ?? 'Downloading and preparing the TESS cutout...'}
+      </p>
+      <div className="transit-progress-actions">
+        <button type="button" className="btn-sm" onClick={handleReset}>
+          Stop
+        </button>
+      </div>
+    </div>
+  ) : null;
+
   return (
     <div className="transit-lab-wrap">
       {draftId && (
@@ -2440,28 +2578,7 @@ export function TransitLab({
 
         {errorMessage && <div className="transit-callout error-text">{errorMessage}</div>}
 
-        {showBlockingPreviewLoad && (
-          <div className="transit-progress-card">
-            <div className="transit-progress-head">
-              <strong>Loading TESS cutout</strong>
-              <span>{Math.round(previewProgress * 100)}%</span>
-            </div>
-            <div className="transit-progress-bar">
-              <div
-                className="transit-progress-fill"
-                style={{ width: `${Math.max(4, previewProgress * 100)}%` }}
-              />
-            </div>
-            <p className="hint">
-              {previewMessage ?? 'Downloading and preparing the TESS cutout...'}
-            </p>
-            <div className="transit-progress-actions">
-              <button type="button" className="btn-sm" onClick={handleReset}>
-                Stop
-              </button>
-            </div>
-          </div>
-        )}
+        {step !== 'select' && blockingPreviewLoadCard}
 
         {/* STEP 1: Select Stars */}
         {step === 'select' && (
@@ -2521,6 +2638,8 @@ export function TransitLab({
                 </button>
               </div>
             </div>
+
+            {blockingPreviewLoadCard}
 
             {preview && (
               <>

@@ -24,6 +24,8 @@ export interface Target {
   type: string;
   period_days: number | null;
   magnitude_range: string;
+  transit_depth_pct?: number | null;
+  transit_duration_hours?: number | null;
   description: string;
   topic_id: string;
   data_source?: string | null;

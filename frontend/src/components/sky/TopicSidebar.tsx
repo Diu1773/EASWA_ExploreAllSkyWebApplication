@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { fetchTopics } from '../../api/client';
 import { DEFAULT_TRANSIT_FILTERS, useAppStore } from '../../stores/useAppStore';
 import type { Topic, TransitTargetFilters } from '../../types/target';
+import { useT, useLangStore } from '../../i18n';
 
 const TOPIC_CODES: Record<string, string> = {
   eclipsing_binary: 'EB',
@@ -32,6 +33,8 @@ export function TopicSidebar() {
   const setTopic = useAppStore((s) => s.setTopic);
   const setTransitFilters = useAppStore((s) => s.setTransitFilters);
   const [draftFilters, setDraftFilters] = useState<TransitTargetFilters>(transitFilters);
+  const tr = useT();
+  const lang = useLangStore((s) => s.lang);
 
   useEffect(() => {
     fetchTopics().then(setTopics);
@@ -119,7 +122,7 @@ export function TopicSidebar() {
                         ref={gearButtonRef}
                         className={`topic-bar-gear ${settingsOpen ? 'open' : ''}`}
                         type="button"
-                        title="필터 설정"
+                        title={tr('explorer.filterTitle')}
                         onClick={(e) => { e.stopPropagation(); setSettingsOpen((v) => !v); }}
                       >
                         <GearIcon />
@@ -142,9 +145,11 @@ export function TopicSidebar() {
         className="topic-bar-toggle"
         type="button"
         onClick={toggleSidebar}
-        title={sidebarCollapsed ? '탐구 패널 열기' : '탐구 패널 닫기'}
+        title={sidebarCollapsed
+          ? (lang === 'ko' ? '탐구 패널 열기' : 'Open activity panel')
+          : (lang === 'ko' ? '탐구 패널 닫기' : 'Close activity panel')}
       >
-        {sidebarCollapsed ? '▼  탐구 활동 열기' : '▲'}
+        {sidebarCollapsed ? tr('explorer.openPanel') : tr('explorer.closePanel')}
       </button>
 
       {settingsOpen && panelPos && createPortal(
@@ -154,22 +159,22 @@ export function TopicSidebar() {
           style={{ top: panelPos.top, left: panelPos.left }}
         >
           <label className="topic-settings-field">
-            <span>Max Targets</span>
+            <span>{tr('explorer.filter.maxTargets')}</span>
             <input type="number" min={1} max={100} value={draftFilters.maxTargets}
               onChange={(e) => updateDraft({ maxTargets: Math.max(1, Math.min(100, Number(e.target.value) || 1)) })} />
           </label>
           <label className="topic-settings-field">
-            <span>Min Depth (%)</span>
+            <span>{tr('explorer.filter.minDepth')}</span>
             <input type="number" min={0.1} max={10} step={0.1} value={draftFilters.minDepthPct}
               onChange={(e) => updateDraft({ minDepthPct: Math.max(0.1, Math.min(10, Number(e.target.value) || 0.1)) })} />
           </label>
           <label className="topic-settings-field">
-            <span>Max Period (d)</span>
+            <span>{tr('explorer.filter.maxPeriod')}</span>
             <input type="number" min={0.2} max={30} step={0.1} value={draftFilters.maxPeriodDays}
               onChange={(e) => updateDraft({ maxPeriodDays: Math.max(0.2, Math.min(30, Number(e.target.value) || 0.2)) })} />
           </label>
           <label className="topic-settings-field">
-            <span>Max Host V</span>
+            <span>{tr('explorer.filter.maxHostV')}</span>
             <input type="number" min={6} max={16} step={0.1} value={draftFilters.maxHostVmag}
               onChange={(e) => updateDraft({ maxHostVmag: Math.max(6, Math.min(16, Number(e.target.value) || 6)) })} />
           </label>
@@ -179,13 +184,13 @@ export function TopicSidebar() {
               setDraftFilters(DEFAULT_TRANSIT_FILTERS);
               setTransitFilters(DEFAULT_TRANSIT_FILTERS);
               setTopic('exoplanet_transit');
-            }}>Reset</button>
+            }}>{tr('explorer.filter.reset')}</button>
             <button className="btn-sm" onClick={() => {
               if (debounceRef.current) clearTimeout(debounceRef.current);
               setTransitFilters(draftFilters);
               setTopic('exoplanet_transit');
               setSettingsOpen(false);
-            }}>Apply</button>
+            }}>{tr('explorer.filter.apply')}</button>
           </div>
         </div>,
         document.body
