@@ -15,7 +15,7 @@ frontend/dist/
 .vscode/
 .idea/
 .claude/
-.codex/
+.codex
 *.swp
 *.swo
 
@@ -38,4 +38,5 @@ frontend/.env.*
 backend/*.db
 backend/*.db-shm
 backend/*.db-wal
+backend/.cache/
 backend/submissions/

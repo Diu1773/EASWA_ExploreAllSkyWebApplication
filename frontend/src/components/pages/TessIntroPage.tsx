@@ -1,7 +1,23 @@
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ImageWithFallback } from '../layout/ImageWithFallback';
 import { ASTRO_FALLBACK_IMAGE, TESS_BANNER_IMAGE } from '../../data/imageSources';
 import { buildExplorerHref } from '../../utils/explorerNavigation';
+
+const Transit3DScene = lazy(() => import('../sky/Transit3DScene'));
+
+function supportsWebGL(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    const canvas = document.createElement('canvas');
+    return !!(
+      window.WebGLRenderingContext &&
+      (canvas.getContext('webgl2') || canvas.getContext('webgl'))
+    );
+  } catch {
+    return false;
+  }
+}
 
 const TESS_EXPLORER = buildExplorerHref({
   moduleId: 'tess',
@@ -112,6 +128,37 @@ function TransitDiagram() {
   );
 }
 
+function TransitVisual() {
+  const [use3D, setUse3D] = useState(false);
+  useEffect(() => {
+    setUse3D(supportsWebGL());
+  }, []);
+
+  if (!use3D) {
+    return (
+      <>
+        <TransitDiagram />
+        <p className="edu-diagram-caption">
+          행성이 별 앞을 통과(transit)하는 동안 광도곡선에 특징적인 딥이 나타납니다.
+        </p>
+      </>
+    );
+  }
+
+  return (
+    <Suspense
+      fallback={
+        <>
+          <TransitDiagram />
+          <p className="edu-diagram-caption">3D 시뮬레이션 로딩 중…</p>
+        </>
+      }
+    >
+      <Transit3DScene />
+    </Suspense>
+  );
+}
+
 const TESS_FACTS = [
   { value: '~400,000', label: '관측 대상 별', sub: '밝고 가까운 별 우선' },
   { value: '96° × 24°', label: '섹터 크기', sub: '전천을 26개 섹터로 분할' },
@@ -150,10 +197,7 @@ export function TessIntroPage() {
         {/* 현상 설명: 다이어그램 + 텍스트 */}
         <section className="edu-explain">
           <div className="edu-diagram-wrap">
-            <TransitDiagram />
-            <p className="edu-diagram-caption">
-              행성이 별 앞을 통과(transit)하는 동안 광도곡선에 특징적인 딥이 나타납니다.
-            </p>
+            <TransitVisual />
           </div>
           <div className="edu-explain-text">
             <h2>식현상(Transit)으로 행성 크기를 알 수 있다</h2>

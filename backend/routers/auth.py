@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 
 from config import (
+    ADMIN_EMAILS,
     BASE_URL,
     GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET,
@@ -59,6 +60,24 @@ def get_current_user(request: Request) -> dict | None:
     return get_user_by_id(data["uid"])
 
 
+def is_admin_user(user: dict | None) -> bool:
+    """Return whether a user row is allowed to access admin-only surfaces."""
+    if not user:
+        return False
+    email = str(user.get("email") or "").strip().lower()
+    return bool(email and email in ADMIN_EMAILS)
+
+
+def require_admin_user(request: Request) -> dict:
+    """Return the current user or raise if the request is not admin-authorized."""
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not logged in.")
+    if not is_admin_user(user):
+        raise HTTPException(status_code=403, detail="Forbidden")
+    return user
+
+
 @router.get("/auth/login")
 async def login(request: Request):
     """Redirect the user to Google's consent screen."""
@@ -100,6 +119,7 @@ async def me(request: Request):
         "name": user["name"],
         "email": user["email"],
         "picture": user["picture"],
+        "is_admin": is_admin_user(user),
     }
 
 

@@ -30,6 +30,7 @@ If you want Google sign-in:
 
 - `GOOGLE_CLIENT_ID=<google-oauth-client-id>`
 - `GOOGLE_CLIENT_SECRET=<google-oauth-client-secret>`
+- `EASWA_ADMIN_EMAILS=teacher@example.com,admin@example.com`
 
 If you use Google sign-in, register this callback URL in Google Cloud:
 
@@ -40,6 +41,7 @@ If you use Google sign-in, register this callback URL in Google Cloud:
 - `EASWA_RECORD_REQUIRE_LOGIN=false`
   Use this if poster visitors should be able to submit records without logging in.
   Note that `/my` and `/drafts/*` still require login because they are user-specific.
+  The admin dashboard always requires Google sign-in and an email listed in `EASWA_ADMIN_EMAILS`.
 
 - `EASWA_DB_PATH=/var/data/easwa.db`
 - `EASWA_EXPORT_DIR=/var/data/submissions`

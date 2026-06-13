@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Request, Response
 
-from config import ADMIN_EMAILS, BASE_URL, RECORD_REQUIRE_LOGIN
-from routers.auth import get_current_user
+from config import BASE_URL, RECORD_REQUIRE_LOGIN
+from routers.auth import get_current_user, require_admin_user
 from schemas.record import (
     RecordListItemResponse,
     RecordListResponse,
@@ -19,9 +19,7 @@ router = APIRouter(tags=["records"])
 
 @router.get("/records/admin/guide-stats")
 def admin_guide_stats(request: Request):
-    user = get_current_user(request)
-    if not user or user["email"].lower() not in ADMIN_EMAILS:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    require_admin_user(request)
     return get_guide_answer_stats()
 
 

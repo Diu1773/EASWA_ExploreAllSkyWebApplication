@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { fetchGuideStats, type GuideStats } from '../../api/client';
+import { useAuthStore } from '../../stores/useAuthStore';
 
 // Map question IDs to readable labels
 const QUESTION_LABELS: Record<string, string> = {
@@ -113,20 +114,70 @@ function QuestionCard({
 }
 
 export function AdminDashboard() {
-  const [stats, setStats] = useState<GuideStats | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const user = useAuthStore((s) => s.user);
+  const authLoading = useAuthStore((s) => s.loading);
+  const [statsState, setStatsState] = useState<{
+    userId: number | null;
+    stats: GuideStats | null;
+    error: string | null;
+  }>({
+    userId: null,
+    stats: null,
+    error: null,
+  });
 
   useEffect(() => {
-    fetchGuideStats()
-      .then(setStats)
-      .catch((e: unknown) =>
-        setError(e instanceof Error ? e.message : String(e))
-      )
-      .finally(() => setLoading(false));
-  }, []);
+    if (authLoading || !user?.is_admin) return;
 
-  if (loading) {
+    let cancelled = false;
+    fetchGuideStats()
+      .then((data) => {
+        if (!cancelled) {
+          setStatsState({ userId: user.id, stats: data, error: null });
+        }
+      })
+      .catch((e: unknown) => {
+        if (!cancelled) {
+          setStatsState({
+            userId: user.id,
+            stats: null,
+            error: e instanceof Error ? e.message : String(e),
+          });
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authLoading, user?.id, user?.is_admin]);
+
+  if (authLoading) {
+    return <div className="page-placeholder"><p>Checking admin access...</p></div>;
+  }
+  if (!user) {
+    return (
+      <div className="page-placeholder">
+        <h2>Admin</h2>
+        <p>Please sign in with an administrator account.</p>
+        <a href="/api/auth/login" className="btn-primary">
+          Sign in with Google
+        </a>
+      </div>
+    );
+  }
+  if (!user.is_admin) {
+    return (
+      <div className="page-placeholder">
+        <h2>Admin</h2>
+        <p>You do not have permission to view this dashboard.</p>
+      </div>
+    );
+  }
+
+  const stats = statsState.userId === user.id ? statsState.stats : null;
+  const error = statsState.userId === user.id ? statsState.error : null;
+
+  if (!stats && !error) {
     return <div className="page-placeholder"><p>Loading stats…</p></div>;
   }
   if (error) {

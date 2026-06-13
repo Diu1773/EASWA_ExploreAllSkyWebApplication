@@ -1,0 +1,86 @@
+J/A+A/520/A56       WASP-26b RV and photometric data         (Smalley+, 2010)
+================================================================================
+WASP-26b: a 1-Jupiter-mass planet around an early-G-type star.
+    Smalley B., Anderson D.R., Collier Cameron A., Gillon M., Hellier C.,
+    Lister T.A., Maxted P.F.L., Queloz D., Triaud A.H.M.J., West R.G.,
+    Bentley S.J., Enoch B., Pepe F., Pollacco D.L., Segransan D.,
+    Smith A.M.S., Southworth J., Udry S., Wheatley P.J., Wood P.L., Bento J.
+   <Astron. Astrophys. 520, A56 (2010)>
+   =2010A&A...520A..56S
+================================================================================
+ADC_Keywords: Stars, G-type ; Radial velocities ; Photometry, CCD
+Keywords: planets and satellites: general - stars: individual: WASP-26 -
+          binaries: visual - techniques: photometric -
+          techniques: spectroscopic - techniques: radial velocities
+
+Abstract:
+    We report the discovery of WASP-26b, a moderately over-sized
+    Jupiter-mass exoplanet transiting its 11.3-mag early-G-type host star
+    (1SWASP J001824.70-151602.3; TYC 5839-876-1) every 2.7566 days. A
+    simultaneous fit to transit photometry and radial-velocity
+    measurements yields a planetary mass of 1.02+/-0.03M_{Jup}_ and radius
+    of 1.32+/-0.08R_{Jup}_. The host star, WASP-26, has a mass of
+    1.12+/-0.03 and a radius of 1.34+/-0.06 and is in a visual double with
+    a fainter K-type star. The two stars are at least a common-proper
+    motion pair with a common distance of around 250+/-15pc and an age of
+    6+/-2Gy.
+
+Description:
+    File table1 contains the Radial velocity and line bisector span
+    measurements of WASP-26 obtained using the CORALIE spectrograph. Files
+    fts.dat and ftn.dat contain the Pan-STARRS-z band transit photometry
+    obtained using the Faulkes Telescopes observed on 2009 November 18 and
+    2009 December 2, respectively.
+
+Objects:
+    -----------------------------------------------------
+       RA   (2000)   DE      Designation(s)
+    -----------------------------------------------------
+    00 18 24.7   -15 16 02   WASP-26 = TYC 5839-876-1
+    -----------------------------------------------------
+
+File Summary:
+--------------------------------------------------------------------------------
+ FileName   Lrecl  Records   Explanations
+--------------------------------------------------------------------------------
+ReadMe         80        .   This file
+table1.dat     41       16   Radial velocity and line bisector spans
+ftn.dat        32      327   Faulkes Telescope North Transit photometry
+fts.dat        32      197   Faulkes Telescope South Transit photometry
+--------------------------------------------------------------------------------
+
+See also:
+ J/A+A/501/785    : Discovery and characterization of WASP-6b (Gillon+, 2009)
+ J/A+A/502/391    : WASP-13b photometry and radial velocities (Skillen+, 2009)
+ J/A+A/502/395    : WASP-11b (West+, 2009)
+ J/AJ/137/3826    : Two transits of the giant planet WASP-4b (Winn+, 2009)
+ J/ApJ/707/167    : Transiting planetary system WASP-18 (Southworth+, 2009)
+ J/MNRAS/396/1023 : Transiting planetary system WASP-5 (Southworth+, 2009)
+ J/MNRAS/399/287  : Transiting planetary system WASP-4 (Southworth+, 2009)
+ J/A+A/513/L3     : H-band thermal emission of WASP-19b (Anderson+, 2010)
+ J/A+A/517/L1     : Radial velocities of WASP-8b planet (Queloz+, 2010)
+ J/A+A/519/A98    : Transiting exoplanet WASP-21b (Bouchy+, 2010)
+
+Byte-by-byte Description of file: table1.dat
+--------------------------------------------------------------------------------
+   Bytes Format Units   Label     Explanations
+--------------------------------------------------------------------------------
+   1- 14  F14.6 d       HJD       Julian Date of Observation
+  17- 23  F7.5  km/s    HRV       Heliocentric Radial velocity
+  26- 32  F7.5  km/s  e_HRV       Error on Heliocentric Radial velocity
+  34- 41  F8.5  km/s    Vspan     Line bisector span
+--------------------------------------------------------------------------------
+
+Byte-by-byte Description of file: ftn.dat fts.dat
+--------------------------------------------------------------------------------
+   Bytes Format Units   Label     Explanations
+--------------------------------------------------------------------------------
+   1- 15  F15.7 d       HJD       Julian Date of Observation
+  17- 24  F8.5  mag     rzmag     Relative magnitude (Pan-STARRS-z band)
+  26- 32  F7.5  mag   e_rzmag     Error on relative magnitude
+--------------------------------------------------------------------------------
+
+Acknowledgements:
+    Barry Smalley, bs(at)astro.keele.ac.uk
+================================================================================
+(End)                                      Patricia Vannier [CDS]    04-Oct-2010

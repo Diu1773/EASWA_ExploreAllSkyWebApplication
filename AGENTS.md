@@ -1,4 +1,4 @@
-# EASWA — Claude Code 작업 가이드
+# EASWA — Codex 작업 가이드
 
 ## 프로젝트 개요
 
@@ -16,7 +16,7 @@
 3. **결과 해석은 학습자가 수행** — 산출값 단순 제시 금지. 문헌값 비교, 결과 기록·차이 원인 설명·해석 질문 영역 제공.
 4. **수업 적용 가능성 지원** — 구조화·안내형 단계 흐름(Step 1–6), 입문/심화 분기, 교사용 자료·난이도 조절.
 
-> UI 설계·기능 우선순위·트레이드오프 판단 시 항상 이 4방향을 기준으로 판단. 자주 발생하는 충돌(예: 시각 화려함 vs 가시화, 자동화 vs 블랙박스): 메모리의 [project_design_principles.md](../../.claude/projects/C--Users-bmffr-Desktop-Result-EASWA-ExploringAllSkyWebApp/memory/project_design_principles.md) 참조 (10개 세부 원리 + 트레이드오프 가이드).
+> UI 설계·기능 우선순위·트레이드오프 판단 시 항상 이 4방향을 기준으로 판단. 자주 발생하는 충돌(예: 시각 화려함 vs 가시화, 자동화 vs 블랙박스): 메모리의 [project_design_principles.md](../../.Codex/projects/C--Users-bmffr-Desktop-Result-EASWA-ExploringAllSkyWebApp/memory/project_design_principles.md) 참조 (10개 세부 원리 + 트레이드오프 가이드).
 
 ## 프로젝트 구조
 

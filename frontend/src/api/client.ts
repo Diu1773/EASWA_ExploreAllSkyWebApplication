@@ -263,6 +263,7 @@ export interface AuthUser {
   name: string;
   email: string;
   picture: string | null;
+  is_admin: boolean;
 }
 
 export async function fetchCurrentUser(): Promise<AuthUser | null> {

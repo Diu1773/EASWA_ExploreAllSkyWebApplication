@@ -1,0 +1,89 @@
+WASP-26 b FTS Literature Reference Summary
+============================================================
+Catalog:
+  CDS/VizieR J/A+A/520/A56
+  Base URL: https://cdsarc.cds.unistra.fr/ftp/J/A+A/520/A56/
+
+Download Status:
+  SUCCESS: fts.dat, ftn.dat, and ReadMe are present in /mnt/c/Users/bmffr/Desktop/Result/EASWA_ExploringAllSkyWebApp/docs/wasp26_reference
+
+Proof Of Raw CDS Content (first 5 lines of fts.dat):
+2455153.9086200  0.00342 0.00150
+2455153.9091639  0.00074 0.00148
+2455153.9108073  0.00429 0.00150
+2455153.9113513  0.00134 0.00148
+2455153.9118952  0.00455 0.00148
+
+ReadMe Description:
+Description:
+    File table1 contains the Radial velocity and line bisector span
+    measurements of WASP-26 obtained using the CORALIE spectrograph. Files
+    fts.dat and ftn.dat contain the Pan-STARRS-z band transit photometry
+    obtained using the Faulkes Telescopes observed on 2009 November 18 and
+    2009 December 2, respectively.
+
+ReadMe Byte-By-Byte Section For fts.dat:
+Byte-by-byte Description of file: ftn.dat fts.dat
+--------------------------------------------------------------------------------
+   Bytes Format Units   Label     Explanations
+--------------------------------------------------------------------------------
+   1- 15  F15.7 d       HJD       Julian Date of Observation
+  17- 24  F8.5  mag     rzmag     Relative magnitude (Pan-STARRS-z band)
+  26- 32  F7.5  mag   e_rzmag     Error on relative magnitude
+--------------------------------------------------------------------------------
+
+Interpreted fts.dat Columns:
+  Column 1: HJD [days]            -- Julian Date of observation
+  Column 2: rzmag [mag]           -- Relative magnitude in Pan-STARRS-z band
+  Column 3: e_rzmag [mag]         -- Uncertainty on relative magnitude
+
+Parsing Notes:
+  The CDS ReadMe labels the time axis as HJD, not BJD.
+  The file has 197 rows.
+  Median cadence: 47.00 s
+
+Normalization Method:
+  1. Convert relative magnitude to relative flux using flux = 10^(-0.4 * rzmag).
+  2. Fit a multiplicative linear baseline simultaneously with the transit model:
+       baseline(t) = c0 + c1 * (t - t_ref)
+  3. Define normalized flux as observed_flux / best_fit_baseline.
+  This keeps the plotted y-axis in normalized flux while remaining tied to the
+  original CDS magnitude measurements.
+
+Fit Configuration:
+  Model: batman quadratic limb-darkened transit
+  Fixed orbital period: 2.75660 d (Smalley et al. 2010 / CDS ReadMe abstract)
+  Fixed eccentricity: 0.0
+  Fixed omega: 90 deg
+  Fixed limb darkening: u1=0.24, u2=0.22
+    Note: Pan-STARRS-z is approximated with the local SDSS z' template.
+  Free parameters:
+    T0, Rp/R*, a/R*, inclination, baseline intercept, baseline slope
+  Initial transit geometry seeds from Southworth et al. (2014) Table 6:
+    Rp/R* = 0.0991
+    a/R*  = 6.6445
+    i     = 82.83 deg
+
+Fit Results:
+  fitted T0 (HJD)           = 2455153.9539767 +/- 0.0026185
+  fitted Rp/R*              = 0.10897 +/- 0.00301
+  fitted a/R*               = 6.26182 +/- 0.31520
+  fitted inclination (deg)  = 82.617 +/- 0.552
+  chi-square                = 275.345
+  reduced chi-square        = 1.442
+  residual RMS              = 0.001599
+
+Poster Panel Recommendation:
+  Use literature_wasp26_fts_clean_poster.png for the poster.
+  Reason: orbital phase gives a compact, readable x-axis and places the transit
+  center at phase 0, which makes side-by-side comparison easier than a large
+  absolute HJD axis.
+  The raw-time-axis alternative is saved as literature_wasp26_fts_raw.png.
+
+Generated Files:
+  literature_wasp26_fts_raw.png
+  literature_wasp26_fts_fit.png
+  literature_wasp26_fts_clean_poster.png
+  literature_wasp26_fts_points.csv
+  literature_wasp26_fts_model.csv
+  literature_wasp26_fts_summary.txt
