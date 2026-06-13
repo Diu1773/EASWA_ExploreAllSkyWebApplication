@@ -19,10 +19,18 @@ function supportsWebGL(): boolean {
   }
 }
 
-const TESS_EXPLORER = buildExplorerHref({
+const TESS_EXPLORER_GUIDED = buildExplorerHref({
   moduleId: 'tess',
   topicId: 'exoplanet_transit',
   siteId: null,
+  learningMode: 'guided',
+});
+
+const TESS_EXPLORER_ADVANCED = buildExplorerHref({
+  moduleId: 'tess',
+  topicId: 'exoplanet_transit',
+  siteId: null,
+  learningMode: 'advanced',
 });
 
 function TransitDiagram() {
@@ -194,6 +202,46 @@ export function TessIntroPage() {
           <span className="edu-page-banner-credit">ESA / Hubble &amp; NASA · HD 189733b</span>
         </div>
 
+        <section className="edu-inquiry-section" aria-labelledby="tess-inquiry-title">
+          <span className="edu-inquiry-kicker">대표 탐구 질문</span>
+          <h2 id="tess-inquiry-title">
+            관측된 밝기 감소만으로 행성의 상대적 크기를 얼마나 신뢰성 있게 추정할 수 있을까?
+          </h2>
+          <p>
+            TESS 공공자료에서 직접 만든 광도곡선과 모델 적합값을 NASA Exoplanet Archive의
+            기준값과 비교하고, 차이가 생긴 원인을 자료 품질과 분석 조건을 근거로 설명합니다.
+          </p>
+          <div className="edu-class-meta">
+            <span><strong>권장 시간</strong> 1~2차시, 45~90분</span>
+            <span><strong>학습 결과물</strong> 그래프 근거, 기준값 비교, 차이 원인 설명</span>
+          </div>
+        </section>
+
+        <section className="edu-mode-section" aria-labelledby="tess-mode-title">
+          <div>
+            <span className="edu-inquiry-kicker">수업 적용 방식</span>
+            <h2 id="tess-mode-title">학습 수준에 맞는 탐구 흐름을 선택하세요</h2>
+          </div>
+          <div className="edu-mode-grid">
+            <article className="edu-mode-card">
+              <span>안내형 탐구</span>
+              <h3>핵심 절차와 해석 질문 중심</h3>
+              <p>단계별 안내와 권장 설정을 따라 광도측정, 품질 점검, 모델 적합, 결과 기록을 수행합니다.</p>
+              <Link to={TESS_EXPLORER_GUIDED} className="btn-primary">
+                안내형으로 시작
+              </Link>
+            </article>
+            <article className="edu-mode-card edu-mode-card--advanced">
+              <span>심화형 탐구</span>
+              <h3>분석 조건과 모델 가정까지 점검</h3>
+              <p>ROI, 비교성 품질, 전처리 조건, 모델 입력과 잔차를 확인하며 결과의 신뢰도를 검토합니다.</p>
+              <Link to={TESS_EXPLORER_ADVANCED} className="btn-secondary">
+                심화형으로 시작
+              </Link>
+            </article>
+          </div>
+        </section>
+
         {/* 현상 설명: 다이어그램 + 텍스트 */}
         <section className="edu-explain">
           <div className="edu-diagram-wrap">
@@ -247,7 +295,7 @@ export function TessIntroPage() {
             </p>
           </div>
           <div className="edu-cta-actions">
-            <Link to={TESS_EXPLORER} className="btn-primary">
+            <Link to={TESS_EXPLORER_GUIDED} className="btn-primary">
               전천 탐색 시작 →
             </Link>
             <Link to="/" className="btn-secondary">

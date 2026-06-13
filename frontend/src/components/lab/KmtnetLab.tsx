@@ -22,6 +22,7 @@ import type {
 import type { RecordSubmissionResponse, RecordTemplate } from '../../types/record';
 import type { Observation, Target } from '../../types/target';
 import type { WorkflowSessionSource } from '../../utils/workflowSession';
+import type { LearningMode } from '../../utils/explorerNavigation';
 import {
   createKmtnetWorkflowDefinition,
   type KmtnetStepAvailability,
@@ -120,6 +121,7 @@ interface Props {
   siteId: string;
   draftId?: string | null;
   seedRecordId?: number | null;
+  learningMode?: LearningMode;
 }
 
 function StepBar({ current, hasSingleSiteCurve, hasMergedCurve, hasFitResult }: {
@@ -597,12 +599,15 @@ export function KmtnetLab({
   siteId,
   draftId = null,
   seedRecordId = null,
+  learningMode = 'guided',
 }: Props) {
   const user = useAuthStore((s) => s.user);
   const [preview, setPreview] = useState<MicrolensingPreviewResponse | null>(null);
   const [previewFrameIndex, setPreviewFrameIndex] = useState<number | null>(null);
   const [referenceFrameIndex, setReferenceFrameIndex] = useState<number | null>(null);
-  const [extractionMode, setExtractionMode] = useState<ExtractionMode>('quick');
+  const [extractionMode, setExtractionMode] = useState<ExtractionMode>(
+    learningMode === 'advanced' ? 'detailed' : 'quick',
+  );
   const [mergeSites, setMergeSites] = useState<string[]>(ALL_SITES);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState<string | null>(null);
@@ -624,9 +629,13 @@ export function KmtnetLab({
   const [previewBundleLoading, setPreviewBundleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const recordTemplateRequestedRef = useRef(false);
+  const guideAnswersRef = useRef<Record<string, string>>({});
   const loadedSeedRecordIdRef = useRef<number | null>(null);
   const previewCacheRef = useRef<Map<string, MicrolensingPreviewResponse>>(new Map());
   const previewBundleCoverageRef = useRef<Map<string, Set<number>>>(new Map());
+  const handleGuideAnswers = (answers: Record<string, string>) => {
+    guideAnswersRef.current = { ...guideAnswersRef.current, ...answers };
+  };
   const workflowDefinition = useMemo(
     () => createKmtnetWorkflowDefinition({ targetId: target.id }),
     [target.id],
@@ -699,7 +708,9 @@ export function KmtnetLab({
     applyRestoredSnapshot: (saved) => {
       setPreviewFrameIndex(saved?.previewFrameIndex ?? null);
       setReferenceFrameIndex(saved?.referenceFrameIndex ?? null);
-      setExtractionMode(saved?.extractionMode ?? 'quick');
+      setExtractionMode(
+        saved?.extractionMode ?? (learningMode === 'advanced' ? 'detailed' : 'quick'),
+      );
       setMergeSites(saved?.mergeSites ?? ALL_SITES);
       setSingleSiteCurve(saved?.singleSiteCurve ?? null);
       setMergedCurve(saved?.mergedCurve ?? null);
@@ -1016,6 +1027,17 @@ export function KmtnetLab({
 
   return (
     <div className="kmtnet-lab">
+      <div className={`learning-mode-banner learning-mode-banner--${learningMode}`}>
+        <div>
+          <span>{learningMode === 'advanced' ? '심화형 탐구' : '안내형 탐구'}</span>
+          <strong>
+            {learningMode === 'advanced'
+              ? '세 관측소 자료와 상세 추출 조건을 비교하며 사건 해석의 근거를 점검합니다.'
+              : '단계별 안내와 빠른 추출 설정으로 관측망 자료의 의미를 해석합니다.'}
+          </strong>
+        </div>
+        <p>권장 45~90분 · 결과물: 관측소 비교, 병합 곡선 근거, 모델 해석 기록</p>
+      </div>
       {draftId && draftStatusLabel && (
         <div className={`transit-draft-bar ${draftSaveStatus}`}>
           <span className="transit-draft-bar-label">Draft</span>
@@ -1090,7 +1112,7 @@ export function KmtnetLab({
           {preview && previewBundleLoading && <p className="hint">대표 frame bundle을 캐시하는 중...</p>}
           {previewError && <p className="error-message">{previewError}</p>}
 
-          <StepGuide questions={KMT_GUIDES.field} storageKey="easwa_kmt_guide_field" />
+          <StepGuide questions={KMT_GUIDES.field} storageKey="easwa_kmt_guide_field" onAnswersChange={handleGuideAnswers} />
 
           <div className="ml-step-nav">
             <button className="btn-primary" onClick={() => goTo('align')}>
@@ -1161,7 +1183,7 @@ export function KmtnetLab({
           {preview && previewBundleLoading && <p className="hint">정렬 비교용 frame bundle을 캐시하는 중...</p>}
           {previewError && <p className="error-message">{previewError}</p>}
 
-          <StepGuide questions={KMT_GUIDES.align} storageKey="easwa_kmt_guide_align" />
+          <StepGuide questions={KMT_GUIDES.align} storageKey="easwa_kmt_guide_align" onAnswersChange={handleGuideAnswers} />
 
           <div className="ml-step-nav">
             <button className="btn-secondary" onClick={() => goTo('field')}>← 이전</button>
@@ -1203,7 +1225,7 @@ export function KmtnetLab({
           {preview && previewBundleLoading && <p className="hint">difference 비교용 frame bundle을 캐시하는 중...</p>}
           {previewError && <p className="error-message">{previewError}</p>}
 
-          <StepGuide questions={KMT_GUIDES.difference} storageKey="easwa_kmt_guide_difference" />
+          <StepGuide questions={KMT_GUIDES.difference} storageKey="easwa_kmt_guide_difference" onAnswersChange={handleGuideAnswers} />
 
           <div className="ml-step-nav">
             <button className="btn-secondary" onClick={() => goTo('align')}>← 이전</button>
@@ -1238,7 +1260,7 @@ export function KmtnetLab({
                   checked={extractionMode === 'quick'}
                   onChange={() => setExtractionMode('quick')}
                 />
-                <span>Quick sampled extraction</span>
+                <span>안내형 · Quick sampled extraction</span>
               </label>
               <label className="record-choice-row">
                 <input
@@ -1247,7 +1269,7 @@ export function KmtnetLab({
                   checked={extractionMode === 'detailed'}
                   onChange={() => setExtractionMode('detailed')}
                 />
-                <span>Detailed sampled extraction</span>
+                <span>심화형 · Detailed sampled extraction</span>
               </label>
             </div>
             <p className="hint">
@@ -1321,7 +1343,7 @@ export function KmtnetLab({
             </>
           )}
 
-          <StepGuide questions={KMT_GUIDES.extract} storageKey="easwa_kmt_guide_extract" />
+          <StepGuide questions={KMT_GUIDES.extract} storageKey="easwa_kmt_guide_extract" onAnswersChange={handleGuideAnswers} />
 
           <div className="ml-step-nav">
             <button className="btn-secondary" onClick={() => goTo('difference')}>← 이전</button>
@@ -1368,7 +1390,7 @@ export function KmtnetLab({
                   checked={extractionMode === 'quick'}
                   onChange={() => setExtractionMode('quick')}
                 />
-                <span>Quick sampled extraction</span>
+                <span>안내형 · Quick sampled extraction</span>
               </label>
               <label className="record-choice-row">
                 <input
@@ -1377,7 +1399,7 @@ export function KmtnetLab({
                   checked={extractionMode === 'detailed'}
                   onChange={() => setExtractionMode('detailed')}
                 />
-                <span>Detailed sampled extraction</span>
+                <span>심화형 · Detailed sampled extraction</span>
               </label>
             </div>
             <p className="hint">
@@ -1476,7 +1498,7 @@ export function KmtnetLab({
             </>
           )}
 
-          <StepGuide questions={KMT_GUIDES.merge} storageKey="easwa_kmt_guide_merge" />
+          <StepGuide questions={KMT_GUIDES.merge} storageKey="easwa_kmt_guide_merge" onAnswersChange={handleGuideAnswers} />
 
           <div className="ml-step-nav">
             <button className="btn-secondary" onClick={() => goTo('extract')}>← 이전</button>
@@ -1594,7 +1616,7 @@ export function KmtnetLab({
             </div>
           )}
 
-          <StepGuide questions={KMT_GUIDES.fit} storageKey="easwa_kmt_guide_fit" />
+          <StepGuide questions={KMT_GUIDES.fit} storageKey="easwa_kmt_guide_fit" onAnswersChange={handleGuideAnswers} />
 
           {fitResult && (
             <div className="ml-interpret-grid">
@@ -1818,9 +1840,10 @@ export function KmtnetLab({
                       microlensing_fit: fitResult,
                       preview_frame_index: previewFrameIndex,
                       target_type: target.type,
+                      learning_mode: learningMode,
                     },
                     answers: submissionAnswers,
-                    guide_answers: {},
+                    guide_answers: guideAnswersRef.current,
                   });
                   setRecordAnswers(submissionAnswers);
                   setSubmittedRecord(response);

@@ -16,10 +16,11 @@ import type {
   TransitApertureConfig,
   TransitComparisonDiagnostic,
 } from '../../types/transit';
-import type { RecordTemplate } from '../../types/record';
+import type { RecordQuestion, RecordQuestionOption, RecordTemplate } from '../../types/record';
 import { defaultTransitRecordTemplate } from '../../data/transitRecordTemplate';
 import { useWorkflowController } from '../../hooks/useWorkflowController';
 import type { WorkflowSessionSource } from '../../utils/workflowSession';
+import type { LearningMode } from '../../utils/explorerNavigation';
 import {
   createTransitWorkflowDefinition,
   type PersistedTransitLabState,
@@ -62,6 +63,7 @@ interface TransitLabProps {
   observations: Observation[];
   draftId?: string | null;
   seedRecordId?: number | null;
+  learningMode?: LearningMode;
 }
 
 type TransitStep = TransitWorkflowStep;
@@ -476,6 +478,87 @@ function buildInitialRecordAnswers(template: RecordTemplate | null): Record<stri
   }, {});
 }
 
+interface RecordQuestionLocale {
+  label: string;
+  placeholder?: string;
+  helpText?: string;
+  options?: Record<string, string>;
+}
+
+const TRANSIT_RECORD_KO: Record<string, RecordQuestionLocale> = {
+  summary_title: {
+    label: '기록 제목',
+    placeholder: '예: WASP-26 b Sector 29 식현상 분석',
+  },
+  transit_visible: {
+    label: '광도곡선에서 식현상으로 보이는 밝기 감소가 확인되는가?',
+    options: {
+      clear: '예, 뚜렷하게 보인다',
+      possible: '식현상일 가능성이 있다',
+      unclear: '불분명하거나 잡음이 많다',
+      not_seen: '뚜렷한 밝기 감소가 보이지 않는다',
+    },
+  },
+  curve_quality: {
+    label: '이 광도곡선은 해석에 어느 정도 활용할 수 있는가?',
+    options: {
+      high: '품질이 높다',
+      medium: '주의사항을 고려하면 활용할 수 있다',
+      low: '품질이 낮다',
+    },
+  },
+  confidence_score: {
+    label: '해석 확신도 (1~5)',
+    helpText: '현재 해석을 얼마나 신뢰하는지 스스로 평가하세요.',
+  },
+  issues_observed: {
+    label: '분석 과정에서 확인한 문제를 선택하세요.',
+    options: {
+      few_comparisons: '적절한 비교성이 부족함',
+      blended_field: '주변 별빛이 혼입됨',
+      noisy_curve: '광도곡선 잡음이 큼',
+      field_too_small: '분석 시야가 너무 좁음',
+      none: '뚜렷한 문제 없음',
+    },
+  },
+  analysis_note: {
+    label: '분석 결과 해석',
+    placeholder: '선택한 자료와 그래프의 특징, 그 결과가 의미하는 바를 근거와 함께 적으세요.',
+  },
+  reference_comparison: {
+    label: '측정값은 NASA 기준값과 어떻게 다른가?',
+    placeholder:
+      'Rp/R*, 식 깊이 또는 공전 주기를 비교하고, 차이가 발생한 원인을 자료와 분석 조건을 근거로 설명하세요.',
+    helpText:
+      '비교성 품질, 별빛 혼입, 구경 크기, 선택한 시간 구간, 잡음, 모델 가정을 고려하세요.',
+  },
+  next_step: {
+    label: '분석을 다시 수행한다면 무엇을 바꾸겠는가?',
+    placeholder: '예: 시야 확대, 비교성 변경, 다른 Sector 분석',
+  },
+};
+
+function localizeRecordQuestion(
+  question: RecordQuestion,
+  lang: 'ko' | 'en'
+): {
+  label: string;
+  placeholder: string;
+  helpText: string | null;
+  options: RecordQuestionOption[];
+} {
+  const locale = lang === 'ko' ? TRANSIT_RECORD_KO[question.id] : undefined;
+  return {
+    label: locale?.label ?? question.label,
+    placeholder: locale?.placeholder ?? question.placeholder ?? '',
+    helpText: locale?.helpText ?? question.help_text ?? null,
+    options: (question.options ?? []).map((option) => ({
+      ...option,
+      label: locale?.options?.[option.value] ?? option.label,
+    })),
+  };
+}
+
 function isScoreQuestion(question: RecordTemplate['questions'][number]): boolean {
   return question.type === 'number' && question.min_value === 1 && question.max_value === 5;
 }
@@ -485,8 +568,10 @@ export function TransitLab({
   observations,
   draftId = null,
   seedRecordId = null,
+  learningMode = 'guided',
 }: TransitLabProps) {
   const isCompactTransitLayout = useCompactTransitLayout();
+  const lang = useLangStore((s) => s.lang);
   const selectedIds = useAppStore((s) => s.selectedObservationIds);
   const selectAllObservations = useAppStore((s) => s.selectAllObservations);
   const user = useAuthStore((s) => s.user);
@@ -597,6 +682,22 @@ export function TransitLab({
           fitLimbDarkeningSource,
         )}${fitLimbDarkeningFilter ? ` for the ${fitLimbDarkeningFilter} band` : ''}, using the host-star parameters when available, and then held fixed during the fit.`
     : null;
+  const referenceTransitDepthPct = target.transit_depth_pct ?? null;
+  const referenceRpRs =
+    referenceTransitDepthPct !== null && referenceTransitDepthPct >= 0
+      ? Math.sqrt(referenceTransitDepthPct / 100)
+      : null;
+  const measuredRpRs = fitResult?.fitted_params.rp_rs ?? null;
+  const measuredTransitDepthPct =
+    measuredRpRs !== null ? measuredRpRs ** 2 * 100 : null;
+  const rpRsDifference =
+    measuredRpRs !== null && referenceRpRs !== null
+      ? measuredRpRs - referenceRpRs
+      : null;
+  const periodDifference =
+    fitResult && target.period_days !== null
+      ? fitResult.period - target.period_days
+      : null;
   const workflowSessionSource: WorkflowSessionSource =
     draftId && draftId.trim() !== ''
       ? { kind: 'draft', id: draftId }
@@ -1359,6 +1460,9 @@ export function TransitLab({
             ra: target.ra,
             dec: target.dec,
             period_days: target.period_days,
+            transit_depth_pct: target.transit_depth_pct ?? null,
+            transit_duration_hours: target.transit_duration_hours ?? null,
+            reference_rp_rs_from_depth: referenceRpRs,
           },
           observation_context: submissionObservationContext,
           target_position: submissionTargetPosition,
@@ -1398,6 +1502,17 @@ export function TransitLab({
             sigma_clip_iterations: 0,
             fit_limb_darkening: false,
           },
+          learning_mode: learningMode,
+          reference_comparison: fitResult ? {
+            measured_rp_rs: measuredRpRs,
+            measured_depth_pct: measuredTransitDepthPct,
+            reference_rp_rs_from_depth: referenceRpRs,
+            reference_depth_pct: referenceTransitDepthPct,
+            rp_rs_difference: rpRsDifference,
+            measured_period_days: fitResult.period,
+            reference_period_days: target.period_days,
+            period_difference_days: periodDifference,
+          } : null,
         },
         answers: recordAnswers,
         guide_answers: guideAnswersRef.current,
@@ -1667,6 +1782,29 @@ export function TransitLab({
 
   return (
     <div className="transit-lab-wrap">
+      <div className={`learning-mode-banner learning-mode-banner--${learningMode}`}>
+        <div>
+          <span>{learningMode === 'advanced' ? '심화형 탐구' : '안내형 탐구'}</span>
+          <strong>
+            {learningMode === 'advanced'
+              ? '분석 조건과 모델 가정을 확인하며 결과의 신뢰도를 검토합니다.'
+              : '단계별 안내를 따라 분석하고, 근거를 기록하며 결과를 해석합니다.'}
+          </strong>
+        </div>
+        <p>권장 45~90분 · 결과물: 광도곡선 근거, NASA 기준값 비교, 차이 원인 설명</p>
+      </div>
+      <div className="analysis-provenance-bar" aria-label="자료 출처와 분석 흐름">
+        <strong>{lang === 'ko' ? '자료 출처' : 'Data provenance'}</strong>
+        <span>
+          {lang === 'ko' ? '대상·기준값' : 'Target and reference'}:
+          {' '}
+          {target.data_source === 'nasa_exoplanet_archive'
+            ? 'NASA Exoplanet Archive'
+            : target.data_source?.replace(/_/g, ' ') ?? 'Curated catalog'}
+        </span>
+        <span>{lang === 'ko' ? '관측 자료' : 'Observation data'}: NASA MAST TESSCut</span>
+        <span>{lang === 'ko' ? '분석' : 'Analysis'}: EASWA differential photometry · transit fit</span>
+      </div>
       {draftId && (
         <div className={`transit-draft-bar ${draftSaveStatus}`}>
           <span className="transit-draft-bar-label">Draft</span>
@@ -3221,7 +3359,7 @@ export function TransitLab({
                 </div>
               )}
 
-              {(fitDebugRequest || fitResult || fitDebugLog.length > 0) && (
+              {learningMode === 'advanced' && (fitDebugRequest || fitResult || fitDebugLog.length > 0) && (
                 <details className="transit-panel" style={{ marginBottom: 16 }}>
                   <summary style={{ cursor: 'pointer', fontWeight: 600, marginBottom: 12 }}>
                     Step 5 Debug
@@ -3541,11 +3679,11 @@ export function TransitLab({
           <div className="transit-panel">
             <div className="transit-panel-header">
               <div>
-                <h3>6. Record This Analysis</h3>
+                <h3>{lang === 'ko' ? '6. 분석 결과 기록과 해석' : '6. Record This Analysis'}</h3>
                 <p className="hint">
-                  Turn this run into a reusable archive record. The form definition comes
-                  from a JSON template, so the questions can be edited without changing
-                  the UI code.
+                  {lang === 'ko'
+                    ? '산출값을 기준값과 비교하고, 차이가 발생한 원인을 자료와 분석 조건을 근거로 설명하세요.'
+                    : 'Turn this run into a reusable archive record. Compare the result with reference values and explain the difference with evidence.'}
                 </p>
               </div>
             </div>
@@ -3559,11 +3697,11 @@ export function TransitLab({
 
             <MobileFoldSection
               compact={isCompactTransitLayout}
-              title="Record context"
+              title={lang === 'ko' ? '분석 맥락' : 'Record context'}
             >
               <div className="transit-summary-grid">
                 <div className="transit-summary-card">
-                  <span className="transit-summary-label">Target</span>
+                  <span className="transit-summary-label">{lang === 'ko' ? '대상' : 'Target'}</span>
                   <strong>{target.name}</strong>
                 </div>
                 <div className="transit-summary-card">
@@ -3571,11 +3709,11 @@ export function TransitLab({
                   <strong>{result.sector}</strong>
                 </div>
                 <div className="transit-summary-card">
-                  <span className="transit-summary-label">Frames</span>
+                  <span className="transit-summary-label">{lang === 'ko' ? '프레임' : 'Frames'}</span>
                   <strong>{result.frame_count.toLocaleString()}</strong>
                 </div>
                 <div className="transit-summary-card">
-                  <span className="transit-summary-label">Comparisons</span>
+                  <span className="transit-summary-label">{lang === 'ko' ? '비교성' : 'Comparisons'}</span>
                   <strong>{result.comparison_count}</strong>
                 </div>
               </div>
@@ -3585,10 +3723,10 @@ export function TransitLab({
             {fitResult && (
               <MobileFoldSection
                 compact={isCompactTransitLayout}
-                title="Transit fit summary"
+                title={lang === 'ko' ? 'Transit 적합 결과' : 'Transit fit summary'}
               >
                 <div className="transit-record-fit-summary">
-                  <h4>Transit Fit Result</h4>
+                  <h4>{lang === 'ko' ? '측정 산출값' : 'Transit Fit Result'}</h4>
                   <div className="transit-fit-params-grid">
                     <div className="transit-fit-param-card">
                       <span className="transit-fit-param-label">Rp/R*</span>
@@ -3605,23 +3743,20 @@ export function TransitLab({
                       <p className="transit-fit-param-desc">
                         Scaled semi-major axis (orbital distance in units of stellar radii).
                         The planet orbits at {fitResult.fitted_params.a_rs.toFixed(1)}x the star's radius from its center.
-                        {fitResult.fitted_params.a_rs < 5 ? ' Very close — a "hot" exoplanet.' : ''}
+                        {' '}Compare this value with the transit shape and residuals before interpreting it.
                       </p>
                     </div>
                     <div className="transit-fit-param-card">
-                      <span className="transit-fit-param-label">Inclination</span>
+                      <span className="transit-fit-param-label">{lang === 'ko' ? '궤도 경사각' : 'Inclination'}</span>
                       <strong>{fitResult.fitted_params.inclination.toFixed(2)}° <span className="transit-fit-param-err">± {fitResult.fitted_params.inclination_err.toFixed(2)}°</span></strong>
                       <p className="transit-fit-param-desc">
                         Orbital inclination relative to our line of sight. 90° = edge-on.
-                        {fitResult.fitted_params.inclination > 88
-                          ? ' Nearly edge-on — deep, symmetric transit.'
-                          : fitResult.fitted_params.inclination > 85
-                            ? ' Slightly tilted — transit crosses near the center.'
-                            : ' Moderate tilt — may produce a grazing transit.'}
+                        {' '}Use the curve shape and parameter uncertainty to decide whether the
+                        geometry is well constrained.
                       </p>
                     </div>
                     <div className="transit-fit-param-card">
-                      <span className="transit-fit-param-label">Period</span>
+                      <span className="transit-fit-param-label">{lang === 'ko' ? '공전 주기' : 'Period'}</span>
                       <strong>{fitResult.period.toFixed(6)} d</strong>
                       <p className="transit-fit-param-desc">
                         Orbital period — the planet completes one orbit every {fitResult.period.toFixed(4)} days
@@ -3629,7 +3764,7 @@ export function TransitLab({
                       </p>
                     </div>
                     <div className="transit-fit-param-card">
-                      <span className="transit-fit-param-label">Limb Darkening</span>
+                      <span className="transit-fit-param-label">{lang === 'ko' ? '주연감광' : 'Limb Darkening'}</span>
                       <strong>u₁ = {fitResult.fitted_params.u1.toFixed(3)}, u₂ = {fitResult.fitted_params.u2.toFixed(3)}</strong>
                       <p className="transit-fit-param-desc">
                         Quadratic limb darkening coefficients describe how the star appears
@@ -3642,18 +3777,78 @@ export function TransitLab({
                       )}
                     </div>
                     <div className="transit-fit-param-card">
-                      <span className="transit-fit-param-label">Fit Quality</span>
+                      <span className="transit-fit-param-label">{lang === 'ko' ? '적합도 지표' : 'Fit Quality'}</span>
                       <strong>χ²_red = {fitResult.fitted_params.reduced_chi_squared.toFixed(3)}</strong>
                       <p className="transit-fit-param-desc">
-                        Reduced chi-squared measures goodness of fit.
-                        {fitResult.fitted_params.reduced_chi_squared < 1.5
-                          ? ' Close to 1.0 — good fit to the data.'
-                          : fitResult.fitted_params.reduced_chi_squared < 3
-                            ? ' Moderate — the model captures the main signal but there is scatter.'
-                            : ' High — significant residuals remain; consider adjusting parameters.'}
+                        Reduced chi-squared is one diagnostic, not a conclusion. Inspect the residual
+                        pattern, retained points, and model assumptions together.
                       </p>
                     </div>
                   </div>
+                </div>
+              </MobileFoldSection>
+            )}
+
+            {fitResult && (
+              <MobileFoldSection
+                compact={isCompactTransitLayout}
+                title={lang === 'ko' ? '측정값과 기준값 비교' : 'Measured vs reference values'}
+              >
+                <div className="transit-reference-comparison">
+                  <div className="transit-reference-head">
+                    <div>
+                      <span className="record-section-kicker">
+                        {lang === 'ko' ? '해석 근거' : 'Interpretation evidence'}
+                      </span>
+                      <h4>{lang === 'ko' ? 'NASA 기준값과 이번 분석 결과' : 'NASA reference and this analysis'}</h4>
+                    </div>
+                    <span>
+                      {lang === 'ko'
+                        ? 'NASA Exoplanet Archive 수록값'
+                        : 'NASA Exoplanet Archive catalog values'}
+                    </span>
+                  </div>
+                  <div className="transit-reference-table-wrap">
+                    <table className="transit-reference-table">
+                      <thead>
+                        <tr>
+                          <th>{lang === 'ko' ? '산출량' : 'Quantity'}</th>
+                          <th>{lang === 'ko' ? '기준값' : 'Reference'}</th>
+                          <th>{lang === 'ko' ? '측정값' : 'Measured'}</th>
+                          <th>{lang === 'ko' ? '차이' : 'Difference'}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>{lang === 'ko' ? '식 깊이' : 'Transit depth'}</td>
+                          <td>{referenceTransitDepthPct !== null ? `${referenceTransitDepthPct.toFixed(3)}%` : lang === 'ko' ? '자료 없음' : 'Unavailable'}</td>
+                          <td>{measuredTransitDepthPct !== null ? `${measuredTransitDepthPct.toFixed(3)}%` : lang === 'ko' ? '자료 없음' : 'Unavailable'}</td>
+                          <td>
+                            {referenceTransitDepthPct !== null && measuredTransitDepthPct !== null
+                              ? `${(measuredTransitDepthPct - referenceTransitDepthPct).toFixed(3)}%p`
+                              : lang === 'ko' ? '자료 없음' : 'Unavailable'}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Rp/R*</td>
+                          <td>{referenceRpRs !== null ? referenceRpRs.toFixed(5) : lang === 'ko' ? '자료 없음' : 'Unavailable'}</td>
+                          <td>{measuredRpRs !== null ? measuredRpRs.toFixed(5) : lang === 'ko' ? '자료 없음' : 'Unavailable'}</td>
+                          <td>{rpRsDifference !== null ? `${rpRsDifference >= 0 ? '+' : ''}${rpRsDifference.toFixed(5)}` : lang === 'ko' ? '자료 없음' : 'Unavailable'}</td>
+                        </tr>
+                        <tr>
+                          <td>{lang === 'ko' ? '공전 주기' : 'Orbital period'}</td>
+                          <td>{target.period_days !== null ? `${target.period_days.toFixed(6)} d` : lang === 'ko' ? '자료 없음' : 'Unavailable'}</td>
+                          <td>{fitResult.period.toFixed(6)} d</td>
+                          <td>{periodDifference !== null ? `${periodDifference >= 0 ? '+' : ''}${periodDifference.toFixed(6)} d` : lang === 'ko' ? '자료 없음' : 'Unavailable'}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <p className="transit-reference-note">
+                    {lang === 'ko'
+                      ? '기준 Rp/R*는 카탈로그 식 깊이에 Rp/R* = √(depth)를 적용한 비교용 추정값입니다. 직접 출판된 반지름비와 동일한 값으로 간주하지 말고, 비교성 품질·별빛 혼입·구경·ROI·잡음·모델 가정을 근거로 차이를 설명하세요.'
+                      : 'The reference Rp/R* is estimated from the catalog transit depth using Rp/R* = sqrt(depth). It is a comparison benchmark, not a direct published radius-ratio measurement. Explain the difference using comparison-star quality, blending, aperture choice, ROI, noise, and model assumptions.'}
+                  </p>
                 </div>
               </MobileFoldSection>
             )}
@@ -3666,25 +3861,35 @@ export function TransitLab({
               <div className="record-form-shell">
                 <div className="record-form-head">
                   <div>
-                    <h4>{recordTemplate.title}</h4>
-                    <p className="hint">{recordTemplate.description}</p>
+                    <h4>
+                      {lang === 'ko' ? '외계행성 식 분석 기록' : recordTemplate.title}
+                    </h4>
+                    <p className="hint">
+                      {lang === 'ko'
+                        ? '그래프와 산출값을 근거로 분석 결과, 기준값과의 차이, 후속 탐구 계획을 기록하세요.'
+                        : recordTemplate.description}
+                    </p>
                   </div>
                   <span className="analysis-launcher-tag">
-                    {user ? `SIGNED IN AS ${user.name.toUpperCase()}` : 'SIGN IN REQUIRED'}
+                    {user
+                      ? `${lang === 'ko' ? '로그인' : 'SIGNED IN AS'} ${user.name.toUpperCase()}`
+                      : lang === 'ko' ? '저장하려면 로그인 필요' : 'SIGN IN REQUIRED'}
                   </span>
                 </div>
 
                 <div className="record-cover-card">
                   <div className="record-cover-head">
                     <div>
-                      <span className="record-section-kicker">Submission</span>
-                      <h4>Save This Transit Analysis</h4>
+                      <span className="record-section-kicker">{lang === 'ko' ? '최종 기록' : 'Submission'}</span>
+                      <h4>{lang === 'ko' ? '분석 결과 저장' : 'Save This Transit Analysis'}</h4>
                     </div>
-                    <span className="record-required-note">* Required</span>
+                    <span className="record-required-note">
+                      {lang === 'ko' ? '* 필수' : '* Required'}
+                    </span>
                   </div>
                   <label className="record-form-field">
                     <span className="record-field-label">
-                      Saved Record Title
+                      {lang === 'ko' ? '저장 기록 제목' : 'Saved Record Title'}
                       <strong className="record-required">*</strong>
                     </span>
                     <input
@@ -3700,18 +3905,19 @@ export function TransitLab({
 
                   {recordTemplate.questions.map((question) => {
                     const value = recordAnswers[question.id];
-                    const options = question.options ?? [];
+                    const localizedQuestion = localizeRecordQuestion(question, lang);
+                    const options = localizedQuestion.options;
                     const requiredMark = question.required ? (
                       <strong className="record-required">*</strong>
                     ) : null;
                     const questionHead = (
                       <div className="record-question-head">
                         <span className="record-field-label">
-                          {question.label}
+                          {localizedQuestion.label}
                           {requiredMark}
                         </span>
-                        {question.help_text && (
-                          <small className="record-question-help">{question.help_text}</small>
+                        {localizedQuestion.helpText && (
+                          <small className="record-question-help">{localizedQuestion.helpText}</small>
                         )}
                       </div>
                     );
@@ -3725,7 +3931,7 @@ export function TransitLab({
                           {questionHead}
                           <textarea
                             value={typeof value === 'string' ? value : ''}
-                            placeholder={question.placeholder ?? ''}
+                            placeholder={localizedQuestion.placeholder}
                             onChange={(event) =>
                               handleRecordAnswerChange(question.id, event.target.value)
                             }
@@ -3744,7 +3950,7 @@ export function TransitLab({
                               handleRecordAnswerChange(question.id, event.target.value)
                             }
                           >
-                            <option value="">Select...</option>
+                            <option value="">{lang === 'ko' ? '선택...' : 'Select...'}</option>
                             {options.map((option) => (
                               <option key={option.value} value={option.value}>
                                 {option.label}
@@ -3863,7 +4069,7 @@ export function TransitLab({
                         <input
                           type="text"
                           value={typeof value === 'string' ? value : ''}
-                          placeholder={question.placeholder ?? ''}
+                          placeholder={localizedQuestion.placeholder}
                           onChange={(event) =>
                             handleRecordAnswerChange(question.id, event.target.value)
                           }
@@ -3880,7 +4086,11 @@ export function TransitLab({
                         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                         <polyline points="22 4 12 14.01 9 11.01" />
                       </svg>
-                      <span>Record #{submittedRecord.submission_id} saved.</span>
+                      <span>
+                        {lang === 'ko'
+                          ? `기록 #${submittedRecord.submission_id} 저장 완료`
+                          : `Record #${submittedRecord.submission_id} saved.`}
+                      </span>
                     </div>
                     <div className="transit-record-saved-actions">
                       <button
@@ -3888,7 +4098,7 @@ export function TransitLab({
                         className="btn-sm"
                         onClick={() => { void downloadMyRecordPhotometryCsv(submittedRecord.submission_id); }}
                       >
-                        Download CSV
+                        {lang === 'ko' ? 'CSV 내려받기' : 'Download CSV'}
                       </button>
                     </div>
                   </div>
@@ -3896,15 +4106,15 @@ export function TransitLab({
 
                 <div className="transit-step-nav">
                   <button type="button" className="btn-sm" onClick={handleReset}>
-                    Reset
+                    {lang === 'ko' ? '초기화' : 'Reset'}
                   </button>
                   <div className="transit-step-nav-actions">
                     <button type="button" className="btn-sm" onClick={handlePrevious}>
-                      Previous
+                      {lang === 'ko' ? '이전' : 'Previous'}
                     </button>
                     {!user && (
                       <a href="/api/auth/login" className="btn-sm">
-                        Sign In to Save
+                        {lang === 'ko' ? '로그인 후 저장' : 'Sign In to Save'}
                       </a>
                     )}
                     <button
@@ -3913,7 +4123,9 @@ export function TransitLab({
                       disabled={recordSubmitting || !user}
                       onClick={handleSubmitRecord}
                     >
-                      {recordSubmitting ? 'Submitting...' : 'Submit Record'}
+                      {recordSubmitting
+                        ? lang === 'ko' ? '저장 중...' : 'Submitting...'
+                        : lang === 'ko' ? '분석 기록 저장' : 'Submit Record'}
                     </button>
                   </div>
                 </div>

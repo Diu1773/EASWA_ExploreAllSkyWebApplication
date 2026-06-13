@@ -3,7 +3,7 @@
   "workflow": "transit_lab",
   "title": "Transit Analysis Record",
   "description": "Store a short interpretation of the transit result, the chosen comparison stars, and any issues you noticed during the activity.",
-  "version": 1,
+  "version": 2,
   "questions": [
     {
       "id": "summary_title",
@@ -62,6 +62,14 @@
       "type": "textarea",
       "required": true,
       "placeholder": "Summarize what you selected, what the curve looked like, and what you think it means."
+    },
+    {
+      "id": "reference_comparison",
+      "label": "How does your measured result compare with the NASA reference value?",
+      "type": "textarea",
+      "required": true,
+      "placeholder": "Compare Rp/R*, transit depth, or period. Explain possible causes of the difference using evidence from the data and analysis conditions.",
+      "help_text": "Consider comparison-star quality, blending, aperture choice, selected time range, noise, and model assumptions."
     },
     {
       "id": "next_step",

@@ -27,6 +27,10 @@ const MODULES = [
       ko: '우주에서 하늘 전체를 스캔하는 TESS 위성의 측광 자료로 외계행성 식현상을 직접 분석합니다. 대상 선택 → 광도곡선 → Transit Fit까지 한 흐름으로 진행됩니다.',
       en: 'Analyze exoplanet transits directly with photometric data from the all-sky TESS satellite. Move through target selection → light curve → transit fit in one flow.',
     },
+    question: {
+      ko: '관측된 밝기 감소만으로 행성의 상대적 크기를 얼마나 신뢰성 있게 추정할 수 있을까?',
+      en: 'How reliably can a planet-to-star radius ratio be estimated from an observed brightness dip?',
+    },
     tags: ['Exoplanet Transit', 'Light Curve', 'Sector Cutout'],
     href: '/tess',
     cta: { ko: 'TESS 탐구 시작', en: 'Start TESS Lab' },
@@ -41,6 +45,10 @@ const MODULES = [
     description: {
       ko: '칠레 · 남아프리카 · 호주 3개 관측소를 연결한 KMTNet으로 은하 벌지의 미시중력렌즈 이벤트를 24시간 추적합니다. 관측소 맥락부터 이벤트 해석까지 탐구합니다.',
       en: 'Track microlensing events in the galactic bulge around the clock with KMTNet, linking observatories in Chile, South Africa, and Australia. Explore from observatory context to event interpretation.',
+    },
+    question: {
+      ko: '세 관측소의 자료를 합치면 미시중력렌즈 사건의 시간 구조를 어떻게 더 잘 설명할 수 있을까?',
+      en: 'How does combining three observatories improve our interpretation of a microlensing event?',
     },
     tags: ['Microlensing', 'CTIO / SAAO / SSO', 'Galactic Bulge'],
     href: '/kmtnet',
@@ -196,6 +204,10 @@ export function HomePage() {
                 <span className="module-row-chip">{mod.chip}</span>
                 <h2 className="module-row-title">{mod.title}</h2>
                 <p className="module-row-desc">{L(mod.description)}</p>
+                <div className="module-inquiry-question">
+                  <span>{lang === 'ko' ? '대표 탐구 질문' : 'Inquiry question'}</span>
+                  <strong>{L(mod.question)}</strong>
+                </div>
                 <ul className="module-row-tags">
                   {mod.tags.map((tag) => (
                     <li key={tag}>{tag}</li>

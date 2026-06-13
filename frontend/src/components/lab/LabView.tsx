@@ -200,6 +200,7 @@ export function LabView() {
               siteId={navigationContext.siteId ?? 'ctio'}
               draftId={parsedDraftId}
               seedRecordId={parsedSeedRecordId}
+              learningMode={navigationContext.learningMode ?? 'guided'}
             />
           </div>
         </div>
@@ -238,6 +239,7 @@ export function LabView() {
           observations={observations}
           draftId={parsedDraftId}
           seedRecordId={parsedSeedRecordId}
+          learningMode={navigationContext.learningMode ?? 'guided'}
         />
       </div>
     );

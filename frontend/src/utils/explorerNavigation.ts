@@ -1,15 +1,18 @@
 export type ExplorerModuleId = 'tess' | 'kmtnet' | 'explorer';
+export type LearningMode = 'guided' | 'advanced';
 
 export interface ExplorerRouteContext {
   moduleId: ExplorerModuleId;
   topicId: string | null;
   siteId: string | null;
+  learningMode?: LearningMode | null;
 }
 
 interface ExplorerDefaults {
   moduleId?: ExplorerModuleId | null;
   topicId?: string | null;
   siteId?: string | null;
+  learningMode?: LearningMode | null;
 }
 
 const VALID_TOPICS = new Set([
@@ -21,6 +24,7 @@ const VALID_TOPICS = new Set([
 
 const VALID_MODULES = new Set<ExplorerModuleId>(['tess', 'kmtnet', 'explorer']);
 const VALID_SITES = new Set(['ctio', 'saao', 'sso']);
+const VALID_LEARNING_MODES = new Set<LearningMode>(['guided', 'advanced']);
 
 function normalizeTopic(topicId: string | null | undefined): string | null {
   return topicId && VALID_TOPICS.has(topicId) ? topicId : null;
@@ -34,6 +38,14 @@ function normalizeModule(moduleId: string | null | undefined): ExplorerModuleId 
 
 function normalizeSite(siteId: string | null | undefined): string | null {
   return siteId && VALID_SITES.has(siteId) ? siteId : null;
+}
+
+function normalizeLearningMode(
+  learningMode: string | null | undefined
+): LearningMode | null {
+  return learningMode && VALID_LEARNING_MODES.has(learningMode as LearningMode)
+    ? (learningMode as LearningMode)
+    : null;
 }
 
 function inferModuleFromTopic(topicId: string | null): ExplorerModuleId {
@@ -61,11 +73,16 @@ export function getExplorerContext(
     normalizeModule(defaults.moduleId ?? null) ??
     inferModuleFromTopic(topicId);
   const siteId = normalizeSite(searchParams.get('site')) ?? normalizeSite(defaults.siteId ?? null);
+  const learningMode =
+    normalizeLearningMode(searchParams.get('level')) ??
+    normalizeLearningMode(defaults.learningMode ?? null) ??
+    'guided';
 
   return {
     moduleId,
     topicId,
     siteId,
+    learningMode,
   };
 }
 
@@ -82,6 +99,10 @@ export function buildExplorerContextSearchParams(
 
   if (context.siteId) {
     params.set('site', context.siteId);
+  }
+
+  if (context.learningMode) {
+    params.set('level', context.learningMode);
   }
 
   extraEntries?.forEach(([key, value]) => {
