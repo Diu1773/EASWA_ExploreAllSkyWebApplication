@@ -5751,11 +5751,29 @@ body {
   }
 
   .edu-mode-grid {
-    grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   .edu-explain {
-    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+
+  .edu-mode-card {
+    padding: 16px;
+  }
+
+  .edu-mode-card .btn-primary,
+  .edu-mode-card .btn-secondary {
+    justify-self: stretch;
+    text-align: center;
+  }
+
+  .edu-explain-text h2 {
+    font-size: 1.35rem;
+  }
+
+  .edu-explain-text p {
+    font-size: 1rem;
   }
 
   .edu-diagram-pair {
@@ -5783,6 +5801,11 @@ body {
 }
 
 @media (max-width: 640px) {
+  .edu-mode-grid,
+  .edu-explain {
+    grid-template-columns: 1fr;
+  }
+
   .learning-mode-banner {
     align-items: flex-start;
     flex-direction: column;
