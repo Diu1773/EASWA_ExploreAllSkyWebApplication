@@ -1,5 +1,5 @@
 import {
-  ASTRO_FALLBACK_IMAGE,
+  CLUSTER_MODULE_IMAGE,
   KMT_MODULE_IMAGE,
   TESS_MODULE_IMAGE,
 } from '../data/imageSources';
@@ -245,8 +245,9 @@ export const clusterCmdModule: ExplorationModuleConfig = {
     ko: '성단 구성원의 Gaia DR3 측광 자료를 색-등급도(CMD)로 시각화하고, 주계열·전향점으로 성단의 나이와 거리 단서를 해석하는 탐구블럭입니다.',
     en: 'Visualize Gaia DR3 photometry of cluster members as a color-magnitude diagram and interpret age and distance clues from the main sequence and turn-off.',
   },
-  image: ASTRO_FALLBACK_IMAGE,
-  imageAlt: { ko: '성단과 은하 배경 이미지', en: 'Cluster and galaxy background image' },
+  image: CLUSTER_MODULE_IMAGE,
+  imageAlt: { ko: '플레이아데스 성단 (M45)', en: 'Pleiades star cluster (M45)' },
+  imageCredit: { ko: '사진: NASA/ESA/AURA·Caltech', en: 'Photo: NASA/ESA/AURA·Caltech' },
   tags: ['CMD', 'Photometry table', 'Isochrone'],
   dataSource: {
     name: { ko: 'ESA Gaia DR3 측광 카탈로그', en: 'ESA Gaia DR3 photometric catalog' },
@@ -432,43 +433,43 @@ export const clusterCmdModule: ExplorationModuleConfig = {
 
 export const kmtnetModule: ExplorationModuleConfig = {
   id: 'kmtnet',
-  title: { ko: 'KMTNet 관측 품질 탐구블럭', en: 'KMTNet Observation Quality Block' },
+  title: { ko: 'KMTNet 미시중력렌즈 탐구블럭', en: 'KMTNet Microlensing Block' },
   subtitle: {
-    ko: '관측소별 메타데이터와 품질 지표로 시간영역 관측의 신뢰도를 해석합니다.',
-    en: 'Interpret time-domain observation reliability from site metadata and quality metrics.',
+    ko: '다지점 광도곡선에서 미시중력렌즈 증광을 확인하고, 행성 아노말리로 외계행성을 찾습니다.',
+    en: 'Confirm microlensing magnification in multi-site light curves and find exoplanets from planetary anomalies.',
   },
   description: {
-    ko: 'KMTNet 관측소, 관측 시간, seeing, sky background, cadence 같은 메타데이터를 확인하고 시간영역 시각화 또는 품질 분류 결과를 해석하는 탐구블럭입니다. 현재는 placeholder adapter를 사용합니다.',
-    en: 'Inspect KMTNet site, time, seeing, sky background, and cadence metadata, then interpret time-series or quality-classification views. This currently uses a placeholder adapter.',
+    ko: 'KMTNet 세 관측소(CTIO·SAAO·SSO)가 차분측광으로 얻은 광도곡선을 모아, 미시중력렌즈로 배경별이 잠깐 밝아지는 증광 곡선을 확인하고 매끄러운 곡선 위의 짧은 행성 아노말리로 외계행성 후보를 찾는 탐구블럭입니다.',
+    en: "Brings together difference-image-photometry light curves from KMTNet's three sites (CTIO·SAAO·SSO) to confirm microlensing magnification and search for exoplanet candidates from brief planetary anomalies on the smooth curve.",
   },
   image: KMT_MODULE_IMAGE,
   imageAlt: { ko: 'KMTNet 관측 네트워크 이미지', en: 'KMTNet observing network image' },
-  tags: ['KMTNet', 'Observation quality', 'Time series'],
+  tags: ['KMTNet', 'Microlensing', 'Light curve'],
   dataSource: {
-    name: { ko: 'KASI KMTNet 관측 메타데이터', en: 'KASI KMTNet observation metadata' },
+    name: { ko: 'KASI KMTNet 미시중력렌즈 광도곡선', en: 'KASI KMTNet microlensing light curves' },
     provider: { ko: 'KASI KMTNet', en: 'KASI KMTNet' },
     description: {
-      ko: '칠레, 남아프리카, 호주의 관측소 자료를 묶어 이벤트의 시간적 연속성과 관측 품질을 확인합니다.',
-      en: 'Combines Chile, South Africa, and Australia site data to inspect temporal coverage and observation quality.',
+      ko: '칠레·남아프리카·호주 세 관측소의 차분측광 광도곡선을 묶어 미시중력렌즈 이벤트의 증광과 행성 아노말리를 추적합니다.',
+      en: 'Combines difference-image-photometry light curves from Chile, South Africa, and Australia to track microlensing magnification and planetary anomalies.',
     },
     accessMethod: {
-      ko: '추후 KMTNet archive adapter 또는 수업용 샘플셋 연결',
-      en: 'Future KMTNet archive adapter or classroom sample-set connection',
+      ko: '추후 KMTNet 이벤트 광도곡선 adapter 또는 수업용 샘플셋 연결',
+      en: 'Future KMTNet event light-curve adapter or classroom sample-set connection',
     },
     provenanceNote: {
-      ko: '관측소, 필터, 노출시간, 품질 지표가 항상 표시되어야 합니다.',
-      en: 'Site, filter, exposure time, and quality metrics should always remain visible.',
+      ko: '관측소, 필터, 노출시간, 차분측광 기준 영상이 항상 표시되어야 합니다.',
+      en: 'Site, filter, exposure time, and the difference-image reference should always remain visible.',
     },
   },
   learningGoals: [
-    { ko: '다중 관측소 네트워크가 시간영역 관측 공백을 줄이는 이유를 설명한다.', en: 'Explain why a multi-site network reduces time-domain coverage gaps.' },
-    { ko: 'seeing, sky background, cadence 같은 품질 지표를 해석한다.', en: 'Interpret quality metrics such as seeing, sky background, and cadence.' },
-    { ko: '자동 품질 분류 결과를 근거와 함께 검토한다.', en: 'Review automated quality classification with supporting evidence.' },
+    { ko: '미시중력렌즈로 배경별이 잠깐 밝아지는 원리(증광 곡선)를 설명한다.', en: 'Explain how microlensing briefly brightens a background star (the magnification curve).' },
+    { ko: '매끄러운 단일렌즈 곡선과 행성이 만드는 짧은 아노말리를 구분한다.', en: 'Distinguish a smooth single-lens curve from the brief anomaly a planet produces.' },
+    { ko: '혼잡한 별밭에서 차분측광으로 밝기 변화를 측정하는 이유를 설명한다.', en: 'Explain why difference-image photometry is used to measure brightness changes in crowded fields.' },
   ],
   steps: createCommonInquirySteps({
     step1_select: {
       questions: [
-        makePrompt('kmt_site_reason', '어떤 관측소 또는 관측 구간을 먼저 살펴볼 것인가?', 'Which site or observing interval will you inspect first?'),
+        makePrompt('kmt_event_reason', '어떤 미시중력렌즈 이벤트(광도곡선)를 먼저 살펴볼 것인가?', 'Which microlensing event (light curve) will you inspect first?'),
       ],
     },
     step2_metadata: {
@@ -476,9 +477,9 @@ export const kmtnetModule: ExplorationModuleConfig = {
         {
           id: 'kmt_meta_sc1',
           type: 'ox',
-          question: { ko: '세 관측소(칠레·남아공·호주)는 경도가 달라, 한 곳이 낮이어도 다른 곳에서 관측을 이어 시간 공백을 줄인다.', en: 'The three sites (Chile, South Africa, Australia) span longitudes, so when one is in daylight another can keep observing, reducing time gaps.' },
+          question: { ko: '세 관측소(칠레·남아공·호주)는 경도가 달라, 한 곳이 낮이어도 다른 곳이 관측을 이어 짧은 행성 아노말리를 놓치지 않는다.', en: 'The three sites (Chile, South Africa, Australia) span longitudes, so when one is in daylight another keeps observing — so a brief planetary anomaly is not missed.' },
           correct: 'O',
-          explanation: { ko: '경도 분산이 연속 시간영역 관측의 핵심입니다.', en: 'Longitude spread is the key to continuous time-domain coverage.' },
+          explanation: { ko: '경도 분산에 의한 연속 관측이 짧은 아노말리 포착의 핵심입니다.', en: 'Continuous coverage from the longitude spread is key to catching brief anomalies.' },
         },
       ],
     },
@@ -487,88 +488,88 @@ export const kmtnetModule: ExplorationModuleConfig = {
         {
           id: 'kmt_cond_sc1',
           type: 'ox',
-          question: { ko: 'seeing 값이 커지면(나빠지면) 별상이 퍼져 측광 품질이 낮아진다.', en: 'When seeing increases (worsens), stellar images spread out and photometric quality drops.' },
+          question: { ko: '별이 빽빽한 영역에서는 기준 영상을 빼는 차분측광으로 변하는 밝기만 뽑아 광도곡선을 만든다.', en: 'In crowded fields, difference-image photometry subtracts a reference image to extract only the changing flux for the light curve.' },
           correct: 'O',
-          explanation: { ko: '큰 seeing은 별상(PSF)을 넓혀 측광 정밀도를 떨어뜨립니다.', en: 'Larger seeing broadens the PSF, lowering photometric precision.' },
+          explanation: { ko: '차분측광(DIA)은 겹친 별들 속에서 변광 성분만 분리합니다.', en: 'Difference-image analysis isolates the variable component among blended stars.' },
         },
       ],
     },
     step4_run_visualize: {
       questions: [
-        makePrompt('kmt_quality_signal', '시각화에서 관측 품질이 달라지는 구간은 어디인가?', 'Where does the visualization show a change in observation quality?'),
+        makePrompt('kmt_anomaly_signal', '광도곡선에서 매끄러운 증광 위에 행성 아노말리(짧은 이상신호)는 어디에 나타나는가?', 'Where on the smooth magnification does a planetary anomaly (brief deviation) appear?'),
       ],
     },
   }),
   metadataFields: [
     { id: 'sites', label: { ko: '관측소', en: 'Sites' }, value: 'CTIO, SAAO, SSO' },
-    { id: 'metrics', label: { ko: '품질 지표', en: 'Quality metrics' }, value: { ko: 'seeing, sky background, cadence', en: 'seeing, sky background, cadence' } },
+    { id: 'photometry', label: { ko: '측광 방식', en: 'Photometry' }, value: { ko: '차분측광 (DIA)', en: 'Difference-image (DIA)' } },
     { id: 'status', label: { ko: '연결 상태', en: 'Connection status' }, value: { ko: 'Placeholder adapter', en: 'Placeholder adapter' } },
   ],
   analysisConfig: {
     adapterKey: 'kmtnet',
-    method: { ko: '관측 품질 요약 + 시간영역 시각화', en: 'Observation-quality summary + time-series visualization' },
+    method: { ko: '미시중력렌즈 광도곡선 적합 (단일렌즈 + 행성 섭동)', en: 'Microlensing light-curve fit (single lens + planetary perturbation)' },
     automaticTasks: [
-      { ko: '관측소별 metadata 정규화', en: 'Normalize metadata by site' },
-      { ko: '품질 지표 요약', en: 'Summarize quality metrics' },
-      { ko: '시간 공백과 품질 분류 시각화', en: 'Visualize coverage gaps and quality classes' },
+      { ko: '관측소별 차분측광 광도 추출', en: 'Extract difference-image photometry per site' },
+      { ko: '세 관측소 광도곡선 결합', en: 'Combine light curves from the three sites' },
+      { ko: '단일렌즈(Paczynski) 적합 후 아노말리 탐지', en: 'Fit a single-lens (Paczynski) model, then detect anomalies' },
     ],
     parameters: [
-      { id: 'site', label: { ko: '관측소', en: 'Site' }, value: 'CTIO / SAAO / SSO', adjustable: true },
-      { id: 'quality_threshold', label: { ko: '품질 기준', en: 'Quality threshold' }, value: { ko: '수업별 조정', en: 'Classroom-adjustable' }, adjustable: true },
-      { id: 'time_window', label: { ko: '시간 구간', en: 'Time window' }, value: { ko: '이벤트 주변 구간', en: 'Window around event' }, adjustable: true },
+      { id: 't0', label: { ko: '최대 증광 시각 t0', en: 'Peak time t0' }, value: { ko: '이벤트별', en: 'Per event' }, adjustable: true },
+      { id: 'tE', label: { ko: '아인슈타인 시간 tE', en: 'Einstein time tE' }, value: { ko: '이벤트별', en: 'Per event' }, adjustable: true },
+      { id: 'u0', label: { ko: '충격변수 u0', en: 'Impact parameter u0' }, value: { ko: '이벤트별', en: 'Per event' }, adjustable: true },
     ],
     assumptions: [
-      { ko: '품질 지표는 관측 조건을 대표하지만 과학적 해석을 단독으로 결정하지 않는다.', en: 'Quality metrics represent observing conditions but do not alone determine scientific interpretation.' },
-      { ko: '관측소별 시간대 차이는 coverage gap 해석의 핵심이다.', en: 'Longitude differences across sites are central to interpreting coverage gaps.' },
+      { ko: '단일렌즈 곡선은 행성이 없을 때의 기준이며, 벗어난 구간이 아노말리 후보다.', en: 'The single-lens curve is the planet-free baseline; departures from it are anomaly candidates.' },
+      { ko: '세 관측소의 시간대 차이가 짧은 아노말리를 놓치지 않는 핵심이다.', en: 'Longitude differences across the three sites are key to not missing brief anomalies.' },
     ],
     qualitySignals: [
-      { ko: 'seeing', en: 'Seeing' },
-      { ko: 'sky background', en: 'Sky background' },
-      { ko: 'cadence and missing frames', en: 'Cadence and missing frames' },
+      { ko: '광도곡선의 신호대잡음', en: 'Light-curve signal-to-noise' },
+      { ko: '아노말리 구간의 표본 밀도(cadence)', en: 'Sampling density (cadence) across the anomaly' },
+      { ko: '관측소 간 시간 공백', en: 'Time gaps between sites' },
     ],
   },
   visualizationConfig: {
-    primaryView: { ko: '관측소별 시간 coverage 및 품질 분류', en: 'Site coverage and quality-classification timeline' },
+    primaryView: { ko: '다지점 미시중력렌즈 광도곡선과 모델 적합', en: 'Multi-site microlensing light curve with model fit' },
     layers: [
-      { ko: '관측소별 cadence timeline', en: 'Cadence timeline by site' },
-      { ko: '품질 등급 색상 overlay', en: 'Quality-class color overlay' },
-      { ko: 'time-series 또는 이벤트 후보 표시', en: 'Time-series or event-candidate markers' },
+      { ko: '관측소별 광도곡선 점 (CTIO·SAAO·SSO)', en: 'Light-curve points by site (CTIO·SAAO·SSO)' },
+      { ko: '단일렌즈(Paczynski) 모델 곡선', en: 'Single-lens (Paczynski) model curve' },
+      { ko: '행성 아노말리 구간 표시', en: 'Planetary-anomaly interval markers' },
     ],
     interpretationCues: [
-      { ko: '연속 관측을 방해하는 시간 공백', en: 'Coverage gaps interrupting continuous monitoring' },
-      { ko: '품질 저하가 몰린 구간', en: 'Intervals with clustered quality degradation' },
-      { ko: '단일 관측소와 네트워크 결합의 차이', en: 'Difference between single-site and network-combined views' },
+      { ko: '대칭적이고 매끄러운 증광(단일렌즈)인가', en: 'Is the magnification a smooth, symmetric single-lens peak?' },
+      { ko: '곡선을 벗어난 짧은 이상신호(행성 아노말리)', en: 'Brief deviations off the curve (planetary anomaly)' },
+      { ko: '단일 관측소와 네트워크 결합의 차이', en: 'Difference between single-site and network-combined coverage' },
     ],
   },
   comparisonConfig: {
-    referenceSource: { ko: '관측 품질 기준 또는 네트워크 결합 결과', en: 'Quality criteria or network-combined reference' },
+    referenceSource: { ko: '단일렌즈 모델 vs 행성 포함 모델', en: 'Single-lens model vs planet-included model' },
     comparisonValues: [
-      { id: 'coverage', label: { ko: 'Coverage', en: 'Coverage' }, value: { ko: '단일 관측소와 3개 관측소 결합 비교', en: 'Single-site compared with three-site combined coverage' } },
-      { id: 'quality_class', label: { ko: '품질 등급', en: 'Quality class' }, value: { ko: 'good / caution / reject 기준 예정', en: 'Planned good / caution / reject criteria' } },
+      { id: 'model', label: { ko: '모델', en: 'Model' }, value: { ko: '단일렌즈와 행성 포함 모델 비교', en: 'Single-lens compared with planet-included model' } },
+      { id: 'mass_ratio', label: { ko: '질량비 q', en: 'Mass ratio q' }, value: { ko: '아노말리 크기·길이로 추정', en: 'Estimated from anomaly size and duration' } },
     ],
     qualityCriteria: [
-      { ko: 'seeing이 커지면 별상이 퍼져 측광 품질이 낮아질 수 있다.', en: 'Larger seeing can broaden stellar profiles and reduce photometric quality.' },
-      { ko: 'sky background가 높으면 faint target의 신뢰도가 낮아진다.', en: 'High sky background lowers reliability for faint targets.' },
-      { ko: 'cadence 공백은 짧은 이벤트 해석을 어렵게 한다.', en: 'Cadence gaps make short events harder to interpret.' },
+      { ko: '아노말리는 짧아 cadence 공백이 있으면 놓치기 쉽다.', en: 'Anomalies are brief and easily missed if there are cadence gaps.' },
+      { ko: '신호대잡음이 낮으면 아노말리와 잡음을 구분하기 어렵다.', en: 'Low signal-to-noise makes it hard to tell an anomaly from noise.' },
+      { ko: '세 관측소 결합이 아노말리 구간을 더 촘촘히 덮는다.', en: 'Combining three sites covers the anomaly interval more densely.' },
     ],
     interpretationRule: {
-      ko: '자동 품질 등급을 결론으로 쓰지 말고, 관측소와 시간대별 근거를 확인한 뒤 해석한다.',
-      en: 'Do not use automated quality class as the conclusion; inspect site- and time-specific evidence first.',
+      ko: '아노말리를 행성이라 단정하기 전에 다른 관측소 자료와 모델 적합으로 교차 확인한다.',
+      en: 'Before calling an anomaly a planet, cross-check with other sites and the model fit.',
     },
   },
   reflectionQuestions: [
-    makePrompt('kmt_reflect_network', '세 관측소를 합쳤을 때 해석이 어떻게 달라졌는가?', 'How did interpretation change after combining three sites?'),
-    makePrompt('kmt_reflect_quality', '품질이 낮은 자료를 제외하거나 보류해야 하는 근거는 무엇인가?', 'What evidence supports excluding or flagging low-quality data?'),
+    makePrompt('kmt_reflect_anomaly', '관측한 광도곡선에서 행성 아노말리의 근거는 무엇이며, 단일렌즈 곡선과 어떻게 다른가?', 'What is the evidence for a planetary anomaly in the light curve, and how does it differ from a single-lens curve?'),
+    makePrompt('kmt_reflect_network', '세 관측소를 합쳤을 때 짧은 아노말리 해석이 어떻게 달라졌는가?', 'How did combining three sites change the interpretation of a brief anomaly?'),
   ],
   teacherNotes: [
-    { ko: 'KMTNet 실제 자료 연결 전에는 품질 기준표와 시각화 색상 체계를 먼저 확정한다.', en: 'Before connecting live KMTNet data, finalize the quality rubric and visualization color scheme.' },
+    { ko: 'KMTNet 실제 이벤트 광도곡선 연결 전에는 샘플 이벤트(단일렌즈/행성)로 곡선 읽기를 먼저 연습한다.', en: 'Before connecting live KMTNet event light curves, practice reading sample events (single-lens vs planetary).' },
   ],
   classroomUse: {
     suggestedTime: { ko: '45~60분', en: '45-60 minutes' },
-    level: { ko: '고등학교 탐구 / 시민과학 품질 판정 활동', en: 'Secondary inquiry / citizen-science quality review' },
-    grouping: { ko: '관측소별 역할 분담 후 네트워크 결합 토의', en: 'Assign sites to groups, then discuss the combined network view' },
+    level: { ko: '고등학교 탐구 / 시민과학 외계행성 탐사', en: 'Secondary inquiry / citizen-science exoplanet search' },
+    grouping: { ko: '관측소별 광도곡선을 나눠 본 뒤 네트워크 결합으로 아노말리 토의', en: 'Split light curves by site, then discuss anomalies on the combined network view' },
     teacherNotes: [
-      { ko: '자동 품질 판정과 학생 판정을 비교해 근거 중심 토의를 유도한다.', en: 'Compare automated and student quality judgments to drive evidence-based discussion.' },
+      { ko: '단일렌즈 곡선과 행성 아노말리 곡선을 비교해 근거 중심 토의를 유도한다.', en: 'Compare single-lens and planetary-anomaly curves to drive evidence-based discussion.' },
     ],
   },
   entry: {

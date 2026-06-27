@@ -118,6 +118,7 @@ export interface ExplorationModuleConfig {
   description: LocalizedText;
   image: string;
   imageAlt: LocalizedText;
+  imageCredit?: LocalizedText;
   tags: string[];
   dataSource: DataSourceConfig;
   learningGoals: LocalizedText[];

@@ -13,6 +13,10 @@ _CLUSTER_CONSTELLATION = {
     "ngc2682": "Cancer",
     "ngc752": "Andromeda",
     "ic2602": "Carina",
+    "melotte111": "Coma Berenices",
+    "ngc2516": "Carina",
+    "ngc3532": "Carina",
+    "ngc6475": "Scorpius",
 }
 
 

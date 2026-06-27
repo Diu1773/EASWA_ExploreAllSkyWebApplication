@@ -31,7 +31,7 @@ export function ModuleCard({ module, revealDelay = 0 }: ModuleCardProps) {
           loading="lazy"
         />
         <span className="inquiry-module-card-source">
-          {localize(module.dataSource.provider, lang)}
+          {localize(module.imageCredit ?? module.dataSource.provider, lang)}
         </span>
       </div>
       <div className="inquiry-module-card-body">

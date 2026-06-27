@@ -9,6 +9,7 @@ import type { ExplorationModuleConfig } from '../../explorationBlocks/types';
 import { InquiryLayout } from '../inquiry';
 import { ClusterCmdVisualizer, type ClusterFitInfo } from '../lab/ClusterCmdVisualizer';
 import { SkyExplorer } from '../sky/SkyExplorer';
+import { ClusterIntro } from '../sky/ClusterIntro';
 
 interface ClusterModuleViewProps {
   module: ExplorationModuleConfig;
@@ -194,6 +195,7 @@ export function ClusterModuleView({ module }: ClusterModuleViewProps) {
       module={module}
       adapter={clusterCmdAdapter}
       context={context}
+      introSlot={<ClusterIntro />}
       contextSlot={contextSlot}
       selectionSlot={selectionSlot}
       analysisSlot={analysisSlot}

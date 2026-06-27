@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { getExplorationModule } from '../../explorationBlocks/configs';
 import { moduleAdapters } from '../../explorationBlocks/adapters';
@@ -5,6 +6,8 @@ import { useLangStore } from '../../i18n';
 import { InquiryLayout } from '../inquiry';
 import { ClusterModuleView } from './ClusterModuleView';
 import { ExoplanetModuleView } from './ExoplanetModuleView';
+
+const Microlens3DScene = lazy(() => import('../sky/Microlens3DScene'));
 
 export function ModulePage() {
   const { moduleId } = useParams<{ moduleId: string }>();
@@ -49,5 +52,19 @@ export function ModulePage() {
       </div>
     ) : undefined;
 
-  return <InquiryLayout module={module} adapter={moduleAdapters[module.id]} analysisSlot={analysisSlot} />;
+  const introSlot =
+    module.id === 'kmtnet' ? (
+      <Suspense fallback={null}>
+        <Microlens3DScene />
+      </Suspense>
+    ) : undefined;
+
+  return (
+    <InquiryLayout
+      module={module}
+      adapter={moduleAdapters[module.id]}
+      introSlot={introSlot}
+      analysisSlot={analysisSlot}
+    />
+  );
 }

@@ -5380,6 +5380,248 @@ body {
   margin-bottom: 16px;
 }
 
+/* Topic intro illustrations (cluster CMD, KMTNet microlensing) */
+.topic-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.topic-intro-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.topic-intro-caption {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+.ti-kicker {
+  fill: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ti-axis {
+  stroke: var(--border);
+  stroke-width: 1.5;
+  fill: none;
+}
+
+.ti-axis-label {
+  fill: var(--text-secondary);
+  font-size: 11px;
+  font-family: var(--font-mono, monospace);
+}
+
+.ti-note {
+  fill: var(--text-secondary);
+  font-size: 11px;
+}
+
+.ti-note-ms {
+  fill: var(--text-heading);
+}
+
+.ti-cluster-halo {
+  fill: rgba(148, 163, 184, 0.05);
+  stroke: var(--border);
+  stroke-dasharray: 3 4;
+}
+
+.ti-star {
+  animation: ti-twinkle 3s ease-in-out infinite;
+}
+
+@keyframes ti-twinkle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.ti-arrow line,
+.ti-arrow polyline {
+  stroke: var(--accent);
+  stroke-width: 2;
+  fill: none;
+}
+
+.ti-ms-band {
+  stroke: rgba(148, 163, 184, 0.22);
+  stroke-width: 10;
+  fill: none;
+  stroke-linecap: round;
+}
+
+.ti-turnoff {
+  fill: var(--accent);
+}
+
+.ti-giant {
+  stroke: #ffd28a;
+  stroke-width: 2.5;
+  fill: none;
+}
+
+.ti-std-ms {
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  fill: none;
+  stroke-linecap: round;
+}
+
+.ti-clu-ms {
+  stroke: rgba(148, 163, 184, 0.45);
+  stroke-width: 2;
+  fill: none;
+  stroke-linecap: round;
+}
+
+.ti-note-std {
+  fill: var(--accent);
+}
+
+.ti-note-dim {
+  fill: var(--accent);
+  font-weight: 700;
+}
+
+.ti-dim-arrow {
+  stroke: var(--accent);
+  stroke-width: 1.6;
+  fill: none;
+}
+
+.ti-formula {
+  fill: var(--text-heading);
+  font-family: var(--font-mono, monospace);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.ti-tag {
+  fill: var(--text-secondary);
+  font-size: 11px;
+}
+
+.ti-turnoff-ring {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
+.ti-source {
+  fill: var(--text-secondary);
+  font-size: 10px;
+  font-family: var(--font-mono, monospace);
+  opacity: 0.8;
+}
+
+/* cluster intro — photo ↔ CMD pair cards */
+.cluster-intro-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cluster-intro-card {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.cluster-intro-photo {
+  width: 230px;
+  height: 190px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  flex: 0 0 auto;
+}
+
+.cluster-intro-body {
+  flex: 1 1 300px;
+  min-width: 0;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cluster-intro-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cluster-intro-head strong {
+  color: var(--text-heading);
+  font-size: 0.95rem;
+}
+
+.cluster-intro-tag {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.cluster-intro-cmd-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.cluster-intro-credit {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  opacity: 0.8;
+  font-family: var(--font-mono, monospace);
+}
+
+@media (max-width: 600px) {
+  .cluster-intro-photo {
+    width: 100%;
+    height: 160px;
+  }
+  .cluster-intro-body {
+    max-width: none;
+  }
+}
+
+.ti-lc {
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  fill: none;
+  stroke-linecap: round;
+}
+
+.ti-site-1 { fill: rgba(232, 114, 42, 0.75); }
+.ti-site-2 { fill: rgba(232, 160, 42, 0.65); }
+.ti-site-3 { fill: rgba(232, 200, 90, 0.55); }
+
+.ti-site-label {
+  fill: #0b0e14;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ti-star { animation: none; }
+}
+
 .inquiry-target-context {
   display: flex;
   align-items: center;
@@ -9492,6 +9734,11 @@ body {
 .transit3d-tag-planet {
   color: #7dd3fc;
   border-color: rgba(125, 211, 252, 0.3);
+}
+
+.transit3d-tag-anomaly {
+  color: #9ed0ff;
+  border-color: rgba(158, 208, 255, 0.35);
 }
 
 .transit3d-disclaimer {

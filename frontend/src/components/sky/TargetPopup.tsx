@@ -75,15 +75,15 @@ export function TargetPopup({
         )}
         <p className="target-desc">{buildTargetDescription(target, lang)}</p>
       </div>
-      <div className="target-popup-actions">
-        <button
-          className="btn-primary"
-          disabled={gotoInProgress}
-          onClick={onGoto}
-        >
-          {gotoInProgress ? t('popup.gotoSlewing') : 'GOTO'}
-        </button>
-        {!embedded && (
+      {!embedded && (
+        <div className="target-popup-actions">
+          <button
+            className="btn-primary"
+            disabled={gotoInProgress}
+            onClick={onGoto}
+          >
+            {gotoInProgress ? t('popup.gotoSlewing') : 'GOTO'}
+          </button>
           <button
             className="btn-secondary"
             disabled={!gotoUnlocked || gotoInProgress}
@@ -107,25 +107,22 @@ export function TargetPopup({
                   : 'Start Transit Inquiry'
                 : t('popup.viewDetails')}
           </button>
-        )}
-      </div>
-      {gotoHint ? (
-        <p
-          className={`target-popup-hint ${
-            gotoHintTone === 'error' ? 'error-text' : 'info-text'
-          }`}
-        >
-          {gotoHint}
-        </p>
-      ) : !gotoUnlocked ? (
-        <p className="target-popup-hint">
-          {t('popup.gotoHint')}
-        </p>
-      ) : (
-        <p className="target-popup-hint success-text">
-          {t('popup.detailUnlocked')}
-        </p>
+        </div>
       )}
+      {!embedded &&
+        (gotoHint ? (
+          <p
+            className={`target-popup-hint ${
+              gotoHintTone === 'error' ? 'error-text' : 'info-text'
+            }`}
+          >
+            {gotoHint}
+          </p>
+        ) : !gotoUnlocked ? (
+          <p className="target-popup-hint">{t('popup.gotoHint')}</p>
+        ) : (
+          <p className="target-popup-hint success-text">{t('popup.detailUnlocked')}</p>
+        ))}
     </div>
   );
 }
