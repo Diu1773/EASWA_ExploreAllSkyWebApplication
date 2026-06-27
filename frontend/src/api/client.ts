@@ -131,6 +131,52 @@ export async function fetchObservations(
   return data.observations;
 }
 
+export interface ClusterInfo {
+  id: string;
+  name: string;
+  name_ko: string;
+  ra: number;
+  dec: number;
+  search_radius_deg: number;
+  ref_distance_pc: number;
+  ref_distance_modulus: number;
+  ref_age_gyr: number;
+  reference: string;
+  note_ko: string;
+  note_en: string;
+}
+
+export interface ClusterMember {
+  source_id: string;
+  g_mag: number;
+  bp_rp: number;
+  parallax: number | null;
+  pmra: number | null;
+  pmdec: number | null;
+}
+
+export interface ClusterCmdResponse {
+  cluster: ClusterInfo;
+  member_count: number;
+  color_label: string;
+  mag_label: string;
+  members: ClusterMember[];
+  data_source: string;
+  selection_note_ko: string;
+  selection_note_en: string;
+}
+
+export async function fetchClusterList(): Promise<ClusterInfo[]> {
+  const data = await get<{ clusters: ClusterInfo[] }>('/clusters');
+  return data.clusters;
+}
+
+export async function fetchClusterCmd(
+  clusterId: string
+): Promise<ClusterCmdResponse> {
+  return get<ClusterCmdResponse>(`/clusters/${clusterId}/cmd`);
+}
+
 export async function runPhotometry(
   req: PhotometryRequest
 ): Promise<PhotometryResponse> {

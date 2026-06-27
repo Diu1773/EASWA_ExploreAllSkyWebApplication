@@ -1,26 +1,28 @@
 import type { PhotometryMeasurement } from '../../types/photometry';
+import { useLangStore } from '../../i18n';
 
 interface PhotometryResultProps {
   measurements: PhotometryMeasurement[];
 }
 
 export function PhotometryResult({ measurements }: PhotometryResultProps) {
+  const lang = useLangStore((s) => s.lang);
   if (measurements.length === 0) return null;
 
   return (
     <div className="photometry-result">
-      <h4>Photometry Measurements</h4>
+      <h4>{lang === 'ko' ? '측광 결과' : 'Photometry Measurements'}</h4>
       <div className="result-table-wrap">
         <table className="result-table">
           <thead>
             <tr>
               <th>#</th>
               <th>HJD</th>
-              <th>Raw Flux</th>
-              <th>Sky Flux</th>
-              <th>Net Flux</th>
-              <th>Inst. Mag</th>
-              <th>Error</th>
+              <th>{lang === 'ko' ? '원시 Flux' : 'Raw Flux'}</th>
+              <th>{lang === 'ko' ? '배경 Flux' : 'Sky Flux'}</th>
+              <th>{lang === 'ko' ? '순 Flux' : 'Net Flux'}</th>
+              <th>{lang === 'ko' ? '기기 등급' : 'Inst. Mag'}</th>
+              <th>{lang === 'ko' ? '오차' : 'Error'}</th>
             </tr>
           </thead>
           <tbody>

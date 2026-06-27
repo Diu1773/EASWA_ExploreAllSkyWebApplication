@@ -24,6 +24,15 @@ TOPICS = [
         preview_image_url="https://cdn.esahubble.org/archives/images/screen/heic1323a.jpg",
     ),
     Topic(
+        id="stellar_cmd",
+        name="색-등급도 탐구 (CMD)",
+        description="별의 색지수와 밝기 분포에서 변광성·식쌍성의 위치를 비교하고 분류 근거를 세웁니다.",
+        icon="CMD",
+        target_count=6,
+        preview_label="Local catalog / B-V, V",
+        preview_image_url="https://cdn.esahubble.org/archives/images/screen/heic1017a.jpg",
+    ),
+    Topic(
         id="exoplanet_transit",
         name="외계행성 식현상 탐구 (Transit Planets)",
         description="TESS 관측 자료를 바탕으로 외계행성 transit 광도곡선을 탐구합니다.",
@@ -40,6 +49,15 @@ TOPICS = [
         target_count=40,
         preview_label="NASA / ESA",
         preview_image_url="https://cdn.esahubble.org/archives/images/screen/heic1323a.jpg",
+    ),
+    Topic(
+        id="open_cluster_cmd",
+        name="성단 색등급도 탐구 (Open Cluster CMD)",
+        description="Gaia DR3 측광으로 산개성단의 색-등급도를 그려 나이와 거리를 탐구합니다.",
+        icon="OC",
+        target_count=6,
+        preview_label="ESA Gaia DR3",
+        preview_image_url="https://cdn.esahubble.org/archives/images/screen/heic1017a.jpg",
     ),
 ]
 

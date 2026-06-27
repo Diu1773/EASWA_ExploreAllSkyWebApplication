@@ -13,6 +13,7 @@ import { ImageWithFallback } from '../layout/ImageWithFallback';
 import { defaultKmtnetRecordTemplate } from '../../data/kmtnetRecordTemplate';
 import { ASTRO_FALLBACK_IMAGE, KMT_SITE_IMAGES } from '../../data/imageSources';
 import { useWorkflowController } from '../../hooks/useWorkflowController';
+import { useLangStore } from '../../i18n';
 import { useAuthStore } from '../../stores/useAuthStore';
 import type {
   MicrolensingLightCurveResponse,
@@ -258,6 +259,7 @@ function RawFieldCard({
   frameLoading?: boolean;
   onFrameChange?: (frameIndex: number) => void;
 }) {
+  const lang = useLangStore((state) => state.lang);
   const left = `${(preview.raw_target_position.x / preview.cutout_width_px) * 100}%`;
   const top = `${(preview.raw_target_position.y / preview.cutout_height_px) * 100}%`;
 
@@ -265,8 +267,8 @@ function RawFieldCard({
     <section className="ml-preview-panel">
       <div className="ml-preview-head">
         <div>
-          <span className="ml-preview-kicker">Raw Field</span>
-          <h4>{siteLabel} crowded field</h4>
+          <span className="ml-preview-kicker">{lang === 'ko' ? '원본 시야' : 'Raw Field'}</span>
+          <h4>{lang === 'ko' ? `${siteLabel} 혼잡 시야` : `${siteLabel} crowded field`}</h4>
         </div>
         <div className="ml-preview-stats">
           <span>HJD {preview.frame_metadata.hjd.toFixed(4)}</span>
@@ -284,7 +286,7 @@ function RawFieldCard({
             disabled={frameChangeDisabled || preview.frame_index <= 0}
             onClick={() => onFrameChange?.(0)}
           >
-            First
+            {lang === 'ko' ? '처음' : 'First'}
           </button>
           <button
             type="button"
@@ -292,7 +294,7 @@ function RawFieldCard({
             disabled={frameChangeDisabled || preview.frame_index <= 0}
             onClick={() => onFrameChange?.(Math.max(0, preview.frame_index - 1))}
           >
-            Prev
+            {lang === 'ko' ? '이전' : 'Prev'}
           </button>
           <button
             type="button"
@@ -300,7 +302,7 @@ function RawFieldCard({
             disabled={frameChangeDisabled || preview.frame_index >= preview.frame_count - 1}
             onClick={() => onFrameChange?.(Math.min(preview.frame_count - 1, preview.frame_index + 1))}
           >
-            Next
+            {lang === 'ko' ? '다음' : 'Next'}
           </button>
           <button
             type="button"
@@ -308,12 +310,12 @@ function RawFieldCard({
             disabled={frameChangeDisabled || preview.frame_index >= preview.frame_count - 1}
             onClick={() => onFrameChange?.(preview.frame_count - 1)}
           >
-            Last
+            {lang === 'ko' ? '마지막' : 'Last'}
           </button>
         </div>
         <div className="ml-preview-toolbar-group ml-preview-toolbar-group--grow">
           <span className="selected-count">
-            Frame {preview.frame_index + 1} / {preview.frame_count}
+            {lang === 'ko' ? '프레임' : 'Frame'} {preview.frame_index + 1} / {preview.frame_count}
           </span>
           <input
             type="range"
@@ -330,8 +332,12 @@ function RawFieldCard({
       <div className="ml-preview-grid ml-preview-grid--field">
         <article className="ml-preview-card">
           <div className="ml-preview-card-head">
-            <strong>Raw Frame</strong>
-            <span>{siteLabel}의 같은 sky stamp · current epoch 원본</span>
+            <strong>{lang === 'ko' ? '원본 프레임' : 'Raw Frame'}</strong>
+            <span>
+              {lang === 'ko'
+                ? `${siteLabel}의 동일한 하늘 stamp · 현재 관측 시점 원본`
+                : `Same sky stamp from ${siteLabel} · current epoch original`}
+            </span>
           </div>
           <div className="ml-preview-stage">
             <img src={preview.raw_image_data_url} alt="KMT raw field" className="ml-preview-image" />
@@ -339,11 +345,21 @@ function RawFieldCard({
           </div>
         </article>
         <div className="ml-field-note-card">
-          <h4>왜 그냥 밝기를 재면 안 되나?</h4>
+          <h4>{lang === 'ko' ? '왜 그냥 밝기를 재면 안 되나?' : 'Why not measure brightness directly?'}</h4>
           <p>
-            여기서 보는 것은 전체 4 deg² field가 아니라, 선택한 타깃 좌표 주변의 작은 <code>stamp</code> 입니다.
-            은하벌지 방향은 별이 매우 빽빽해서 이 작은 영역 안에서도 여러 별의 광도가 섞입니다.
-            그래서 <code>difference imaging</code> 전에는 “어느 별이 실제로 변한 것인지”를 분리하기 어렵습니다.
+            {lang === 'ko' ? (
+              <>
+                여기서 보는 것은 전체 4 deg² 시야가 아니라 선택한 타깃 좌표 주변의 작은 <code>stamp</code>입니다.
+                은하벌지 방향은 별이 매우 빽빽해서 이 작은 영역 안에서도 여러 별의 광도가 섞입니다.
+                따라서 <code>difference imaging</code> 전에는 어느 별이 실제로 변한 것인지 분리하기 어렵습니다.
+              </>
+            ) : (
+              <>
+                This is a small <code>stamp</code> around the selected target, not the full 4 deg² field.
+                Stars are densely packed toward the Galactic bulge, so flux from multiple stars overlaps even here.
+                Before <code>difference imaging</code>, it is difficult to isolate which star actually changed.
+              </>
+            )}
           </p>
           <dl className="ml-site-dl">
             <dt>Frame</dt><dd>#{preview.frame_index + 1} / {preview.frame_count}</dd>
@@ -355,7 +371,7 @@ function RawFieldCard({
             <dt>Magnification</dt><dd>{preview.frame_metadata.magnification.toFixed(2)}x</dd>
           </dl>
           {frameLoading && (
-            <p className="hint">새 raw frame을 불러오는 중...</p>
+            <p className="hint">{lang === 'ko' ? '새 원본 프레임을 불러오는 중...' : 'Loading a new raw frame...'}</p>
           )}
         </div>
       </div>
@@ -374,6 +390,7 @@ function AlignmentPanel({
   frameLoading?: boolean;
   onFrameChange?: (frameIndex: number) => void;
 }) {
+  const lang = useLangStore((state) => state.lang);
   const rawLeft = `${(preview.raw_target_position.x / preview.cutout_width_px) * 100}%`;
   const rawTop = `${(preview.raw_target_position.y / preview.cutout_height_px) * 100}%`;
   const alignedLeft = `${(preview.aligned_target_position.x / preview.cutout_width_px) * 100}%`;
@@ -383,8 +400,8 @@ function AlignmentPanel({
     <section className="ml-preview-panel">
       <div className="ml-preview-head">
         <div>
-          <span className="ml-preview-kicker">Frame Registration</span>
-          <h4>같은 stamp의 정렬 전 / 후 비교</h4>
+          <span className="ml-preview-kicker">{lang === 'ko' ? '프레임 정렬' : 'Frame Registration'}</span>
+          <h4>{lang === 'ko' ? '동일한 stamp의 정렬 전 / 후 비교' : 'Before and after registration of the same stamp'}</h4>
         </div>
         <div className="ml-preview-stats">
           <span>Δx {preview.registration_dx_px >= 0 ? '+' : ''}{preview.registration_dx_px.toFixed(2)} px</span>
@@ -395,14 +412,14 @@ function AlignmentPanel({
 
       <div className="ml-preview-toolbar">
         <div className="ml-preview-toolbar-group">
-          <button type="button" className="btn-sm" disabled={frameChangeDisabled || preview.frame_index <= 0} onClick={() => onFrameChange?.(0)}>First</button>
-          <button type="button" className="btn-sm" disabled={frameChangeDisabled || preview.frame_index <= 0} onClick={() => onFrameChange?.(Math.max(0, preview.frame_index - 1))}>Prev</button>
-          <button type="button" className="btn-sm" disabled={frameChangeDisabled || preview.frame_index >= preview.frame_count - 1} onClick={() => onFrameChange?.(Math.min(preview.frame_count - 1, preview.frame_index + 1))}>Next</button>
-          <button type="button" className="btn-sm" disabled={frameChangeDisabled || preview.frame_index >= preview.frame_count - 1} onClick={() => onFrameChange?.(preview.frame_count - 1)}>Last</button>
+          <button type="button" className="btn-sm" disabled={frameChangeDisabled || preview.frame_index <= 0} onClick={() => onFrameChange?.(0)}>{lang === 'ko' ? '처음' : 'First'}</button>
+          <button type="button" className="btn-sm" disabled={frameChangeDisabled || preview.frame_index <= 0} onClick={() => onFrameChange?.(Math.max(0, preview.frame_index - 1))}>{lang === 'ko' ? '이전' : 'Prev'}</button>
+          <button type="button" className="btn-sm" disabled={frameChangeDisabled || preview.frame_index >= preview.frame_count - 1} onClick={() => onFrameChange?.(Math.min(preview.frame_count - 1, preview.frame_index + 1))}>{lang === 'ko' ? '다음' : 'Next'}</button>
+          <button type="button" className="btn-sm" disabled={frameChangeDisabled || preview.frame_index >= preview.frame_count - 1} onClick={() => onFrameChange?.(preview.frame_count - 1)}>{lang === 'ko' ? '마지막' : 'Last'}</button>
         </div>
         <div className="ml-preview-toolbar-group ml-preview-toolbar-group--grow">
           <span className="selected-count">
-            Frame {preview.frame_index + 1} / {preview.frame_count}
+            {lang === 'ko' ? '프레임' : 'Frame'} {preview.frame_index + 1} / {preview.frame_count}
           </span>
           <input
             type="range"
@@ -419,8 +436,8 @@ function AlignmentPanel({
       <div className="ml-preview-grid ml-preview-grid--two">
         <article className="ml-preview-card">
           <div className="ml-preview-card-head">
-            <strong>Raw Frame</strong>
-            <span>현재 epoch의 같은 sky stamp</span>
+            <strong>{lang === 'ko' ? '원본 프레임' : 'Raw Frame'}</strong>
+            <span>{lang === 'ko' ? '현재 관측 시점의 동일한 하늘 stamp' : 'Same sky stamp at the current epoch'}</span>
           </div>
           <div className="ml-preview-stage">
             <img src={preview.raw_image_data_url} alt="Raw frame" className="ml-preview-image" />
@@ -429,8 +446,8 @@ function AlignmentPanel({
         </article>
         <article className="ml-preview-card">
           <div className="ml-preview-card-head">
-            <strong>Aligned Frame</strong>
-            <span>같은 stamp를 reference에 맞춰 이동</span>
+            <strong>{lang === 'ko' ? '정렬된 프레임' : 'Aligned Frame'}</strong>
+            <span>{lang === 'ko' ? '동일한 stamp를 기준 프레임에 맞춰 이동' : 'Same stamp shifted to match the reference'}</span>
           </div>
           <div className="ml-preview-stage">
             <img src={preview.aligned_image_data_url} alt="Aligned frame" className="ml-preview-image" />
@@ -445,16 +462,26 @@ function AlignmentPanel({
 
       <div className="ml-preview-note">
         <span>
-          현재 epoch stamp는 기준 stamp에 맞춰 <strong>x {preview.registration_dx_px >= 0 ? '+' : ''}{preview.registration_dx_px.toFixed(2)} px</strong>,
-          <strong> y {preview.registration_dy_px >= 0 ? '+' : ''}{preview.registration_dy_px.toFixed(2)} px</strong> 만큼 이동했습니다.
-          {' '}
-          정렬 점수는 <strong>{preview.registration_quality_score.toFixed(4)}</strong> 입니다.
+          {lang === 'ko' ? '현재 관측 시점의 stamp를 기준 stamp에 맞춰 ' : 'The current-epoch stamp was shifted by '}
+          <strong>x {preview.registration_dx_px >= 0 ? '+' : ''}{preview.registration_dx_px.toFixed(2)} px</strong>,
+          <strong> y {preview.registration_dy_px >= 0 ? '+' : ''}{preview.registration_dy_px.toFixed(2)} px</strong>
+          {lang === 'ko' ? '만큼 이동했습니다. 정렬 점수는 ' : '. The registration score is '}
+          <strong>{preview.registration_quality_score.toFixed(4)}</strong>{lang === 'ko' ? '입니다.' : '.'}
         </span>
         <span>
-          즉, 프레임 전체를 보여주는 것이 아니라 <strong>타깃 주변의 같은 sky stamp를 epoch별로 맞춰보는 단계</strong>입니다.
-          정렬이 맞을수록 별상이 reference와 더 잘 겹치고, 다음 단계 difference image에서 잔차가 더 깔끔하게 남습니다.
+          {lang === 'ko' ? (
+            <>
+              프레임 전체가 아니라 <strong>타깃 주변의 동일한 하늘 stamp를 관측 시점별로 맞추는 단계</strong>입니다.
+              정렬이 정확할수록 별상이 기준 프레임과 더 잘 겹치고, 다음 차분영상에서 잔차가 더 깔끔하게 남습니다.
+            </>
+          ) : (
+            <>
+              This step aligns <strong>the same sky stamp around the target across epochs</strong>, rather than displaying the full frame.
+              Better registration overlaps stellar profiles more accurately and leaves cleaner residuals in the difference image.
+            </>
+          )}
           {preview.registration_warning ? ` ${preview.registration_warning}` : ''}
-          {frameLoading ? ' 새 프레임을 불러오는 중입니다…' : ''}
+          {frameLoading ? (lang === 'ko' ? ' 새 프레임을 불러오는 중입니다…' : ' Loading a new frame...') : ''}
         </span>
       </div>
     </section>
@@ -492,6 +519,7 @@ function RecordQuestionField({
   value: unknown;
   onChange: (nextValue: unknown) => void;
 }) {
+  const lang = useLangStore((state) => state.lang);
   if (question.type === 'text') {
     return (
       <input
@@ -536,7 +564,7 @@ function RecordQuestionField({
         value={typeof value === 'string' ? value : ''}
         onChange={(event) => onChange(event.target.value)}
       >
-        <option value="">Select…</option>
+        <option value="">{lang === 'ko' ? '선택...' : 'Select...'}</option>
         {(question.options ?? []).map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
@@ -601,6 +629,7 @@ export function KmtnetLab({
   seedRecordId = null,
   learningMode = 'guided',
 }: Props) {
+  const lang = useLangStore((state) => state.lang);
   const user = useAuthStore((s) => s.user);
   const [preview, setPreview] = useState<MicrolensingPreviewResponse | null>(null);
   const [previewFrameIndex, setPreviewFrameIndex] = useState<number | null>(null);
@@ -992,7 +1021,9 @@ export function KmtnetLab({
     setStep(nextStep);
   };
 
-  if (!workflowHydrated) return <div className="loading">Restoring workflow...</div>;
+  if (!workflowHydrated) {
+    return <div className="loading">{lang === 'ko' ? '분석 흐름을 복원하는 중...' : 'Restoring workflow...'}</div>;
+  }
 
   const siteLabel = SITE_LABELS[siteId] ?? siteId.toUpperCase();
   const sitePhoto = SITE_PHOTOS[siteId];
@@ -1002,13 +1033,13 @@ export function KmtnetLab({
   const isPlanetary = target.type === 'ML-P';
   const draftStatusLabel =
     draftSaveStatus === 'saving'
-      ? 'Saving draft...'
+      ? (lang === 'ko' ? '초안 저장 중...' : 'Saving draft...')
       : draftSaveStatus === 'saved'
         ? draftSavedAtLabel
-          ? `Saved ${draftSavedAtLabel}`
-          : 'Draft saved'
+          ? (lang === 'ko' ? `${draftSavedAtLabel} 저장됨` : `Saved ${draftSavedAtLabel}`)
+          : (lang === 'ko' ? '초안 저장됨' : 'Draft saved')
         : draftSaveStatus === 'error'
-          ? 'Draft save failed'
+          ? (lang === 'ko' ? '초안 저장 실패' : 'Draft save failed')
           : null;
   const currentReferenceFrameIndex = referenceFrameIndex ?? preview?.reference_frame_index ?? null;
   const referenceCandidateIndices = preview?.reference_candidate_indices ?? [];
@@ -1040,7 +1071,7 @@ export function KmtnetLab({
       </div>
       {draftId && draftStatusLabel && (
         <div className={`transit-draft-bar ${draftSaveStatus}`}>
-          <span className="transit-draft-bar-label">Draft</span>
+          <span className="transit-draft-bar-label">{lang === 'ko' ? '초안' : 'Draft'}</span>
           <span className="transit-draft-bar-id">{draftId}</span>
           <span className="transit-draft-bar-status">{draftStatusLabel}</span>
         </div>
@@ -1146,7 +1177,7 @@ export function KmtnetLab({
                   checked={referenceFrameIndex === null}
                   onChange={() => setReferenceFrameIndex(null)}
                 />
-                <span>Auto reference</span>
+                <span>{lang === 'ko' ? '자동 기준 프레임' : 'Auto reference'}</span>
               </label>
               {referenceCandidateIndices.map((candidateIndex) => (
                 <label key={candidateIndex} className="record-choice-row">
@@ -1692,23 +1723,29 @@ export function KmtnetLab({
           </div>
 
           <div className="transit-controls-card">
-            <h4>Archive Record</h4>
+            <h4>{lang === 'ko' ? '분석 기록 보관' : 'Archive Record'}</h4>
             <p className="hint">
-              Saved records show up in <strong>My Analyses</strong> and can be reopened as a new draft later.
+              {lang === 'ko' ? (
+                <>저장한 기록은 <strong>내 분석 기록</strong>에 표시되며 나중에 새 초안으로 다시 열 수 있습니다.</>
+              ) : (
+                <>Saved records show up in <strong>My Analyses</strong> and can be reopened as a new draft later.</>
+              )}
             </p>
             {!user && (
               <div className="transit-callout" style={{ marginTop: 12 }}>
-                Sign in with Google to save this KMT analysis into your archive history.
+                {lang === 'ko'
+                  ? '이 KMT 분석을 보관하려면 Google 계정으로 로그인하세요.'
+                  : 'Sign in with Google to save this KMT analysis into your archive history.'}
               </div>
             )}
             {submittedRecord && (
               <div className="transit-config-summary" style={{ marginTop: 12 }}>
                 <div className="transit-config-row">
-                  <span>Submission</span>
+                  <span>{lang === 'ko' ? '제출 기록' : 'Submission'}</span>
                   <span>#{submittedRecord.submission_id}</span>
                 </div>
                 <div className="transit-config-row">
-                  <span>Saved To</span>
+                  <span>{lang === 'ko' ? '저장 위치' : 'Saved To'}</span>
                   <span>{submittedRecord.export_path}</span>
                 </div>
               </div>
@@ -1727,14 +1764,14 @@ export function KmtnetLab({
           <div className="record-cover-card">
                 <div className="record-cover-head">
                   <div>
-                    <span className="record-section-kicker">Submission</span>
-                    <h4>Summary</h4>
+                    <span className="record-section-kicker">{lang === 'ko' ? '제출 기록' : 'Submission'}</span>
+                    <h4>{lang === 'ko' ? '요약' : 'Summary'}</h4>
                   </div>
-                  <span className="record-required-note">* Required</span>
+                  <span className="record-required-note">{lang === 'ko' ? '* 필수' : '* Required'}</span>
                 </div>
                 <label className="record-form-field">
                   <span className="record-field-label">
-                    Record Title
+                    {lang === 'ko' ? '기록 제목' : 'Record Title'}
                     <strong className="record-required">*</strong>
                   </span>
                   <input

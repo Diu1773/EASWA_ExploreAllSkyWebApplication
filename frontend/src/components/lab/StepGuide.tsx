@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLangStore } from '../../i18n';
 
 export type GuideQuestion =
   | { type: 'open'; id: string; text: string }
@@ -14,6 +15,7 @@ interface StepGuideProps {
 }
 
 export function StepGuide({ questions, storageKey, onAnswersChange }: StepGuideProps) {
+  const lang = useLangStore((s) => s.lang);
   const [open, setOpen] = useState(() => {
     try { return localStorage.getItem(storageKey) !== 'false'; }
     catch { return true; }
@@ -39,7 +41,7 @@ export function StepGuide({ questions, storageKey, onAnswersChange }: StepGuideP
           try { localStorage.setItem(storageKey, String(next)); } catch { /* ignore */ }
         }}
       >
-        <span>생각해보기</span>
+        <span>{lang === 'ko' ? '생각해보기' : 'Think About It'}</span>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>
           <polyline points="6 9 12 15 18 9" />
         </svg>
@@ -68,7 +70,9 @@ export function StepGuide({ questions, storageKey, onAnswersChange }: StepGuideP
                     </div>
                     {answered && (
                       <div className={`transit-guide-feedback ${isCorrect ? 'correct' : 'wrong'}`}>
-                        <strong>{isCorrect ? '정답!' : `오답 — 정답: ${q.correct}`}</strong>
+                        <strong>{isCorrect
+                          ? lang === 'ko' ? '정답!' : 'Correct!'
+                          : lang === 'ko' ? `오답 — 정답: ${q.correct}` : `Incorrect — Answer: ${q.correct}`}</strong>
                         <span>{q.explanation}</span>
                       </div>
                     )}
@@ -94,7 +98,9 @@ export function StepGuide({ questions, storageKey, onAnswersChange }: StepGuideP
                     </div>
                     {answered && (
                       <div className={`transit-guide-feedback ${isCorrect ? 'correct' : 'wrong'}`}>
-                        <strong>{isCorrect ? '정답!' : `오답 — 정답: ${q.correct}`}</strong>
+                        <strong>{isCorrect
+                          ? lang === 'ko' ? '정답!' : 'Correct!'
+                          : lang === 'ko' ? `오답 — 정답: ${q.correct}` : `Incorrect — Answer: ${q.correct}`}</strong>
                         <span>{q.explanation}</span>
                       </div>
                     )}
@@ -104,7 +110,7 @@ export function StepGuide({ questions, storageKey, onAnswersChange }: StepGuideP
               {q.type === 'open' && (
                 <textarea
                   className="transit-guide-textarea"
-                  placeholder="여기에 생각을 적어보세요..."
+                  placeholder={lang === 'ko' ? '여기에 생각을 적어보세요...' : 'Write your thoughts here...'}
                   value={answers[q.id] ?? ''}
                   onChange={(e) => handleAnswer(q.id, e.target.value)}
                   rows={3}

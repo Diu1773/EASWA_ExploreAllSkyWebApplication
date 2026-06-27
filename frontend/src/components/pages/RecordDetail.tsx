@@ -9,6 +9,7 @@ import {
 import { useAuthStore } from '../../stores/useAuthStore';
 import { formatAnswerValue, formatMetric } from '../../utils/recordFormat';
 import type { RecordListItem, RecordTemplate } from '../../types/record';
+import { useLangStore } from '../../i18n';
 
 type RecordPayload = {
   template?: {
@@ -49,6 +50,7 @@ type RecordPayload = {
 
 export function RecordDetail() {
   const user = useAuthStore((s) => s.user);
+  const lang = useLangStore((s) => s.lang);
   const { recordId } = useParams<{ recordId: string }>();
   const numericRecordId = Number(recordId);
   const [record, setRecord] = useState<RecordListItem | null>(null);
@@ -173,10 +175,10 @@ export function RecordDetail() {
   if (!user) {
     return (
       <div className="page-placeholder">
-        <h2>Analysis Record</h2>
-        <p>Please sign in to view saved records.</p>
+        <h2>{lang === 'ko' ? '분석 기록' : 'Analysis Record'}</h2>
+        <p>{lang === 'ko' ? '저장된 기록을 보려면 로그인하세요.' : 'Please sign in to view saved records.'}</p>
         <a href="/api/auth/login" className="btn-primary">
-          Sign in with Google
+          {lang === 'ko' ? 'Google로 로그인' : 'Sign in with Google'}
         </a>
       </div>
     );
@@ -185,10 +187,10 @@ export function RecordDetail() {
   if (!Number.isFinite(numericRecordId)) {
     return (
       <div className="page-placeholder">
-        <h2>Analysis Record</h2>
-        <p className="hint error-text">Invalid analysis record id.</p>
+        <h2>{lang === 'ko' ? '분석 기록' : 'Analysis Record'}</h2>
+        <p className="hint error-text">{lang === 'ko' ? '분석 기록 ID가 올바르지 않습니다.' : 'Invalid analysis record id.'}</p>
         <Link to="/my" className="btn-primary">
-          Back to My Analyses
+          {lang === 'ko' ? '내 분석 기록으로' : 'Back to My Analyses'}
         </Link>
       </div>
     );
@@ -199,15 +201,18 @@ export function RecordDetail() {
       <div className="record-detail-header">
         <div>
           <Link to="/my" className="back-link">
-            &larr; Back to My Analyses
+            &larr; {lang === 'ko' ? '내 분석 기록' : 'Back to My Analyses'}
           </Link>
           <span className="analysis-record-kicker">
-            {record ? `Record #${record.submission_id}` : `Record #${numericRecordId}`}
+            {lang === 'ko' ? '기록' : 'Record'} #{record?.submission_id ?? numericRecordId}
           </span>
-          <h2>{record?.title ?? 'Analysis Record'}</h2>
+          <h2>{record?.title ?? (lang === 'ko' ? '분석 기록' : 'Analysis Record')}</h2>
           <p className="hint">
-            Submitted records are read-only. Use <strong>Create Draft</strong> to continue
-            editing in Lab without mutating the saved result.
+            {lang === 'ko' ? (
+              <>제출된 기록은 읽기 전용입니다. 저장된 결과를 바꾸지 않고 분석을 이어가려면 <strong>새 초안 만들기</strong>를 사용하세요.</>
+            ) : (
+              <>Submitted records are read-only. Use <strong>Create Draft</strong> to continue editing in Lab without mutating the saved result.</>
+            )}
           </p>
         </div>
         {record && (
@@ -216,10 +221,10 @@ export function RecordDetail() {
               to={`/lab/${record.target_id}?seedRecord=${record.submission_id}`}
               className="btn-sm"
             >
-              Create Draft
+              {lang === 'ko' ? '새 초안 만들기' : 'Create Draft'}
             </Link>
             <Link to={`/target/${record.target_id}`} className="btn-sm">
-              View Target
+              {lang === 'ko' ? '대상 보기' : 'View Target'}
             </Link>
             {canDownloadCsv && (
               <button
@@ -228,7 +233,9 @@ export function RecordDetail() {
                 disabled={downloading}
                 onClick={() => { void handleDownloadCsv(); }}
               >
-                {downloading ? 'Downloading...' : 'Download CSV'}
+                {downloading
+                  ? lang === 'ko' ? '내려받는 중...' : 'Downloading...'
+                  : lang === 'ko' ? 'CSV 내려받기' : 'Download CSV'}
               </button>
             )}
             <button
@@ -237,26 +244,30 @@ export function RecordDetail() {
               disabled={sharing}
               onClick={() => { void handleShare(); }}
             >
-              {sharing ? 'Generating...' : copiedLink ? 'Link Copied!' : 'Share'}
+              {sharing
+                ? lang === 'ko' ? '링크 생성 중...' : 'Generating...'
+                : copiedLink
+                  ? lang === 'ko' ? '링크 복사됨' : 'Link Copied!'
+                  : lang === 'ko' ? '공유' : 'Share'}
             </button>
           </div>
         )}
       </div>
 
-      {loading && <p className="hint">Loading analysis record...</p>}
+      {loading && <p className="hint">{lang === 'ko' ? '분석 기록 불러오는 중...' : 'Loading analysis record...'}</p>}
       {errorMessage && <p className="hint error-text">{errorMessage}</p>}
 
       {!loading && !errorMessage && !record && (
         <div className="page-empty-state">
-          <strong>Record not found</strong>
-          <p>The requested analysis record is unavailable or you do not have access.</p>
+          <strong>{lang === 'ko' ? '기록을 찾을 수 없습니다' : 'Record not found'}</strong>
+          <p>{lang === 'ko' ? '요청한 분석 기록이 없거나 접근 권한이 없습니다.' : 'The requested analysis record is unavailable or you do not have access.'}</p>
         </div>
       )}
 
       {!loading && record && (
         <div className="record-detail-grid">
           <section className="record-detail-card">
-            <h3>Overview</h3>
+            <h3>{lang === 'ko' ? '개요' : 'Overview'}</h3>
             <div className="analysis-record-meta">
               <span>{record.created_at}</span>
               <span>{payload?.template?.title ?? template?.title ?? record.template_id}</span>
@@ -265,23 +276,30 @@ export function RecordDetail() {
               {context?.sector !== undefined && <span>Sector {context.sector}</span>}
               {context?.site_label && <span>{context.site_label}</span>}
               {record.observation_ids.length > 0 && (
-                <span>{record.observation_ids.length} observation</span>
+                <span>{record.observation_ids.length} {lang === 'ko' ? '개 관측' : 'observation'}</span>
               )}
               {context?.frame_count !== undefined && (
                 <span>
-                  {context.frame_count.toLocaleString()} {isMicrolensingRecord ? 'points' : 'cadences'}
+                  {context.frame_count.toLocaleString()}{' '}
+                  {isMicrolensingRecord
+                    ? lang === 'ko' ? '포인트' : 'points'
+                    : lang === 'ko' ? 'cadence' : 'cadences'}
                 </span>
               )}
             </div>
             <dl className="record-detail-metrics">
               <div>
-                <dt>{isMicrolensingRecord ? 'Site' : 'Observation'}</dt>
+                <dt>{isMicrolensingRecord
+                  ? lang === 'ko' ? '관측소' : 'Site'
+                  : lang === 'ko' ? '관측 자료' : 'Observation'}</dt>
                 <dd>
                   {context?.site_label ?? context?.site_id ?? context?.observation_id ?? record.observation_ids[0] ?? '—'}
                 </dd>
               </div>
               <div>
-                <dt>{isMicrolensingRecord ? 'Target Type' : 'Field'}</dt>
+                <dt>{isMicrolensingRecord
+                  ? lang === 'ko' ? '대상 유형' : 'Target Type'
+                  : lang === 'ko' ? '시야' : 'Field'}</dt>
                 <dd>
                   {isMicrolensingRecord
                     ? (context?.target_type ?? '—')
@@ -291,11 +309,15 @@ export function RecordDetail() {
                 </dd>
               </div>
               <div>
-                <dt>{isMicrolensingRecord ? 'Merged Sites' : 'Comparisons'}</dt>
+                <dt>{isMicrolensingRecord
+                  ? lang === 'ko' ? '병합 관측소' : 'Merged Sites'
+                  : lang === 'ko' ? '비교성' : 'Comparisons'}</dt>
                 <dd>{isMicrolensingRecord ? record.observation_ids.length : context?.comparison_positions?.length ?? 0}</dd>
               </div>
               <div>
-                <dt>{isMicrolensingRecord ? 'Fit Model' : 'Fit Mode'}</dt>
+                <dt>{isMicrolensingRecord
+                  ? lang === 'ko' ? '적합 모델' : 'Fit Model'
+                  : lang === 'ko' ? '적합 방식' : 'Fit Mode'}</dt>
                 <dd>{isMicrolensingRecord ? 'Paczynski single-lens' : context?.fit_controls?.fit_data_source ?? '—'}</dd>
               </div>
             </dl>
@@ -314,7 +336,7 @@ export function RecordDetail() {
                   <dd>{formatMetric(transitFit.a_rs, 2)}</dd>
                 </div>
                 <div>
-                  <dt>Inclination</dt>
+                  <dt>{lang === 'ko' ? '궤도 경사각' : 'Inclination'}</dt>
                   <dd>{formatMetric(transitFit.inclination, 2)}°</dd>
                 </div>
                 <div>
@@ -322,7 +344,7 @@ export function RecordDetail() {
                   <dd>{formatMetric(transitFit.chi_squared_red, 3)}</dd>
                 </div>
                 <div>
-                  <dt>Period</dt>
+                  <dt>{lang === 'ko' ? '공전 주기' : 'Period'}</dt>
                   <dd>{formatMetric(transitFit.period, 6)}</dd>
                 </div>
                 <div>
@@ -330,12 +352,14 @@ export function RecordDetail() {
                   <dd>{formatMetric(transitFit.t0, 6)}</dd>
                 </div>
                 <div>
-                  <dt>Model</dt>
+                  <dt>{lang === 'ko' ? '모델' : 'Model'}</dt>
                   <dd>{transitFit.used_batman ? 'batman integrated transit' : 'legacy'}</dd>
                 </div>
                 <div>
                   <dt>MCMC</dt>
-                  <dd>{transitFit.used_mcmc ? 'Enabled' : 'Disabled'}</dd>
+                  <dd>{transitFit.used_mcmc
+                    ? lang === 'ko' ? '사용' : 'Enabled'
+                    : lang === 'ko' ? '미사용' : 'Disabled'}</dd>
                 </div>
               </dl>
             </section>
@@ -370,9 +394,9 @@ export function RecordDetail() {
           )}
 
           <section className="record-detail-card">
-            <h3>Survey Answers</h3>
+            <h3>{lang === 'ko' ? '탐구 답변' : 'Survey Answers'}</h3>
             {answerEntries.length === 0 ? (
-              <p className="hint">No survey answers were saved with this record.</p>
+              <p className="hint">{lang === 'ko' ? '이 기록에 저장된 탐구 답변이 없습니다.' : 'No survey answers were saved with this record.'}</p>
             ) : (
               <dl className="record-answer-list">
                 {answerEntries.map(([questionId, value]) => {
@@ -389,20 +413,20 @@ export function RecordDetail() {
           </section>
 
           <section className="record-detail-card">
-            <h3>Payload Notes</h3>
+            <h3>{lang === 'ko' ? '기록 정보' : 'Payload Notes'}</h3>
             <p className="hint">
-              This page shows the immutable submitted snapshot. Any new analysis settings,
-              measurements, previews, or fit changes should happen in a draft session created
-              from this record.
+              {lang === 'ko'
+                ? '이 페이지는 제출 당시의 변경 불가능한 기록을 보여줍니다. 분석 설정, 측정, 미리보기 또는 모델 적합을 변경하려면 이 기록에서 새 초안을 만드세요.'
+                : 'This page shows the immutable submitted snapshot. Any new analysis settings, measurements, previews, or fit changes should happen in a draft session created from this record.'}
             </p>
             <div className="analysis-record-summary">
               {payload?.template?.version !== undefined && (
                 <span>Template v{payload.template.version}</span>
               )}
-              {context?.target_name && <span>Target: {context.target_name}</span>}
+              {context?.target_name && <span>{lang === 'ko' ? '대상' : 'Target'}: {context.target_name}</span>}
               {context?.sector !== undefined && <span>Sector: {context.sector}</span>}
               {context?.comparison_positions?.length !== undefined && (
-                <span>Saved comparisons: {context.comparison_positions.length}</span>
+                <span>{lang === 'ko' ? '저장된 비교성' : 'Saved comparisons'}: {context.comparison_positions.length}</span>
               )}
             </div>
           </section>

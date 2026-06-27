@@ -1,5 +1,6 @@
 import { useAppStore } from '../../stores/useAppStore';
 import type { Observation } from '../../types/target';
+import { useLangStore } from '../../i18n';
 
 interface ObservationTableProps {
   observations: Observation[];
@@ -10,6 +11,7 @@ export function ObservationTable({ observations }: ObservationTableProps) {
   const toggle = useAppStore((s) => s.toggleObservation);
   const selectAll = useAppStore((s) => s.selectAllObservations);
   const clearSelections = useAppStore((s) => s.clearSelections);
+  const lang = useLangStore((s) => s.lang);
 
   const allSelected = observations.length > 0 && selected.length === observations.length;
   const isTessTable = observations.some((obs) => obs.mission === 'TESS');
@@ -19,9 +21,11 @@ export function ObservationTable({ observations }: ObservationTableProps) {
     <div className="observation-table-wrap">
       <div className="obs-table-header">
         <div>
-          <h4>Observations</h4>
+          <h4>{lang === 'ko' ? '관측 자료' : 'Observations'}</h4>
           <p className="obs-table-subtitle">
-          {isTessTable ? 'TESS sectors and cutout products' : 'Archive observation records'}
+          {isTessTable
+            ? lang === 'ko' ? 'TESS Sector와 cutout 자료' : 'TESS sectors and cutout products'
+            : lang === 'ko' ? '관측 아카이브 기록' : 'Archive observation records'}
           </p>
         </div>
         <div className="obs-table-actions">
@@ -33,9 +37,13 @@ export function ObservationTable({ observations }: ObservationTableProps) {
                 : selectAll(observations.map((o) => o.id))
             }
           >
-            {allSelected ? 'Deselect All' : 'Select All'}
+            {allSelected
+              ? lang === 'ko' ? '전체 해제' : 'Deselect All'
+              : lang === 'ko' ? '전체 선택' : 'Select All'}
           </button>
-          <span className="selected-count">{selected.length} selected</span>
+          <span className="selected-count">
+            {lang === 'ko' ? `${selected.length}개 선택` : `${selected.length} selected`}
+          </span>
         </div>
       </div>
       <table className="obs-table">
@@ -44,31 +52,31 @@ export function ObservationTable({ observations }: ObservationTableProps) {
             <tr>
               <th></th>
               <th>Sector</th>
-              <th>Camera</th>
+              <th>{lang === 'ko' ? '카메라' : 'Camera'}</th>
               <th>CCD</th>
-              <th>Band</th>
-              <th>Frames</th>
+              <th>{lang === 'ko' ? '대역' : 'Band'}</th>
+              <th>{lang === 'ko' ? '프레임' : 'Frames'}</th>
               <th>Cutout</th>
             </tr>
           ) : isKmtnetTable ? (
             <tr>
               <th></th>
-              <th>Site</th>
-              <th>Epoch</th>
+              <th>{lang === 'ko' ? '관측소' : 'Site'}</th>
+              <th>{lang === 'ko' ? '관측 시각' : 'Epoch'}</th>
               <th>HJD</th>
-              <th>Filter</th>
-              <th>Exp (s)</th>
-              <th>Preview</th>
+              <th>{lang === 'ko' ? '필터' : 'Filter'}</th>
+              <th>{lang === 'ko' ? '노출 (s)' : 'Exp (s)'}</th>
+              <th>{lang === 'ko' ? '미리보기' : 'Preview'}</th>
               <th>FITS</th>
             </tr>
           ) : (
             <tr>
               <th></th>
-              <th>Epoch</th>
+              <th>{lang === 'ko' ? '관측 시각' : 'Epoch'}</th>
               <th>HJD</th>
-              <th>Filter</th>
-              <th>Exp (s)</th>
-              <th>Airmass</th>
+              <th>{lang === 'ko' ? '필터' : 'Filter'}</th>
+              <th>{lang === 'ko' ? '노출 (s)' : 'Exp (s)'}</th>
+              <th>{lang === 'ko' ? '대기질량' : 'Airmass'}</th>
             </tr>
           )}
         </thead>
@@ -107,7 +115,7 @@ export function ObservationTable({ observations }: ObservationTableProps) {
                         FITS
                       </a>
                     ) : (
-                      'Pending'
+                      lang === 'ko' ? '준비 중' : 'Pending'
                     )}
                   </td>
                 </>

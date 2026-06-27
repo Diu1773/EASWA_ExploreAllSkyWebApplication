@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import PlotlyModule from 'plotly.js-dist-min';
+import { useLangStore } from '../../i18n';
 import type { LightCurveResponse } from '../../types/photometry';
 
 type LightCurveOverlay = {
@@ -121,6 +122,7 @@ export function LightCurvePlot({
   enableRangeSelection = false,
   onSelectRange = null,
 }: LightCurvePlotProps) {
+  const lang = useLangStore((state) => state.lang);
   const plotRef = useRef<HTMLDivElement>(null);
   const errorRef = useRef<string | null>(null);
   const [plotWidth, setPlotWidth] = useState(0);
@@ -188,7 +190,7 @@ export function LightCurvePlot({
         Number.isFinite(highlightRange.start) &&
         Number.isFinite(highlightRange.end) &&
         highlightRange.end > highlightRange.start;
-      const plotTitle = targetName ?? plotData.target_id ?? 'Light Curve';
+      const plotTitle = targetName ?? plotData.target_id ?? (lang === 'ko' ? '광도곡선' : 'Light Curve');
       const traces: any[] = [
         {
           x: xValues,
@@ -323,7 +325,7 @@ export function LightCurvePlot({
                 yanchor: 'middle',
                 align: 'right',
                 showarrow: false,
-                text: `Analyst: ${analystLabel}`,
+                text: `${lang === 'ko' ? '분석자' : 'Analyst'}: ${analystLabel}`,
                 font: {
                   family: 'IBM Plex Sans, sans-serif',
                   size: isCompactPlot ? 10 : 12,
@@ -438,7 +440,12 @@ export function LightCurvePlot({
           })()
         : {
             title: {
-              text: [plotTitle, isFolded ? 'Phase-Folded Light Curve' : 'Differential Light Curve']
+              text: [
+                plotTitle,
+                isFolded
+                  ? (lang === 'ko' ? '위상 접기 광도곡선' : 'Phase-Folded Light Curve')
+                  : (lang === 'ko' ? '차등 광도곡선' : 'Differential Light Curve'),
+              ]
                 .join(' \u2014 '),
               font: {
                 size: isCompactPlot ? 12 : 14,
@@ -552,7 +559,7 @@ export function LightCurvePlot({
 
       if (plotRef.current) {
         plotRef.current.innerHTML =
-          '<div class="plot-error">Light curve plot failed to load.</div>';
+          `<div class="plot-error">${lang === 'ko' ? '광도곡선을 불러오지 못했습니다.' : 'Light curve plot failed to load.'}</div>`;
       }
     });
 
@@ -572,6 +579,7 @@ export function LightCurvePlot({
     enableRangeSelection,
     onSelectRange,
     plotWidth,
+    lang,
   ]);
 
   useEffect(() => {
@@ -591,7 +599,9 @@ export function LightCurvePlot({
     <div className="lightcurve-plot">
       {variant !== 'fit-preview' && (
         <h4>
-          {targetName ? `${targetName} Light Curve` : 'Light Curve'}
+          {targetName
+            ? `${targetName} ${lang === 'ko' ? '광도곡선' : 'Light Curve'}`
+            : (lang === 'ko' ? '광도곡선' : 'Light Curve')}
           {(foldPeriod ?? plotData.period_days) && isFolded && (
             <span className="period-info"> (P = {foldPeriod ?? plotData.period_days} d)</span>
           )}
@@ -603,7 +613,9 @@ export function LightCurvePlot({
       />
       {enableRangeSelection && !isFolded && (
         <p className="hint" style={{ marginTop: 8 }}>
-          Drag horizontally on the plot to set the BJD fit window.
+          {lang === 'ko'
+            ? '그래프를 가로로 드래그하여 BJD 적합 구간을 설정하세요.'
+            : 'Drag horizontally on the plot to set the BJD fit window.'}
         </p>
       )}
     </div>

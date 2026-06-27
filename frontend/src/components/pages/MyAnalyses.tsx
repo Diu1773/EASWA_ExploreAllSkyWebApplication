@@ -9,6 +9,7 @@ import {
 } from '../../api/client';
 import { useAuthStore } from '../../stores/useAuthStore';
 import type { RecordListItem, WorkflowDraftItem } from '../../types/record';
+import { useLangStore } from '../../i18n';
 
 type PendingDeleteTarget =
   | { kind: 'record'; item: RecordListItem }
@@ -17,6 +18,7 @@ type PendingDeleteTarget =
 
 export function MyAnalyses() {
   const user = useAuthStore((s) => s.user);
+  const lang = useLangStore((s) => s.lang);
   const [records, setRecords] = useState<RecordListItem[]>([]);
   const [drafts, setDrafts] = useState<WorkflowDraftItem[]>([]);
   const [activeTab, setActiveTab] = useState<'drafts' | 'records'>('drafts');
@@ -127,10 +129,10 @@ export function MyAnalyses() {
   if (!user) {
     return (
       <div className="page-placeholder">
-        <h2>My Analyses</h2>
-        <p>Please sign in to view your analysis history.</p>
+        <h2>{lang === 'ko' ? '내 분석 기록' : 'My Analyses'}</h2>
+        <p>{lang === 'ko' ? '분석 기록을 보려면 로그인하세요.' : 'Please sign in to view your analysis history.'}</p>
         <a href="/api/auth/login" className="btn-primary">
-          Sign in with Google
+          {lang === 'ko' ? 'Google로 로그인' : 'Sign in with Google'}
         </a>
       </div>
     );
@@ -138,13 +140,14 @@ export function MyAnalyses() {
 
   return (
     <div className="page-placeholder">
-      <h2>My Analyses</h2>
+      <h2>{lang === 'ko' ? '내 분석 기록' : 'My Analyses'}</h2>
       <p className="hint">
-        Saved records attached to your Google account appear here. Open them read-only or
-        create a new draft to continue editing in Lab.
+        {lang === 'ko'
+          ? 'Google 계정에 저장된 분석 기록입니다. 읽기 전용으로 열거나 새 초안을 만들어 Lab에서 분석을 이어갈 수 있습니다.'
+          : 'Saved records attached to your Google account appear here. Open them read-only or create a new draft to continue editing in Lab.'}
       </p>
 
-      {loading && <p className="hint">Loading saved analyses...</p>}
+      {loading && <p className="hint">{lang === 'ko' ? '분석 기록 불러오는 중...' : 'Loading saved analyses...'}</p>}
       {errorMessage && <p className="hint error-text">{errorMessage}</p>}
 
       {!loading && !errorMessage && drafts.length === 0 && records.length === 0 && (
@@ -153,16 +156,21 @@ export function MyAnalyses() {
             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
             <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
           </svg>
-          <strong>No analyses yet</strong>
+          <strong>{lang === 'ko' ? '아직 저장된 분석이 없습니다' : 'No analyses yet'}</strong>
           <p>
-            Start in Transit Lab or Microlensing Lab and submit the final record form.
-            Submitted records will show up here.
+            {lang === 'ko'
+              ? 'Transit Lab 또는 Microlensing Lab에서 탐구를 시작하고 최종 기록을 저장하세요.'
+              : 'Start in Transit Lab or Microlensing Lab and submit the final record form. Submitted records will show up here.'}
           </p>
         </div>
       )}
 
       {!loading && !errorMessage && (drafts.length > 0 || records.length > 0) && (
-        <div className="analysis-tab-row" role="tablist" aria-label="Saved analysis sections">
+        <div
+          className="analysis-tab-row"
+          role="tablist"
+          aria-label={lang === 'ko' ? '저장된 분석 구분' : 'Saved analysis sections'}
+        >
           <button
             type="button"
             className={`analysis-tab ${activeTab === 'drafts' ? 'active' : ''}`}
@@ -170,7 +178,7 @@ export function MyAnalyses() {
             role="tab"
             aria-selected={activeTab === 'drafts'}
           >
-            Drafts
+            {lang === 'ko' ? '초안' : 'Drafts'}
             <span className="analysis-tab-count">{drafts.length}</span>
           </button>
           <button
@@ -180,7 +188,7 @@ export function MyAnalyses() {
             role="tab"
             aria-selected={activeTab === 'records'}
           >
-            Records
+            {lang === 'ko' ? '완료 기록' : 'Records'}
             <span className="analysis-tab-count">{records.length}</span>
           </button>
         </div>
@@ -188,32 +196,32 @@ export function MyAnalyses() {
 
       {!loading && activeTab === 'drafts' && drafts.length === 0 && records.length > 0 && (
         <div className="page-empty-state analysis-tab-empty">
-          <strong>No drafts right now</strong>
-          <p>Saved records are available in the Records tab.</p>
+          <strong>{lang === 'ko' ? '현재 초안이 없습니다' : 'No drafts right now'}</strong>
+          <p>{lang === 'ko' ? '저장된 결과는 완료 기록 탭에서 확인할 수 있습니다.' : 'Saved records are available in the Records tab.'}</p>
         </div>
       )}
 
       {!loading && activeTab === 'drafts' && drafts.length > 0 && (
         <>
-          <h3 className="settings-section">Drafts</h3>
+          <h3 className="settings-section">{lang === 'ko' ? '초안' : 'Drafts'}</h3>
           <div className="analysis-record-list">
             {drafts.map((draft) => (
               <article key={draft.draft_id} className="analysis-record-card">
                 <div className="analysis-record-head">
                   <div>
-                    <span className="analysis-record-kicker">Draft</span>
-                    <h3>{draft.title?.trim() || `${draft.target_id} draft`}</h3>
+                    <span className="analysis-record-kicker">{lang === 'ko' ? '초안' : 'Draft'}</span>
+                    <h3>{draft.title?.trim() || `${draft.target_id} ${lang === 'ko' ? '초안' : 'draft'}`}</h3>
                   </div>
                   <span className="analysis-launcher-tag">{draft.target_id}</span>
                 </div>
                 <div className="analysis-record-meta">
-                  <span>Updated {draft.updated_at}</span>
-                  {draft.last_opened_at && <span>Opened {draft.last_opened_at}</span>}
+                  <span>{lang === 'ko' ? '수정' : 'Updated'} {draft.updated_at}</span>
+                  {draft.last_opened_at && <span>{lang === 'ko' ? '최근 열기' : 'Opened'} {draft.last_opened_at}</span>}
                   <span>{draft.workflow}</span>
                   <span>v{draft.workflow_version}</span>
                   <span>{draft.status}</span>
                   {draft.seed_record_id !== null && draft.seed_record_id !== undefined && (
-                    <span>Seed record #{draft.seed_record_id}</span>
+                    <span>{lang === 'ko' ? '원본 기록' : 'Seed record'} #{draft.seed_record_id}</span>
                   )}
                 </div>
                 <div className="analysis-record-actions">
@@ -225,15 +233,15 @@ export function MyAnalyses() {
                     }`}
                     className="btn-sm"
                   >
-                    Continue Draft
+                    {lang === 'ko' ? '초안 계속하기' : 'Continue Draft'}
                   </Link>
                   {draft.seed_record_id !== null && draft.seed_record_id !== undefined && (
                     <Link to={`/records/${draft.seed_record_id}`} className="btn-sm">
-                      Open Seed Record
+                      {lang === 'ko' ? '원본 기록 열기' : 'Open Seed Record'}
                     </Link>
                   )}
                   <Link to={`/target/${draft.target_id}`} className="btn-sm">
-                    View Target
+                    {lang === 'ko' ? '대상 보기' : 'View Target'}
                   </Link>
                   <button
                     type="button"
@@ -244,8 +252,8 @@ export function MyAnalyses() {
                     onClick={() => setPendingDeleteTarget({ kind: 'draft', item: draft })}
                   >
                     {activeAction?.id === draft.draft_id && activeAction.type === 'delete-draft'
-                      ? 'Deleting...'
-                      : 'Delete'}
+                      ? lang === 'ko' ? '삭제 중...' : 'Deleting...'
+                      : lang === 'ko' ? '삭제' : 'Delete'}
                   </button>
                 </div>
               </article>
@@ -256,14 +264,14 @@ export function MyAnalyses() {
 
       {!loading && activeTab === 'records' && records.length === 0 && drafts.length > 0 && (
         <div className="page-empty-state analysis-tab-empty">
-          <strong>No records yet</strong>
-          <p>Continue a draft and submit the final record form when the analysis is ready.</p>
+          <strong>{lang === 'ko' ? '아직 완료 기록이 없습니다' : 'No records yet'}</strong>
+          <p>{lang === 'ko' ? '초안의 분석과 해석을 마친 뒤 최종 기록을 저장하세요.' : 'Continue a draft and submit the final record form when the analysis is ready.'}</p>
         </div>
       )}
 
       {!loading && activeTab === 'records' && records.length > 0 && (
         <>
-          <h3 className="settings-section">Records</h3>
+          <h3 className="settings-section">{lang === 'ko' ? '완료 기록' : 'Records'}</h3>
           <div className="analysis-record-list">
             {records.map((record) => {
               const payload = record.payload as {
@@ -293,7 +301,7 @@ export function MyAnalyses() {
                 <article key={record.submission_id} className="analysis-record-card">
                   <div className="analysis-record-head">
                     <div>
-                      <span className="analysis-record-kicker">Record #{record.submission_id}</span>
+                      <span className="analysis-record-kicker">{lang === 'ko' ? '기록' : 'Record'} #{record.submission_id}</span>
                       <h3>{record.title}</h3>
                     </div>
                     <span className="analysis-launcher-tag">
@@ -309,41 +317,41 @@ export function MyAnalyses() {
                       <span>{payload.context.site_label}</span>
                     )}
                     {payload.context?.frame_count !== undefined && (
-                      <span>{payload.context.frame_count.toLocaleString()} frames</span>
+                      <span>{payload.context.frame_count.toLocaleString()} {lang === 'ko' ? '프레임' : 'frames'}</span>
                     )}
                   </div>
                   <div className="analysis-record-summary">
                     {payload.answers?.transit_visible && (
-                      <span>Transit: {payload.answers.transit_visible}</span>
+                      <span>{lang === 'ko' ? '식현상' : 'Transit'}: {payload.answers.transit_visible}</span>
                     )}
                     {payload.answers?.curve_quality && (
-                      <span>Quality: {payload.answers.curve_quality}</span>
+                      <span>{lang === 'ko' ? '품질' : 'Quality'}: {payload.answers.curve_quality}</span>
                     )}
                     {payload.answers?.event_classification && (
-                      <span>Event: {payload.answers.event_classification}</span>
+                      <span>{lang === 'ko' ? '이벤트' : 'Event'}: {payload.answers.event_classification}</span>
                     )}
                     {payload.answers?.fit_quality && (
-                      <span>Fit: {payload.answers.fit_quality}</span>
+                      <span>{lang === 'ko' ? '적합' : 'Fit'}: {payload.answers.fit_quality}</span>
                     )}
                     {payload.answers?.coverage_assessment && (
-                      <span>Coverage: {payload.answers.coverage_assessment}</span>
+                      <span>{lang === 'ko' ? '관측 범위' : 'Coverage'}: {payload.answers.coverage_assessment}</span>
                     )}
                     {payload.answers?.confidence_score !== undefined && (
-                      <span>Confidence: {payload.answers.confidence_score}/5</span>
+                      <span>{lang === 'ko' ? '확신도' : 'Confidence'}: {payload.answers.confidence_score}/5</span>
                     )}
                   </div>
                   <div className="analysis-record-actions">
                     <Link to={`/records/${record.submission_id}`} className="btn-sm">
-                      Open Record
+                      {lang === 'ko' ? '기록 열기' : 'Open Record'}
                     </Link>
                     <Link
                       to={`/lab/${record.target_id}?seedRecord=${record.submission_id}`}
                       className="btn-sm"
                     >
-                      Create Draft
+                      {lang === 'ko' ? '새 초안 만들기' : 'Create Draft'}
                     </Link>
                     <Link to={`/target/${record.target_id}`} className="btn-sm">
-                      View Target
+                      {lang === 'ko' ? '대상 보기' : 'View Target'}
                     </Link>
                     {canDownloadCsv && (
                       <button
@@ -352,7 +360,9 @@ export function MyAnalyses() {
                         disabled={isDownloading || isDeleting}
                         onClick={() => handleDownloadCsv(record.submission_id)}
                       >
-                        {isDownloading ? 'Downloading...' : 'Download CSV'}
+                        {isDownloading
+                          ? lang === 'ko' ? '내려받는 중...' : 'Downloading...'
+                          : lang === 'ko' ? 'CSV 내려받기' : 'Download CSV'}
                       </button>
                     )}
                     <button
@@ -361,7 +371,9 @@ export function MyAnalyses() {
                     disabled={isDownloading || isDeleting}
                     onClick={() => setPendingDeleteTarget({ kind: 'record', item: record })}
                   >
-                    {isDeleting ? 'Deleting...' : 'Delete'}
+                    {isDeleting
+                      ? lang === 'ko' ? '삭제 중...' : 'Deleting...'
+                      : lang === 'ko' ? '삭제' : 'Delete'}
                   </button>
                   </div>
                 </article>
@@ -388,11 +400,15 @@ export function MyAnalyses() {
             aria-labelledby="analysis-delete-modal-title"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="analysis-delete-modal-kicker">Delete Analysis</div>
+            <div className="analysis-delete-modal-kicker">
+              {lang === 'ko' ? '분석 삭제' : 'Delete Analysis'}
+            </div>
             <h3 id="analysis-delete-modal-title">
               {pendingDeleteTarget.kind === 'record'
-                ? `Delete record #${pendingDeleteTarget.item.submission_id}?`
-                : 'Delete draft?'}
+                ? lang === 'ko'
+                  ? `기록 #${pendingDeleteTarget.item.submission_id}을 삭제할까요?`
+                  : `Delete record #${pendingDeleteTarget.item.submission_id}?`
+                : lang === 'ko' ? '초안을 삭제할까요?' : 'Delete draft?'}
             </h3>
             <p>
               <strong>
@@ -403,8 +419,12 @@ export function MyAnalyses() {
             </p>
             <p className="hint">
               {pendingDeleteTarget.kind === 'record'
-                ? 'This action permanently removes the saved analysis and cannot be undone.'
-                : 'This action permanently removes the saved draft session. The source record, if any, will remain untouched.'}
+                ? lang === 'ko'
+                  ? '저장된 분석이 영구 삭제되며 되돌릴 수 없습니다.'
+                  : 'This action permanently removes the saved analysis and cannot be undone.'
+                : lang === 'ko'
+                  ? '저장된 초안 세션이 영구 삭제됩니다. 연결된 원본 기록은 유지됩니다.'
+                  : 'This action permanently removes the saved draft session. The source record, if any, will remain untouched.'}
             </p>
             <div className="analysis-delete-modal-actions">
               <button
@@ -413,7 +433,7 @@ export function MyAnalyses() {
                 disabled={Boolean(activeAction?.type?.startsWith('delete'))}
                 onClick={() => setPendingDeleteTarget(null)}
               >
-                Cancel
+                {lang === 'ko' ? '취소' : 'Cancel'}
               </button>
               <button
                 type="button"
@@ -423,7 +443,9 @@ export function MyAnalyses() {
                   void handleConfirmDeleteTarget();
                 }}
               >
-                {activeAction?.type?.startsWith('delete') ? 'Deleting...' : 'Delete'}
+                {activeAction?.type?.startsWith('delete')
+                  ? lang === 'ko' ? '삭제 중...' : 'Deleting...'
+                  : lang === 'ko' ? '삭제' : 'Delete'}
               </button>
             </div>
           </div>

@@ -11,6 +11,13 @@ import { PhotometryResult } from './PhotometryResult';
 import { LightCurvePlot } from './LightCurvePlot';
 import { TransitLab } from './TransitLab';
 import { KmtnetLab } from './KmtnetLab';
+import { CmdExplorer } from './CmdExplorer';
+import { InquiryLayout } from '../inquiry';
+import { exoplanetTransitModule } from '../../explorationBlocks/configs';
+import {
+  exoplanetAdapter,
+  type ExoplanetAdapterContext,
+} from '../../explorationBlocks/adapters/exoplanetAdapter';
 import type {
   PhotometryMeasurement,
   LightCurveResponse,
@@ -18,10 +25,13 @@ import type {
 import { buildDssPreviewUrl } from '../../utils/surveys';
 import {
   alignExplorerContext,
+  buildLabHref,
   buildExplorerContextSearchParams,
   buildTargetHref,
   getExplorerContext,
 } from '../../utils/explorerNavigation';
+import { useLangStore } from '../../i18n';
+import { formatConstellation } from '../../utils/targetFormat';
 
 // Map topic_id → workflow identifier
 const TOPIC_WORKFLOW: Record<string, string> = {
@@ -30,6 +40,7 @@ const TOPIC_WORKFLOW: Record<string, string> = {
 };
 
 export function LabView() {
+  const lang = useLangStore((s) => s.lang);
   const { targetId } = useParams<{ targetId: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const { target, observations, error: loadError } = useLabData(targetId);
@@ -78,6 +89,8 @@ export function LabView() {
 
   const isTransitWorkflow = resolvedWorkflow === 'transit';
   const isMicrolensingWorkflow = resolvedWorkflow === 'microlensing';
+  const shouldOpenCmdExplorer =
+    target?.topic_id === 'variable_star' || target?.topic_id === 'eclipsing_binary';
 
   const {
     draftId: parsedDraftId,
@@ -158,7 +171,7 @@ export function LabView() {
   };
 
   if (!target) {
-    return <div className="loading">Loading...</div>;
+    return <div className="loading">{lang === 'ko' ? '불러오는 중...' : 'Loading...'}</div>;
   }
 
   const targetHref = buildTargetHref(targetId ?? target.id, {
@@ -168,30 +181,31 @@ export function LabView() {
 
   if (isMicrolensingWorkflow) {
     if (!draftRestoreReady) {
-      return <div className="loading">Restoring draft...</div>;
+      return <div className="loading">{lang === 'ko' ? '초안 복원 중...' : 'Restoring draft...'}</div>;
     }
     return (
       <div className="lab-view">
         <div className="lab-header">
           <div className="lab-header-main">
             <Link to={targetHref} className="back-link">
-              &larr; Back to Target
+              &larr; {lang === 'ko' ? '대상으로' : 'Back to Target'}
             </Link>
             <div className="lab-header-copy">
-              <h2>Microlensing Lab: {target.name}</h2>
+              <h2>{lang === 'ko' ? '미시중력렌즈 Lab' : 'Microlensing Lab'}: {target.name}</h2>
               <div className="target-meta">
                 <span className="badge">{target.type}</span>
-                <span>{target.constellation}</span>
+                <span>{formatConstellation(target.constellation, lang)}</span>
                 <span>KMTNet</span>
               </div>
             </div>
           </div>
           <img
             src={buildDssPreviewUrl(target.ra, target.dec, { width: 360, height: 220, fovDeg: 0.22 })}
-            alt={`${target.name} survey preview`}
+            alt={`${target.name} ${lang === 'ko' ? '관측 미리보기' : 'survey preview'}`}
             className="lab-header-preview"
           />
         </div>
+        <CmdExplorer target={target} defaultOpen={shouldOpenCmdExplorer} />
         <div className="lab-content">
           <div className="lab-results kmtnet-results">
             <KmtnetLab
@@ -210,38 +224,53 @@ export function LabView() {
 
   if (isTransitWorkflow) {
     if (!draftRestoreReady) {
-      return <div className="loading">Restoring draft...</div>;
+      return <div className="loading">{lang === 'ko' ? '초안 복원 중...' : 'Restoring draft...'}</div>;
     }
+    const transitContext: ExoplanetAdapterContext = {
+      target,
+      observations,
+      labHref: buildLabHref(
+        targetId ?? target.id,
+        { ...navigationContext, topicId: target.topic_id },
+        [['workflow', 'transit']],
+      ),
+    };
     return (
-      <div className="lab-view">
-        <div className="lab-header">
-          <div className="lab-header-main">
-            <Link to={targetHref} className="back-link">
-              &larr; Back to Target
-            </Link>
-            <div className="lab-header-copy">
-              <h2>Transit Lab: {target.name}</h2>
+      <InquiryLayout
+        module={exoplanetTransitModule}
+        adapter={exoplanetAdapter}
+        context={transitContext}
+        initialStepId="step4_run_visualize"
+        contextSlot={
+          <div className="inquiry-target-context">
+            <div className="inquiry-target-context-copy">
+              <Link to={targetHref} className="back-link">
+                &larr; {lang === 'ko' ? '대상으로' : 'Back to Target'}
+              </Link>
+              <h2>{lang === 'ko' ? '식현상 Lab' : 'Transit Lab'}: {target.name}</h2>
               <div className="target-meta">
                 <span className="badge">{target.type}</span>
-                <span>{target.constellation}</span>
+                <span>{formatConstellation(target.constellation, lang)}</span>
                 {target.period_days && <span>P = {target.period_days} d</span>}
               </div>
             </div>
+            <img
+              src={buildDssPreviewUrl(target.ra, target.dec, { width: 360, height: 220, fovDeg: 0.22 })}
+              alt={`${target.name} ${lang === 'ko' ? '관측 미리보기' : 'survey preview'}`}
+              className="lab-header-preview"
+            />
           </div>
-          <img
-            src={buildDssPreviewUrl(target.ra, target.dec, { width: 360, height: 220, fovDeg: 0.22 })}
-            alt={`${target.name} survey preview`}
-            className="lab-header-preview"
+        }
+        analysisSlot={
+          <TransitLab
+            target={target}
+            observations={observations}
+            draftId={parsedDraftId}
+            seedRecordId={parsedSeedRecordId}
+            learningMode={navigationContext.learningMode ?? 'guided'}
           />
-        </div>
-        <TransitLab
-          target={target}
-          observations={observations}
-          draftId={parsedDraftId}
-          seedRecordId={parsedSeedRecordId}
-          learningMode={navigationContext.learningMode ?? 'guided'}
-        />
-      </div>
+        }
+      />
     );
   }
 
@@ -250,20 +279,20 @@ export function LabView() {
       <div className="lab-header">
         <div className="lab-header-main">
           <Link to={targetHref} className="back-link">
-            &larr; Back to Target
+            &larr; {lang === 'ko' ? '대상으로' : 'Back to Target'}
           </Link>
           <div className="lab-header-copy">
-            <h2>Lab: {target.name}</h2>
+            <h2>{lang === 'ko' ? '분석 Lab' : 'Lab'}: {target.name}</h2>
             <div className="target-meta">
               <span className="badge">{target.type}</span>
-              <span>{target.constellation}</span>
+              <span>{formatConstellation(target.constellation, lang)}</span>
               {target.period_days && <span>P = {target.period_days} d</span>}
             </div>
           </div>
         </div>
         <img
           src={buildDssPreviewUrl(target.ra, target.dec, { width: 360, height: 220, fovDeg: 0.22 })}
-          alt={`${target.name} survey preview`}
+          alt={`${target.name} ${lang === 'ko' ? '관측 미리보기' : 'survey preview'}`}
           className="lab-header-preview"
         />
       </div>
@@ -281,7 +310,9 @@ export function LabView() {
               onClick={handleRunPhotometry}
               disabled={selectedIds.length === 0 || loading}
             >
-              {loading ? 'Running...' : 'Run Photometry'}
+              {loading
+                ? lang === 'ko' ? '측광 실행 중...' : 'Running...'
+                : lang === 'ko' ? '측광 실행' : 'Run Photometry'}
             </button>
             {errorMessage && <p className="hint error-text">{errorMessage}</p>}
             {lightCurve && (
@@ -291,13 +322,14 @@ export function LabView() {
                   checked={foldEnabled}
                   onChange={handleToggleFold}
                 />
-                Phase Fold (P = {target.period_days} d)
+                {lang === 'ko' ? '위상 접기' : 'Phase Fold'} (P = {target.period_days} d)
               </label>
             )}
           </div>
         </div>
 
         <div className="lab-results">
+          <CmdExplorer target={target} defaultOpen={shouldOpenCmdExplorer} />
           {lightCurve && <LightCurvePlot data={lightCurve} />}
           <PhotometryResult measurements={measurements} />
         </div>

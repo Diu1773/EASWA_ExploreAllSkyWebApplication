@@ -1,4 +1,5 @@
 import type { MicrolensingPreviewResponse } from '../../types/microlensing';
+import { useLangStore } from '../../i18n';
 
 interface KmtnetPreviewPanelProps {
   preview: MicrolensingPreviewResponse;
@@ -47,6 +48,7 @@ export function KmtnetPreviewPanel({
   frameLoading = false,
   onFrameChange,
 }: KmtnetPreviewPanelProps) {
+  const lang = useLangStore((state) => state.lang);
   const currentFrameIndex = preview.frame_index;
   const frameMetadata = preview.frame_metadata;
 
@@ -54,8 +56,8 @@ export function KmtnetPreviewPanel({
     <section className="ml-preview-panel">
       <div className="ml-preview-head">
         <div>
-          <span className="ml-preview-kicker">Difference Imaging</span>
-          <h4>같은 하늘 좌표 stamp의 정렬 / 차분</h4>
+          <span className="ml-preview-kicker">{lang === 'ko' ? '차분영상' : 'Difference Imaging'}</span>
+          <h4>{lang === 'ko' ? '동일한 하늘 좌표 stamp의 정렬 / 차분' : 'Registration and subtraction of the same sky stamp'}</h4>
         </div>
         <div className="ml-preview-stats">
           <span>HJD {frameMetadata.hjd.toFixed(4)}</span>
@@ -73,7 +75,7 @@ export function KmtnetPreviewPanel({
             disabled={frameChangeDisabled || currentFrameIndex <= 0}
             onClick={() => onFrameChange?.(0)}
           >
-            First
+            {lang === 'ko' ? '처음' : 'First'}
           </button>
           <button
             type="button"
@@ -81,7 +83,7 @@ export function KmtnetPreviewPanel({
             disabled={frameChangeDisabled || currentFrameIndex <= 0}
             onClick={() => onFrameChange?.(Math.max(0, currentFrameIndex - 1))}
           >
-            Prev
+            {lang === 'ko' ? '이전' : 'Prev'}
           </button>
           <button
             type="button"
@@ -89,7 +91,7 @@ export function KmtnetPreviewPanel({
             disabled={frameChangeDisabled || currentFrameIndex >= preview.frame_count - 1}
             onClick={() => onFrameChange?.(Math.min(preview.frame_count - 1, currentFrameIndex + 1))}
           >
-            Next
+            {lang === 'ko' ? '다음' : 'Next'}
           </button>
           <button
             type="button"
@@ -97,12 +99,12 @@ export function KmtnetPreviewPanel({
             disabled={frameChangeDisabled || currentFrameIndex >= preview.frame_count - 1}
             onClick={() => onFrameChange?.(preview.frame_count - 1)}
           >
-            Last
+            {lang === 'ko' ? '마지막' : 'Last'}
           </button>
         </div>
         <div className="ml-preview-toolbar-group ml-preview-toolbar-group--grow">
           <span className="selected-count">
-            Frame {currentFrameIndex + 1} / {preview.frame_count}
+            {lang === 'ko' ? '프레임' : 'Frame'} {currentFrameIndex + 1} / {preview.frame_count}
           </span>
           <input
             type="range"
@@ -118,22 +120,26 @@ export function KmtnetPreviewPanel({
 
       <div className="ml-preview-grid">
         <PreviewCard
-          title="Current Epoch (Aligned)"
-          caption={`같은 sky stamp를 reference에 맞춰 정렬 · Δx ${preview.registration_dx_px >= 0 ? '+' : ''}${preview.registration_dx_px.toFixed(2)} px · Δy ${preview.registration_dy_px >= 0 ? '+' : ''}${preview.registration_dy_px.toFixed(2)} px`}
+          title={lang === 'ko' ? '현재 관측 시점 (정렬됨)' : 'Current Epoch (Aligned)'}
+          caption={lang === 'ko'
+            ? `동일한 하늘 stamp를 기준 프레임에 맞춰 정렬 · Δx ${preview.registration_dx_px >= 0 ? '+' : ''}${preview.registration_dx_px.toFixed(2)} px · Δy ${preview.registration_dy_px >= 0 ? '+' : ''}${preview.registration_dy_px.toFixed(2)} px`
+            : `Same sky stamp aligned to the reference · Δx ${preview.registration_dx_px >= 0 ? '+' : ''}${preview.registration_dx_px.toFixed(2)} px · Δy ${preview.registration_dy_px >= 0 ? '+' : ''}${preview.registration_dy_px.toFixed(2)} px`}
           imageUrl={preview.aligned_image_data_url}
           preview={preview}
           markerPosition={preview.aligned_target_position}
         />
         <PreviewCard
-          title="Reference"
-          caption={`비교 기준 epoch · frame #${preview.reference_frame_index + 1}`}
+          title={lang === 'ko' ? '기준 프레임' : 'Reference'}
+          caption={lang === 'ko'
+            ? `비교 기준 관측 시점 · 프레임 #${preview.reference_frame_index + 1}`
+            : `Reference epoch · frame #${preview.reference_frame_index + 1}`}
           imageUrl={preview.reference_image_data_url}
           preview={preview}
           markerPosition={preview.reference_target_position}
         />
         <PreviewCard
-          title="Difference"
-          caption="정렬된 current - reference"
+          title={lang === 'ko' ? '차분영상' : 'Difference'}
+          caption={lang === 'ko' ? '정렬된 현재 프레임 - 기준 프레임' : 'Aligned current frame - reference'}
           imageUrl={preview.difference_image_data_url}
           preview={preview}
           markerPosition={preview.aligned_target_position}
@@ -143,15 +149,36 @@ export function KmtnetPreviewPanel({
 
       <div className="ml-preview-note">
         <span>
-          세 패널은 모두 <strong>같은 하늘 좌표 영역</strong>을 잘라낸 stamp입니다. 현재 epoch는 <strong>{preview.site_label}</strong>의 <code>{frameMetadata.observation_id}</code>,
-          기준 epoch는 HJD {preview.reference_hjd.toFixed(4)}의 <code>{preview.reference_observation_id}</code> 입니다.
-          현재 메타데이터는 <strong>{frameMetadata.filter_band ?? 'I'}-band</strong>, <strong>{frameMetadata.exposure_sec?.toFixed(0) ?? '120'} s</strong> 입니다.
+          {lang === 'ko' ? (
+            <>
+              세 패널은 모두 <strong>동일한 하늘 좌표 영역</strong>을 자른 stamp입니다.
+              현재 관측은 <strong>{preview.site_label}</strong>의 <code>{frameMetadata.observation_id}</code>,
+              기준 관측은 HJD {preview.reference_hjd.toFixed(4)}의 <code>{preview.reference_observation_id}</code>입니다.
+              현재 메타데이터는 <strong>{frameMetadata.filter_band ?? 'I'}-band</strong>, <strong>{frameMetadata.exposure_sec?.toFixed(0) ?? '120'} s</strong>입니다.
+            </>
+          ) : (
+            <>
+              All three panels are stamps cut from <strong>the same sky coordinates</strong>.
+              The current observation is <code>{frameMetadata.observation_id}</code> from <strong>{preview.site_label}</strong>;
+              the reference is <code>{preview.reference_observation_id}</code> at HJD {preview.reference_hjd.toFixed(4)}.
+              The current metadata are <strong>{frameMetadata.filter_band ?? 'I'}-band</strong> and <strong>{frameMetadata.exposure_sec?.toFixed(0) ?? '120'} s</strong>.
+            </>
+          )}
         </span>
         <span>
-          흐름은 <strong>같은 sky stamp 선택 → current epoch와 reference 정렬 → current - reference 차분</strong> 입니다.
-          그래서 변하지 않는 별은 대부분 사라지고, 기준영상보다 밝아진 위치만 잔차로 남습니다.
+          {lang === 'ko' ? (
+            <>
+              순서는 <strong>현재 관측 시점 정렬 → 기준 프레임 → 현재 - 기준 차분</strong>입니다.
+              변하지 않은 별의 대부분은 사라지고, 기준보다 밝아지거나 어두워진 위치만 잔차로 남습니다.
+            </>
+          ) : (
+            <>
+              The sequence is <strong>aligned current epoch → reference → current minus reference</strong>.
+              Most constant stars disappear, leaving residuals only where the source became brighter or fainter.
+            </>
+          )}
           {preview.registration_warning ? ` ${preview.registration_warning}` : ''}
-          {frameLoading ? ' 새 프레임을 불러오는 중입니다…' : ''}
+          {frameLoading ? (lang === 'ko' ? ' 새 프레임을 불러오는 중입니다...' : ' Loading a new frame...') : ''}
         </span>
       </div>
     </section>

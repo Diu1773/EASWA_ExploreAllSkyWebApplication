@@ -18,6 +18,7 @@ interface ExplorerDefaults {
 const VALID_TOPICS = new Set([
   'eclipsing_binary',
   'variable_star',
+  'stellar_cmd',
   'exoplanet_transit',
   'microlensing',
 ]);
@@ -52,14 +53,22 @@ function inferModuleFromTopic(topicId: string | null): ExplorerModuleId {
   return topicId === 'exoplanet_transit' ? 'tess' : 'explorer';
 }
 
+function isCmdCompatibleTargetTopic(topicId: string | null): boolean {
+  return topicId === 'variable_star' || topicId === 'eclipsing_binary';
+}
+
 export function alignExplorerContext(
   context: ExplorerRouteContext,
   topicId: string | null
 ): ExplorerRouteContext {
+  const alignedTopicId =
+    context.topicId === 'stellar_cmd' && isCmdCompatibleTargetTopic(topicId)
+      ? 'stellar_cmd'
+      : topicId;
   return {
     ...context,
-    moduleId: context.moduleId === 'kmtnet' ? 'kmtnet' : inferModuleFromTopic(topicId),
-    topicId,
+    moduleId: context.moduleId === 'kmtnet' ? 'kmtnet' : inferModuleFromTopic(alignedTopicId),
+    topicId: alignedTopicId,
   };
 }
 

@@ -13,12 +13,14 @@ import { KmtnetIntroPage } from './components/pages/KmtnetIntroPage';
 import { ObservatorySelectPage } from './components/pages/ObservatorySelectPage';
 import { KmtnetExplorerPage } from './components/pages/KmtnetExplorerPage';
 import { SkyExplorerPage } from './components/pages/SkyExplorerPage';
+import { ModulePage } from './components/pages/ModulePage';
 
 export const router = createBrowserRouter([
   {
     element: <AppShell />,
     children: [
       { path: '/', element: <HomePage /> },
+      { path: '/modules/:moduleId', element: <ModulePage /> },
       { path: '/tess', element: <TessIntroPage /> },
       { path: '/kmtnet', element: <KmtnetIntroPage /> },
       { path: '/kmtnet/sites', element: <ObservatorySelectPage /> },

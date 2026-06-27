@@ -1,4 +1,5 @@
 import { useAppStore } from '../../stores/useAppStore';
+import { useLangStore } from '../../i18n';
 
 interface SliderConfig {
   min: number;
@@ -18,11 +19,12 @@ const DEFAULT_INNER = { min: 5, max: 30, step: 0.5 };
 const DEFAULT_OUTER = { min: 10, max: 40, step: 0.5 };
 
 export function ParamsPanel({
-  title = 'Photometry Parameters',
+  title,
   apertureConfig = DEFAULT_APERTURE,
   innerConfig = DEFAULT_INNER,
   outerConfig = DEFAULT_OUTER,
 }: ParamsPanelProps) {
+  const lang = useLangStore((s) => s.lang);
   const aperture = useAppStore((s) => s.apertureRadius);
   const inner = useAppStore((s) => s.innerAnnulus);
   const outer = useAppStore((s) => s.outerAnnulus);
@@ -32,10 +34,10 @@ export function ParamsPanel({
 
   return (
     <div className="params-panel">
-      <h4>{title}</h4>
+      <h4>{title ?? (lang === 'ko' ? '측광 설정' : 'Photometry Parameters')}</h4>
       <div className="param-row">
         <label>
-          Aperture Radius: <strong>{aperture.toFixed(1)} px</strong>
+          {lang === 'ko' ? '구경 반지름' : 'Aperture Radius'}: <strong>{aperture.toFixed(1)} px</strong>
         </label>
         <input
           type="range"
@@ -46,12 +48,14 @@ export function ParamsPanel({
           onChange={(e) => setAperture(parseFloat(e.target.value))}
         />
         <span className="param-hint">
-          Larger = more light captured, less noise
+          {lang === 'ko'
+            ? '값이 클수록 더 많은 빛을 포함하지만 주변 별빛이 섞일 수 있습니다.'
+            : 'A larger radius captures more light but may include neighboring sources.'}
         </span>
       </div>
       <div className="param-row">
         <label>
-          Inner Annulus: <strong>{inner.toFixed(1)} px</strong>
+          {lang === 'ko' ? '배경 안쪽 반지름' : 'Inner Annulus'}: <strong>{inner.toFixed(1)} px</strong>
         </label>
         <input
           type="range"
@@ -64,7 +68,7 @@ export function ParamsPanel({
       </div>
       <div className="param-row">
         <label>
-          Outer Annulus: <strong>{outer.toFixed(1)} px</strong>
+          {lang === 'ko' ? '배경 바깥 반지름' : 'Outer Annulus'}: <strong>{outer.toFixed(1)} px</strong>
         </label>
         <input
           type="range"

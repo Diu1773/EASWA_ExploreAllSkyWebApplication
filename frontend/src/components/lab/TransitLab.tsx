@@ -44,6 +44,10 @@ import {
   estimatePhaseFoldReferenceT0,
   transformLightCurveForDisplay,
 } from '../../workflows/transit/lightCurve';
+import {
+  computeTransitValidationStats,
+  type TransitValidationStats,
+} from '../../workflows/transit/validationStats';
 import { useTransitPreview } from '../../workflows/transit/hooks/useTransitPreview';
 import { useTransitPhotometry } from '../../workflows/transit/hooks/useTransitPhotometry';
 import { useTransitFit } from '../../workflows/transit/hooks/useTransitFit';
@@ -69,13 +73,13 @@ interface TransitLabProps {
 type TransitStep = TransitWorkflowStep;
 type StepState = 'locked' | 'accessible' | 'completed';
 
-const STEPS: Array<{ id: TransitStep; label: string; number: number }> = [
-  { id: 'select', label: 'Select Stars', number: 1 },
-  { id: 'run', label: 'Run Photometry', number: 2 },
-  { id: 'comparisonqc', label: 'Comparison QC', number: 3 },
-  { id: 'lightcurve', label: 'Light Curve', number: 4 },
-  { id: 'transitfit', label: 'Transit Fit', number: 5 },
-  { id: 'record', label: 'Record Result', number: 6 },
+const STEPS: Array<{ id: TransitStep; label: { ko: string; en: string }; number: number }> = [
+  { id: 'select', label: { ko: '목표별·비교별 선택', en: 'Select Stars' }, number: 1 },
+  { id: 'run', label: { ko: '차등측광 실행', en: 'Run Photometry' }, number: 2 },
+  { id: 'comparisonqc', label: { ko: '비교별 품질 점검', en: 'Comparison QC' }, number: 3 },
+  { id: 'lightcurve', label: { ko: '광도곡선 확인', en: 'Light Curve' }, number: 4 },
+  { id: 'transitfit', label: { ko: '식현상 모델 적합', en: 'Transit Fit' }, number: 5 },
+  { id: 'record', label: { ko: '결과 기록', en: 'Record Result' }, number: 6 },
 ];
 
 function defaultFitDisplayXAxis(
@@ -236,6 +240,120 @@ function describeLimbDarkeningSource(source: string | null | undefined): string 
     return 'filter default coefficients';
   }
   return source.replace(/_/g, ' ');
+}
+
+function formatNullableNumber(
+  value: number | null | undefined,
+  digits = 3,
+  suffix = ''
+): string {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return 'n/a';
+  return `${value.toFixed(digits)}${suffix}`;
+}
+
+function formatFluxPpm(value: number | null | undefined): string {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return 'n/a';
+  return `${(value * 1_000_000).toFixed(0)} ppm`;
+}
+
+function formatPercentValue(value: number | null | undefined, digits = 1): string {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return 'n/a';
+  return `${(value * 100).toFixed(digits)}%`;
+}
+
+function TransitValidationStatsPanel({ stats }: { stats: TransitValidationStats }) {
+  const lang = useLangStore((s) => s.lang);
+  const depthDiff = stats.referenceComparison.depthDifferencePctPoints;
+  const periodDiffSeconds = stats.referenceComparison.periodDifferenceSeconds;
+  const methodText =
+    `N=${stats.sample.dataPoints}, retained=${stats.sample.retainedPoints}, ` +
+    `clipped=${stats.sample.clippedPoints}, reduced chi-squared=` +
+    `${formatNullableNumber(stats.fit.reducedChiSquared, 3)}, residual RMS=` +
+    `${formatFluxPpm(stats.residuals.rms)}.`;
+
+  return (
+    <div className="transit-validation-panel">
+      <div className="transit-reference-head">
+        <div>
+          <span className="record-section-kicker">
+            {lang === 'ko' ? '검증 통계' : 'Validation statistics'}
+          </span>
+          <h4>{lang === 'ko' ? '논문/보고서용 진단값' : 'Paper-Ready Diagnostics'}</h4>
+        </div>
+        <span>{stats.fit.usedBatman ? 'batman model' : 'simplified model'}</span>
+      </div>
+      <div className="transit-validation-grid">
+        <div className="transit-summary-card">
+          <span className="transit-summary-label">Fitted N</span>
+          <strong>{stats.sample.dataPoints.toLocaleString()}</strong>
+        </div>
+        <div className="transit-summary-card">
+          <span className="transit-summary-label">Clipped</span>
+          <strong>{formatPercentValue(stats.sample.clippedFraction)}</strong>
+        </div>
+        <div className="transit-summary-card">
+          <span className="transit-summary-label">Residual RMS</span>
+          <strong>{formatFluxPpm(stats.residuals.rms)}</strong>
+        </div>
+        <div className="transit-summary-card">
+          <span className="transit-summary-label">Residual MAD</span>
+          <strong>{formatFluxPpm(stats.residuals.mad)}</strong>
+        </div>
+        <div className="transit-summary-card">
+          <span className="transit-summary-label">Norm. RMS</span>
+          <strong>{formatNullableNumber(stats.residuals.normalizedRms, 2)}</strong>
+        </div>
+        <div className="transit-summary-card">
+          <span className="transit-summary-label">chi2 red</span>
+          <strong>{formatNullableNumber(stats.fit.reducedChiSquared, 3)}</strong>
+        </div>
+        <div className="transit-summary-card">
+          <span className="transit-summary-label">Depth diff.</span>
+          <strong>
+            {typeof depthDiff === 'number' && Number.isFinite(depthDiff)
+              ? `${depthDiff >= 0 ? '+' : ''}${depthDiff.toFixed(3)}%p`
+              : 'n/a'}
+          </strong>
+        </div>
+        <div className="transit-summary-card">
+          <span className="transit-summary-label">Period diff.</span>
+          <strong>
+            {typeof periodDiffSeconds === 'number' && Number.isFinite(periodDiffSeconds)
+              ? `${periodDiffSeconds >= 0 ? '+' : ''}${periodDiffSeconds.toFixed(1)} s`
+              : 'n/a'}
+          </strong>
+        </div>
+        <div className="transit-summary-card">
+          <span className="transit-summary-label">Comp. RMS med.</span>
+          <strong>{formatFluxPpm(stats.comparisonQuality.medianRms)}</strong>
+        </div>
+        <div className="transit-summary-card">
+          <span className="transit-summary-label">Eff. comps</span>
+          <strong>
+            {formatNullableNumber(stats.comparisonQuality.effectiveComparisonCount, 2)}
+          </strong>
+        </div>
+      </div>
+      <div className="transit-validation-method">
+        <strong>{lang === 'ko' ? '방법 문장' : 'Method sentence'}</strong>
+        <p>{methodText}</p>
+      </div>
+      {stats.flags.length > 0 ? (
+        <div className="transit-validation-flags">
+          <strong>{lang === 'ko' ? '해석 주의' : 'Interpretation flags'}</strong>
+          {stats.flags.map((flag) => (
+            <span key={flag}>{flag}</span>
+          ))}
+        </div>
+      ) : (
+        <p className="transit-reference-note">
+          {lang === 'ko'
+            ? '자동 플래그는 없습니다. 그래도 잔차 모양, 비교성 품질, ROI 선택 근거를 함께 확인하세요.'
+            : 'No automatic flags. Still inspect residual shape, comparison quality, and ROI justification.'}
+        </p>
+      )}
+    </div>
+  );
 }
 
 function useCompactTransitLayout() {
@@ -526,7 +644,7 @@ const TRANSIT_RECORD_KO: Record<string, RecordQuestionLocale> = {
     placeholder: '선택한 자료와 그래프의 특징, 그 결과가 의미하는 바를 근거와 함께 적으세요.',
   },
   reference_comparison: {
-    label: '측정값은 NASA 기준값과 어떻게 다른가?',
+    label: '측정값은 NASA Exoplanet Archive 기준값 또는 문헌값과 어떻게 다른가?',
     placeholder:
       'Rp/R*, 식 깊이 또는 공전 주기를 비교하고, 차이가 발생한 원인을 자료와 분석 조건을 근거로 설명하세요.',
     helpText:
@@ -665,8 +783,12 @@ export function TransitLab({
     selectedIds.includes(obs.id)
   );
   const fitEngineLabel = fitResult
-    ? `${fitResult.used_batman ? 'batman transit model' : 'simplified transit model'} · ${
-        fitResult.used_mcmc ? 'emcee MCMC posterior' : 'least-squares optimization'
+    ? `${fitResult.used_batman
+        ? lang === 'ko' ? 'batman 식현상 모델' : 'batman transit model'
+        : lang === 'ko' ? '단순 식현상 모델' : 'simplified transit model'} · ${
+        fitResult.used_mcmc
+          ? lang === 'ko' ? 'emcee MCMC 사후분포' : 'emcee MCMC posterior'
+          : lang === 'ko' ? '최소제곱 최적화' : 'least-squares optimization'
       }`
     : null;
   const fitLimbDarkeningSource =
@@ -675,12 +797,20 @@ export function TransitLab({
     fitResult?.limb_darkening_filter ?? fitResult?.preprocessing.limb_darkening_filter ?? null;
   const fitLimbDarkeningExplanation = fitResult
     ? fitLimbDarkening
-      ? `u₁ and u₂ were allowed to vary during the fit, starting from ${describeLimbDarkeningSource(
-          fitLimbDarkeningSource,
-        )}${fitLimbDarkeningFilter ? ` for the ${fitLimbDarkeningFilter} band` : ''}.`
-      : `u₁ and u₂ were automatically set from ${describeLimbDarkeningSource(
-          fitLimbDarkeningSource,
-        )}${fitLimbDarkeningFilter ? ` for the ${fitLimbDarkeningFilter} band` : ''}, using the host-star parameters when available, and then held fixed during the fit.`
+      ? lang === 'ko'
+        ? `u₁과 u₂는 ${describeLimbDarkeningSource(fitLimbDarkeningSource)}${
+            fitLimbDarkeningFilter ? ` (${fitLimbDarkeningFilter} band)` : ''
+          }에서 시작해 적합 과정에서 변하도록 설정했습니다.`
+        : `u₁ and u₂ were allowed to vary during the fit, starting from ${describeLimbDarkeningSource(
+            fitLimbDarkeningSource,
+          )}${fitLimbDarkeningFilter ? ` for the ${fitLimbDarkeningFilter} band` : ''}.`
+      : lang === 'ko'
+        ? `u₁과 u₂는 ${describeLimbDarkeningSource(fitLimbDarkeningSource)}${
+            fitLimbDarkeningFilter ? ` (${fitLimbDarkeningFilter} band)` : ''
+          } 및 가능한 경우 주성 파라미터로 자동 설정한 뒤 적합 중에는 고정했습니다.`
+        : `u₁ and u₂ were automatically set from ${describeLimbDarkeningSource(
+            fitLimbDarkeningSource,
+          )}${fitLimbDarkeningFilter ? ` for the ${fitLimbDarkeningFilter} band` : ''}, using the host-star parameters when available, and then held fixed during the fit.`
     : null;
   const referenceTransitDepthPct = target.transit_depth_pct ?? null;
   const referenceRpRs =
@@ -698,6 +828,18 @@ export function TransitLab({
     fitResult && target.period_days !== null
       ? fitResult.period - target.period_days
       : null;
+  const validationStats = useMemo(
+    () =>
+      fitResult
+        ? computeTransitValidationStats({
+            fitResult,
+            referenceDepthPct: referenceTransitDepthPct,
+            referencePeriodDays: target.period_days,
+            comparisonDiagnostics: result?.comparison_diagnostics ?? [],
+          })
+        : null,
+    [fitResult, referenceTransitDepthPct, target.period_days, result?.comparison_diagnostics]
+  );
   const workflowSessionSource: WorkflowSessionSource =
     draftId && draftId.trim() !== ''
       ? { kind: 'draft', id: draftId }
@@ -1513,6 +1655,7 @@ export function TransitLab({
             reference_period_days: target.period_days,
             period_difference_days: periodDifference,
           } : null,
+          validation_stats: validationStats,
         },
         answers: recordAnswers,
         guide_answers: guideAnswersRef.current,
@@ -1694,11 +1837,17 @@ export function TransitLab({
   const canRunTransitFit =
     Boolean(canFitWithBjdWindow && fitReferencePeriod);
   const fitSourceLabel =
-    fitDataSource === 'phase_fold' ? 'Phase Fold' : 'BJD Window';
+    fitDataSource === 'phase_fold'
+      ? lang === 'ko' ? '위상 접기' : 'Phase Fold'
+      : lang === 'ko' ? 'BJD 구간' : 'BJD Window';
   const fitDisplayXAxisLabel =
-    fitDisplayXAxis === 'orbital_phase' ? 'Orbital Phase' : 'BTJD';
+    fitDisplayXAxis === 'orbital_phase'
+      ? lang === 'ko' ? '공전 위상' : 'Orbital Phase'
+      : 'BTJD';
   const fitDisplayYAxisLabel =
-    fitDisplayYAxis === 'delta_mag' ? 'Delta mag' : 'Normalized Flux';
+    fitDisplayYAxis === 'delta_mag'
+      ? lang === 'ko' ? '등급 변화량' : 'Delta mag'
+      : lang === 'ko' ? '정규화 Flux' : 'Normalized Flux';
   const canDisplayFitAsPhase = Boolean(fitDisplayReferencePeriod && fitDisplayReferencePeriod > 0);
   const fitPreviewOverlay =
     activeFitPreviewResult
@@ -1784,16 +1933,31 @@ export function TransitLab({
     <div className="transit-lab-wrap">
       <div className={`learning-mode-banner learning-mode-banner--${learningMode}`}>
         <div>
-          <span>{learningMode === 'advanced' ? '심화형 탐구' : '안내형 탐구'}</span>
+          <span>
+            {learningMode === 'advanced'
+              ? lang === 'ko' ? '심화형 탐구' : 'Advanced investigation'
+              : lang === 'ko' ? '안내형 탐구' : 'Guided investigation'}
+          </span>
           <strong>
             {learningMode === 'advanced'
-              ? '분석 조건과 모델 가정을 확인하며 결과의 신뢰도를 검토합니다.'
-              : '단계별 안내를 따라 분석하고, 근거를 기록하며 결과를 해석합니다.'}
+              ? lang === 'ko'
+                ? '분석 조건과 모델 가정을 확인하며 결과의 신뢰도를 검토합니다.'
+                : 'Inspect analysis conditions and model assumptions to evaluate the reliability of the result.'
+              : lang === 'ko'
+                ? '단계별 안내를 따라 분석하고, 근거를 기록하며 결과를 해석합니다.'
+                : 'Follow the guided steps, record evidence, and interpret the result.'}
           </strong>
         </div>
-        <p>권장 45~90분 · 결과물: 광도곡선 근거, NASA 기준값 비교, 차이 원인 설명</p>
+        <p>
+          {lang === 'ko'
+            ? '권장 45~90분 · 결과물: 광도곡선 근거, NASA Exoplanet Archive 기준값 비교, 차이 원인 설명'
+            : 'Suggested 45–90 minutes · Output: light-curve evidence, NASA Exoplanet Archive comparison, and an explanation of differences'}
+        </p>
       </div>
-      <div className="analysis-provenance-bar" aria-label="자료 출처와 분석 흐름">
+      <div
+        className="analysis-provenance-bar"
+        aria-label={lang === 'ko' ? '자료 출처와 분석 흐름' : 'Data provenance and analysis flow'}
+      >
         <strong>{lang === 'ko' ? '자료 출처' : 'Data provenance'}</strong>
         <span>
           {lang === 'ko' ? '대상·기준값' : 'Target and reference'}:
@@ -1802,8 +1966,12 @@ export function TransitLab({
             ? 'NASA Exoplanet Archive'
             : target.data_source?.replace(/_/g, ' ') ?? 'Curated catalog'}
         </span>
-        <span>{lang === 'ko' ? '관측 자료' : 'Observation data'}: NASA MAST TESSCut</span>
-        <span>{lang === 'ko' ? '분석' : 'Analysis'}: EASWA differential photometry · transit fit</span>
+        <span>
+          {lang === 'ko' ? '관측 자료: MAST 기반 TESS 공개 관측자료' : 'Observation data: public TESS observations via MAST'}
+        </span>
+        <span>
+          {lang === 'ko' ? '분석: 차등측광 · 식현상 모델 적합 (Transit Fit)' : 'Analysis: differential photometry · transit model fit'}
+        </span>
       </div>
       {draftId && (
         <div className={`transit-draft-bar ${draftSaveStatus}`}>
@@ -1828,7 +1996,7 @@ export function TransitLab({
             <span className="transit-mobile-sidebar-kicker">
               Step {currentStepMeta.number} controls
             </span>
-            <strong>{currentStepMeta.label}</strong>
+            <strong>{currentStepMeta.label[lang]}</strong>
           </div>
           <span className="transit-mobile-sidebar-icon" aria-hidden="true">
             {mobileSidebarOpen ? '−' : '+'}
@@ -1838,7 +2006,7 @@ export function TransitLab({
         <div className="transit-sidebar-scroll">
         {/* Sector list — always visible */}
         <div className="thumbnail-strip">
-          <h4>Selected Sectors ({selectedObservations.length})</h4>
+          <h4>{lang === 'ko' ? '선택한 Sector' : 'Selected Sectors'} ({selectedObservations.length})</h4>
           <div className="transit-sector-list">
             {selectedObservations.map((observation) => {
               const isActive = observation.id === activeObservationId;
@@ -1855,14 +2023,18 @@ export function TransitLab({
                   <strong>{observation.display_label ?? `Sector ${observation.sector}`}</strong>
                   <span>
                     {observation.display_subtitle ?? 'TESS cutout'}
-                    {frameCount !== null && ` · ${frameCount.toLocaleString()} frames`}
+                    {frameCount !== null && ` · ${frameCount.toLocaleString()} ${lang === 'ko' ? '프레임' : 'frames'}`}
                   </span>
                 </button>
               );
             })}
           </div>
           {selectedObservations.length === 0 && (
-            <p className="hint">Select one or more TESS sectors on the target detail page.</p>
+            <p className="hint">
+              {lang === 'ko'
+                ? '대상 상세 페이지에서 하나 이상의 TESS Sector를 선택하세요.'
+                : 'Select one or more TESS sectors on the target detail page.'}
+            </p>
           )}
         </div>
 
@@ -1870,11 +2042,11 @@ export function TransitLab({
         {step === 'select' && (
           <>
             <div className="transit-controls-card">
-              <h4>Stars</h4>
+              <h4>{lang === 'ko' ? '별 선택' : 'Stars'}</h4>
               <p className="hint">
-                Tap or click a star below to adjust its aperture. Tap the cutout image
-                to add comparison stars, or drag an existing aperture to reposition it
-                (up to {MAX_COMPARISON_STARS}).
+                {lang === 'ko'
+                  ? `아래 별을 선택해 구경을 조절하세요. Cutout 영상을 눌러 비교성을 추가하거나 기존 구경을 드래그해 위치를 옮길 수 있습니다. 최대 ${MAX_COMPARISON_STARS}개까지 선택할 수 있습니다.`
+                  : `Select a star below to adjust its aperture. Click the cutout to add comparison stars, or drag an existing aperture to reposition it (up to ${MAX_COMPARISON_STARS}).`}
               </p>
               <div className="transit-star-list">
                 {/* Target star */}
@@ -1884,7 +2056,7 @@ export function TransitLab({
                 >
                   <span className="transit-star-badge target">T</span>
                   <div className="transit-star-info">
-                    <strong>Target</strong>
+                    <strong>{lang === 'ko' ? '목표별' : 'Target'}</strong>
                     {effectiveTargetPosition && (
                       <span>
                         ({effectiveTargetPosition.x.toFixed(1)},{' '}
@@ -1908,7 +2080,7 @@ export function TransitLab({
                     >
                       <span className="transit-star-badge comparison">{key}</span>
                       <div className="transit-star-info">
-                        <strong>Comparison {index + 1}</strong>
+                        <strong>{lang === 'ko' ? `비교성 ${index + 1}` : `Comparison ${index + 1}`}</strong>
                         <span>
                           ({cs.position.x.toFixed(1)}, {cs.position.y.toFixed(1)})
                         </span>
@@ -1918,7 +2090,7 @@ export function TransitLab({
                       </span>
                       <button
                         className="transit-star-remove"
-                        title="Remove"
+                        title={lang === 'ko' ? '제거' : 'Remove'}
                         onClick={(e) => {
                           e.stopPropagation();
                           handleRemoveComparison(index);
@@ -1932,7 +2104,7 @@ export function TransitLab({
 
                 {comparisonStars.length === 0 && (
                   <div className="transit-star-row empty">
-                    Tap the cutout to add comparison stars
+                    {lang === 'ko' ? 'Cutout 영상을 눌러 비교성을 추가하세요' : 'Click the cutout to add comparison stars'}
                   </div>
                 )}
               </div>
@@ -1941,11 +2113,14 @@ export function TransitLab({
             {/* Per-star aperture sliders */}
             <div className="transit-controls-card">
               <h4>
-                Aperture — {selectedStar === 'T' ? 'Target' : `Comparison ${selectedStar.slice(1)}`}
+                {lang === 'ko' ? '구경' : 'Aperture'} —{' '}
+                {selectedStar === 'T'
+                  ? lang === 'ko' ? '목표별' : 'Target'
+                  : lang === 'ko' ? `비교성 ${selectedStar.slice(1)}` : `Comparison ${selectedStar.slice(1)}`}
               </h4>
               <div className="param-row">
                 <label>
-                  Radius: <strong>{selectedAperture.apertureRadius.toFixed(1)} px</strong>
+                  {lang === 'ko' ? '반지름' : 'Radius'}: <strong>{selectedAperture.apertureRadius.toFixed(1)} px</strong>
                 </label>
                 <input
                   type="range"
@@ -1960,7 +2135,7 @@ export function TransitLab({
               </div>
               <div className="param-row">
                 <label>
-                  Inner Annulus: <strong>{selectedAperture.innerAnnulus.toFixed(1)} px</strong>
+                  {lang === 'ko' ? '배경 안쪽 반지름' : 'Inner Annulus'}: <strong>{selectedAperture.innerAnnulus.toFixed(1)} px</strong>
                 </label>
                 <input
                   type="range"
@@ -1975,7 +2150,7 @@ export function TransitLab({
               </div>
               <div className="param-row">
                 <label>
-                  Outer Annulus: <strong>{selectedAperture.outerAnnulus.toFixed(1)} px</strong>
+                  {lang === 'ko' ? '배경 바깥 반지름' : 'Outer Annulus'}: <strong>{selectedAperture.outerAnnulus.toFixed(1)} px</strong>
                 </label>
                 <input
                   type="range"
@@ -1994,7 +2169,7 @@ export function TransitLab({
             {preview && (
               <div className="transit-controls-card">
                 <div className="transit-controls-card-header">
-                  <h4>TIC Catalog Stars</h4>
+                  <h4>{lang === 'ko' ? 'TIC Catalog 별' : 'TIC Catalog Stars'}</h4>
                   <button
                     type="button"
                     className={`btn-sm ${showTicMarkers ? 'active' : ''}`}
@@ -2002,12 +2177,15 @@ export function TransitLab({
                     disabled={ticCatalogStars.length === 0}
                     title="이미지에 TIC 별 마커 표시"
                   >
-                    {showTicMarkers ? 'Hide markers' : 'Show markers'}
+                    {showTicMarkers
+                      ? lang === 'ko' ? '마커 숨기기' : 'Hide markers'
+                      : lang === 'ko' ? '마커 표시' : 'Show markers'}
                   </button>
                 </div>
                 <p className="hint">
-                  Bright stars from TESS Input Catalog in the field of view.
-                  Recommended stars are non-variable and bright.
+                  {lang === 'ko'
+                    ? '현재 시야의 TESS Input Catalog 별입니다. 추천 별은 밝고 변광성이 아닌 후보입니다.'
+                    : 'Bright stars from the TESS Input Catalog in the field of view. Recommended stars are bright and non-variable.'}
                 </p>
                 {ticCatalogStatusMessage && (
                   <p className="hint" style={{ marginBottom: 10 }}>
@@ -2042,7 +2220,7 @@ export function TransitLab({
                   {otherTicStars.length > 0 && (
                     <details className="transit-tic-others">
                       <summary>
-                        {otherTicStars.length} other stars
+                        {lang === 'ko' ? `기타 별 ${otherTicStars.length}개` : `${otherTicStars.length} other stars`}
                       </summary>
                       {otherTicStars.map((star) => (
                           <button
@@ -2090,7 +2268,7 @@ export function TransitLab({
                       });
                     }}
                   >
-                    Auto-select recommended
+                    {lang === 'ko' ? '추천 비교성 자동 선택' : 'Auto-select recommended'}
                   </button>
                 )}
               </div>
@@ -2101,10 +2279,10 @@ export function TransitLab({
         {/* Step 2 sidebar: Run configuration summary */}
         {step === 'run' && (
           <div className="transit-controls-card">
-            <h4>Configuration</h4>
+            <h4>{lang === 'ko' ? '분석 설정' : 'Configuration'}</h4>
             <div className="transit-config-summary">
               <div className="transit-config-row">
-                <span>Target (T)</span>
+                <span>{lang === 'ko' ? '목표별 (T)' : 'Target (T)'}</span>
                 <span>r={targetAperture.apertureRadius.toFixed(1)}</span>
               </div>
               {comparisonStars.map((cs, i) => (
@@ -2114,18 +2292,18 @@ export function TransitLab({
                 </div>
               ))}
               <div className="transit-config-row">
-                <span>Field</span>
+                <span>{lang === 'ko' ? '시야' : 'Field'}</span>
                 <span>{cutoutSizePx} px</span>
               </div>
               {preview && (
                 <div className="transit-config-row">
-                  <span>Cadences</span>
+                   <span>Cadences</span>
                   <span>{preview.frame_count.toLocaleString()}</span>
                 </div>
               )}
             </div>
             <p className="hint" style={{ marginTop: 10 }}>
-              Go back to Step 1 to adjust apertures.
+              {lang === 'ko' ? '구경을 조절하려면 Step 1로 돌아가세요.' : 'Go back to Step 1 to adjust apertures.'}
             </p>
           </div>
         )}
@@ -2134,28 +2312,28 @@ export function TransitLab({
         {step === 'comparisonqc' && (
           <>
             <div className="transit-controls-card">
-              <h4>Comparison QC</h4>
+              <h4>{lang === 'ko' ? '비교성 품질 점검' : 'Comparison QC'}</h4>
               <p className="hint" style={{ marginTop: 10 }}>
-                후보 비교성을 점검하고, 품질이 떨어지는 별은 제외한 뒤 photometry를 다시
-                실행하세요. 최종 differential light curve는 여기서 살아남은 비교성
-                ensemble로 다시 계산됩니다.
+                {lang === 'ko'
+                  ? '후보 비교성을 점검하고 품질이 떨어지는 별은 제외한 뒤 측광을 다시 실행하세요. 최종 차등 광도곡선은 선택된 비교성 ensemble로 다시 계산됩니다.'
+                  : 'Inspect the comparison candidates, exclude poor-quality stars, and rerun photometry. The final differential light curve is rebuilt from the retained comparison ensemble.'}
               </p>
               <div className="transit-config-summary" style={{ marginTop: 12 }}>
                 <div className="transit-config-row">
-                  <span>Candidates</span>
+                  <span>{lang === 'ko' ? '후보' : 'Candidates'}</span>
                   <span>{comparisonDiagnostics.length}</span>
                 </div>
                 <div className="transit-config-row">
-                  <span>Included</span>
+                  <span>{lang === 'ko' ? '포함' : 'Included'}</span>
                   <span>{qcIncludedDiagnostics.length}</span>
                 </div>
                 <div className="transit-config-row">
-                  <span>Excluded</span>
+                  <span>{lang === 'ko' ? '제외' : 'Excluded'}</span>
                   <span>{qcExcludedCount}</span>
                 </div>
                 {qcBestDiagnostic && (
                   <div className="transit-config-row">
-                    <span>Best RMS</span>
+                    <span>{lang === 'ko' ? '최저 RMS' : 'Best RMS'}</span>
                     <span>
                       {qcBestDiagnostic.label} · {qcBestDiagnostic.differential_rms.toFixed(4)}
                     </span>
@@ -2169,7 +2347,7 @@ export function TransitLab({
                   onClick={handleSelectAllQcComparisons}
                   disabled={comparisonDiagnostics.length === 0 || running}
                 >
-                  Select All
+                  {lang === 'ko' ? '전체 선택' : 'Select All'}
                 </button>
                 <button
                   className="btn-primary btn-sm"
@@ -2179,34 +2357,35 @@ export function TransitLab({
                   }}
                   disabled={!qcCanApply}
                 >
-                  Apply QC &amp; Re-run
+                  {lang === 'ko' ? '품질 선택 적용 후 재실행' : 'Apply QC & Re-run'}
                 </button>
               </div>
               {qcSelectionDirty && (
                 <div className="transit-callout" style={{ marginTop: 12 }}>
-                  QC selection changed. Apply QC and rerun photometry before moving on to ROI
-                  selection.
+                  {lang === 'ko'
+                    ? '비교성 선택이 변경되었습니다. ROI 선택으로 넘어가기 전에 적용하고 측광을 다시 실행하세요.'
+                    : 'QC selection changed. Apply QC and rerun photometry before moving on to ROI selection.'}
                 </div>
               )}
             </div>
             {result && (
               <div className="transit-controls-card">
-                <h4>Current Ensemble</h4>
+                <h4>{lang === 'ko' ? '현재 비교성 Ensemble' : 'Current Ensemble'}</h4>
                 <div className="transit-config-summary">
                   <div className="transit-config-row">
-                    <span>Frames</span>
+                    <span>{lang === 'ko' ? '프레임' : 'Frames'}</span>
                     <span>{result.frame_count.toLocaleString()}</span>
                   </div>
                   <div className="transit-config-row">
-                    <span>Median Target</span>
+                    <span>{lang === 'ko' ? '목표별 Flux 중앙값' : 'Median Target'}</span>
                     <span>{result.target_median_flux.toFixed(1)}</span>
                   </div>
                   <div className="transit-config-row">
-                    <span>Median Comp</span>
+                    <span>{lang === 'ko' ? '비교성 Flux 중앙값' : 'Median Comp'}</span>
                     <span>{result.comparison_median_flux.toFixed(1)}</span>
                   </div>
                   <div className="transit-config-row">
-                    <span>Comp Stars</span>
+                    <span>{lang === 'ko' ? '비교성 수' : 'Comp Stars'}</span>
                     <span>{result.comparison_count}</span>
                   </div>
                 </div>
@@ -2219,23 +2398,23 @@ export function TransitLab({
         {step === 'lightcurve' && (
           <>
             <div className="transit-controls-card">
-              <h4>BJD Window</h4>
+              <h4>{lang === 'ko' ? 'BJD 분석 구간' : 'BJD Window'}</h4>
               <p className="hint" style={{ marginTop: 10 }}>
-                Step 4 plot에서 가로로 드래그해서 transit 구간을 고르세요.
-                숫자 입력은 보조용입니다. Step 4는 ROI만 정하고, Step 5에서 이 ROI를
-                시간축 그대로 fit할지 phase-fold해서 fit할지 고릅니다.
+                {lang === 'ko'
+                  ? 'Step 4 그래프에서 가로로 드래그해 transit 구간을 고르세요. 숫자 입력은 보조용입니다. Step 5에서 이 ROI를 시간축 그대로 적합할지 phase-fold해 적합할지 선택합니다.'
+                  : 'Drag horizontally on the Step 4 plot to choose the transit interval. Numeric inputs are optional. In Step 5, choose whether to fit this ROI on the original time axis or after phase folding.'}
               </p>
               {resolvedBjdWindow && (
                 <div className="transit-config-summary" style={{ marginTop: 12 }}>
                   <div className="transit-config-row">
-                    <span>Window</span>
+                    <span>{lang === 'ko' ? '구간' : 'Window'}</span>
                     <span>
                       {resolvedBjdWindow.start.toFixed(4)} -{' '}
                       {resolvedBjdWindow.end.toFixed(4)}
                     </span>
                   </div>
                   <div className="transit-config-row">
-                    <span>Width</span>
+                    <span>{lang === 'ko' ? '폭' : 'Width'}</span>
                     <span>
                       {(resolvedBjdWindow.end - resolvedBjdWindow.start).toFixed(4)} d
                     </span>
@@ -2301,7 +2480,7 @@ export function TransitLab({
                     patch({ bjdWindowStart: defaultWindow.start, bjdWindowEnd: defaultWindow.end, fitResult: null });
                   }}
                 >
-                  Deepest Dip
+                  {lang === 'ko' ? '가장 깊은 Dip' : 'Deepest Dip'}
                 </button>
                 <button
                   className="btn-sm"
@@ -2310,28 +2489,28 @@ export function TransitLab({
                     patch({ bjdWindowStart: null, bjdWindowEnd: null, fitResult: null });
                   }}
                 >
-                  Clear
+                  {lang === 'ko' ? '지우기' : 'Clear'}
                 </button>
               </div>
             </div>
             {result && (
               <div className="transit-controls-card">
-                <h4>Stats</h4>
+                <h4>{lang === 'ko' ? '통계' : 'Stats'}</h4>
                 <div className="transit-config-summary">
                   <div className="transit-config-row">
-                    <span>Frames</span>
+                    <span>{lang === 'ko' ? '프레임' : 'Frames'}</span>
                     <span>{result.frame_count.toLocaleString()}</span>
                   </div>
                   <div className="transit-config-row">
-                    <span>Median Target</span>
+                    <span>{lang === 'ko' ? '목표별 Flux 중앙값' : 'Median Target'}</span>
                     <span>{result.target_median_flux.toFixed(1)}</span>
                   </div>
                   <div className="transit-config-row">
-                    <span>Median Comp</span>
+                    <span>{lang === 'ko' ? '비교성 Flux 중앙값' : 'Median Comp'}</span>
                     <span>{result.comparison_median_flux.toFixed(1)}</span>
                   </div>
                   <div className="transit-config-row">
-                    <span>Comp Stars</span>
+                    <span>{lang === 'ko' ? '비교성 수' : 'Comp Stars'}</span>
                     <span>{result.comparison_count}</span>
                   </div>
                 </div>
@@ -2343,7 +2522,7 @@ export function TransitLab({
         {/* Step 5 sidebar: Transit Fit controls */}
         {step === 'transitfit' && (
           <div className="transit-controls-card">
-            <h4>Fit Settings</h4>
+            <h4>{lang === 'ko' ? '모델 적합 설정' : 'Fit Settings'}</h4>
             <div className="transit-toggle-row" style={{ marginBottom: 12 }}>
               <button
                 className={`btn-sm ${fitDataSource === 'bjd_window' ? 'active' : ''}`}
@@ -2370,12 +2549,13 @@ export function TransitLab({
                 type="button"
                 disabled={!fitReferencePeriod}
               >
-                Phase Fold
+                {lang === 'ko' ? '위상 접기' : 'Phase Fold'}
               </button>
             </div>
             <p className="hint" style={{ marginBottom: 8 }}>
-              Plot axis remapping only changes how Step 5 is displayed. The fit still uses the
-              same ROI samples and current fit source.
+              {lang === 'ko'
+                ? '그래프 축 변경은 Step 5의 표시 방식만 바꿉니다. 모델 적합에는 같은 ROI 데이터와 현재 적합 자료가 사용됩니다.'
+                : 'Plot axis remapping only changes how Step 5 is displayed. The fit still uses the same ROI samples and current fit source.'}
             </p>
             <div className="transit-toggle-row" style={{ marginBottom: 8 }}>
               <button
@@ -2395,7 +2575,7 @@ export function TransitLab({
                 type="button"
                 disabled={!canDisplayFitAsPhase}
               >
-                X: Orbital Phase
+                X: {lang === 'ko' ? '공전 위상' : 'Orbital Phase'}
               </button>
             </div>
             <div className="transit-toggle-row" style={{ marginBottom: 12 }}>
@@ -2420,15 +2600,15 @@ export function TransitLab({
             </div>
             <div className="transit-config-summary" style={{ marginBottom: 12 }}>
               <div className="transit-config-row">
-                <span>Fit Source</span>
+                <span>{lang === 'ko' ? '적합 자료' : 'Fit Source'}</span>
                 <span>{fitSourceLabel}</span>
               </div>
               <div className="transit-config-row">
-                <span>Display X</span>
+                <span>{lang === 'ko' ? 'X축 표시' : 'Display X'}</span>
                 <span>{fitDisplayXAxisLabel}</span>
               </div>
               <div className="transit-config-row">
-                <span>Display Y</span>
+                <span>{lang === 'ko' ? 'Y축 표시' : 'Display Y'}</span>
                 <span>{fitDisplayYAxisLabel}</span>
               </div>
               {fitDataSource === 'bjd_window' && resolvedBjdWindow && (
@@ -2441,7 +2621,7 @@ export function TransitLab({
               )}
               {fitDataSource === 'phase_fold' && fitReferencePeriod && (
                 <div className="transit-config-row">
-                  <span>Period</span>
+                  <span>{lang === 'ko' ? '공전 주기' : 'Period'}</span>
                   <span>{fitReferencePeriod.toFixed(6)} d</span>
                 </div>
               )}
@@ -2449,8 +2629,9 @@ export function TransitLab({
             {fitDataSource === 'phase_fold' ? (
               <>
                 <p className="hint" style={{ marginBottom: 12 }}>
-                  Step 4 ROI만 phase로 접어서 보여주고 fit합니다. ROI 안에 여러 transit가
-                  있으면 같은 위상으로 겹쳐서 한 번에 맞춥니다.
+                  {lang === 'ko'
+                    ? 'Step 4 ROI만 위상으로 접어 표시하고 적합합니다. ROI 안에 여러 transit가 있으면 같은 위상에 겹쳐 한 번에 맞춥니다.'
+                    : 'Phase-fold and fit only the Step 4 ROI. Multiple transits in the ROI are overlaid at the same phase.'}
                 </p>
                 {fitReferencePeriod ? (
                   <>
@@ -2524,43 +2705,48 @@ export function TransitLab({
                         });
                       }}
                     >
-                      Reset To Transit Center
+                       {lang === 'ko' ? 'Transit 중심으로 초기화' : 'Reset To Transit Center'}
                     </button>
                   </>
                 ) : (
                   <p className="hint" style={{ marginBottom: 12 }}>
-                    No known period is available, so phase-fold fitting cannot be used.
+                     {lang === 'ko'
+                       ? '알려진 공전 주기가 없어 phase-fold 적합을 사용할 수 없습니다.'
+                       : 'No known period is available, so phase-fold fitting cannot be used.'}
                   </p>
                 )}
               </>
             ) : (
               <p className="hint" style={{ marginBottom: 12 }}>
-                Step 4 ROI를 BTJD 시간축 그대로 fit합니다. ROI가 넓어서 transit가 여러 개
-                들어가면, 접지 않고 각 이벤트를 원래 시간 간격대로 유지한 채 맞춥니다.
+                 {lang === 'ko'
+                   ? 'Step 4 ROI를 BTJD 시간축 그대로 적합합니다. 여러 transit가 포함되어도 원래 시간 간격을 유지합니다.'
+                   : 'Fit the Step 4 ROI on the original BTJD axis. If it contains multiple transits, their original time spacing is preserved.'}
               </p>
             )}
             <div className="transit-callout" style={{ marginTop: 12 }}>
-              Step 5는 항상 Step 4에서 고른 같은 ROI 점열만 씁니다. fit에 들어가는 cadence는
-              그대로 두고, 화면에서만 X/Y 축 표현을 다시 매핑할 수 있습니다.
+               {lang === 'ko'
+                 ? 'Step 5는 Step 4에서 고른 동일한 ROI 데이터만 사용합니다. 적합에 들어가는 cadence는 유지하고 화면의 X/Y축 표현만 바꿀 수 있습니다.'
+                 : 'Step 5 always uses the same ROI samples selected in Step 4. Axis remapping changes only the display, not the cadences used in the fit.'}
             </div>
             {fitDataSource === 'phase_fold' && hasResolvedBjdWindow && (
               <div className="transit-callout" style={{ marginTop: 12 }}>
-                Phase-fold preview의 기본 T₀는 ROI 중앙이 아니라 dip 중심 추정치
-                ({phaseFoldReferenceT0.toFixed(6)})를 씁니다. 필요하면 직접 수정할 수 있습니다.
+                 {lang === 'ko'
+                   ? `Phase-fold 미리보기의 기본 T₀는 ROI 중앙이 아니라 dip 중심 추정치(${phaseFoldReferenceT0.toFixed(6)})입니다. 필요하면 직접 수정할 수 있습니다.`
+                   : `The default T₀ for the phase-fold preview is the estimated dip center (${phaseFoldReferenceT0.toFixed(6)}), not the ROI midpoint. You can edit it directly.`}
               </div>
             )}
             {fitResult && (
               <div className="transit-config-summary" style={{ marginTop: 12 }}>
                 <div className="transit-config-row">
-                  <span>Source</span>
+                  <span>{lang === 'ko' ? '자료' : 'Source'}</span>
                   <span>{fitSourceLabel}</span>
                 </div>
                 <div className="transit-config-row">
-                  <span>Fitted T₀</span>
+                  <span>{lang === 'ko' ? '적합 T₀' : 'Fitted T₀'}</span>
                   <span>{fitResult.t0.toFixed(6)}</span>
                 </div>
                 <div className="transit-config-row">
-                  <span>Model</span>
+                  <span>{lang === 'ko' ? '모델' : 'Model'}</span>
                   <span>{fitResult.used_batman ? 'batman integrated transit' : 'Unavailable'}</span>
                 </div>
                 {fitDataSource === 'bjd_window' && resolvedBjdWindow && (
@@ -2596,11 +2782,15 @@ export function TransitLab({
                   <span>{fitResult.fitted_params.reduced_chi_squared.toFixed(3)}</span>
                 </div>
                 <div className="transit-config-row">
-                  <span>Note</span>
-                  <span>Rp/R* is usually more reliable than a/R* or i here.</span>
+                  <span>{lang === 'ko' ? '해석 주의' : 'Note'}</span>
+                  <span>
+                    {lang === 'ko'
+                      ? '이 분석에서는 보통 Rp/R*가 a/R* 또는 i보다 안정적으로 추정됩니다.'
+                      : 'Rp/R* is usually more reliable than a/R* or i here.'}
+                  </span>
                 </div>
                 <div className="transit-config-row">
-                  <span>Points</span>
+                  <span>{lang === 'ko' ? '사용 데이터 수' : 'Points'}</span>
                   <span>
                     {fitResult.preprocessing.retained_points}
                     {fitResult.preprocessing.clipped_points > 0
@@ -2615,49 +2805,52 @@ export function TransitLab({
 
         {step === 'record' && (
           <div className="transit-controls-card">
-            <h4>Archive Record</h4>
+            <h4>{lang === 'ko' ? '분석 기록 보관' : 'Archive Record'}</h4>
             <p className="hint">
-              Save this run as a short learning record. The submission is written to the
-              local archive file and database for later review.
+              {lang === 'ko'
+                ? '이번 분석과 해석을 학습 기록으로 저장합니다. 저장한 결과는 나중에 내 분석 기록에서 다시 확인할 수 있습니다.'
+                : 'Save this run as a learning record for later review in My Analyses.'}
             </p>
             {!user && (
               <div className="transit-callout" style={{ marginTop: 12 }}>
-                Sign in with Google to submit this analysis into your archive history.
+                {lang === 'ko'
+                  ? '이 분석을 내 기록에 저장하려면 Google로 로그인하세요.'
+                  : 'Sign in with Google to submit this analysis to your archive history.'}
               </div>
             )}
             {submittedRecord ? (
               <div className="transit-config-summary" style={{ marginTop: 12 }}>
                 <div className="transit-config-row">
-                  <span>Submission</span>
+                  <span>{lang === 'ko' ? '제출 기록' : 'Submission'}</span>
                   <span>#{submittedRecord.submission_id}</span>
                 </div>
                 <div className="transit-config-row">
-                  <span>Saved To</span>
+                  <span>{lang === 'ko' ? '저장 위치' : 'Saved To'}</span>
                   <span>{submittedRecord.export_path}</span>
                 </div>
                 {seedRecordSummary && (
                   <div className="transit-config-row">
-                    <span>Draft Seed</span>
-                    <span>Record #{seedRecordSummary.submission_id}</span>
+                    <span>{lang === 'ko' ? '초안 원본' : 'Draft Seed'}</span>
+                    <span>{lang === 'ko' ? '기록' : 'Record'} #{seedRecordSummary.submission_id}</span>
                   </div>
                 )}
               </div>
             ) : seedRecordSummary ? (
               <div className="transit-config-summary" style={{ marginTop: 12 }}>
                 <div className="transit-config-row">
-                  <span>Draft Seed</span>
-                  <span>Record #{seedRecordSummary.submission_id}</span>
+                  <span>{lang === 'ko' ? '초안 원본' : 'Draft Seed'}</span>
+                  <span>{lang === 'ko' ? '기록' : 'Record'} #{seedRecordSummary.submission_id}</span>
                 </div>
               </div>
             ) : (
               <div className="transit-config-summary" style={{ marginTop: 12 }}>
                 <div className="transit-config-row">
-                  <span>Target</span>
+                  <span>{lang === 'ko' ? '대상' : 'Target'}</span>
                   <span>{target.name}</span>
                 </div>
                 {result && (
                   <div className="transit-config-row">
-                    <span>Frames</span>
+                    <span>{lang === 'ko' ? '프레임' : 'Frames'}</span>
                     <span>{result.frame_count.toLocaleString()}</span>
                   </div>
                 )}
@@ -2692,7 +2885,7 @@ export function TransitLab({
                   className={`transit-step-circle ${state} ${isActive ? 'current' : ''}`}
                   disabled={state === 'locked'}
                   onClick={() => handleStepClick(item.id)}
-                  title={item.label}
+                  title={item.label[lang]}
                 >
                   {state === 'completed' && !isActive ? (
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -2707,7 +2900,7 @@ export function TransitLab({
                     state === 'locked' ? 'locked' : ''
                   }`}
                 >
-                  {item.label}
+                  {item.label[lang]}
                 </span>
               </div>
             );
@@ -2723,10 +2916,11 @@ export function TransitLab({
           <div className="transit-panel">
             <div className="transit-panel-header">
               <div>
-                <h3>1. Select Target & Comparison Stars</h3>
+                <h3>{lang === 'ko' ? '1. 목표별·비교별 선택' : '1. Select Target & Comparison Stars'}</h3>
                 <p className="hint">
-                  목표별(T, 주황)이 중앙에 표시됩니다. 주변 밝은 별을 눌러 비교별(파랑)을 추가하고,
-                  이미 선택한 별은 드래그해서 위치를 미세 조정할 수 있습니다.
+                  {lang === 'ko'
+                    ? '목표별(T, 주황)이 중앙에 표시됩니다. 주변 밝은 별을 눌러 비교성(파랑)을 추가하고, 이미 선택한 별은 드래그해 위치를 미세 조정할 수 있습니다.'
+                    : 'The target star (T, orange) is centered. Select nearby bright stars to add comparisons (blue), and drag selected apertures to refine their positions.'}
                 </p>
               </div>
               {activeObservation && (
@@ -2746,10 +2940,12 @@ export function TransitLab({
 
             <div className={`transit-field-size-card ${!preview ? 'transit-field-size-card--empty' : ''}`}>
               <div>
-                <strong>Field Size</strong>
+                <strong>{lang === 'ko' ? '시야 크기' : 'Field Size'}</strong>
                 {!preview && (
                   <p className="hint" style={{ marginTop: 4, fontSize: 12 }}>
-                    시야 크기를 선택하고 Load를 눌러 TESS 관측 이미지를 불러오세요.
+                    {lang === 'ko'
+                      ? '시야 크기를 선택하고 불러오기를 눌러 TESS 관측 영상을 확인하세요.'
+                      : 'Choose a field size and load the TESS observation.'}
                   </p>
                 )}
               </div>
@@ -2772,7 +2968,11 @@ export function TransitLab({
                   disabled={previewLoading || framePreviewLoading}
                   onClick={() => patch({ cutoutSizePx: pendingCutoutSizePx })}
                 >
-                  {previewLoading ? 'Loading…' : preview ? 'Reload' : 'Load'}
+                  {previewLoading
+                    ? lang === 'ko' ? '불러오는 중…' : 'Loading…'
+                    : preview
+                      ? lang === 'ko' ? '다시 불러오기' : 'Reload'
+                      : lang === 'ko' ? '불러오기' : 'Load'}
                 </button>
               </div>
             </div>
@@ -2837,18 +3037,18 @@ export function TransitLab({
             {!preview && !showBlockingPreviewLoad && (
               <div className="transit-empty-state">
                 {cutoutSizePx === null
-                  ? 'Choose a field size to load the TESS cutout.'
-                  : 'Select a TESS sector from the sidebar to load a cutout image.'}
+                  ? lang === 'ko' ? 'TESS cutout을 불러올 시야 크기를 선택하세요.' : 'Choose a field size to load the TESS cutout.'
+                  : lang === 'ko' ? '사이드바에서 TESS Sector를 선택해 cutout 영상을 불러오세요.' : 'Select a TESS sector from the sidebar to load a cutout image.'}
               </div>
             )}
 
             <div className="transit-step-nav">
               <button type="button" className="btn-sm" onClick={handleReset} disabled={!preview}>
-                Reset
+                {lang === 'ko' ? '초기화' : 'Reset'}
               </button>
               <div className="transit-step-nav-actions">
                 <button type="button" className="btn-primary" disabled={!canGoNext} onClick={handleNext}>
-                  Next: Run Photometry
+                  {lang === 'ko' ? '다음: 차등측광 실행' : 'Next: Run Photometry'}
                 </button>
               </div>
             </div>
@@ -2860,11 +3060,12 @@ export function TransitLab({
           <div className="transit-panel">
             <div className="transit-panel-header">
               <div>
-                <h3>2. Run Differential Photometry</h3>
+                <h3>{lang === 'ko' ? '2. 차등측광 실행' : '2. Run Differential Photometry'}</h3>
                 <p className="hint">
-                  Aperture photometry is performed on every cadence. The target flux is
-                  divided by the combined comparison flux to produce a differential light
-                  curve (F<sub>target</sub> / F<sub>comp</sub>).
+                   {lang === 'ko'
+                     ? '각 cadence에서 구경 측광을 수행하고, 목표별 Flux를 합성 비교성 Flux로 나누어 차등 광도곡선을 만듭니다.'
+                     : 'Aperture photometry is performed on every cadence. The target flux is divided by the combined comparison flux to produce a differential light curve.'}{' '}
+                   (F<sub>target</sub> / F<sub>comp</sub>)
                 </p>
               </div>
               {activeObservation && (
@@ -2886,22 +3087,22 @@ export function TransitLab({
               <>
                 <MobileFoldSection
                   compact={isCompactTransitLayout}
-                  title="Photometry inputs"
+                   title={lang === 'ko' ? '측광 입력값' : 'Photometry inputs'}
                 >
                   <div className="transit-summary-grid">
                     <div className="transit-summary-card">
-                      <span className="transit-summary-label">Target</span>
+                       <span className="transit-summary-label">{lang === 'ko' ? '목표별' : 'Target'}</span>
                       <strong>
                         ({effectiveTargetPosition.x.toFixed(1)},{' '}
                         {effectiveTargetPosition.y.toFixed(1)})
                       </strong>
                     </div>
                     <div className="transit-summary-card">
-                      <span className="transit-summary-label">Comparisons</span>
+                       <span className="transit-summary-label">{lang === 'ko' ? '비교성' : 'Comparisons'}</span>
                       <strong>{comparisonStars.length}</strong>
                     </div>
                     <div className="transit-summary-card">
-                      <span className="transit-summary-label">Field</span>
+                       <span className="transit-summary-label">{lang === 'ko' ? '시야' : 'Field'}</span>
                       <strong>{cutoutSizePx} px</strong>
                     </div>
                     <div className="transit-summary-card">
@@ -2923,10 +3124,10 @@ export function TransitLab({
                     </div>
                     <span className="transit-progress-label">
                       {progress >= 100
-                        ? 'Complete'
+                         ? lang === 'ko' ? '완료' : 'Complete'
                         : running
                           ? `${Math.round(progress)}% — ${
-                              runProgressEvent?.message ?? 'Running transit photometry...'
+                               runProgressEvent?.message ?? (lang === 'ko' ? '차등측광 실행 중...' : 'Running transit photometry...')
                             }`
                           : `${Math.round(progress)}%`}
                     </span>
@@ -2940,7 +3141,8 @@ export function TransitLab({
                       <polyline points="22 4 12 14.01 9 11.01" />
                     </svg>
                     <span>
-                      Photometry complete — {result.frame_count.toLocaleString()} frames processed.
+                       {lang === 'ko' ? '측광 완료' : 'Photometry complete'} —{' '}
+                       {result.frame_count.toLocaleString()} {lang === 'ko' ? '프레임 처리됨' : 'frames processed'}.
                     </span>
                   </div>
                 )}
@@ -2948,12 +3150,12 @@ export function TransitLab({
                 <div className="transit-run-actions">
                   {!running && !result && (
                     <button type="button" className="btn-primary" onClick={handleRunPhotometry}>
-                      Run Photometry
+                       {lang === 'ko' ? '측광 실행' : 'Run Photometry'}
                     </button>
                   )}
                   {running && (
                     <button type="button" className="btn-danger" onClick={handleStop}>
-                      Stop
+                       {lang === 'ko' ? '중지' : 'Stop'}
                     </button>
                   )}
                   {result && !running && (
@@ -2965,7 +3167,7 @@ export function TransitLab({
                         handleRunPhotometry();
                       }}
                     >
-                      Re-run
+                       {lang === 'ko' ? '다시 실행' : 'Re-run'}
                     </button>
                   )}
                 </div>
@@ -2973,21 +3175,21 @@ export function TransitLab({
             ) : (
               <div className="transit-empty-state">
                 {previewLoading
-                  ? 'Restoring the Step 1 cutout and target position...'
-                  : 'Missing Step 1 cutout context. Go back to Step 1 and reload the cutout before running photometry.'}
+                   ? lang === 'ko' ? 'Step 1 cutout과 목표별 위치를 복원하는 중...' : 'Restoring the Step 1 cutout and target position...'
+                   : lang === 'ko' ? 'Step 1 cutout 정보가 없습니다. Step 1로 돌아가 영상을 다시 불러오세요.' : 'Missing Step 1 cutout context. Go back to Step 1 and reload the cutout before running photometry.'}
               </div>
             )}
 
             <div className="transit-step-nav">
               <button type="button" className="btn-sm" onClick={handleReset}>
-                Reset
+                 {lang === 'ko' ? '초기화' : 'Reset'}
               </button>
               <div className="transit-step-nav-actions">
                 <button type="button" className="btn-sm" onClick={handlePrevious}>
-                  Previous
+                   {lang === 'ko' ? '이전' : 'Previous'}
                 </button>
                 <button type="button" className="btn-primary" disabled={!canGoNext} onClick={handleNext}>
-                  Next: Comparison QC
+                   {lang === 'ko' ? '다음: 비교성 품질 점검' : 'Next: Comparison QC'}
                 </button>
               </div>
             </div>
@@ -3000,10 +3202,11 @@ export function TransitLab({
             <div className="transit-panel">
               <div className="transit-panel-header">
                 <div>
-                  <h3>3. Comparison QC — {target.name}</h3>
+                  <h3>{lang === 'ko' ? `3. 비교별 품질 점검 — ${target.name}` : `3. Comparison QC — ${target.name}`}</h3>
                   <p className="hint">
-                    각 비교성의 target/comparison pair를 점검하고, 품질이 떨어지는 별은
-                    제외한 뒤 ensemble photometry를 다시 계산하세요.
+                    {lang === 'ko'
+                      ? '각 목표별/비교성 쌍을 점검하고 품질이 떨어지는 별은 제외한 뒤 ensemble 측광을 다시 계산하세요.'
+                      : 'Inspect each target/comparison pair, exclude poor-quality stars, and rebuild the ensemble photometry.'}
                   </p>
                 </div>
               </div>
@@ -3018,7 +3221,9 @@ export function TransitLab({
               {running && (
                 <div className="transit-progress-card" style={{ marginBottom: 16 }}>
                   <div className="transit-progress-head">
-                    <strong>Re-running photometry with QC selection</strong>
+                    <strong>
+                      {lang === 'ko' ? '선택한 비교성으로 측광 재실행 중' : 'Re-running photometry with QC selection'}
+                    </strong>
                     <span>{Math.round(progress)}%</span>
                   </div>
                   <div className="transit-progress-bar">
@@ -3028,7 +3233,7 @@ export function TransitLab({
                     />
                   </div>
                   <p className="transit-progress-label">
-                    {runProgressEvent?.message ?? 'Rebuilding the comparison ensemble...'}
+                    {runProgressEvent?.message ?? (lang === 'ko' ? '비교성 ensemble 재구성 중...' : 'Rebuilding the comparison ensemble...')}
                   </p>
                 </div>
               )}
@@ -3037,23 +3242,23 @@ export function TransitLab({
                 <>
                   <MobileFoldSection
                     compact={isCompactTransitLayout}
-                    title="QC overview"
+                    title={lang === 'ko' ? '품질 점검 개요' : 'QC overview'}
                   >
                     <div className="transit-summary-grid">
                       <div className="transit-summary-card">
-                        <span className="transit-summary-label">Candidates</span>
+                        <span className="transit-summary-label">{lang === 'ko' ? '후보' : 'Candidates'}</span>
                         <strong>{comparisonDiagnostics.length}</strong>
                       </div>
                       <div className="transit-summary-card">
-                        <span className="transit-summary-label">Included</span>
+                        <span className="transit-summary-label">{lang === 'ko' ? '포함' : 'Included'}</span>
                         <strong>{qcIncludedDiagnostics.length}</strong>
                       </div>
                       <div className="transit-summary-card">
-                        <span className="transit-summary-label">Excluded</span>
+                        <span className="transit-summary-label">{lang === 'ko' ? '제외' : 'Excluded'}</span>
                         <strong>{qcExcludedCount}</strong>
                       </div>
                       <div className="transit-summary-card">
-                        <span className="transit-summary-label">Current Ensemble</span>
+                        <span className="transit-summary-label">{lang === 'ko' ? '현재 Ensemble' : 'Current Ensemble'}</span>
                         <strong>{result.comparison_count}</strong>
                       </div>
                     </div>
@@ -3061,8 +3266,9 @@ export function TransitLab({
 
                   {qcSelectionDirty && (
                     <div className="transit-callout" style={{ marginBottom: 16 }}>
-                      QC selection changed. Apply QC &amp; Re-run to rebuild the differential light
-                      curve before moving on to ROI selection.
+                      {lang === 'ko'
+                        ? '비교성 선택이 변경되었습니다. ROI 선택으로 넘어가기 전에 적용하고 차등 광도곡선을 다시 계산하세요.'
+                        : 'QC selection changed. Apply QC & Re-run to rebuild the differential light curve before moving on to ROI selection.'}
                     </div>
                   )}
 
@@ -3085,13 +3291,13 @@ export function TransitLab({
                                 <span>{(diagnostic.ensemble_weight * 100).toFixed(1)}%</span>
                               </div>
                               <div className="transit-comparison-diagnostic-grid">
-                                <span>Frames</span>
+                                <span>{lang === 'ko' ? '프레임' : 'Frames'}</span>
                                 <span>{diagnostic.valid_frame_count.toLocaleString()}</span>
                                 <span>RMS</span>
                                 <span>{diagnostic.differential_rms.toFixed(4)}</span>
                                 <span>MAD</span>
                                 <span>{diagnostic.differential_mad.toFixed(4)}</span>
-                                <span>Median Flux</span>
+                                <span>{lang === 'ko' ? 'Flux 중앙값' : 'Median Flux'}</span>
                                 <span>{diagnostic.median_flux.toLocaleString()}</span>
                               </div>
                               <div className="transit-toggle-row" style={{ marginTop: 10 }}>
@@ -3100,14 +3306,16 @@ export function TransitLab({
                                   className={`btn-sm ${isActive ? 'active' : ''}`}
                                   onClick={() => patch({ selectedComparisonDiagnostic: diagnostic.label })}
                                 >
-                                  Inspect
+                                  {lang === 'ko' ? '확인' : 'Inspect'}
                                 </button>
                                 <button
                                   type="button"
                                   className={`btn-sm ${isIncluded ? 'active' : ''}`}
                                   onClick={() => handleToggleQcComparison(diagnostic.label)}
                                 >
-                                  {isIncluded ? 'Included' : 'Excluded'}
+                                  {isIncluded
+                                    ? lang === 'ko' ? '포함' : 'Included'
+                                    : lang === 'ko' ? '제외' : 'Excluded'}
                                 </button>
                               </div>
                             </div>
@@ -3119,21 +3327,21 @@ export function TransitLab({
                         <>
                           <MobileFoldSection
                             compact={isCompactTransitLayout}
-                            title={`Selected pair: ${selectedComparisonDiagnosticData.label}`}
+                            title={`${lang === 'ko' ? '선택한 쌍' : 'Selected pair'}: ${selectedComparisonDiagnosticData.label}`}
                           >
                             <div className="transit-summary-grid">
                               <div className="transit-summary-card">
-                                <span className="transit-summary-label">Selected Pair</span>
+                                <span className="transit-summary-label">{lang === 'ko' ? '선택한 쌍' : 'Selected Pair'}</span>
                                 <strong>T / {selectedComparisonDiagnosticData.label}</strong>
                               </div>
                               <div className="transit-summary-card">
-                                <span className="transit-summary-label">Status</span>
+                                <span className="transit-summary-label">{lang === 'ko' ? '상태' : 'Status'}</span>
                                 <strong>
                                   {qcIncludedComparisonLabels.includes(
                                     selectedComparisonDiagnosticData.label
                                   )
-                                    ? 'Included'
-                                    : 'Excluded'}
+                                     ? lang === 'ko' ? '포함' : 'Included'
+                                     : lang === 'ko' ? '제외' : 'Excluded'}
                                 </strong>
                               </div>
                               <div className="transit-summary-card">
@@ -3160,13 +3368,17 @@ export function TransitLab({
                     </>
                   ) : (
                     <div className="transit-empty-state">
-                      Comparison diagnostics are not available for this photometry run.
+                       {lang === 'ko'
+                         ? '이번 측광 결과에는 비교성 진단 자료가 없습니다.'
+                         : 'Comparison diagnostics are not available for this photometry run.'}
                     </div>
                   )}
                 </>
               ) : !running ? (
                 <div className="transit-empty-state">
-                  Comparison diagnostics are not available for this photometry run.
+                   {lang === 'ko'
+                     ? '이번 측광 결과에는 비교성 진단 자료가 없습니다.'
+                     : 'Comparison diagnostics are not available for this photometry run.'}
                 </div>
               ) : null}
 
@@ -3177,7 +3389,7 @@ export function TransitLab({
                   onClick={handleSelectAllQcComparisons}
                   disabled={comparisonDiagnostics.length === 0 || running}
                 >
-                  Select All
+                   {lang === 'ko' ? '전체 선택' : 'Select All'}
                 </button>
                 <button
                   type="button"
@@ -3187,21 +3399,21 @@ export function TransitLab({
                   }}
                   disabled={!qcCanApply}
                 >
-                  Apply QC &amp; Re-run
+                   {lang === 'ko' ? '품질 선택 적용 후 재실행' : 'Apply QC & Re-run'}
                 </button>
               </div>
             </div>
 
             <div className="transit-step-nav">
               <button type="button" className="btn-sm" onClick={handleReset}>
-                Reset
+                 {lang === 'ko' ? '초기화' : 'Reset'}
               </button>
               <div className="transit-step-nav-actions">
                 <button type="button" className="btn-sm" onClick={handlePrevious}>
-                  Previous
+                   {lang === 'ko' ? '이전' : 'Previous'}
                 </button>
                 <button type="button" className="btn-primary" disabled={!canGoNext} onClick={handleNext}>
-                  Next: Light Curve
+                   {lang === 'ko' ? '다음: 광도곡선' : 'Next: Light Curve'}
                 </button>
               </div>
             </div>
@@ -3214,7 +3426,7 @@ export function TransitLab({
             <div className="transit-panel">
               <div className="transit-panel-header">
                 <div>
-                  <h3>4. Differential Light Curve & ROI — {target.name}</h3>
+                  <h3>{lang === 'ko' ? `4. 차등 광도곡선과 분석 구간 — ${target.name}` : `4. Differential Light Curve & ROI — ${target.name}`}</h3>
                   <p className="hint">
                     Sector {result.sector} &middot;{' '}
                     F<sub>target</sub> / F<sub>comp</sub>, normalized to unity.
@@ -3269,14 +3481,14 @@ export function TransitLab({
 
             <div className="transit-step-nav">
               <button type="button" className="btn-sm" onClick={handleReset}>
-                Reset
+                 {lang === 'ko' ? '초기화' : 'Reset'}
               </button>
               <div className="transit-step-nav-actions">
                 <button type="button" className="btn-sm" onClick={handlePrevious}>
-                  Previous
+                   {lang === 'ko' ? '이전' : 'Previous'}
                 </button>
                 <button type="button" className="btn-primary" disabled={!canGoNext} onClick={handleNext}>
-                  Next: Transit Fit
+                   {lang === 'ko' ? '다음: 식현상 모델 적합' : 'Next: Transit Fit'}
                 </button>
               </div>
             </div>
@@ -3289,11 +3501,15 @@ export function TransitLab({
             <div className="transit-panel">
               <div className="transit-panel-header">
                 <div>
-                  <h3>5. Transit Model Fit — {target.name}</h3>
+                  <h3>{lang === 'ko' ? `5. 식현상 모델 적합 (Transit Model Fit) — ${target.name}` : `5. Transit Model Fit — ${target.name}`}</h3>
                   <p className="hint">
                     {fitDataSource === 'phase_fold'
-                      ? 'Phase-fold the Step 4 ROI and fit that folded segment.'
-                      : 'Fit a transit model on the Step 4 ROI without folding the time axis.'}
+                      ? lang === 'ko'
+                        ? 'Step 4 ROI를 위상으로 접은 뒤 해당 구간에 모델을 적합합니다.'
+                        : 'Phase-fold the Step 4 ROI and fit that folded segment.'
+                      : lang === 'ko'
+                        ? 'Step 4 ROI의 시간축을 유지한 채 식현상 모델을 적합합니다.'
+                        : 'Fit a transit model on the Step 4 ROI without folding the time axis.'}
                     {fitReferencePeriod && ` P = ${fitReferencePeriod} d`}
                     {fitDataSource === 'phase_fold' ? `, T₀ = ${phaseFoldReferenceT0} d` : ''}
                   </p>
@@ -3308,41 +3524,48 @@ export function TransitLab({
               />
 
               <div className="transit-callout">
-                Black points are the exact samples used in the fit. Red is the best-fit
-                transit model for those same samples, and the X/Y axes can be remapped in
-                the sidebar without rerunning the fit.
+                {lang === 'ko'
+                  ? '검은 점은 모델 적합에 사용된 실제 데이터이고, 빨간 선은 최적 적합 모델입니다. 사이드바에서 적합을 다시 실행하지 않고 X/Y축 표현을 바꿀 수 있습니다.'
+                  : 'Black points are the exact samples used in the fit. Red is the best-fit transit model for those samples. The X/Y axes can be remapped without rerunning the fit.'}
               </div>
 
               {fitDataSource === 'phase_fold' && !fitReferencePeriod && (
                 <div className="transit-callout">
-                  A known orbital period is required to fit the phase-folded curve.
+                  {lang === 'ko'
+                    ? 'Phase-fold 광도곡선을 적합하려면 알려진 공전 주기가 필요합니다.'
+                    : 'A known orbital period is required to fit the phase-folded curve.'}
                 </div>
               )}
 
               {!hasResolvedBjdWindow && (
                 <div className="transit-callout">
-                  Step 4에서 먼저 BJD transit segment를 정해야 Step 5 fit을 실행할 수 있습니다.
+                  {lang === 'ko'
+                    ? 'Step 4에서 먼저 BJD transit 구간을 정해야 Step 5 모델 적합을 실행할 수 있습니다.'
+                    : 'Define a BJD transit interval in Step 4 before running the Step 5 fit.'}
                 </div>
               )}
 
               {fitDataSource === 'bjd_window' && !hasResolvedBjdWindow && (
                 <div className="transit-callout">
-                  Define a valid BJD start and end time before fitting. The selected
-                  window is highlighted on the Step 4 BJD light curve.
+                  {lang === 'ko'
+                    ? '적합 전에 유효한 BJD 시작과 끝 시간을 정하세요. 선택한 구간은 Step 4 광도곡선에 강조 표시됩니다.'
+                    : 'Define a valid BJD start and end time before fitting. The selected window is highlighted on the Step 4 BJD light curve.'}
                 </div>
               )}
 
               {hasResolvedBjdWindow && fitWindowPointCount > 0 && fitWindowPointCount < 20 && (
                 <div className="transit-callout">
-                  The Step 4 ROI currently contains only {fitWindowPointCount} points. Select a
-                  wider BJD window before fitting.
+                  {lang === 'ko'
+                    ? `현재 Step 4 ROI에는 ${fitWindowPointCount}개 데이터만 있습니다. 더 넓은 BJD 구간을 선택하세요.`
+                    : `The Step 4 ROI currently contains only ${fitWindowPointCount} points. Select a wider BJD window before fitting.`}
                 </div>
               )}
 
               {fitDataSource === 'bjd_window' && canFitWithBjdWindow && !fitReferencePeriod && (
                 <div className="transit-callout">
-                  A known period is still required to evaluate the transit model, even
-                  when fitting only a BJD window.
+                  {lang === 'ko'
+                    ? 'BJD 구간만 적합하더라도 식현상 모델 계산에는 알려진 공전 주기가 필요합니다.'
+                    : 'A known period is still required to evaluate the transit model, even when fitting only a BJD window.'}
                 </div>
               )}
 
@@ -3362,11 +3585,12 @@ export function TransitLab({
               {learningMode === 'advanced' && (fitDebugRequest || fitResult || fitDebugLog.length > 0) && (
                 <details className="transit-panel" style={{ marginBottom: 16 }}>
                   <summary style={{ cursor: 'pointer', fontWeight: 600, marginBottom: 12 }}>
-                    Step 5 Debug
+                    {lang === 'ko' ? 'Step 5 상세 실행 정보' : 'Step 5 Debug'}
                   </summary>
                   <p className="hint" style={{ marginTop: 0, marginBottom: 12 }}>
-                    Step 5가 실제로 어떤 ROI와 파라미터를 backend에 보냈고, 무엇을
-                    돌려받았는지 그대로 보여줍니다.
+                    {lang === 'ko'
+                      ? 'Step 5가 backend에 전달한 ROI와 파라미터, 반환된 결과를 그대로 보여줍니다.'
+                      : 'Shows the ROI and parameters sent to the backend and the response returned by the fit.'}
                   </p>
 
                   {fitDebugRequest && (
@@ -3564,7 +3788,7 @@ export function TransitLab({
               {canRunTransitFit && !fitResult && !fitting && (
                 <div className="transit-run-actions">
                   <button type="button" className="btn-primary" onClick={handleFitTransit}>
-                    Run Transit Fit
+                    {lang === 'ko' ? '식현상 모델 적합 실행' : 'Run Transit Fit'}
                   </button>
                 </div>
               )}
@@ -3572,7 +3796,7 @@ export function TransitLab({
               {fitting && (
                 <div className="transit-progress-card">
                   <div className="transit-progress-head">
-                    <strong>Fitting transit model</strong>
+                    <strong>{lang === 'ko' ? '식현상 모델 적합 중' : 'Fitting transit model'}</strong>
                     <span>
                       {fitProgress
                         ? `${Math.round((fitProgress.pct ?? 0) * 100)}%`
@@ -3587,20 +3811,20 @@ export function TransitLab({
                   </div>
                   <p className="transit-progress-label">
                     {!fitProgress || fitProgress.stage === 'init'
-                      ? 'Preparing data...'
+                      ? lang === 'ko' ? '자료 준비 중...' : 'Preparing data...'
                         : fitProgress.stage === 'phase_fold'
                           ? fitDataSource === 'bjd_window'
-                            ? 'Selecting BJD window and aligning the transit center...'
-                            : 'Phase folding & dip detection...'
+                            ? lang === 'ko' ? 'BJD 구간을 선택하고 transit 중심을 맞추는 중...' : 'Selecting BJD window and aligning the transit center...'
+                            : lang === 'ko' ? '위상 접기와 dip 탐지 중...' : 'Phase folding & dip detection...'
                         : fitProgress.stage === 'preprocess'
-                          ? 'Normalizing the Step 4 ROI and preparing the model...'
+                           ? lang === 'ko' ? 'Step 4 ROI 정규화와 모델 준비 중...' : 'Normalizing the Step 4 ROI and preparing the model...'
                         : fitProgress.stage === 'least_squares'
-                          ? 'Initial optimization (least squares)...'
+                           ? lang === 'ko' ? '초기 최적화(최소제곱) 중...' : 'Initial optimization (least squares)...'
                           : fitProgress.stage === 'mcmc'
                             ? fitProgress.step && fitProgress.total
                               ? `MCMC sampling — step ${fitProgress.step}/${fitProgress.total}`
-                              : 'Sampling posterior with MCMC...'
-                            : 'Finalizing results...'}
+                               : lang === 'ko' ? 'MCMC로 사후분포 표본 추출 중...' : 'Sampling posterior with MCMC...'
+                             : lang === 'ko' ? '결과 정리 중...' : 'Finalizing results...'}
                   </p>
                 </div>
               )}
@@ -3608,19 +3832,21 @@ export function TransitLab({
               {fitResult && (
                 <>
                   <div className="transit-callout">
-                    Method used: {fitEngineLabel}
+                    {lang === 'ko' ? '사용한 방법' : 'Method used'}: {fitEngineLabel}
                   </div>
                   {fitLimbDarkeningExplanation && (
                     <div className="transit-callout transit-callout-info">
-                      Limb darkening: {fitLimbDarkeningExplanation}
+                      {lang === 'ko' ? '주연감광' : 'Limb darkening'}: {fitLimbDarkeningExplanation}
                     </div>
                   )}
                   <div className="transit-callout">
-                    The fitted transit model is drawn directly on the current Step 5 ROI view.
+                    {lang === 'ko'
+                      ? '적합된 식현상 모델이 현재 Step 5 ROI 그래프에 직접 표시됩니다.'
+                      : 'The fitted transit model is drawn directly on the current Step 5 ROI view.'}
                   </div>
                   <div className="transit-config-summary">
                     <div className="transit-config-row">
-                      <span>Fit Source</span>
+                       <span>{lang === 'ko' ? '적합 자료' : 'Fit Source'}</span>
                       <span>
                         {fitResult.preprocessing.fit_mode === 'bjd_window'
                           ? 'BJD Window'
@@ -3639,10 +3865,13 @@ export function TransitLab({
                         </div>
                       )}
                     <div className="transit-config-row">
-                      <span>Retained Points</span>
+                       <span>{lang === 'ko' ? '사용 데이터 수' : 'Retained Points'}</span>
                       <span>{fitResult.preprocessing.retained_points}</span>
                     </div>
                   </div>
+                  {validationStats && (
+                    <TransitValidationStatsPanel stats={validationStats} />
+                  )}
                   <div className="transit-run-actions" style={{ marginTop: 12 }}>
                     <button
                       type="button"
@@ -3652,7 +3881,7 @@ export function TransitLab({
                         handleFitTransit();
                       }}
                     >
-                      Re-fit
+                       {lang === 'ko' ? '다시 적합' : 'Re-fit'}
                     </button>
                   </div>
                 </>
@@ -3661,14 +3890,14 @@ export function TransitLab({
 
             <div className="transit-step-nav">
               <button type="button" className="btn-sm" onClick={handleReset}>
-                Reset
+                 {lang === 'ko' ? '초기화' : 'Reset'}
               </button>
               <div className="transit-step-nav-actions">
                 <button type="button" className="btn-sm" onClick={handlePrevious}>
-                  Previous
+                   {lang === 'ko' ? '이전' : 'Previous'}
                 </button>
                 <button type="button" className="btn-primary" disabled={!canGoNext} onClick={handleNext}>
-                  Next: Record Result
+                   {lang === 'ko' ? '다음: 결과 기록' : 'Next: Record Result'}
                 </button>
               </div>
             </div>
@@ -3723,7 +3952,7 @@ export function TransitLab({
             {fitResult && (
               <MobileFoldSection
                 compact={isCompactTransitLayout}
-                title={lang === 'ko' ? 'Transit 적합 결과' : 'Transit fit summary'}
+                title={lang === 'ko' ? '식현상 모델 적합 결과' : 'Transit fit summary'}
               >
                 <div className="transit-record-fit-summary">
                   <h4>{lang === 'ko' ? '측정 산출값' : 'Transit Fit Result'}</h4>
@@ -3800,7 +4029,7 @@ export function TransitLab({
                       <span className="record-section-kicker">
                         {lang === 'ko' ? '해석 근거' : 'Interpretation evidence'}
                       </span>
-                      <h4>{lang === 'ko' ? 'NASA 기준값과 이번 분석 결과' : 'NASA reference and this analysis'}</h4>
+                      <h4>{lang === 'ko' ? 'NASA Exoplanet Archive 기준값과 이번 분석 결과' : 'NASA reference and this analysis'}</h4>
                     </div>
                     <span>
                       {lang === 'ko'
@@ -3850,6 +4079,15 @@ export function TransitLab({
                       : 'The reference Rp/R* is estimated from the catalog transit depth using Rp/R* = sqrt(depth). It is a comparison benchmark, not a direct published radius-ratio measurement. Explain the difference using comparison-star quality, blending, aperture choice, ROI, noise, and model assumptions.'}
                   </p>
                 </div>
+              </MobileFoldSection>
+            )}
+
+            {validationStats && (
+              <MobileFoldSection
+                compact={isCompactTransitLayout}
+                title={lang === 'ko' ? '검증 통계' : 'Validation statistics'}
+              >
+                <TransitValidationStatsPanel stats={validationStats} />
               </MobileFoldSection>
             )}
 

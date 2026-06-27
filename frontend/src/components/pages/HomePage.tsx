@@ -1,65 +1,15 @@
-import { Link } from 'react-router-dom';
 import { ImageWithFallback } from '../layout/ImageWithFallback';
 import {
   ASTRO_FALLBACK_IMAGE,
   HOME_HERO_BG,
-  KMT_MODULE_IMAGE,
-  TESS_MODULE_IMAGE,
 } from '../../data/imageSources';
-import { buildExplorerHref } from '../../utils/explorerNavigation';
 import { useLangStore, type Lang } from '../../i18n';
-
-const TESS_EXPLORER = buildExplorerHref({
-  moduleId: 'tess',
-  topicId: 'exoplanet_transit',
-  siteId: null,
-});
-
-const MODULES = [
-  {
-    id: 'tess',
-    image: TESS_MODULE_IMAGE,
-    imageAlt: { ko: 'TESS 우주망원경 아티스트 컨셉 이미지', en: 'Artist concept of the TESS space telescope' },
-    imageCredit: 'NASA',
-    chip: 'NASA TESS · Space Telescope',
-    title: 'TESS Transit Lab',
-    description: {
-      ko: '우주에서 하늘 전체를 스캔하는 TESS 위성의 측광 자료로 외계행성 식현상을 직접 분석합니다. 대상 선택 → 광도곡선 → Transit Fit까지 한 흐름으로 진행됩니다.',
-      en: 'Analyze exoplanet transits directly with photometric data from the all-sky TESS satellite. Move through target selection → light curve → transit fit in one flow.',
-    },
-    question: {
-      ko: '관측된 밝기 감소만으로 행성의 상대적 크기를 얼마나 신뢰성 있게 추정할 수 있을까?',
-      en: 'How reliably can a planet-to-star radius ratio be estimated from an observed brightness dip?',
-    },
-    tags: ['Exoplanet Transit', 'Light Curve', 'Sector Cutout'],
-    href: '/tess',
-    cta: { ko: 'TESS 탐구 시작', en: 'Start TESS Lab' },
-  },
-  {
-    id: 'kmtnet',
-    image: KMT_MODULE_IMAGE,
-    imageAlt: { ko: 'KMTNet 소개 배너 이미지', en: 'KMTNet introduction banner image' },
-    imageCredit: 'KMTNet official website',
-    chip: 'KASI KMTNet · Ground Network',
-    title: 'KMTNet Microlensing Lab',
-    description: {
-      ko: '칠레 · 남아프리카 · 호주 3개 관측소를 연결한 KMTNet으로 은하 벌지의 미시중력렌즈 이벤트를 24시간 추적합니다. 관측소 맥락부터 이벤트 해석까지 탐구합니다.',
-      en: 'Track microlensing events in the galactic bulge around the clock with KMTNet, linking observatories in Chile, South Africa, and Australia. Explore from observatory context to event interpretation.',
-    },
-    question: {
-      ko: '세 관측소의 자료를 합치면 미시중력렌즈 사건의 시간 구조를 어떻게 더 잘 설명할 수 있을까?',
-      en: 'How does combining three observatories improve our interpretation of a microlensing event?',
-    },
-    tags: ['Microlensing', 'CTIO / SAAO / SSO', 'Galactic Bulge'],
-    href: '/kmtnet',
-    cta: { ko: 'KMTNet 탐구 보기', en: 'Explore KMTNet' },
-  },
-] as const;
+import { ModuleSelector } from '../inquiry';
 
 const FEATURES = [
   {
     icon: '🔭',
-    label: { ko: '실제 천문 데이터', en: 'Real astronomy data' },
+    label: { ko: '공공 천문자료', en: 'Public astronomy data' },
     desc: { ko: 'NASA TESS · KASI KMTNet 관측 자료', en: 'NASA TESS · KASI KMTNet observations' },
   },
   {
@@ -77,13 +27,13 @@ const FEATURES = [
 const HERO = {
   credit: 'Image: ESA / Hubble — Ultra Deep Field',
   brandSub: 'Exploring All-Sky Web App',
-  kicker: { ko: '천문 데이터 탐구 플랫폼', en: 'Astronomy data inquiry platform' },
+  kicker: { ko: '공공 천문자료 탐구 플랫폼', en: 'Astronomy data inquiry platform' },
   title: {
-    ko: ['실제 천문 데이터로', '외계행성을 직접 분석하는', '탐구 플랫폼'],
+    ko: ['공공 천문자료로', '외계행성을 직접 분석하는', '탐구 플랫폼'],
     en: ['An inquiry platform', 'to analyze exoplanets yourself', 'with real astronomy data'],
   },
   desc: {
-    ko: '코딩 없이 웹에서 바로 — NASA TESS 위성의 광도곡선으로 외계행성 식현상을 확인하고, KMTNet 관측소 네트워크로 미시중력렌즈 이벤트를 추적합니다. 학생과 시민이 직접 데이터를 보고 해석하는 과학 탐구 경험을 제공합니다.',
+    ko: '코딩 없이 웹에서 바로 — MAST 기반 TESS 공개 관측자료로 외계행성 식현상을 확인하고, KMTNet 관측소 네트워크 자료로 미시중력렌즈 이벤트를 추적합니다. 학생과 시민이 공공 천문자료를 직접 보고 해석하는 과학 탐구 경험을 제공합니다.',
     en: 'Right in the browser, no coding — confirm exoplanet transits with light curves from the NASA TESS satellite, and track microlensing events through the KMTNet observatory network. A science inquiry experience where students and citizens view and interpret data themselves.',
   },
   ctaStart: { ko: '탐구 바로 시작 →', en: 'Start exploring →' },
@@ -160,12 +110,17 @@ export function HomePage() {
               {L(HERO.desc)}
             </p>
             <div className="home-hero-actions">
-              <Link to={TESS_EXPLORER} className="btn-primary">
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() =>
+                  document
+                    .getElementById('home-modules')
+                    ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }
+              >
                 {L(HERO.ctaStart)}
-              </Link>
-              <Link to="/tess" className="btn-secondary">
-                {L(HERO.ctaTess)}
-              </Link>
+              </button>
             </div>
           </div>
 
@@ -184,42 +139,9 @@ export function HomePage() {
       </section>
 
       {/* ── 탐구 모듈 카드 ──────────────────────────── */}
-      <section className="home-modules">
+      <section id="home-modules" className="home-modules">
         <p className="home-modules-label">{L(HERO.modulesLabel)}</p>
-        <div className="module-stack">
-          {MODULES.map((mod) => (
-            <article key={mod.id} className="module-row-card">
-              <div className="module-row-image-wrap">
-                <ImageWithFallback
-                  src={mod.image}
-                  fallbackSrc={ASTRO_FALLBACK_IMAGE}
-                  alt={L(mod.imageAlt)}
-                  className="module-row-image"
-                  loading="lazy"
-                />
-                <div className="module-row-image-overlay" />
-                <span className="module-row-image-credit">{mod.imageCredit}</span>
-              </div>
-              <div className="module-row-body">
-                <span className="module-row-chip">{mod.chip}</span>
-                <h2 className="module-row-title">{mod.title}</h2>
-                <p className="module-row-desc">{L(mod.description)}</p>
-                <div className="module-inquiry-question">
-                  <span>{lang === 'ko' ? '대표 탐구 질문' : 'Inquiry question'}</span>
-                  <strong>{L(mod.question)}</strong>
-                </div>
-                <ul className="module-row-tags">
-                  {mod.tags.map((tag) => (
-                    <li key={tag}>{tag}</li>
-                  ))}
-                </ul>
-                <Link to={mod.href} className="btn-primary module-row-cta">
-                  {L(mod.cta)} →
-                </Link>
-              </div>
-            </article>
-          ))}
-        </div>
+        <ModuleSelector />
       </section>
     </div>
   );

@@ -134,7 +134,7 @@ export function Navbar() {
             <button
               className="navbar-avatar-button"
               onClick={() => setMenuOpen((prev) => !prev)}
-              aria-label="사용자 메뉴"
+              aria-label={lang === 'ko' ? '사용자 메뉴' : 'User menu'}
               aria-haspopup="menu"
               aria-expanded={menuOpen}
             >
@@ -203,7 +203,7 @@ export function Navbar() {
                       <path d="M12 17V7" />
                       <path d="M16 17v-5" />
                     </svg>
-                    Admin
+                    {lang === 'ko' ? '관리자' : 'Admin'}
                   </Link>
                 )}
                 <div className="user-menu-divider" />

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import type { PixelCoordinate, StarOverlay, TICStarInfo, TransitCutoutPreview } from '../../types/transit';
+import { useLangStore } from '../../i18n';
 
 interface TransitCutoutViewerProps {
   preview: TransitCutoutPreview;
@@ -32,6 +33,7 @@ export function TransitCutoutViewer({
   onSelectStar,
   onMoveStar,
 }: TransitCutoutViewerProps) {
+  const lang = useLangStore((s) => s.lang);
   const [zoomScale, setZoomScale] = useState(1);
   const [availableFrameWidth, setAvailableFrameWidth] = useState<number | null>(null);
   const frameRef = useRef<HTMLDivElement>(null);
@@ -192,7 +194,9 @@ export function TransitCutoutViewer({
         <div>
           <span className="badge">Sector {preview.sector}</span>
           <span className="transit-cutout-subtitle">
-            {preview.camera ? `Camera ${preview.camera}` : 'Camera ?'} /{' '}
+            {preview.camera
+              ? `${lang === 'ko' ? '카메라' : 'Camera'} ${preview.camera}`
+              : `${lang === 'ko' ? '카메라' : 'Camera'} ?`} /{' '}
             {preview.ccd ? `CCD ${preview.ccd}` : 'CCD ?'}
           </span>
         </div>
@@ -211,7 +215,7 @@ export function TransitCutoutViewer({
                 disabled={frameChangeDisabled || currentFrameIndex <= 0}
                 onClick={() => onFrameChange?.(0)}
               >
-                First
+                {lang === 'ko' ? '처음' : 'First'}
               </button>
               <button
                 type="button"
@@ -219,7 +223,7 @@ export function TransitCutoutViewer({
                 disabled={frameChangeDisabled || currentFrameIndex <= 0}
                 onClick={() => onFrameChange?.(Math.max(0, currentFrameIndex - 1))}
               >
-                Prev
+                {lang === 'ko' ? '이전' : 'Prev'}
               </button>
               <button
                 type="button"
@@ -229,7 +233,7 @@ export function TransitCutoutViewer({
                   onFrameChange?.(Math.min(preview.frame_count - 1, currentFrameIndex + 1))
                 }
               >
-                Next
+                {lang === 'ko' ? '다음' : 'Next'}
               </button>
               <button
                 type="button"
@@ -237,12 +241,12 @@ export function TransitCutoutViewer({
                 disabled={frameChangeDisabled || currentFrameIndex >= preview.frame_count - 1}
                 onClick={() => onFrameChange?.(preview.frame_count - 1)}
               >
-                Last
+                {lang === 'ko' ? '마지막' : 'Last'}
               </button>
             </div>
             <div className="transit-frame-slider">
               <span className="selected-count">
-                Frame {currentFrameIndex + 1} / {preview.frame_count}
+                {lang === 'ko' ? '프레임' : 'Frame'} {currentFrameIndex + 1} / {preview.frame_count}
               </span>
               <input
                 type="range"
@@ -256,7 +260,9 @@ export function TransitCutoutViewer({
             </div>
           </div>
         ) : (
-          <span className="selected-count">Single frame preview</span>
+          <span className="selected-count">
+            {lang === 'ko' ? '단일 프레임 미리보기' : 'Single frame preview'}
+          </span>
         )}
 
         <div className="transit-cutout-zoom">
@@ -266,7 +272,7 @@ export function TransitCutoutViewer({
             disabled={zoomScale <= 1}
             onClick={() => setZoomScale((current) => Math.max(1, current - 0.5))}
           >
-            Zoom -
+            {lang === 'ko' ? '축소' : 'Zoom -'}
           </button>
           <button
             type="button"
@@ -281,9 +287,11 @@ export function TransitCutoutViewer({
             disabled={zoomScale >= 4}
             onClick={() => setZoomScale((current) => Math.min(4, current + 0.5))}
           >
-            Zoom +
+            {lang === 'ko' ? '확대' : 'Zoom +'}
           </button>
-          <span className="selected-count">View {zoomScale.toFixed(1)}x</span>
+          <span className="selected-count">
+            {lang === 'ko' ? '보기' : 'View'} {zoomScale.toFixed(1)}x
+          </span>
         </div>
       </div>
 
@@ -306,7 +314,7 @@ export function TransitCutoutViewer({
             >
               <img
                 src={preview.image_data_url}
-                alt={`TESS cutout for sector ${preview.sector}`}
+                alt={`TESS Sector ${preview.sector} ${lang === 'ko' ? 'cutout 영상' : 'cutout image'}`}
                 className="transit-cutout-image"
                 draggable={false}
               />
@@ -325,7 +333,7 @@ export function TransitCutoutViewer({
             </div>
             {frameLoading && (
               <div className="transit-cutout-loading">
-                {frameLoadingMessage ?? 'Loading frame...'}
+                {frameLoadingMessage ?? (lang === 'ko' ? '프레임 불러오는 중...' : 'Loading frame...')}
               </div>
             )}
           </div>
@@ -333,16 +341,18 @@ export function TransitCutoutViewer({
 
         <aside className="transit-frame-panel">
           <div className="transit-frame-panel-head">
-            <strong>Frame Header</strong>
-            {frameLoading && <span>Updating...</span>}
+            <strong>{lang === 'ko' ? '프레임 정보' : 'Frame Header'}</strong>
+            {frameLoading && <span>{lang === 'ko' ? '갱신 중...' : 'Updating...'}</span>}
           </div>
           <div className="transit-frame-table">
             <div className="transit-frame-row">
-              <span>Mode</span>
-              <strong>{preview.preview_mode === 'frame' ? 'Frame' : 'Median fallback'}</strong>
+              <span>{lang === 'ko' ? '방식' : 'Mode'}</span>
+              <strong>{preview.preview_mode === 'frame'
+                ? lang === 'ko' ? '프레임' : 'Frame'
+                : lang === 'ko' ? '중앙값 대체 영상' : 'Median fallback'}</strong>
             </div>
             <div className="transit-frame-row">
-              <span>Frame</span>
+              <span>{lang === 'ko' ? '프레임' : 'Frame'}</span>
               <strong>{currentFrameIndex + 1} / {preview.frame_count}</strong>
             </div>
             <div className="transit-frame-row">
@@ -358,14 +368,14 @@ export function TransitCutoutViewer({
               <strong>{frameMetadata?.quality_flag ?? 'n/a'}</strong>
             </div>
             <div className="transit-frame-row">
-              <span>Finite Pixels</span>
+              <span>{lang === 'ko' ? '유효 픽셀' : 'Finite Pixels'}</span>
               <strong>
                 {frameMetadata?.finite_pixels ?? 'n/a'}
                 {frameMetadata?.total_pixels ? ` / ${frameMetadata.total_pixels}` : ''}
               </strong>
             </div>
             <div className="transit-frame-row">
-              <span>Coverage</span>
+              <span>{lang === 'ko' ? '유효 범위' : 'Coverage'}</span>
               <strong>
                 {frameMetadata?.finite_fraction !== null &&
                 frameMetadata?.finite_fraction !== undefined
@@ -374,11 +384,11 @@ export function TransitCutoutViewer({
               </strong>
             </div>
             <div className="transit-frame-row">
-              <span>Flux Median</span>
+              <span>{lang === 'ko' ? 'Flux 중앙값' : 'Flux Median'}</span>
               <strong>{frameMetadata?.flux_median ?? 'n/a'}</strong>
             </div>
             <div className="transit-frame-row">
-              <span>Flux Range</span>
+              <span>{lang === 'ko' ? 'Flux 범위' : 'Flux Range'}</span>
               <strong>
                 {frameMetadata?.flux_min ?? 'n/a'}
                 {frameMetadata?.flux_max !== null && frameMetadata?.flux_max !== undefined

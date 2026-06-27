@@ -2,12 +2,18 @@ import { useEffect, useRef, useState } from 'react';
 import { AladinViewer, type AladinViewerHandle } from './AladinViewer';
 import { TopicSidebar } from './TopicSidebar';
 import { TargetPopup } from './TargetPopup';
+import { EmbeddedSkyFilters } from './EmbeddedSkyFilters';
 import { useAppStore } from '../../stores/useAppStore';
 import { useSkyTargets } from '../../hooks/useSkyTargets';
 import type { Target } from '../../types/target';
 import { useT } from '../../i18n';
 
-export function SkyExplorer() {
+interface SkyExplorerProps {
+  embedded?: boolean;
+  onSelectTarget?: (target: Target) => void;
+}
+
+export function SkyExplorer({ embedded = false, onSelectTarget }: SkyExplorerProps) {
   const { targets, loading, selectedTopic } = useSkyTargets();
   const t = useT();
   const [nameSearch, setNameSearch] = useState('');
@@ -49,6 +55,18 @@ export function SkyExplorer() {
     if (gotoReadyTargetId !== target.id) {
       setGotoReadyTargetId(target.id);
     }
+    // Embedded picker: a click selects the target and auto-frames it, so the
+    // chosen target's sky image is shown immediately (no separate button).
+    if (onSelectTarget) {
+      onSelectTarget(target);
+      if (viewerRef.current) {
+        setGotoInProgress(true);
+        viewerRef.current
+          .gotoTarget(target)
+          .catch(() => {})
+          .finally(() => setGotoInProgress(false));
+      }
+    }
   };
 
   const handleGoto = async () => {
@@ -78,8 +96,9 @@ export function SkyExplorer() {
   };
 
   return (
-    <div className="sky-explorer">
-      <TopicSidebar />
+    <div className={`sky-explorer${embedded ? ' sky-explorer-embedded' : ''}`}>
+      {!embedded && <TopicSidebar />}
+      {embedded && selectedTopic === 'exoplanet_transit' && <EmbeddedSkyFilters />}
       <div className="sky-map-area" style={{ flex: 1, position: 'relative' }}>
         <AladinViewer
           ref={viewerRef}
@@ -116,6 +135,7 @@ export function SkyExplorer() {
         )}
         {popupTarget && (
           <TargetPopup
+            embedded={embedded}
             gotoHint={gotoMessage}
             gotoHintTone={gotoMessageTone}
             gotoInProgress={gotoInProgress}

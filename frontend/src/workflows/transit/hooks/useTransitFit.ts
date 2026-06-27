@@ -4,6 +4,7 @@ import type { Observation, Target } from '../../../types/target';
 import type { TransitPhotometryResponse } from '../../../types/transit';
 import type { TransitFitResponse } from '../../../types/transitFit';
 import { computeDefaultBjdWindow } from '../lightCurve';
+import { saveTransitFit } from '../fitBridge';
 import { normalizeTransitFitResponse, type TransitFitDataSource } from '../definition';
 import type { TransitLabState } from '../state';
 
@@ -217,6 +218,15 @@ export function useTransitFit({
         ],
       });
       patch({ fitResult: normalizedResponse });
+      // Bridge the result to the guided block (Step 5 comparison + gating).
+      saveTransitFit({
+        targetId: normalizedResponse.target_id,
+        rpRs: normalizedResponse.fitted_params.rp_rs,
+        rpRsErr: normalizedResponse.fitted_params.rp_rs_err,
+        period: normalizedResponse.period,
+        reducedChiSquared: normalizedResponse.fitted_params.reduced_chi_squared,
+        savedAt: Date.now(),
+      });
     } catch (error) {
       console.error('Transit fitting failed', error);
       dispatch({

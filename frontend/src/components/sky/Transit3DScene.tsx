@@ -3,6 +3,7 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { Stars } from '@react-three/drei';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three';
+import { useLangStore } from '../../i18n';
 
 const STAR_R = 1.4;
 const PLANET_R = 0.32;
@@ -289,6 +290,7 @@ function LightCurveOverlay({ phase }: { phase: number }) {
 }
 
 export default function Transit3DScene() {
+  const lang = useLangStore((s) => s.lang);
   const [phase, setPhase] = useState(0);
   const [playing, setPlaying] = useState(true);
 
@@ -329,18 +331,31 @@ export default function Transit3DScene() {
           </EffectComposer>
         </Canvas>
         <div className="transit3d-overlay" aria-hidden="true">
-          <span className="transit3d-tag transit3d-tag-star">★ 별 (항성)</span>
-          <span className="transit3d-tag transit3d-tag-planet">● 행성 (공전 궤도)</span>
+          <span className="transit3d-tag transit3d-tag-star">
+            ★ {lang === 'ko' ? '별 (항성)' : 'Star'}
+          </span>
+          <span className="transit3d-tag transit3d-tag-planet">
+            ● {lang === 'ko' ? '행성 (공전 궤도)' : 'Planet (orbit)'}
+          </span>
         </div>
-        <span className="transit3d-disclaimer" aria-label="개념 시연 영상">
-          개념 시연 · 실제 관측 영상 아님
+        <span
+          className="transit3d-disclaimer"
+          aria-label={lang === 'ko' ? '개념 시연 영상' : 'Concept demonstration'}
+        >
+          {lang === 'ko' ? '개념 시연 · 실제 관측 영상 아님' : 'Concept demo · Not an observation'}
         </span>
       </div>
-      <div className="transit3d-controls" role="group" aria-label="시뮬레이션 재생 제어">
+      <div
+        className="transit3d-controls"
+        role="group"
+        aria-label={lang === 'ko' ? '시뮬레이션 재생 제어' : 'Simulation playback controls'}
+      >
         <button
           type="button"
           className="transit3d-play-btn"
-          aria-label={playing ? '일시정지' : '재생'}
+          aria-label={playing
+            ? lang === 'ko' ? '일시정지' : 'Pause'
+            : lang === 'ko' ? '재생' : 'Play'}
           onClick={() => setPlaying((p) => !p)}
         >
           {playing ? '❚❚' : '▶'}
@@ -356,7 +371,7 @@ export default function Transit3DScene() {
             setPhase(parseFloat(e.target.value));
           }}
           className="transit3d-scrubber"
-          aria-label="공전 위상 스크러버"
+          aria-label={lang === 'ko' ? '공전 위상 조절' : 'Orbital phase scrubber'}
         />
         <span className="transit3d-time" aria-live="polite">
           <span className="transit3d-time-current">{seconds.toFixed(1)}</span>
@@ -367,11 +382,15 @@ export default function Transit3DScene() {
       <div className="transit3d-curve">
         <LightCurveOverlay phase={phase} />
         <p className="transit3d-caption">
-          행성이 별 앞을 지나는 동안(<span className="transit3d-mono">transit</span>) 광도곡선에 미세한 딥이 나타납니다.
-          깊이 ∝ (R<sub>p</sub> / R<sub>★</sub>)²
+          {lang === 'ko' ? '행성이 별 앞을 지나는 동안' : 'While the planet passes in front of the star'}(
+          <span className="transit3d-mono">transit</span>)
+          {lang === 'ko' ? ' 광도곡선에 미세한 딥이 나타납니다.' : ', a small dip appears in the light curve.'}
+          {' '}{lang === 'ko' ? '깊이' : 'Depth'} ∝ (R<sub>p</sub> / R<sub>★</sub>)²
           <br />
           <span className="transit3d-caption-note">
-            위 영상은 현상 이해를 위한 시연이며, 실제 분석은 TESS 위성이 관측한 광도곡선으로 수행합니다.
+            {lang === 'ko'
+              ? '위 영상은 현상 이해를 위한 시연이며, 실제 분석은 MAST 기반 TESS 공개 관측자료로 수행합니다.'
+              : 'This animation demonstrates the geometry. The analysis uses public TESS observations provided through MAST.'}
           </span>
         </p>
       </div>

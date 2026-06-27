@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { fetchGuideStats, type GuideStats } from '../../api/client';
+import { useLangStore } from '../../i18n';
 import { useAuthStore } from '../../stores/useAuthStore';
 
 // Map question IDs to readable labels
@@ -116,6 +117,7 @@ function QuestionCard({
   qid: string;
   answers: Record<string, number>;
 }) {
+  const lang = useLangStore((state) => state.lang);
   const label = QUESTION_LABELS[qid] ?? qid;
   const correctAnswer = CORRECT_ANSWERS[qid];
   const isOpen = qid.endsWith('_q3');
@@ -126,7 +128,9 @@ function QuestionCard({
   return (
     <div className="admin-question-card">
       <div className="admin-question-label">{label}</div>
-      <div className="admin-question-total">{total}개 응답</div>
+      <div className="admin-question-total">
+        {lang === 'ko' ? `${total}개 응답` : `${total} responses`}
+      </div>
       <div className="admin-answers">
         {sortedEntries.map(([answer, count]) => (
           <AnswerBar
@@ -144,6 +148,7 @@ function QuestionCard({
 }
 
 export function AdminDashboard() {
+  const lang = useLangStore((state) => state.lang);
   const user = useAuthStore((s) => s.user);
   const authLoading = useAuthStore((s) => s.loading);
   const [statsState, setStatsState] = useState<{
@@ -182,15 +187,19 @@ export function AdminDashboard() {
   }, [authLoading, user?.id, user?.is_admin]);
 
   if (authLoading) {
-    return <div className="page-placeholder"><p>Checking admin access...</p></div>;
+    return (
+      <div className="page-placeholder">
+        <p>{lang === 'ko' ? '관리자 권한을 확인하는 중...' : 'Checking admin access...'}</p>
+      </div>
+    );
   }
   if (!user) {
     return (
       <div className="page-placeholder">
-        <h2>Admin</h2>
-        <p>Please sign in with an administrator account.</p>
+        <h2>{lang === 'ko' ? '관리자' : 'Admin'}</h2>
+        <p>{lang === 'ko' ? '관리자 계정으로 로그인하세요.' : 'Please sign in with an administrator account.'}</p>
         <a href="/api/auth/login" className="btn-primary">
-          Sign in with Google
+          {lang === 'ko' ? 'Google로 로그인' : 'Sign in with Google'}
         </a>
       </div>
     );
@@ -198,8 +207,8 @@ export function AdminDashboard() {
   if (!user.is_admin) {
     return (
       <div className="page-placeholder">
-        <h2>Admin</h2>
-        <p>You do not have permission to view this dashboard.</p>
+        <h2>{lang === 'ko' ? '관리자' : 'Admin'}</h2>
+        <p>{lang === 'ko' ? '이 대시보드를 볼 권한이 없습니다.' : 'You do not have permission to view this dashboard.'}</p>
       </div>
     );
   }
@@ -208,13 +217,21 @@ export function AdminDashboard() {
   const error = statsState.userId === user.id ? statsState.error : null;
 
   if (!stats && !error) {
-    return <div className="page-placeholder"><p>Loading stats…</p></div>;
+    return (
+      <div className="page-placeholder">
+        <p>{lang === 'ko' ? '통계를 불러오는 중...' : 'Loading stats...'}</p>
+      </div>
+    );
   }
   if (error) {
     return <div className="page-placeholder"><p style={{ color: 'var(--color-error)' }}>{error}</p></div>;
   }
   if (!stats) {
-    return <div className="page-placeholder"><p>No data.</p></div>;
+    return (
+      <div className="page-placeholder">
+        <p>{lang === 'ko' ? '데이터가 없습니다.' : 'No data.'}</p>
+      </div>
+    );
   }
 
   const guidePct =
@@ -226,26 +243,28 @@ export function AdminDashboard() {
 
   return (
     <div className="admin-dashboard">
-      <h2 className="admin-title">탐구 질문 응답 통계</h2>
+      <h2 className="admin-title">
+        {lang === 'ko' ? '탐구 질문 응답 통계' : 'Inquiry Question Response Statistics'}
+      </h2>
 
       <div className="admin-summary-row">
         <div className="admin-summary-card">
           <div className="admin-summary-value">{stats.total_records}</div>
-          <div className="admin-summary-label">전체 기록</div>
+          <div className="admin-summary-label">{lang === 'ko' ? '전체 기록' : 'All Records'}</div>
         </div>
         <div className="admin-summary-card">
           <div className="admin-summary-value">{stats.records_with_guide}</div>
-          <div className="admin-summary-label">탐구 답변 포함</div>
+          <div className="admin-summary-label">{lang === 'ko' ? '탐구 답변 포함' : 'With Inquiry Answers'}</div>
         </div>
         <div className="admin-summary-card">
           <div className="admin-summary-value">{guidePct}%</div>
-          <div className="admin-summary-label">탐구 참여율</div>
+          <div className="admin-summary-label">{lang === 'ko' ? '탐구 참여율' : 'Inquiry Participation'}</div>
         </div>
       </div>
 
       {qids.length === 0 ? (
         <p style={{ color: 'var(--text-secondary)', marginTop: '2rem' }}>
-          아직 탐구 답변이 없습니다.
+          {lang === 'ko' ? '아직 탐구 답변이 없습니다.' : 'No inquiry answers yet.'}
         </p>
       ) : (
         <div className="admin-questions-grid">

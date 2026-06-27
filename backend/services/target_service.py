@@ -2,6 +2,38 @@ from adapters.dummy_archive import archive as dummy_archive
 from adapters.transit_archive import archive as transit_archive
 from adapters.kmtnet_archive import archive as kmtnet_archive
 from schemas.target import Target, TargetListResponse, TargetDetailResponse
+from services import cluster_service
+
+_CLUSTER_CONSTELLATION = {
+    "ngc2632": "Cancer",
+    "m45": "Taurus",
+    "melotte25": "Taurus",
+    "ngc2168": "Gemini",
+    "ngc2158": "Gemini",
+    "ngc2682": "Cancer",
+    "ngc752": "Andromeda",
+    "ic2602": "Carina",
+}
+
+
+def _cluster_sky_targets() -> list[dict]:
+    targets: list[dict] = []
+    for info in cluster_service.list_clusters().clusters:
+        targets.append(
+            {
+                "id": info.id,
+                "name": info.name,
+                "ra": info.ra,
+                "dec": info.dec,
+                "constellation": _CLUSTER_CONSTELLATION.get(info.id, ""),
+                "type": "open_cluster",
+                "magnitude_range": "Gaia G",
+                "description": info.note_ko,
+                "topic_id": "open_cluster_cmd",
+                "data_source": "ESA Gaia DR3",
+            }
+        )
+    return targets
 
 
 def list_targets(
@@ -21,6 +53,13 @@ def list_targets(
         )
     elif topic_id == "microlensing":
         raw = kmtnet_archive.list_targets(topic_id)
+    elif topic_id == "stellar_cmd":
+        raw = [
+            *dummy_archive.list_targets("variable_star"),
+            *dummy_archive.list_targets("eclipsing_binary"),
+        ]
+    elif topic_id == "open_cluster_cmd":
+        raw = _cluster_sky_targets()
     elif topic_id:
         raw = dummy_archive.list_targets(topic_id)
     else:

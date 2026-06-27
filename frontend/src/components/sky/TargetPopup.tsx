@@ -21,6 +21,7 @@ interface TargetPopupProps {
   gotoUnlocked: boolean;
   onGoto: () => void;
   onClose: () => void;
+  embedded?: boolean;
 }
 
 export function TargetPopup({
@@ -31,6 +32,7 @@ export function TargetPopup({
   gotoUnlocked,
   onGoto,
   onClose,
+  embedded = false,
 }: TargetPopupProps) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -40,6 +42,8 @@ export function TargetPopup({
     topicId: target.topic_id,
   });
   const sourceLabel = formatTargetSource(target.data_source, t);
+  const isCluster = target.topic_id === 'open_cluster_cmd';
+  const isExoplanet = target.topic_id === 'exoplanet_transit';
 
   return (
     <div className="target-popup">
@@ -79,13 +83,31 @@ export function TargetPopup({
         >
           {gotoInProgress ? t('popup.gotoSlewing') : 'GOTO'}
         </button>
-        <button
-          className="btn-secondary"
-          disabled={!gotoUnlocked || gotoInProgress}
-          onClick={() => navigate(buildTargetHref(target.id, context))}
-        >
-          {t('popup.viewDetails')}
-        </button>
+        {!embedded && (
+          <button
+            className="btn-secondary"
+            disabled={!gotoUnlocked || gotoInProgress}
+            onClick={() =>
+              navigate(
+                isCluster
+                  ? `/modules/cluster-cmd?cluster=${target.id}`
+                  : isExoplanet
+                    ? `/modules/exoplanet-transit?target=${target.id}`
+                    : buildTargetHref(target.id, context),
+              )
+            }
+          >
+            {isCluster
+              ? lang === 'ko'
+                ? '성단 CMD 탐구 시작'
+                : 'Start Cluster CMD'
+              : isExoplanet
+                ? lang === 'ko'
+                  ? '식현상 탐구 시작'
+                  : 'Start Transit Inquiry'
+                : t('popup.viewDetails')}
+          </button>
+        )}
       </div>
       {gotoHint ? (
         <p

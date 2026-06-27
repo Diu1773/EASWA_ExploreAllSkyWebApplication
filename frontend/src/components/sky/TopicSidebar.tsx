@@ -8,7 +8,36 @@ import { useT, useLangStore } from '../../i18n';
 const TOPIC_CODES: Record<string, string> = {
   eclipsing_binary: 'EB',
   variable_star: 'VAR',
+  stellar_cmd: 'CMD',
   exoplanet_transit: 'Exoplanet Transit',
+  open_cluster_cmd: 'OC',
+};
+
+const TOPIC_LOCALES: Record<string, { name: string; description: string }> = {
+  eclipsing_binary: {
+    name: 'Eclipsing Binary Investigation',
+    description: 'Analyze eclipsing-binary light curves to investigate orbital periods and eclipse depths.',
+  },
+  variable_star: {
+    name: 'Variable Star Investigation',
+    description: 'Observe and analyze brightness changes in pulsating and long-period variable stars.',
+  },
+  stellar_cmd: {
+    name: 'Color-Magnitude Diagram Investigation',
+    description: 'Compare variable and eclipsing binary targets by color index, brightness, period, and CMD position.',
+  },
+  exoplanet_transit: {
+    name: 'Exoplanet Transit Investigation',
+    description: 'Investigate exoplanet transit light curves using TESS observations.',
+  },
+  microlensing: {
+    name: 'Microlensing Investigation',
+    description: 'Analyze Galactic bulge microlensing events using continuous observations from three KMTNet sites.',
+  },
+  open_cluster_cmd: {
+    name: 'Open Cluster CMD Investigation',
+    description: 'Draw open-cluster color-magnitude diagrams from Gaia DR3 photometry to investigate age and distance.',
+  },
 };
 
 function GearIcon() {
@@ -109,7 +138,10 @@ export function TopicSidebar() {
                 >
                   <div className="topic-bar-preview">
                     {t.preview_image_url && (
-                      <img src={t.preview_image_url} alt={`${t.name} preview`} />
+                      <img
+                        src={t.preview_image_url}
+                        alt={`${lang === 'ko' ? t.name : TOPIC_LOCALES[t.id]?.name ?? t.name} preview`}
+                      />
                     )}
                     <div className="topic-bar-preview-overlay">
                       <span className="topic-bar-code">{TOPIC_CODES[t.id] ?? t.icon}</span>
@@ -130,8 +162,14 @@ export function TopicSidebar() {
                     )}
                   </div>
                   <div className="topic-bar-info">
-                    <span className="topic-bar-name">{t.name}</span>
-                    <span className="topic-bar-desc">{t.description}</span>
+                    <span className="topic-bar-name">
+                      {lang === 'ko' ? t.name : TOPIC_LOCALES[t.id]?.name ?? t.name}
+                    </span>
+                    <span className="topic-bar-desc">
+                      {lang === 'ko'
+                        ? t.description
+                        : TOPIC_LOCALES[t.id]?.description ?? t.description}
+                    </span>
                   </div>
                 </button>
 

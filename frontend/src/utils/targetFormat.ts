@@ -69,6 +69,15 @@ export function buildTargetDescription(target: Target, lang: Lang): string {
   const depth = target.transit_depth_pct;
   const period = target.period_days;
   const duration = target.transit_duration_hours;
+  if (target.topic_id === 'microlensing' && lang === 'en') {
+    if (target.type === 'ML-P') {
+      return `${target.name} is a KMTNet microlensing event with a candidate planetary anomaly. Compare the multi-site coverage and inspect departures from a single-lens model.`;
+    }
+    if (target.type === 'ML-HM') {
+      return `${target.name} is a high-magnification KMTNet microlensing event. Inspect how the three observatories cover the peak.`;
+    }
+    return `${target.name} is a KMTNet single-lens microlensing event toward the Galactic bulge.`;
+  }
   if (depth == null || period == null) return target.description;
 
   if (lang === 'ko') {

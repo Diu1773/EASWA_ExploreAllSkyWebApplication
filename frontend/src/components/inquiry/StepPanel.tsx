@@ -1,0 +1,61 @@
+import type { ReactNode } from 'react';
+import { useLangStore } from '../../i18n';
+import { localize } from '../../explorationBlocks/localize';
+import type { InquiryStepConfig } from '../../explorationBlocks/types';
+import { SelfCheckPanel } from './SelfCheckPanel';
+
+interface StepPanelProps {
+  step: InquiryStepConfig;
+  children: ReactNode;
+  notes: Record<string, string>;
+  onNoteChange: (fieldId: string, value: string) => void;
+}
+
+export function StepPanel({ step, children, notes, onNoteChange }: StepPanelProps) {
+  const lang = useLangStore((state) => state.lang);
+
+  return (
+    <section className="inquiry-step-panel" aria-labelledby={`inquiry-${step.id}`}>
+      <div className="inquiry-step-panel-head">
+        <span>Step {step.number}</span>
+        <h2 id={`inquiry-${step.id}`}>{localize(step.title, lang)}</h2>
+        <p>{localize(step.summary, lang)}</p>
+      </div>
+
+      <div className="inquiry-prompt-list">
+        {step.questions.map((prompt) => (
+          <div key={prompt.id} className="inquiry-prompt">
+            <strong>{localize(prompt.question, lang)}</strong>
+            {prompt.helperText && <span>{localize(prompt.helperText, lang)}</span>}
+          </div>
+        ))}
+      </div>
+
+      <div className="inquiry-step-body">{children}</div>
+
+      {step.selfChecks && step.selfChecks.length > 0 && (
+        <SelfCheckPanel items={step.selfChecks} />
+      )}
+
+      <div className="inquiry-record-fields">
+        <h3>{lang === 'ko' ? '탐구 기록' : 'Inquiry Notes'}</h3>
+        {step.recordFields.map((field) => {
+          const fieldId = `${step.id}:${field.id}`;
+          return (
+            <label key={field.id} className="inquiry-record-field">
+              <span>{localize(field.question, lang)}</span>
+              {field.helperText && (
+                <span className="inquiry-record-hint">{localize(field.helperText, lang)}</span>
+              )}
+              <textarea
+                value={notes[fieldId] ?? ''}
+                onChange={(event) => onNoteChange(fieldId, event.target.value)}
+                placeholder={lang === 'ko' ? '근거와 생각을 기록하세요.' : 'Record evidence and your reasoning.'}
+              />
+            </label>
+          );
+        })}
+      </div>
+    </section>
+  );
+}

@@ -7,17 +7,19 @@ import {
   getExplorerContext,
 } from '../../utils/explorerNavigation';
 import { KmtnetSkyMap } from '../sky/KmtnetSkyMap';
+import { useLangStore } from '../../i18n';
+import { buildTargetDescription, formatConstellation } from '../../utils/targetFormat';
 
-const SITE_LABELS: Record<string, string> = {
-  ctio: 'CTIO — 칠레',
-  saao: 'SAAO — 남아프리카',
-  sso:  'SSO — 호주',
+const SITE_LABELS: Record<string, { ko: string; en: string }> = {
+  ctio: { ko: 'CTIO — 칠레', en: 'CTIO — Chile' },
+  saao: { ko: 'SAAO — 남아프리카', en: 'SAAO — South Africa' },
+  sso:  { ko: 'SSO — 호주', en: 'SSO — Australia' },
 };
 
-const TYPE_LABEL: Record<string, string> = {
-  'ML':    '단일 렌즈',
-  'ML-HM': '고증폭',
-  'ML-P':  '행성 이상신호',
+const TYPE_LABEL: Record<string, { ko: string; en: string }> = {
+  'ML':    { ko: '단일 렌즈', en: 'Single lens' },
+  'ML-HM': { ko: '고증폭', en: 'High magnification' },
+  'ML-P':  { ko: '행성 이상신호', en: 'Planetary anomaly' },
 };
 
 const TYPE_COLOR: Record<string, string> = {
@@ -38,28 +40,36 @@ interface PopupProps {
 }
 
 function KmtnetEventPopup({ event, onGoto, onExplore, onClose }: PopupProps) {
+  const lang = useLangStore((s) => s.lang);
   const color = TYPE_COLOR[event.type] ?? '#94a3b8';
-  const label = TYPE_LABEL[event.type]  ?? event.type;
+  const label = TYPE_LABEL[event.type]?.[lang] ?? event.type;
   return (
     <div className="kmt-event-popup">
       <div className="kmt-popup-header">
         <span className="kmt-popup-type-badge" style={{ color, borderColor: color + '55', background: color + '18' }}>
           {label}
         </span>
-        <button className="kmt-popup-close" onClick={onClose} aria-label="닫기">&times;</button>
+        <button
+          className="kmt-popup-close"
+          onClick={onClose}
+          aria-label={lang === 'ko' ? '닫기' : 'Close'}
+        >
+          &times;
+        </button>
       </div>
       <h3 className="kmt-popup-name">{event.name}</h3>
       <p className="kmt-popup-coord">
-        RA {event.ra.toFixed(3)}° &ensp; Dec {event.dec.toFixed(3)}° &ensp;·&ensp; {event.constellation}
+        RA {event.ra.toFixed(3)}° &ensp; Dec {event.dec.toFixed(3)}° &ensp;·&ensp;{' '}
+        {formatConstellation(event.constellation, lang)}
       </p>
       <p className="kmt-popup-mag">{event.magnitude_range}</p>
-      <p className="kmt-popup-desc">{event.description}</p>
+      <p className="kmt-popup-desc">{buildTargetDescription(event, lang)}</p>
       <div className="kmt-popup-actions">
         <button className="btn-secondary kmt-popup-goto" onClick={onGoto}>
           GoTo ↗
         </button>
         <button className="btn-primary" onClick={onExplore}>
-          탐구 시작 →
+          {lang === 'ko' ? '탐구 시작 →' : 'Start Investigation →'}
         </button>
       </div>
     </div>
@@ -69,11 +79,12 @@ function KmtnetEventPopup({ event, onGoto, onExplore, onClose }: PopupProps) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export function KmtnetExplorerPage() {
+  const lang = useLangStore((s) => s.lang);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const context = getExplorerContext(searchParams, { moduleId: 'kmtnet', siteId: 'ctio' });
   const siteId = context.siteId ?? 'ctio';
-  const siteLabel = SITE_LABELS[siteId] ?? siteId.toUpperCase();
+  const siteLabel = SITE_LABELS[siteId]?.[lang] ?? siteId.toUpperCase();
 
   const [events, setEvents]           = useState<Target[]>([]);
   const [loading, setLoading]         = useState(true);
@@ -127,13 +138,15 @@ export function KmtnetExplorerPage() {
       <div className="edu-page-inner">
 
         <header className="edu-header">
-          <Link to="/kmtnet/sites" className="back-link">&larr; 관측소 선택</Link>
+          <Link to="/kmtnet/sites" className="back-link">
+            &larr; {lang === 'ko' ? '관측소 선택' : 'Choose Observatory'}
+          </Link>
           <span className="page-chip">KMTNet · {siteLabel}</span>
-          <h1>미시중력렌즈 이벤트 탐구</h1>
+          <h1>{lang === 'ko' ? '미시중력렌즈 이벤트 탐구' : 'Microlensing Event Investigation'}</h1>
           <p>
-            은하 벌지 방향 40개 이벤트가 하늘 지도에 표시됩니다.
-            마커를 클릭하거나 아래 목록에서 이벤트를 선택하면
-            CTIO · SAAO · SSO 측광 자료를 불러와 Paczyński 모델을 직접 적합할 수 있습니다.
+            {lang === 'ko'
+              ? '은하 벌지 방향 40개 이벤트가 하늘 지도에 표시됩니다. 마커를 클릭하거나 아래 목록에서 이벤트를 선택하면 CTIO · SAAO · SSO 측광 자료를 불러와 Paczyński 모델을 직접 적합할 수 있습니다.'
+              : 'The sky map shows 40 events toward the Galactic bulge. Select a marker or an event below to load CTIO, SAAO, and SSO photometry and fit a Paczyński model.'}
           </p>
         </header>
 
@@ -144,7 +157,9 @@ export function KmtnetExplorerPage() {
               <input
                 type="search"
                 className="kmt-search-input"
-                placeholder="이벤트 이름 검색 (예: KMT-2022, blg-0440)…"
+                placeholder={lang === 'ko'
+                  ? '이벤트 이름 검색 (예: KMT-2022, blg-0440)…'
+                  : 'Search event name (e.g. KMT-2022, blg-0440)…'}
                 value={nameSearch}
                 onChange={(e) => setNameSearch(e.target.value)}
               />
@@ -178,15 +193,16 @@ export function KmtnetExplorerPage() {
 
         {/* ── Data pipeline ── */}
         <section className="kmtnet-pipeline-box">
-          <h3>데이터 처리 파이프라인</h3>
+          <h3>{lang === 'ko' ? '데이터 처리 과정' : 'Data processing pipeline'}</h3>
           <div className="kmtnet-pipeline-steps">
             <div className="kmtnet-pipeline-step">
               <span className="kmtnet-step-num">1</span>
               <div>
-                <strong>차분 이미지 분석 (DIA)</strong>
+                <strong>{lang === 'ko' ? '차분 이미지 분석 (DIA)' : 'Difference image analysis (DIA)'}</strong>
                 <p>
-                  기준 이미지와 각 관측 이미지의 차이를 픽셀 단위로 측정.
-                  배경별이 밀집한 은하 벌지에서 혼합광(blending) 문제를 최소화.
+                  {lang === 'ko'
+                    ? '기준 이미지와 각 관측 이미지의 차이를 픽셀 단위로 측정해 배경별이 밀집한 은하 벌지의 혼합광(blending) 문제를 줄입니다.'
+                    : 'Measure pixel-level differences between a reference image and each observation to reduce blending in the crowded Galactic bulge.'}
                   <span className="kmtnet-ref"> [pySIS: Albrow et al. 2009; pyDIA: Albrow 2017]</span>
                 </p>
               </div>
@@ -194,10 +210,12 @@ export function KmtnetExplorerPage() {
             <div className="kmtnet-pipeline-step">
               <span className="kmtnet-step-num">2</span>
               <div>
-                <strong>I-band 측광 및 보정</strong>
+                <strong>{lang === 'ko' ? 'I-band 측광 및 보정' : 'I-band photometry and calibration'}</strong>
                 <p>
-                  KMTNet은 주로 Cousins I-band (λ<sub>eff</sub> ≈ 800 nm)로 관측.
-                  3개 관측소의 측광 영점(zeropoint)을 공통 기준으로 정렬.
+                  {lang === 'ko'
+                    ? 'KMTNet은 주로 Cousins I-band로 관측하며, 3개 관측소의 측광 영점(zeropoint)을 공통 기준으로 정렬합니다.'
+                    : 'KMTNet primarily observes in Cousins I-band and aligns the photometric zeropoints of all three sites to a common reference.'}{' '}
+                  (λ<sub>eff</sub> ≈ 800 nm)
                   <span className="kmtnet-ref"> [Kim et al. 2016, JKAS 49, 37]</span>
                 </p>
               </div>
@@ -205,11 +223,12 @@ export function KmtnetExplorerPage() {
             <div className="kmtnet-pipeline-step">
               <span className="kmtnet-step-num">3</span>
               <div>
-                <strong>Paczyński 모델 적합</strong>
+                <strong>{lang === 'ko' ? 'Paczyński 모델 적합' : 'Paczyński model fit'}</strong>
                 <p>
-                  단일 렌즈 3-파라미터 모델 (t₀, u₀, t<sub>E</sub>)을 MCMC 또는
-                  Levenberg–Marquardt로 적합.
-                  행성 신호가 있으면 이진 렌즈(binary lens) 모델 확장.
+                  {lang === 'ko'
+                    ? '단일 렌즈 3-파라미터 모델을 MCMC 또는 Levenberg–Marquardt로 적합하고, 행성 신호가 있으면 이진 렌즈(binary lens) 모델로 확장합니다.'
+                    : 'Fit the three-parameter single-lens model with MCMC or Levenberg–Marquardt, then extend to a binary-lens model when a planetary signal is present.'}{' '}
+                  (t₀, u₀, t<sub>E</sub>)
                   <span className="kmtnet-ref"> [Paczyński 1986, ApJ 304, 1]</span>
                 </p>
               </div>
@@ -221,7 +240,7 @@ export function KmtnetExplorerPage() {
         <section>
           <div className="kmt-list-header">
             <h2 className="edu-section-title" style={{ marginBottom: 0 }}>
-              이벤트 목록
+              {lang === 'ko' ? '이벤트 목록' : 'Event list'}
               <span className="kmt-list-count">{filteredEvents.length} / {events.length}</span>
             </h2>
             <div className="kmt-list-filter">
@@ -230,7 +249,7 @@ export function KmtnetExplorerPage() {
                 className={`kmt-list-chip${!typeFilter ? ' active' : ''}`}
                 onClick={() => setTypeFilter(null)}
               >
-                전체
+                {lang === 'ko' ? '전체' : 'All'}
               </button>
               {ALL_TYPES.map((t) => (
                 <button
@@ -240,20 +259,22 @@ export function KmtnetExplorerPage() {
                   style={{ '--chip-color': TYPE_COLOR[t] } as React.CSSProperties}
                   onClick={() => setTypeFilter(typeFilter === t ? null : t)}
                 >
-                  {TYPE_LABEL[t]}
+                  {TYPE_LABEL[t][lang]}
                 </button>
               ))}
             </div>
           </div>
 
-          {loading && <p className="hint">이벤트 불러오는 중...</p>}
+          {loading && (
+            <p className="hint">{lang === 'ko' ? '이벤트 불러오는 중...' : 'Loading events...'}</p>
+          )}
           {error && <p className="error-message">{error}</p>}
 
           {!loading && !error && (
             <div className="kmtnet-event-list">
               {filteredEvents.map((ev) => {
                 const color = TYPE_COLOR[ev.type] ?? '#64748b';
-                const typeLabel = TYPE_LABEL[ev.type] ?? ev.type;
+                const typeLabel = TYPE_LABEL[ev.type]?.[lang] ?? ev.type;
                 const isSelected = selectedEvent?.id === ev.id;
                 return (
                   <article
@@ -271,17 +292,18 @@ export function KmtnetExplorerPage() {
                       <strong className="kmtnet-event-name">{ev.name}</strong>
                       <span className="kmtnet-event-mag">{ev.magnitude_range}</span>
                     </div>
-                    <p className="kmtnet-event-desc">{ev.description}</p>
+                    <p className="kmtnet-event-desc">{buildTargetDescription(ev, lang)}</p>
                     <div className="kmtnet-event-footer">
                       <span className="kmtnet-event-coord">
-                        RA {ev.ra.toFixed(2)}°&ensp;Dec {ev.dec.toFixed(2)}°&ensp;·&ensp;{ev.constellation}
+                        RA {ev.ra.toFixed(2)}°&ensp;Dec {ev.dec.toFixed(2)}°&ensp;·&ensp;
+                        {formatConstellation(ev.constellation, lang)}
                       </span>
                       <Link
                         to={labHref(ev)}
                         className="btn-primary kmtnet-event-cta"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        탐구 시작 →
+                        {lang === 'ko' ? '탐구 시작 →' : 'Start Investigation →'}
                       </Link>
                     </div>
                   </article>
@@ -293,7 +315,7 @@ export function KmtnetExplorerPage() {
 
         {/* ── References ── */}
         <section className="kmtnet-ref-section">
-          <h3>참고 문헌</h3>
+          <h3>{lang === 'ko' ? '참고 문헌' : 'References'}</h3>
           <ul className="kmtnet-ref-list">
             <li>Kim et al. (2016) — <em>KMTNet: A Network of 1.6m Wide-Field Optical Telescopes</em>, JKAS 49, 37</li>
             <li>Albrow et al. (2009) — <em>Difference Imaging Photometry of Blended Gravitational Microlensing Events</em>, ApJ 698, 1323</li>

@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { fetchRecordTemplate, fetchSharedRecord } from '../../api/client';
 import { formatAnswerValue, formatMetric } from '../../utils/recordFormat';
 import type { RecordListItem, RecordTemplate } from '../../types/record';
+import { useLangStore } from '../../i18n';
 
 type RecordPayload = {
   template?: { id?: string; title?: string; version?: number };
@@ -29,6 +30,7 @@ type RecordPayload = {
 
 
 export function SharedRecord() {
+  const lang = useLangStore((s) => s.lang);
   const { token } = useParams<{ token: string }>();
   const [record, setRecord] = useState<RecordListItem | null>(null);
   const [template, setTemplate] = useState<RecordTemplate | null>(null);
@@ -68,14 +70,16 @@ export function SharedRecord() {
     [template]
   );
 
-  if (loading) return <div className="loading">Loading shared record…</div>;
+  if (loading) {
+    return <div className="loading">{lang === 'ko' ? '공유 기록 불러오는 중…' : 'Loading shared record…'}</div>;
+  }
 
   if (errorMessage) {
     return (
       <div className="page-placeholder">
-        <h2>공유 탐구 기록</h2>
+        <h2>{lang === 'ko' ? '공유 탐구 기록' : 'Shared Investigation Record'}</h2>
         <p className="hint error-text">{errorMessage}</p>
-        <Link to="/" className="btn-primary">홈으로</Link>
+        <Link to="/" className="btn-primary">{lang === 'ko' ? '홈으로' : 'Back to Home'}</Link>
       </div>
     );
   }
@@ -86,28 +90,32 @@ export function SharedRecord() {
     <div className="record-detail-page">
       <div className="record-detail-header">
         <div>
-          <span className="analysis-record-kicker shared-badge">공유된 탐구 기록</span>
+          <span className="analysis-record-kicker shared-badge">
+            {lang === 'ko' ? '공유된 탐구 기록' : 'Shared investigation record'}
+          </span>
           <h2>{record.title}</h2>
           <p className="hint">
-            이 기록은 공유 링크로 접근한 읽기 전용 페이지입니다.
+            {lang === 'ko'
+              ? '이 기록은 공유 링크로 접근한 읽기 전용 페이지입니다.'
+              : 'This is a read-only record accessed through a share link.'}
           </p>
         </div>
         <div className="record-detail-actions">
           <Link to={`/target/${record.target_id}`} className="btn-sm">
-            View Target
+            {lang === 'ko' ? '대상 보기' : 'View Target'}
           </Link>
         </div>
       </div>
 
       <div className="record-detail-grid">
         <div className="record-detail-card">
-          <h3>Overview</h3>
+          <h3>{lang === 'ko' ? '개요' : 'Overview'}</h3>
           <dl className="record-detail-metrics">
-            <div><dt>Target</dt><dd>{context?.target_name ?? record.target_id}</dd></div>
+            <div><dt>{lang === 'ko' ? '대상' : 'Target'}</dt><dd>{context?.target_name ?? record.target_id}</dd></div>
             <div><dt>Sector</dt><dd>{context?.sector ?? '—'}</dd></div>
-            <div><dt>Site</dt><dd>{context?.site_label ?? '—'}</dd></div>
-            <div><dt>Submitted</dt><dd>{record.created_at ? new Date(record.created_at + 'Z').toLocaleString() : '—'}</dd></div>
-            <div><dt>Template</dt><dd>{payload?.template?.title ?? record.template_id}</dd></div>
+            <div><dt>{lang === 'ko' ? '관측소' : 'Site'}</dt><dd>{context?.site_label ?? '—'}</dd></div>
+            <div><dt>{lang === 'ko' ? '제출 시각' : 'Submitted'}</dt><dd>{record.created_at ? new Date(record.created_at + 'Z').toLocaleString() : '—'}</dd></div>
+            <div><dt>{lang === 'ko' ? '기록 양식' : 'Template'}</dt><dd>{payload?.template?.title ?? record.template_id}</dd></div>
           </dl>
         </div>
 
@@ -140,7 +148,7 @@ export function SharedRecord() {
 
         {answerEntries.length > 0 && (
           <div className="record-detail-card">
-            <h3>분석 답변</h3>
+            <h3>{lang === 'ko' ? '분석 답변' : 'Analysis Answers'}</h3>
             <dl className="record-answer-list">
               {answerEntries.map(([key, value]) => {
                 const question = questionMap.get(key);

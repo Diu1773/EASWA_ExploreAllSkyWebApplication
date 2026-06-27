@@ -9,7 +9,7 @@ export type Lang = 'ko' | 'en';
 
 // ─── 문자열 맵 ────────────────────────────────────────────────
 
-const strings: Record<Lang, Record<string, string>> = {
+export const strings: Record<Lang, Record<string, string>> = {
   ko: {
     // 내비게이션
     'nav.home': '홈',
@@ -24,7 +24,7 @@ const strings: Record<Lang, Record<string, string>> = {
 
     // 홈
     'home.subtitle': 'Exploring All-Sky Web Application',
-    'home.tagline': '실제 천문 데이터로 직접 탐구하는 교육 플랫폼',
+    'home.tagline': '공공 천문자료로 직접 탐구하는 교육 플랫폼',
     'home.startExploring': '탐구 시작하기',
     'home.learnMore': '자세히 보기',
     'home.liveStats.title': '실시간 데이터 현황',

@@ -1,0 +1,50 @@
+{
+  "id": "cluster_record",
+  "workflow": "cluster_cmd",
+  "title": "Open Cluster CMD Analysis Record",
+  "description": "Save your color-magnitude diagram reading: the distance you fitted from the main sequence, what the turn-off suggested about age, and how it compares with the Gaia parallax distance.",
+  "version": 1,
+  "questions": [
+    {
+      "id": "summary_title",
+      "label": "Record Title",
+      "type": "text",
+      "required": true,
+      "placeholder": "Example: Praesepe distance from main-sequence fitting"
+    },
+    {
+      "id": "fitted_distance_pc",
+      "label": "Distance you fitted (pc)",
+      "type": "number",
+      "help_text": "From sliding the reference main sequence to overlap the cluster's main sequence."
+    },
+    {
+      "id": "distance_vs_parallax",
+      "label": "How does your fitted distance compare with the Gaia parallax distance?",
+      "type": "select",
+      "options": [
+        { "value": "close", "label": "Close (within ~10%)" },
+        { "value": "somewhat", "label": "Somewhat different" },
+        { "value": "far", "label": "Quite different" }
+      ]
+    },
+    {
+      "id": "difference_cause",
+      "label": "If they differ, what is the most likely cause?",
+      "type": "radio",
+      "options": [
+        { "value": "extinction", "label": "Extinction / reddening" },
+        { "value": "membership", "label": "Member contamination" },
+        { "value": "ms_assumption", "label": "Standard-main-sequence assumption" },
+        { "value": "photometry", "label": "Photometric scatter" }
+      ]
+    },
+    {
+      "id": "analysis_note",
+      "label": "Analysis Note",
+      "type": "textarea",
+      "required": true,
+      "placeholder": "What did the main sequence and turn-off tell you about distance and age? How confident are you, and why?"
+    }
+  ]
+}
