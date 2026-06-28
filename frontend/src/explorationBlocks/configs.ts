@@ -3,16 +3,8 @@ import {
   KMT_MODULE_IMAGE,
   TESS_MODULE_IMAGE,
 } from '../data/imageSources';
-import { buildExplorerHref } from '../utils/explorerNavigation';
 import { createCommonInquirySteps, makePrompt } from './commonSteps';
 import type { ExplorationModuleConfig, ModuleId } from './types';
-
-const kmtnetExplorerHref = buildExplorerHref({
-  moduleId: 'kmtnet',
-  topicId: 'microlensing',
-  siteId: 'ctio',
-  learningMode: 'guided',
-});
 
 export const exoplanetTransitModule: ExplorationModuleConfig = {
   id: 'exoplanet-transit',
@@ -573,11 +565,11 @@ export const kmtnetModule: ExplorationModuleConfig = {
     ],
   },
   entry: {
-    href: kmtnetExplorerHref,
-    label: { ko: 'KMTNet 탐색으로 이동', en: 'Open KMTNet Explorer' },
+    href: '/modules/kmtnet',
+    label: { ko: '미시중력렌즈 탐구 시작', en: 'Start microlensing inquiry' },
     helperText: {
-      ko: '현재 공통 블럭은 placeholder이며, 기존 KMTNet 탐색 화면은 유지됩니다.',
-      en: 'The shared block is currently a placeholder while the existing KMTNet explorer remains available.',
+      ko: '실제 KMTNet 광도곡선으로 미시중력렌즈 이벤트를 분석합니다.',
+      en: 'Analyze microlensing events with real KMTNet light curves.',
     },
   },
 };

@@ -23,7 +23,7 @@ from schemas.microlensing import (
     MicrolensingPreviewFrameMetadata,
     MicrolensingPreviewResponse,
 )
-from services import kmtnet_actual_service
+from services import kmtnet_actual_service, kmtnet_lightcurve_service
 
 _SITE_LABELS = {
     "ctio": "CTIO (칠레)",
@@ -194,7 +194,10 @@ def get_lightcurve(
     include_sites: list[str] | None = None,
     reference_frame_index: int | None = None,
 ) -> MicrolensingLightCurveResponse:
-    return kmtnet_actual_service.get_lightcurve(
+    # Real published KMTNet pySIS light curves (per site), served as a table.
+    # Live difference imaging is too heavy for classroom use; see
+    # kmtnet_lightcurve_service / memory project_kmtnet_real_lightcurve.
+    return kmtnet_lightcurve_service.get_lightcurve(
         target_id,
         site=site,
         mode=mode,

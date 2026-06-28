@@ -1,4 +1,3 @@
-import { lazy, Suspense } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { getExplorationModule } from '../../explorationBlocks/configs';
 import { moduleAdapters } from '../../explorationBlocks/adapters';
@@ -6,8 +5,7 @@ import { useLangStore } from '../../i18n';
 import { InquiryLayout } from '../inquiry';
 import { ClusterModuleView } from './ClusterModuleView';
 import { ExoplanetModuleView } from './ExoplanetModuleView';
-
-const Microlens3DScene = lazy(() => import('../sky/Microlens3DScene'));
+import { KmtnetModuleView } from './KmtnetModuleView';
 
 export function ModulePage() {
   const { moduleId } = useParams<{ moduleId: string }>();
@@ -38,33 +36,9 @@ export function ModulePage() {
     return <ExoplanetModuleView module={module} />;
   }
 
-  const analysisSlot =
-    module.id === 'kmtnet' ? (
-      <div className="inquiry-lab-handoff">
-        <p>
-          {lang === 'ko'
-            ? 'KMTNet 시간영역 분석(다지점 광도곡선·Paczynski 적합)은 KMTNet 탐색에서 진행합니다.'
-            : 'KMTNet time-domain analysis (multi-site light curves, Paczynski fit) runs in the KMTNet explorer.'}
-        </p>
-        <Link to={module.entry.href} className="btn-primary">
-          {lang === 'ko' ? 'KMTNet 탐색 열기 →' : 'Open KMTNet explorer →'}
-        </Link>
-      </div>
-    ) : undefined;
+  if (module.id === 'kmtnet') {
+    return <KmtnetModuleView module={module} />;
+  }
 
-  const introSlot =
-    module.id === 'kmtnet' ? (
-      <Suspense fallback={null}>
-        <Microlens3DScene />
-      </Suspense>
-    ) : undefined;
-
-  return (
-    <InquiryLayout
-      module={module}
-      adapter={moduleAdapters[module.id]}
-      introSlot={introSlot}
-      analysisSlot={analysisSlot}
-    />
-  );
+  return <InquiryLayout module={module} adapter={moduleAdapters[module.id]} />;
 }

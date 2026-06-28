@@ -19,6 +19,9 @@ export interface MicrolensingLightCurveResponse {
   excluded_observation_ids: Record<string, string[]>;
   warnings: string[];
   is_complete: boolean;
+  ref_t0?: number | null;
+  ref_u0?: number | null;
+  ref_te?: number | null;
 }
 
 export interface MicrolensingFitInputPoint {

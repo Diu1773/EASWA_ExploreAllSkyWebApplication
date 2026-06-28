@@ -22,6 +22,10 @@ class MicrolensingLightCurveResponse(BaseModel):
     excluded_observation_ids: dict[str, list[str]] = Field(default_factory=dict)
     warnings: list[str] = Field(default_factory=list)
     is_complete: bool = True
+    # Published reference parameters for this event (for fit comparison).
+    ref_t0: float | None = None
+    ref_u0: float | None = None
+    ref_te: float | None = None
 
 
 class MicrolensingFitInputPoint(BaseModel):

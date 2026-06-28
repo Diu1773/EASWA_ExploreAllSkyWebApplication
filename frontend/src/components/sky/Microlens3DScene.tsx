@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type MutableRefObject, type PointerEvent as ReactPointerEvent } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Stars } from '@react-three/drei';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
@@ -146,6 +146,25 @@ function Planet({ phase }: { phase: number }) {
   );
 }
 
+// Applies the drag rotation (driven by DOM pointer handlers on the stage div,
+// see the main component) to the scene group, smoothly. Reading a shared ref in
+// useFrame keeps the pointer handling outside the WebGL tree so it stays reliable.
+function SceneGroup({
+  rotRef,
+  children,
+}: {
+  rotRef: MutableRefObject<{ rx: number; ry: number }>;
+  children: React.ReactNode;
+}) {
+  const ref = useRef<THREE.Group>(null!);
+  useFrame(() => {
+    if (!ref.current) return;
+    ref.current.rotation.x += (rotRef.current.rx - ref.current.rotation.x) * 0.2;
+    ref.current.rotation.y += (rotRef.current.ry - ref.current.rotation.y) * 0.2;
+  });
+  return <group ref={ref}>{children}</group>;
+}
+
 function useMicroCurve(samples = 240) {
   return useMemo(() => {
     const pts: { x: number; y: number }[] = [];
@@ -213,9 +232,35 @@ export default function Microlens3DScene() {
 
   const seconds = phase * PERIOD;
 
+  // Drag-to-rotate: pointer handlers live on the stage <div> (always present,
+  // independent of the WebGL tree). They mutate rotRef, which SceneGroup applies.
+  const rotRef = useRef({ rx: 0, ry: 0 });
+  const dragRef = useRef<{ x: number; y: number; rx: number; ry: number } | null>(null);
+  const handlePointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    dragRef.current = { x: e.clientX, y: e.clientY, rx: rotRef.current.rx, ry: rotRef.current.ry };
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* ignore */ }
+  };
+  const handlePointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (!dragRef.current) return;
+    rotRef.current = {
+      ry: dragRef.current.ry + (e.clientX - dragRef.current.x) * 0.006,
+      rx: Math.max(-1.2, Math.min(1.2, dragRef.current.rx + (e.clientY - dragRef.current.y) * 0.006)),
+    };
+  };
+  const handlePointerUp = () => {
+    dragRef.current = null;
+  };
+
   return (
     <div className="transit3d-wrap">
-      <div className="transit3d-stage">
+      <div
+        className="transit3d-stage"
+        style={{ cursor: 'grab', touchAction: 'none' }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerUp}
+      >
         <Canvas
           orthographic
           camera={{ position: [0, 0, 12], zoom: 70, near: 0.1, far: 100 }}
@@ -226,9 +271,11 @@ export default function Microlens3DScene() {
           <Stars radius={80} depth={50} count={2400} factor={1.8} saturation={0} fade speed={0.2} />
           <ambientLight intensity={0.25} />
           <pointLight position={[6, 4, 6]} intensity={2} color="#cbd5f5" />
-          <SourceStar phase={phase} />
-          <Lens phase={phase} />
-          <Planet phase={phase} />
+          <SceneGroup rotRef={rotRef}>
+            <SourceStar phase={phase} />
+            <Lens phase={phase} />
+            <Planet phase={phase} />
+          </SceneGroup>
           <EffectComposer enabled multisampling={0}>
             <Bloom intensity={1.5} luminanceThreshold={0.5} />
           </EffectComposer>
@@ -246,6 +293,9 @@ export default function Microlens3DScene() {
         </div>
         <span className="transit3d-disclaimer" aria-label={lang === 'ko' ? '개념 시연 영상' : 'Concept demonstration'}>
           {lang === 'ko' ? '개념 시연 · 실제 관측 영상 아님' : 'Concept demo · Not an observation'}
+        </span>
+        <span className="transit3d-hint" aria-hidden="true">
+          {lang === 'ko' ? '🖱 드래그로 회전' : '🖱 drag to rotate'}
         </span>
       </div>
       <div
