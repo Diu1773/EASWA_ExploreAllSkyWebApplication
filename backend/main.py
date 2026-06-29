@@ -44,11 +44,35 @@ app.include_router(kmtnet.router, prefix="/api")
 app.include_router(cluster.router, prefix="/api")
 
 
+def _process_memory() -> dict:
+    """Best-effort process memory (MB). Dependency-free; works on Render (Linux)."""
+    info: dict = {}
+    try:
+        with open("/proc/self/status", "r", encoding="utf-8") as status_file:
+            for line in status_file:
+                if line.startswith("VmRSS:"):
+                    info["rss_mb"] = round(int(line.split()[1]) / 1024, 1)
+                    break
+    except Exception:
+        pass
+    try:
+        import resource
+
+        # ru_maxrss is in KB on Linux (peak resident set size for the process).
+        info["peak_rss_mb"] = round(
+            resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024, 1
+        )
+    except Exception:
+        pass
+    return info
+
+
 @app.get("/api/health")
 def health():
     return {
         "status": "ok",
         "dependencies": get_runtime_dependency_status(),
+        "memory": _process_memory(),
     }
 
 
