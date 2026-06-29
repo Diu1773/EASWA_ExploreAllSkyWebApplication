@@ -11,8 +11,8 @@ import { useLangStore } from '../../i18n';
 import { moduleAdapters } from '../../explorationBlocks/adapters';
 import type { ExplorationModuleConfig } from '../../explorationBlocks/types';
 import { InquiryLayout } from '../inquiry';
+import microlensingNasaImg from '../../assets/microlensing-nasa-svs.jpg';
 
-const Microlens3DScene = lazy(() => import('../sky/Microlens3DScene'));
 const KmtnetSkyMap = lazy(() =>
   import('../sky/KmtnetSkyMap').then((m) => ({ default: m.KmtnetSkyMap })),
 );
@@ -166,9 +166,24 @@ export function KmtnetModuleView({ module }: KmtnetModuleViewProps) {
 
   const introSlot = (
     <div className="kmt-intro-stack">
-      <Suspense fallback={null}>
-        <Microlens3DScene />
-      </Suspense>
+      <figure className="kmt-intro-figure">
+        <img
+          src={microlensingNasaImg}
+          alt={
+            ko
+              ? '미시중력렌즈 개념도 — 배경 광원별의 빛이 렌즈별과 행성 둘레로 휘어 아인슈타인 링과 두 상을 만들고, 정렬될수록 밝아진다.'
+              : 'Microlensing concept — light from a background source bends around the lens star and its planet, forming an Einstein ring and two images, brightening as they align.'
+          }
+        />
+        <figcaption className="kmt-intro-figcaption">
+          {ko
+            ? '배경 광원별의 빛이 렌즈별·행성 둘레로 휘어 두 상(아인슈타인 링)을 이루고, 정렬될수록 밝아집니다 — 왼쪽은 광도곡선, 오른쪽은 광선 기하입니다.'
+            : 'A background source bends around the lens star and its planet into two images (an Einstein ring), brightening as they align — light curve at left, ray geometry at right.'}
+          <span className="kmt-intro-figcredit">
+            Credit: NASA’s Goddard Space Flight Center Conceptual Image Lab (Feimer / Wiessinger / Gehrels, 2016)
+          </span>
+        </figcaption>
+      </figure>
       <div className="kmt-video">
         <iframe
           src={`https://www.youtube-nocookie.com/embed/${KMT_VIDEO_ID}`}

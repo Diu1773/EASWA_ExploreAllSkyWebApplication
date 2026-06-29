@@ -5598,6 +5598,39 @@ body {
   gap: 16px;
 }
 
+.kmt-intro-figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kmt-intro-figure img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #02030a;
+}
+
+.kmt-intro-figcaption {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.kmt-intro-figcredit {
+  display: block;
+  margin-top: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.01em;
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
 .kmt-video {
   display: flex;
   flex-direction: column;
@@ -9935,6 +9968,26 @@ body {
   padding: 3px 9px;
   font-family: 'IBM Plex Mono', ui-monospace, monospace;
   pointer-events: none;
+}
+
+.transit3d-param {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px 0;
+}
+
+.transit3d-param-label {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.transit3d-param-readout {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 0.78rem;
+  color: var(--accent);
+  white-space: nowrap;
 }
 
 .transit3d-controls {
