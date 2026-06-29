@@ -95,8 +95,11 @@ _TIC_TARGET_EXCLUSION_PX = 1.0
 _MAX_COMPARISON_SOURCES = 10
 _MAX_RECOMMENDED_TIC_STARS = _MAX_COMPARISON_SOURCES
 _MAX_COMPARISON_DIAGNOSTIC_POINTS = 1500
-_PREVIEW_DATASET_TOKEN_TTL_SECONDS = 3 * 60
-_PREVIEW_DATASET_TOKEN_MAX_ITEMS = 2
+# Generous TTL so a learner can set up apertures/comparison stars in step 1 and
+# still reuse the same cutout in step 2 instead of re-downloading it. Cheap now
+# that datasets are lazy (~KB in RAM; the FITS stays on disk).
+_PREVIEW_DATASET_TOKEN_TTL_SECONDS = 30 * 60
+_PREVIEW_DATASET_TOKEN_MAX_ITEMS = 4
 
 
 _cutout_cache_lock = Lock()

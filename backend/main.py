@@ -69,11 +69,14 @@ def _process_memory() -> dict:
 
 @app.get("/api/health")
 def health():
-    return {
+    payload = {
         "status": "ok",
         "dependencies": get_runtime_dependency_status(),
-        "memory": _process_memory(),
     }
+    # Internal runtime stats are exposed only in developer mode, never in production.
+    if DEBUG:
+        payload["memory"] = _process_memory()
+    return payload
 
 
 # ---------- Serve frontend build ----------

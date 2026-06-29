@@ -121,12 +121,13 @@ TRANSIT_FRAME_COUNT_WORKERS = max(
     1,
     _parse_int("EASWA_TRANSIT_FRAME_COUNT_WORKERS", 4 if _uses_dev_runtime_defaults else 1),
 )
+# Lazy datasets keep the cube on disk, so a cached entry is only ~KB of metadata.
+# Caching several is essentially free and lets preview->photometry reuse the
+# cutout reliably (the byte limit + oversized->hot-cache path still guard the
+# rare in-memory-fallback case where a full cube is held).
 TRANSIT_CUTOUT_MEMORY_CACHE_MAX_ITEMS = max(
     0,
-    _parse_int(
-        "EASWA_TRANSIT_CUTOUT_MEMORY_CACHE_MAX_ITEMS",
-        4 if _uses_dev_runtime_defaults else 1,
-    ),
+    _parse_int("EASWA_TRANSIT_CUTOUT_MEMORY_CACHE_MAX_ITEMS", 8),
 )
 TRANSIT_CUTOUT_MEMORY_CACHE_MAX_BYTES = max(
     0,
