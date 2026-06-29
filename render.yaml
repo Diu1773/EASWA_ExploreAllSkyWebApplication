@@ -11,10 +11,26 @@ services:
     envVars:
       - key: EASWA_DEBUG
         value: "false"
+      # Max cutout size. RAM is no longer the limit (lazy memmap + chunked reads),
+      # so allow the full range; the download guard below blocks the rare combo
+      # (e.g. 99px on a 200s-cadence sector) that would overflow the staging disk.
       - key: EASWA_TRANSIT_MAX_CUTOUT_SIZE_PX
-        value: "45"
+        value: "99"
+      # Persistent cross-request FITS cache: off (Render free disk is ephemeral).
       - key: EASWA_TRANSIT_CUTOUT_DISK_CACHE_ENABLED
         value: "false"
+      # Stream the ZIP/FITS through a temp file during loading (not RAM). This is
+      # the load-step OOM guard — independent of the persistent cache above.
+      - key: EASWA_TRANSIT_CUTOUT_STAGE_TO_DISK
+        value: "true"
+      # Keep staging temp files on the ephemeral /tmp mount, deleted per request.
+      - key: EASWA_TRANSIT_CUTOUT_STAGE_DIR
+        value: "/tmp/easwa-transit-staging"
+      # Cap the TESSCut ZIP download (~600 MB) so the ZIP+FITS staging footprint
+      # stays within the ephemeral disk. Allows 99px for normal cadences; the
+      # 99px/200s monster fails fast with a clear "too large" message.
+      - key: EASWA_TRANSIT_CUTOUT_MAX_DOWNLOAD_BYTES
+        value: "629145600"
       - key: EASWA_SESSION_SECRET
         generateValue: true
       - key: EASWA_RECORD_REQUIRE_LOGIN

@@ -149,9 +149,27 @@ TRANSIT_MAX_CUTOUT_SIZE_PX = max(
         99 if _uses_dev_runtime_defaults else 50,
     ),
 )
+# Persistent FITS cache: keep cutouts on disk across requests for reuse.
+# Pointless on Render free (ephemeral disk wiped on restart) → defaults off there.
 TRANSIT_CUTOUT_DISK_CACHE_ENABLED = _parse_bool(
     "EASWA_TRANSIT_CUTOUT_DISK_CACHE_ENABLED",
     _uses_dev_runtime_defaults,
+)
+# Stream the TESSCut ZIP/FITS through a temp file during loading instead of
+# holding them in RAM (BytesIO). Independent of the persistent cache above:
+# the temp files are deleted right after the request, so this is safe even on
+# ephemeral disks and is what keeps the load step from spiking memory.
+# Defaults ON everywhere — this is the primary OOM guard on Render free.
+TRANSIT_CUTOUT_STAGE_TO_DISK = _parse_bool(
+    "EASWA_TRANSIT_CUTOUT_STAGE_TO_DISK",
+    True,
+)
+# Hard ceiling on the TESSCut ZIP download size (bytes). Guards the ephemeral
+# disk used for staging on small hosts: an oversized cutout fails fast with a
+# clear message instead of filling the disk. 0 = unlimited (default).
+TRANSIT_CUTOUT_MAX_DOWNLOAD_BYTES = max(
+    0,
+    _parse_int("EASWA_TRANSIT_CUTOUT_MAX_DOWNLOAD_BYTES", 0),
 )
 TRANSIT_CUTOUT_DISK_CACHE_DIR = os.getenv(
     "EASWA_TRANSIT_CUTOUT_DISK_CACHE_DIR",

@@ -34,6 +34,8 @@ from adapters.transit_archive import archive as transit_archive
 from config import (
     TRANSIT_CUTOUT_DISK_CACHE_DIR,
     TRANSIT_CUTOUT_DISK_CACHE_ENABLED,
+    TRANSIT_CUTOUT_MAX_DOWNLOAD_BYTES,
+    TRANSIT_CUTOUT_STAGE_TO_DISK,
     TRANSIT_CUTOUT_HOT_CACHE_MAX_ITEMS,
     TRANSIT_CUTOUT_MEMORY_CACHE_MAX_BYTES,
     TRANSIT_CUTOUT_MEMORY_CACHE_MAX_ITEMS,
@@ -129,8 +131,18 @@ class CutoutDataset:
     size_px: int
     cutout_url: str
     times: np.ndarray
-    flux_cube: np.ndarray
     target_position: PixelCoordinate
+    # Pixel data is exposed in one of two modes:
+    #   flux_cube  — full (frames, h, w) array in RAM. Used for small data, the
+    #                in-memory fallback path, and tests.
+    #   fits_path  — on-disk FITS read lazily in cadence chunks (large cutouts).
+    #                Keeps the full cube out of RAM, which is the load-step OOM
+    #                guard on memory-constrained hosts (Render free).
+    # Exactly one is populated; access through the _cutout_shape / _iter_flux_chunks
+    # / _read_flux_frame helpers so callers don't care which mode is active.
+    flux_cube: np.ndarray | None = None
+    fits_path: Path | None = None
+    frame_shape: tuple[int, int, int] | None = None
     cadence_numbers: np.ndarray | None = None
     quality_flags: np.ndarray | None = None
     wcs: WCS | None = None
@@ -152,8 +164,153 @@ def _normalize_cutout_size(size_px: int | None) -> int:
     return min(_ALLOWED_CUTOUT_SIZES_PX, key=lambda allowed: abs(allowed - requested))
 
 
+_FLUX_CHUNK_FRAMES = 512
+
+
+def _cutout_shape(dataset: "CutoutDataset") -> tuple[int, int, int]:
+    """Return (frame_count, height, width) without materializing the cube."""
+    if dataset.flux_cube is not None:
+        return tuple(int(v) for v in dataset.flux_cube.shape)  # type: ignore[return-value]
+    if dataset.frame_shape is not None:
+        return dataset.frame_shape
+    if dataset.fits_path is not None:
+        with fits.open(dataset.fits_path, memmap=True) as hdul:
+            return tuple(int(v) for v in hdul["PIXELS"].data["FLUX"].shape)  # type: ignore[return-value]
+    raise ValueError("CutoutDataset has neither flux_cube nor fits_path.")
+
+
+def _iter_flux_chunks(
+    dataset: "CutoutDataset",
+    indices: np.ndarray | None = None,
+    chunk_frames: int = _FLUX_CHUNK_FRAMES,
+):
+    """Yield (frame_indices, flux_block[k, h, w]) holding at most chunk_frames at once.
+
+    ``indices`` optionally selects/reorders frames (e.g. a quality-mask applied via
+    np.where). In lazy mode each block is read straight from the memmapped FITS, so
+    the full cube never lands in RAM. In in-memory mode it slices ``flux_cube``.
+    """
+    frame_count = _cutout_shape(dataset)[0]
+    order = None if indices is None else np.asarray(indices, dtype=np.int64)
+    total = frame_count if order is None else int(order.size)
+
+    if dataset.flux_cube is not None:
+        source = dataset.flux_cube
+        for start in range(0, total, chunk_frames):
+            stop = min(start + chunk_frames, total)
+            if order is None:
+                idx = np.arange(start, stop)
+                block = np.asarray(source[start:stop], dtype=np.float32)
+            else:
+                idx = order[start:stop]
+                block = np.asarray(source[idx], dtype=np.float32)
+            yield idx, block
+        return
+
+    with fits.open(dataset.fits_path, memmap=True) as hdul:
+        flux = hdul["PIXELS"].data["FLUX"]
+        for start in range(0, total, chunk_frames):
+            stop = min(start + chunk_frames, total)
+            if order is None:
+                idx = np.arange(start, stop)
+                block = np.asarray(flux[start:stop], dtype=np.float32)
+            else:
+                idx = order[start:stop]
+                block = np.asarray(flux[idx], dtype=np.float32)
+            yield idx, block
+
+
+def _read_flux_frame(dataset: "CutoutDataset", frame_index: int) -> np.ndarray:
+    """Read a single (h, w) frame, materializing only that frame."""
+    frame_count = _cutout_shape(dataset)[0]
+    i = max(0, min(frame_count - 1, int(frame_index)))
+    if dataset.flux_cube is not None:
+        return np.asarray(dataset.flux_cube[i], dtype=np.float32)
+    with fits.open(dataset.fits_path, memmap=True) as hdul:
+        return np.asarray(hdul["PIXELS"].data["FLUX"][i], dtype=np.float32)
+
+
+def _scan_finite_stats(dataset: "CutoutDataset") -> tuple[np.ndarray, np.ndarray]:
+    """One chunked pass → (per-frame finite pixel counts, per-pixel finite fraction)."""
+    frame_count, height, width = _cutout_shape(dataset)
+    finite_counts = np.zeros(frame_count, dtype=np.int64)
+    coverage_sum = np.zeros((height, width), dtype=np.float64)
+    for idx, block in _iter_flux_chunks(dataset):
+        finite = np.isfinite(block)
+        finite_counts[idx] = finite.reshape(finite.shape[0], -1).sum(axis=1)
+        coverage_sum += finite.sum(axis=0)
+    coverage = coverage_sum / max(frame_count, 1)
+    return finite_counts, coverage
+
+
+def _flux_median_image(dataset: "CutoutDataset", max_frames: int = 64) -> np.ndarray:
+    """Strided nanmedian image — bounded-memory fallback when a frame is blank."""
+    frame_count, height, width = _cutout_shape(dataset)
+    if frame_count <= 0:
+        return np.zeros((height, width), dtype=np.float32)
+    stride = max(1, frame_count // max_frames)
+    sel = np.arange(0, frame_count, stride, dtype=np.int64)
+    blocks = [block for _, block in _iter_flux_chunks(dataset, indices=sel)]
+    stack = np.concatenate(blocks, axis=0) if blocks else np.zeros((1, height, width), dtype=np.float32)
+    finite = np.where(np.isfinite(stack), stack, np.nan)
+    return np.nanmedian(finite, axis=0)
+
+
+def _measure_apertures_chunked(
+    dataset: "CutoutDataset",
+    apertures: list["_ResolvedAperture"],
+    indices: np.ndarray,
+) -> list[np.ndarray]:
+    """Net aperture flux for every aperture in a single streamed pass.
+
+    Mathematically identical to running _extract_net_flux per aperture over the
+    quality-filtered cube, but reads the cube once in chunks instead of holding it.
+    """
+    _, height, width = _cutout_shape(dataset)
+    masks: list[tuple[np.ndarray, np.ndarray, int]] = []
+    for aperture in apertures:
+        aperture_mask = _circular_mask(
+            width, height, aperture.position.x, aperture.position.y, aperture.aperture_radius
+        )
+        annulus_mask = _annulus_mask(
+            width,
+            height,
+            aperture.position.x,
+            aperture.position.y,
+            aperture.inner_annulus,
+            aperture.outer_annulus,
+        )
+        masks.append((aperture_mask, annulus_mask, max(int(aperture_mask.sum()), 1)))
+
+    order = np.asarray(indices, dtype=np.int64)
+    results = [np.full(int(order.size), np.nan, dtype=np.float64) for _ in apertures]
+    position = 0
+    for _, block in _iter_flux_chunks(dataset, indices=order):
+        count = block.shape[0]
+        for slot, (aperture_mask, annulus_mask, aperture_pixels) in enumerate(masks):
+            raw_flux = np.nansum(block[:, aperture_mask], axis=1)
+            with np.errstate(invalid="ignore", all="ignore"):
+                sky_per_pixel = np.nanmedian(block[:, annulus_mask], axis=1)
+            net_flux = raw_flux - sky_per_pixel * aperture_pixels
+            net_flux[~np.isfinite(net_flux)] = np.nan
+            results[slot][position : position + count] = net_flux
+        position += count
+    return results
+
+
+def _dataset_is_readable(dataset: "CutoutDataset") -> bool:
+    """A lazy dataset is only usable while its staged FITS still exists on disk."""
+    if dataset.flux_cube is not None:
+        return True
+    return dataset.fits_path is not None and dataset.fits_path.exists()
+
+
 def _is_disk_cutout_cache_enabled() -> bool:
     return TRANSIT_CUTOUT_DISK_CACHE_ENABLED
+
+
+def _is_staging_enabled() -> bool:
+    return TRANSIT_CUTOUT_STAGE_TO_DISK
 
 
 def _ensure_transit_stage_dir() -> None:
@@ -525,20 +682,35 @@ def get_cutout_preview(
         progress_callback=progress_callback,
     )
     _notify_progress(progress_callback, 0.9, "Building cutout preview image.")
-    preview_mode, resolved_frame_index, image_data_url = _build_preview_data_url(
-        dataset.flux_cube,
-        quality_flags=dataset.quality_flags,
-        frame_index=frame_index,
-    )
-    height, width = dataset.flux_cube.shape[1:]
+    frame_count, height, width = _cutout_shape(dataset)
+    # One streamed pass over the cube: per-frame finite counts (to pick the best
+    # frame) and per-pixel finite coverage (for TIC viability). Never holds the
+    # whole cube in RAM.
+    finite_counts, finite_coverage = _scan_finite_stats(dataset)
+    best_index = _best_frame_index_from_counts(finite_counts, frame_count, dataset.quality_flags)
+
+    if frame_index is None:
+        candidate_index = best_index
+    else:
+        candidate_index = max(0, min(frame_count - 1, int(frame_index)))
+
+    frame_image = _read_flux_frame(dataset, candidate_index)
+    if np.isfinite(frame_image).any():
+        preview_mode = "frame"
+        resolved_frame_index: int | None = candidate_index
+        preview_source = frame_image
+    else:
+        preview_mode = "median"
+        resolved_frame_index = None
+        preview_source = _flux_median_image(dataset)
+    image_data_url = _render_preview_png(preview_source)
+
     # Query TIC catalog for comparison star recommendations
     tic_stars: list[TICStarInfo] = []
     if dataset.wcs is not None:
         fov_radius_arcmin = (normalized_size_px * 21.0) / 60.0 / 2.0
         target_tmag = target.get("tmag") or target.get("host_vmag")
-        reference_index = _best_frame_index(dataset.flux_cube, dataset.quality_flags)
-        reference_image = np.asarray(dataset.flux_cube[reference_index], dtype=np.float32)
-        finite_coverage = np.mean(np.isfinite(dataset.flux_cube), axis=0)
+        reference_image = _read_flux_frame(dataset, best_index)
         tic_stars = _query_tic_stars(
             ra=target["ra"],
             dec=target["dec"],
@@ -560,13 +732,13 @@ def get_cutout_preview(
         ccd=dataset.ccd,
         preview_mode=preview_mode,
         frame_index=resolved_frame_index,
-        sample_frame_indices=_sample_frame_indices(int(dataset.flux_cube.shape[0])),
+        sample_frame_indices=_sample_frame_indices(frame_count),
         cutout_size_px=dataset.size_px,
         cutout_width_px=width,
         cutout_height_px=height,
         preview_width_px=_PREVIEW_SIZE_PX,
         preview_height_px=_PREVIEW_SIZE_PX,
-        frame_count=int(dataset.flux_cube.shape[0]),
+        frame_count=frame_count,
         time_start=round(float(np.nanmin(dataset.times)), 6),
         time_end=round(float(np.nanmax(dataset.times)), 6),
         frame_metadata=_build_frame_metadata(dataset, resolved_frame_index),
@@ -604,7 +776,7 @@ def get_observation_frame_count(
         )
         return None
 
-    return int(dataset.flux_cube.shape[0])
+    return int(_cutout_shape(dataset)[0])
 
 
 def run_transit_photometry(
@@ -655,7 +827,8 @@ def run_transit_photometry(
     # Filter bad cadences using TESS quality flags
     # Bit flags: momentum dump (bit 5=32), coarse point (bit 3=8),
     # Earth/Moon in FOV (bit 4=16), scattered light (bit 12=4096)
-    quality_mask = np.ones(dataset.flux_cube.shape[0], dtype=bool)
+    frame_count = _cutout_shape(dataset)[0]
+    quality_mask = np.ones(frame_count, dtype=bool)
     if dataset.quality_flags is not None:
         # Keep only cadences with no critical quality issues
         bad_bits = 8 | 16 | 32 | 4096  # coarse point, Earth/Moon, momentum dump, scattered light
@@ -665,17 +838,19 @@ def run_transit_photometry(
             quality_mask.sum(), len(quality_mask),
         )
 
-    flux_cube = dataset.flux_cube[quality_mask]
-    times_filtered = dataset.times[quality_mask]
+    kept_indices = np.where(quality_mask)[0]
+    times_filtered = dataset.times[kept_indices]
 
-    emit(0.66, "Measuring target aperture flux.")
-    target_flux = _extract_net_flux(
-        flux_cube,
-        target_aperture.position,
-        target_aperture.aperture_radius,
-        target_aperture.inner_annulus,
-        target_aperture.outer_annulus,
+    emit(0.66, "Measuring aperture flux (streaming over cadence chunks).")
+    # Single streamed pass measures the target and every comparison aperture at
+    # once, so the cube is read once in chunks instead of materialized per star.
+    net_fluxes = _measure_apertures_chunked(
+        dataset,
+        [target_aperture, *comparison_apertures],
+        kept_indices,
     )
+    target_flux = net_fluxes[0]
+    comparison_net_fluxes = net_fluxes[1:]
     target_mask = np.isfinite(target_flux) & (target_flux > 0)
     if not target_mask.any():
         raise ValueError("Target aperture did not produce any valid flux samples.")
@@ -692,13 +867,7 @@ def run_transit_photometry(
             0.72 + 0.14 * ((index - 1) / total_comparisons),
             f"Measuring comparison star C{index} flux.",
         )
-        comparison_flux = _extract_net_flux(
-            flux_cube,
-            comparison_aperture.position,
-            comparison_aperture.aperture_radius,
-            comparison_aperture.inner_annulus,
-            comparison_aperture.outer_annulus,
-        )
+        comparison_flux = comparison_net_fluxes[index - 1]
         comparison_mask = np.isfinite(comparison_flux) & (comparison_flux > 0)
         if not comparison_mask.any():
             continue
@@ -964,7 +1133,7 @@ def _normalize_aperture_config(
         np.clip(
             source.outer_annulus,
             inner_annulus + 0.5,
-            min(dataset.flux_cube.shape[1:]) / 1.8,
+            min(_cutout_shape(dataset)[1:]) / 1.8,
         )
     )
     return _ResolvedAperture(
@@ -1061,14 +1230,18 @@ def _load_cutout_dataset(
         _prune_hot_cutout_cache()
         cached = _cutout_cache.get(cache_key)
         if cached is not None:
-            _cutout_cache.move_to_end(cache_key)
-            _notify_progress(progress_callback, 0.4, "Using cached TESS cutout.")
-            return cached
+            if _dataset_is_readable(cached):
+                _cutout_cache.move_to_end(cache_key)
+                _notify_progress(progress_callback, 0.4, "Using cached TESS cutout.")
+                return cached
+            _cutout_cache.pop(cache_key, None)  # staged FITS gone — re-download below
         hot_entry = _hot_cutout_cache.get(cache_key)
         if hot_entry is not None:
-            _hot_cutout_cache.move_to_end(cache_key)
-            _notify_progress(progress_callback, 0.4, "Reusing recently loaded TESS cutout.")
-            return hot_entry[1]
+            if _dataset_is_readable(hot_entry[1]):
+                _hot_cutout_cache.move_to_end(cache_key)
+                _notify_progress(progress_callback, 0.4, "Reusing recently loaded TESS cutout.")
+                return hot_entry[1]
+            _hot_cutout_cache.pop(cache_key, None)
 
     cached_fits_path = _disk_cutout_cache_path(cache_key)
     if cached_fits_path is not None and cached_fits_path.exists():
@@ -1115,11 +1288,14 @@ def _load_cutout_dataset(
         method="POST",
     )
 
-    use_disk = _is_disk_cutout_cache_enabled()
-
-    if use_disk:
-        # Disk-cache path: write ZIP to temp file so we can also persist the FITS.
+    if _is_staging_enabled():
+        # Disk-staging path: stream the ZIP to a temp file and extract the FITS
+        # to disk so neither the full ZIP nor the full FITS ever sits in RAM.
+        # When the persistent cache is enabled the FITS is kept under the cache
+        # dir for reuse; otherwise it goes to a temp file deleted after loading.
+        # This path is taken even on Render (cache off) — it is the OOM guard.
         temp_zip_path: Path | None = None
+        temp_fits_path: Path | None = None
         try:
             _ensure_transit_stage_dir()
             _prune_transit_stage_dir()
@@ -1129,38 +1305,16 @@ def _load_cutout_dataset(
                 delete=False,
             ) as temp_zip_file:
                 temp_zip_path = Path(temp_zip_file.name)
-                with _urlopen_with_retries(
-                    request,
-                    timeout=120,
-                    progress_callback=progress_callback,
-                    retry_progress=0.05,
-                    retry_label="TESSCut ZIP download",
-                ) as response:
-                    content_length = response.headers.get("Content-Length")
-                    total_bytes = (
-                        int(content_length) if content_length and content_length.isdigit() else 0
-                    )
-                    bytes_read = 0
-                    while True:
-                        chunk = response.read(1024 * 256)
-                        if not chunk:
-                            break
-                        temp_zip_file.write(chunk)
-                        bytes_read += len(chunk)
-                        if total_bytes > 0:
-                            fraction = bytes_read / total_bytes
-                            _notify_progress(
-                                progress_callback,
-                                0.08 + 0.7 * fraction,
-                                f"Downloading TESS cutout ZIP ({fraction * 100:.0f}%).",
-                            )
+                _stream_cutout_response(request, temp_zip_file, progress_callback)
 
             _notify_progress(progress_callback, 0.82, "Extracting FITS data from cutout ZIP.")
-            _extract_disk_cutout_cache(temp_zip_path, cached_fits_path)
-            fits_source: "Path | io.BytesIO" = (
-                cached_fits_path if cached_fits_path is not None
-                else _extract_temp_fits_from_zip(temp_zip_path)
-            )
+            if cached_fits_path is not None:
+                _extract_disk_cutout_cache(temp_zip_path, cached_fits_path)
+            if cached_fits_path is not None and cached_fits_path.exists():
+                fits_source: "Path | io.BytesIO" = cached_fits_path
+            else:
+                temp_fits_path = _extract_temp_fits_from_zip(temp_zip_path)
+                fits_source = temp_fits_path
             dataset = _dataset_from_fits_path(
                 target_id=target_id,
                 observation_id=observation_id,
@@ -1177,12 +1331,14 @@ def _load_cutout_dataset(
             _store_cutout_dataset(cache_key, dataset)
             return dataset
         finally:
+            # The ZIP is fully consumed once the FITS is extracted.
             if temp_zip_path is not None:
                 temp_zip_path.unlink(missing_ok=True)
-            if not use_disk and isinstance(fits_source, Path):
-                fits_source.unlink(missing_ok=True)
+            # The staged FITS (temp_fits_path) is intentionally kept: the lazy
+            # dataset reads it on demand later. The staging-dir TTL prune reclaims
+            # it well after the in-memory cache/token references have expired.
     else:
-        # Memory-only path: no disk I/O beyond the network download.
+        # Memory-only fallback: no disk I/O beyond the network download.
         zip_buf = _download_cutout_to_memory(request, progress_callback)
         _notify_progress(progress_callback, 0.82, "Extracting FITS data from cutout ZIP.")
         fits_buf = _extract_fits_bytes_from_zip_bytes(zip_buf)
@@ -1218,18 +1374,23 @@ def _dataset_from_fits_path(
     fits_path: "Path | io.BytesIO",
     progress_callback: Callable[[float, str], None] | None = None,
 ) -> CutoutDataset:
-    _notify_progress(progress_callback, 0.87, "Reading cadence cube from FITS file.")
-    with fits.open(fits_path, memmap=False) as hdul:
+    _notify_progress(progress_callback, 0.87, "Reading cadence metadata from FITS file.")
+    lazy = isinstance(fits_path, Path)
+    # Lazy mode (on-disk FITS): memmap so only the small 1-D columns are read now;
+    # the flux cube stays on disk and is streamed in chunks later. Memory mode
+    # (BytesIO fallback): no backing file to reopen, so materialize the cube here.
+    with fits.open(fits_path, memmap=lazy) as hdul:
         pixels = hdul["PIXELS"].data
-        flux_cube = np.asarray(pixels["FLUX"], dtype=np.float32)
+        flux = pixels["FLUX"]
+        frames, height, width = int(flux.shape[0]), int(flux.shape[1]), int(flux.shape[2])
         times = np.asarray(pixels["TIME"], dtype=np.float64)
         aperture_header = hdul["APERTURE"].header
         target_position = _resolve_target_position(
             aperture_header,
             ra,
             dec,
-            flux_cube.shape[2],
-            flux_cube.shape[1],
+            width,
+            height,
         )
         try:
             wcs_obj = WCS(aperture_header)
@@ -1246,6 +1407,7 @@ def _dataset_from_fits_path(
             if "QUALITY" in column_names
             else None
         )
+        flux_cube = None if lazy else np.asarray(flux, dtype=np.float32)
 
     return CutoutDataset(
         target_id=target_id,
@@ -1256,8 +1418,10 @@ def _dataset_from_fits_path(
         size_px=size_px,
         cutout_url=cutout_url,
         times=times,
-        flux_cube=flux_cube,
         target_position=target_position,
+        flux_cube=flux_cube,
+        fits_path=fits_path if lazy else None,
+        frame_shape=(frames, height, width),
         cadence_numbers=cadence_numbers,
         quality_flags=quality_flags,
         wcs=wcs_obj,
@@ -1302,15 +1466,19 @@ _DOWNLOAD_STALL_BYTES = 50 * 1024       # 50 KB minimum per stall window
 _DOWNLOAD_STALL_SECONDS = 30            # stall window duration
 
 
-def _download_cutout_to_memory(
+def _stream_cutout_response(
     request: Request,
+    sink: Any,
     progress_callback: Callable[[float, str], None] | None,
-) -> io.BytesIO:
-    """Download a TESSCut ZIP directly into a BytesIO buffer (no disk write).
+) -> None:
+    """Stream a TESSCut ZIP response into ``sink`` (any object with ``write``).
+
+    Used by both the disk-staging path (temp file) and the memory-only fallback
+    (BytesIO). Only one 256 KB chunk is held at a time, so a multi-hundred-MB
+    ZIP never lands in RAM when ``sink`` is a file on disk.
 
     Raises RuntimeError if throughput drops below 50 KB / 30 s (stall detection).
     """
-    buf = io.BytesIO()
     with _urlopen_with_retries(
         request,
         timeout=120,
@@ -1322,6 +1490,14 @@ def _download_cutout_to_memory(
         total_bytes = (
             int(content_length) if content_length and content_length.isdigit() else 0
         )
+        budget = TRANSIT_CUTOUT_MAX_DOWNLOAD_BYTES
+        if budget and total_bytes and total_bytes > budget:
+            raise RuntimeError(
+                f"TESS cutout is too large for this server "
+                f"({total_bytes / (1024 * 1024):.0f} MB exceeds the "
+                f"{budget / (1024 * 1024):.0f} MB limit). "
+                "Choose a smaller cutout size or a sector with fewer cadences."
+            )
         bytes_read = 0
         stall_window_start = time.monotonic()
         stall_window_bytes = 0
@@ -1330,9 +1506,16 @@ def _download_cutout_to_memory(
             chunk = response.read(1024 * 256)
             if not chunk:
                 break
-            buf.write(chunk)
+            sink.write(chunk)
             bytes_read += len(chunk)
             stall_window_bytes += len(chunk)
+
+            if budget and bytes_read > budget:
+                raise RuntimeError(
+                    f"TESS cutout exceeded the {budget / (1024 * 1024):.0f} MB "
+                    "download limit for this server. "
+                    "Choose a smaller cutout size or a sector with fewer cadences."
+                )
 
             now = time.monotonic()
             elapsed_in_window = now - stall_window_start
@@ -1353,6 +1536,15 @@ def _download_cutout_to_memory(
                     0.08 + 0.7 * fraction,
                     f"Downloading TESS cutout ZIP ({fraction * 100:.0f}%).",
                 )
+
+
+def _download_cutout_to_memory(
+    request: Request,
+    progress_callback: Callable[[float, str], None] | None,
+) -> io.BytesIO:
+    """Download a TESSCut ZIP directly into a BytesIO buffer (no disk write)."""
+    buf = io.BytesIO()
+    _stream_cutout_response(request, buf, progress_callback)
     buf.seek(0)
     return buf
 
@@ -1465,6 +1657,7 @@ def _restore_preview_dataset_token(
             dataset.target_id != target_id
             or dataset.observation_id != observation_id
             or dataset.size_px != size_px
+            or not _dataset_is_readable(dataset)
         ):
             return None
         _preview_dataset_tokens.move_to_end(token)
@@ -1486,6 +1679,7 @@ def _restore_recent_preview_dataset(
                 dataset.target_id == target_id
                 and dataset.observation_id == observation_id
                 and dataset.size_px == size_px
+                and _dataset_is_readable(dataset)
             ):
                 _preview_dataset_tokens.move_to_end(token)
                 _preview_dataset_tokens[token] = (created_at, dataset)
@@ -1505,7 +1699,10 @@ def _prune_preview_dataset_tokens() -> None:
 
 
 def _dataset_nbytes(dataset: CutoutDataset) -> int:
-    return int(dataset.times.nbytes + dataset.flux_cube.nbytes)
+    # Lazy datasets keep the cube on disk, so their RAM footprint is just the
+    # 1-D metadata columns — which is what makes them cheap to cache.
+    cube_bytes = dataset.flux_cube.nbytes if dataset.flux_cube is not None else 0
+    return int(dataset.times.nbytes + cube_bytes)
 
 
 def _run_preview_job(job_id: str) -> None:
@@ -1615,20 +1812,13 @@ def _notify_progress(
         progress_callback(progress, message)
 
 
-def _build_preview_data_url(
-    flux_cube: np.ndarray,
-    quality_flags: np.ndarray | None = None,
-    frame_index: int | None = None,
-) -> tuple[str, int | None, str]:
-    image, preview_mode, resolved_frame_index = _resolve_preview_image(
-        flux_cube,
-        quality_flags=quality_flags,
-        frame_index=frame_index,
-    )
+def _render_preview_png(image: np.ndarray) -> str:
+    """Render a single (h, w) flux image to a base64 PNG data URL."""
+    image = np.asarray(image, dtype=np.float32)
     finite_pixels = image[np.isfinite(image)]
 
     if finite_pixels.size == 0:
-        image = np.zeros(flux_cube.shape[1:], dtype=np.float32)
+        image = np.zeros(image.shape, dtype=np.float32)
         finite_pixels = np.array([0.0, 1.0], dtype=np.float32)
 
     low, high = np.percentile(finite_pixels, [8, 99.7])
@@ -1654,29 +1844,30 @@ def _build_preview_data_url(
     buffer = io.BytesIO()
     preview.save(buffer, format="PNG")
     encoded = base64.b64encode(buffer.getvalue()).decode("ascii")
-    return preview_mode, resolved_frame_index, f"data:image/png;base64,{encoded}"
+    return f"data:image/png;base64,{encoded}"
 
 
-def _resolve_preview_image(
-    flux_cube: np.ndarray,
+def _best_frame_index_from_counts(
+    finite_counts: np.ndarray,
+    frame_count: int,
     quality_flags: np.ndarray | None = None,
-    frame_index: int | None = None,
-) -> tuple[np.ndarray, str, int | None]:
-    frame_count = int(flux_cube.shape[0])
+) -> int:
+    """Pick the most-complete frame nearest the cadence midpoint from precomputed counts."""
     if frame_count <= 0:
-        return np.zeros(flux_cube.shape[1:], dtype=np.float32), "median", None
+        return 0
+    candidates = np.where(finite_counts > 0)[0]
+    if candidates.size == 0:
+        return 0
 
-    if frame_index is None:
-        frame_index = _best_frame_index(flux_cube, quality_flags)
+    if quality_flags is not None and len(quality_flags) == frame_count:
+        zero_quality = candidates[quality_flags[candidates] == 0]
+        if zero_quality.size > 0:
+            candidates = zero_quality
 
-    resolved_frame_index = max(0, min(frame_count - 1, int(frame_index)))
-    frame = np.asarray(flux_cube[resolved_frame_index], dtype=np.float32)
-    if np.isfinite(frame).any():
-        return frame, "frame", resolved_frame_index
-
-    finite_cube = np.where(np.isfinite(flux_cube), flux_cube, np.nan)
-    median_image = np.nanmedian(finite_cube, axis=0)
-    return median_image, "median", None
+    max_finite = finite_counts[candidates].max()
+    top = candidates[finite_counts[candidates] == max_finite]
+    center = (frame_count - 1) / 2
+    return int(top[np.argmin(np.abs(top - center))])
 
 
 def _best_frame_index(
@@ -1710,8 +1901,8 @@ def _build_frame_metadata(
     if frame_index is None:
         return None
 
-    resolved_index = max(0, min(int(dataset.flux_cube.shape[0]) - 1, int(frame_index)))
-    frame = np.asarray(dataset.flux_cube[resolved_index], dtype=np.float32)
+    resolved_index = max(0, min(_cutout_shape(dataset)[0] - 1, int(frame_index)))
+    frame = _read_flux_frame(dataset, resolved_index)
     finite_mask = np.isfinite(frame)
     finite_pixels = int(finite_mask.sum())
     total_pixels = int(frame.size)

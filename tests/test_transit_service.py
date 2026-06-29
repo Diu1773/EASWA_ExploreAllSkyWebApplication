@@ -1,3 +1,4 @@
+import io
 import sys
 from pathlib import Path
 from urllib.error import HTTPError
@@ -116,15 +117,19 @@ def test_run_transit_photometry_uses_request_context_without_archive_lookup(monk
         ),
     )
 
-    calls = []
+    captured: dict[str, object] = {}
 
-    def fake_extract_net_flux(flux_cube, position, aperture_radius, inner_annulus, outer_annulus):
-        calls.append((position.x, aperture_radius, inner_annulus, outer_annulus))
-        if position.x < 4.0:
-            return np.asarray([10.0, 11.0, 12.0], dtype=np.float32)
-        return np.asarray([5.0, 5.0, 5.0], dtype=np.float32)
+    def fake_measure_apertures(dataset, apertures, indices):
+        captured["apertures"] = apertures
+        # First aperture = target (bright), the rest = comparisons (flat).
+        return [
+            np.asarray([10.0, 11.0, 12.0], dtype=np.float64)
+            if slot == 0
+            else np.asarray([5.0, 5.0, 5.0], dtype=np.float64)
+            for slot, _ in enumerate(apertures)
+        ]
 
-    monkeypatch.setattr(transit_service, "_extract_net_flux", fake_extract_net_flux)
+    monkeypatch.setattr(transit_service, "_measure_apertures_chunked", fake_measure_apertures)
 
     response = transit_service.run_transit_photometry(
         TransitPhotometryRequest(
@@ -162,8 +167,19 @@ def test_run_transit_photometry_uses_request_context_without_archive_lookup(monk
     assert len(response.light_curve.points) == 3
     assert len(response.comparison_diagnostics) == 1
     assert response.comparison_diagnostics[0].label == "C1"
-    assert calls[0] == (3.5, 2.0, 3.5, 5.5)
-    assert calls[1] == (5.5, 3.0, 4.5, 6.5)
+    target_aperture, comparison_aperture = captured["apertures"]
+    assert (
+        target_aperture.position.x,
+        target_aperture.aperture_radius,
+        target_aperture.inner_annulus,
+        target_aperture.outer_annulus,
+    ) == (3.5, 2.0, 3.5, 5.5)
+    assert (
+        comparison_aperture.position.x,
+        comparison_aperture.aperture_radius,
+        comparison_aperture.inner_annulus,
+        comparison_aperture.outer_annulus,
+    ) == (5.5, 3.0, 4.5, 6.5)
 
 
 def test_run_transit_photometry_reports_real_progress(monkeypatch):
@@ -187,8 +203,10 @@ def test_run_transit_photometry_reports_real_progress(monkeypatch):
     monkeypatch.setattr(transit_service, "_load_cutout_dataset", fake_load_cutout_dataset)
     monkeypatch.setattr(
         transit_service,
-        "_extract_net_flux",
-        lambda *args, **kwargs: np.asarray([10.0, 11.0, 12.0], dtype=np.float32),
+        "_measure_apertures_chunked",
+        lambda dataset, apertures, indices: [
+            np.asarray([10.0, 11.0, 12.0], dtype=np.float64) for _ in apertures
+        ],
     )
 
     events: list[tuple[float, str]] = []
@@ -240,8 +258,10 @@ def test_run_transit_photometry_reuses_preview_dataset_token(monkeypatch):
     monkeypatch.setattr(transit_service, "_load_cutout_dataset", fail_load_cutout_dataset)
     monkeypatch.setattr(
         transit_service,
-        "_extract_net_flux",
-        lambda *args, **kwargs: np.asarray([10.0, 11.0, 12.0], dtype=np.float32),
+        "_measure_apertures_chunked",
+        lambda dataset, apertures, indices: [
+            np.asarray([10.0, 11.0, 12.0], dtype=np.float64) for _ in apertures
+        ],
     )
 
     events: list[tuple[float, str]] = []
@@ -291,8 +311,10 @@ def test_run_transit_photometry_reuses_recent_preview_dataset_without_token(monk
     monkeypatch.setattr(transit_service, "_load_cutout_dataset", fail_load_cutout_dataset)
     monkeypatch.setattr(
         transit_service,
-        "_extract_net_flux",
-        lambda *args, **kwargs: np.asarray([10.0, 11.0, 12.0], dtype=np.float32),
+        "_measure_apertures_chunked",
+        lambda dataset, apertures, indices: [
+            np.asarray([10.0, 11.0, 12.0], dtype=np.float64) for _ in apertures
+        ],
     )
 
     events: list[tuple[float, str]] = []
@@ -361,6 +383,197 @@ def test_load_cutout_dataset_reuses_recent_oversized_cutout(monkeypatch):
     )
 
     assert reused is dataset
+
+
+def test_load_cutout_dataset_staging_keeps_fits_and_removes_zip(monkeypatch, tmp_path):
+    transit_service._cutout_cache.clear()
+    transit_service._hot_cutout_cache.clear()
+
+    # Staging on, persistent cache off — the Render configuration.
+    monkeypatch.setattr(transit_service, "_is_staging_enabled", lambda: True)
+    monkeypatch.setattr(transit_service, "_is_disk_cutout_cache_enabled", lambda: False)
+    monkeypatch.setattr(transit_service, "_TRANSIT_STAGE_DIR", tmp_path)
+
+    # Network bytes "streamed" into the temp ZIP — no-op leaves an empty file.
+    monkeypatch.setattr(transit_service, "_stream_cutout_response", lambda *a, **k: None)
+
+    created_fits: dict[str, Path] = {}
+
+    def fake_extract_temp_fits(zip_path):
+        fits_path = tmp_path / "extracted.fits"
+        fits_path.write_bytes(b"FITS")
+        created_fits["path"] = fits_path
+        return fits_path
+
+    monkeypatch.setattr(transit_service, "_extract_temp_fits_from_zip", fake_extract_temp_fits)
+
+    seen: dict[str, object] = {}
+
+    def fake_dataset_from_fits_path(*, fits_path, **kwargs):
+        seen["fits_path"] = fits_path
+        # FITS must still exist while it is being read.
+        assert Path(fits_path).exists()
+        return transit_service.CutoutDataset(
+            target_id="t",
+            observation_id="o",
+            sector=1,
+            camera=1,
+            ccd=1,
+            size_px=30,
+            cutout_url="",
+            times=np.asarray([1.0], dtype=np.float64),
+            flux_cube=np.ones((1, 5, 5), dtype=np.float32),
+            target_position=PixelCoordinate(x=2.5, y=2.5),
+            quality_flags=np.zeros(1, dtype=np.int64),
+        )
+
+    monkeypatch.setattr(transit_service, "_dataset_from_fits_path", fake_dataset_from_fits_path)
+
+    dataset = transit_service._load_cutout_dataset(
+        target_id="t",
+        observation_id="o",
+        ra=10.0,
+        dec=20.0,
+        sector=1,
+        camera=1,
+        ccd=1,
+        cutout_url="",
+        size_px=30,
+    )
+
+    assert dataset.size_px == 30
+    assert seen["fits_path"] == created_fits["path"]
+    # The staged FITS is retained — the lazy dataset reads it on demand later
+    # (the staging-dir TTL prune reclaims it). Only the consumed ZIP is removed.
+    assert created_fits["path"].exists()
+    assert list(tmp_path.glob("*.zip")) == []
+
+
+def _write_fake_cutout_fits(path, flux):
+    from astropy.io import fits
+
+    frames, height, width = flux.shape
+    times = np.linspace(1000.0, 1000.0 + frames, frames, dtype=np.float64)
+    quality = np.zeros(frames, dtype=np.int32)
+    cadence = np.arange(frames, dtype=np.int32)
+    pixels = fits.BinTableHDU.from_columns(
+        [
+            fits.Column(name="TIME", format="D", array=times),
+            fits.Column(name="CADENCENO", format="J", array=cadence),
+            fits.Column(
+                name="FLUX",
+                format=f"{height * width}E",
+                dim=f"({width},{height})",
+                array=flux,
+            ),
+            fits.Column(name="QUALITY", format="J", array=quality),
+        ],
+        name="PIXELS",
+    )
+    aperture = fits.ImageHDU(np.ones((height, width), dtype=np.int32), name="APERTURE")
+    fits.HDUList([fits.PrimaryHDU(), pixels, aperture]).writeto(path, overwrite=True)
+
+
+def test_lazy_dataset_reads_cube_from_disk_in_chunks(tmp_path):
+    frames, height, width = 6, 5, 5
+    flux = np.arange(frames * height * width, dtype=np.float32).reshape(frames, height, width)
+    flux[2, 0, 0] = np.nan  # exercise NaN handling in stats / median fallback
+    fits_path = tmp_path / "cutout.fits"
+    _write_fake_cutout_fits(fits_path, flux)
+
+    dataset = transit_service._dataset_from_fits_path(
+        target_id="t",
+        observation_id="o",
+        sector=1,
+        camera=1,
+        ccd=1,
+        size_px=5,
+        cutout_url="",
+        ra=10.0,
+        dec=20.0,
+        fits_path=fits_path,
+    )
+
+    # Lazy mode: cube stays on disk, only the path + metadata are held.
+    assert dataset.flux_cube is None
+    assert dataset.fits_path == fits_path
+    assert transit_service._dataset_is_readable(dataset) is True
+    assert transit_service._cutout_shape(dataset) == (frames, height, width)
+
+    # Single-frame read and full chunked reassembly match the source.
+    assert np.allclose(transit_service._read_flux_frame(dataset, 0), flux[0])
+    collected = np.concatenate(
+        [block for _, block in transit_service._iter_flux_chunks(dataset, chunk_frames=4)],
+        axis=0,
+    )
+    assert np.allclose(collected, flux, equal_nan=True)
+
+    # Chunked aperture photometry equals the original whole-cube primitive.
+    aperture = transit_service._ResolvedAperture(
+        position=PixelCoordinate(x=2.5, y=2.5),
+        aperture_radius=1.5,
+        inner_annulus=1.6,
+        outer_annulus=2.4,
+    )
+    indices = np.arange(frames)
+    lazy_flux = transit_service._measure_apertures_chunked(dataset, [aperture], indices)[0]
+    expected_flux = transit_service._extract_net_flux(
+        flux,
+        aperture.position,
+        aperture.aperture_radius,
+        aperture.inner_annulus,
+        aperture.outer_annulus,
+    )
+    assert np.allclose(lazy_flux, expected_flux, equal_nan=True)
+
+    # A quality-mask subset selects the matching frames.
+    subset = np.array([1, 3, 5])
+    lazy_subset = transit_service._measure_apertures_chunked(dataset, [aperture], subset)[0]
+    assert np.allclose(lazy_subset, expected_flux[subset], equal_nan=True)
+
+
+def test_dataset_is_readable_false_when_staged_fits_missing(tmp_path):
+    dataset = transit_service.CutoutDataset(
+        target_id="t",
+        observation_id="o",
+        sector=1,
+        camera=1,
+        ccd=1,
+        size_px=5,
+        cutout_url="",
+        times=np.asarray([1.0], dtype=np.float64),
+        target_position=PixelCoordinate(x=2.5, y=2.5),
+        fits_path=tmp_path / "gone.fits",
+        frame_shape=(1, 5, 5),
+    )
+    assert transit_service._dataset_is_readable(dataset) is False
+
+
+def test_stream_cutout_response_rejects_oversized_download(monkeypatch):
+    monkeypatch.setattr(transit_service, "TRANSIT_CUTOUT_MAX_DOWNLOAD_BYTES", 1000)
+
+    class FakeResponse:
+        headers = {"Content-Length": "5000"}
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+        def read(self, _size):  # pragma: no cover - should never be reached
+            raise AssertionError("download body should not be read once over budget")
+
+    monkeypatch.setattr(transit_service, "urlopen", lambda *a, **k: FakeResponse())
+
+    sink = io.BytesIO()
+    try:
+        transit_service._stream_cutout_response("request", sink, None)
+    except RuntimeError as error:
+        assert "too large" in str(error)
+    else:
+        raise AssertionError("Expected an oversized-download RuntimeError")
+    assert sink.getvalue() == b""
 
 
 def test_disk_cutout_cache_path_disabled_returns_none(monkeypatch):
