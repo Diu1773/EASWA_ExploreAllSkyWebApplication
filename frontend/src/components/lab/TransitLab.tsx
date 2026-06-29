@@ -546,15 +546,10 @@ function StepGuide({
 }
 
 const DEFAULT_TRANSIT_CUTOUT_SIZE_PX = 50;
-const DEV_CUTOUT_SIZE_OPTIONS = [30, 35, 40, 45, 50, 55, 60, 70, 80, 90, 99] as const;
-const PROD_CUTOUT_SIZE_OPTIONS = [30, 35, 40, 45, 50] as const;
-const CUTOUT_SIZE_OPTIONS =
-  typeof window !== 'undefined' &&
-  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-    ? DEV_CUTOUT_SIZE_OPTIONS
-    : import.meta.env.DEV
-      ? DEV_CUTOUT_SIZE_OPTIONS
-      : PROD_CUTOUT_SIZE_OPTIONS;
+// The backend caps the size (EASWA_TRANSIT_MAX_CUTOUT_SIZE_PX) and normalizes any
+// larger request down to the nearest allowed size; the preview hook adopts the
+// delivered size. So the UI can offer the full range — server is the source of truth.
+const CUTOUT_SIZE_OPTIONS = [30, 35, 40, 45, 50, 55, 60, 70, 80, 90, 99] as const;
 
 const DEFAULT_APERTURE: ApertureParams = {
   apertureRadius: 2.5,

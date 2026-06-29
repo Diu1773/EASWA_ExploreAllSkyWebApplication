@@ -236,6 +236,10 @@ export function useTransitPreview({
           ...(selectedFrameIndex === null && response.frame_index !== null
             ? { selectedFrameIndex: response.frame_index }
             : {}),
+          // Adopt a server-capped size so the reuse check can be satisfied.
+          ...(cutoutSizePx !== null && response.cutout_size_px < cutoutSizePx
+            ? { cutoutSizePx: response.cutout_size_px, pendingCutoutSizePx: response.cutout_size_px }
+            : {}),
         });
       } catch (fallbackError) {
         console.error('Failed to recover transit preview inline', fallbackError);
@@ -268,6 +272,12 @@ export function useTransitPreview({
             previewProgress: 1,
             ...(selectedFrameIndex === null && job.result.frame_index !== null
               ? { selectedFrameIndex: job.result.frame_index }
+              : {}),
+            // The backend may cap the requested size (server size limit). Adopt the
+            // delivered size so the reuse check (preview.cutout_size_px >= cutoutSizePx)
+            // can be satisfied — otherwise we'd re-request forever.
+            ...(cutoutSizePx !== null && job.result.cutout_size_px < cutoutSizePx
+              ? { cutoutSizePx: job.result.cutout_size_px, pendingCutoutSizePx: job.result.cutout_size_px }
               : {}),
           });
           return;
