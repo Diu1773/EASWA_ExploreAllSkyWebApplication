@@ -8819,17 +8819,44 @@ body {
   z-index: 10;
 }
 
-.sky-search-input {
-  width: 200px;
-  padding: 0.35rem 0.6rem;
-  background: rgba(15, 20, 32, 0.88);
+.sky-search-box {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 232px;
+  padding: 0.4rem 0.6rem;
+  background: rgba(15, 20, 32, 0.92);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--text-primary);
-  font-size: 0.8rem;
-  font-family: var(--font-ui);
+  border-radius: var(--radius-lg, 10px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(6px);
-  transition: border-color 0.15s, width 0.2s;
+  transition: border-color 0.15s, box-shadow 0.15s, width 0.2s;
+}
+
+.sky-search-box:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(232, 114, 42, 0.25);
+  width: 264px;
+}
+
+.sky-search-icon {
+  flex: 0 0 auto;
+  color: var(--text-muted);
+  transition: color 0.15s;
+}
+
+.sky-search-box:focus-within .sky-search-icon {
+  color: var(--accent);
+}
+
+.sky-search-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-family: var(--font-ui);
   outline: none;
 }
 
@@ -8837,9 +8864,47 @@ body {
   color: var(--text-muted);
 }
 
-.sky-search-input:focus {
-  border-color: var(--accent);
-  width: 240px;
+.sky-search-clear {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sky-search-clear:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.sky-search-empty {
+  font-size: 0.72rem;
+  font-family: var(--font-ui);
+  color: var(--text-secondary);
+  background: rgba(15, 20, 32, 0.9);
+  border: 1px solid var(--border);
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  max-width: 232px;
+  backdrop-filter: blur(4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sky-search-box,
+  .sky-search-box:focus-within {
+    transition: none;
+    width: 232px;
+  }
 }
 
 .sky-search-count {
@@ -9166,7 +9231,7 @@ body {
   max-width: calc(100% - 1.5rem);
 }
 
-.sky-search-input {
+.sky-search-box {
   max-width: 100%;
 }
 
@@ -9746,8 +9811,8 @@ body {
     gap: 0.5rem;
   }
 
-  .sky-search-input,
-  .sky-search-input:focus {
+  .sky-search-box,
+  .sky-search-box:focus-within {
     width: 100%;
   }
 

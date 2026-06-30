@@ -14,7 +14,7 @@ interface SkyExplorerProps {
 }
 
 export function SkyExplorer({ embedded = false, onSelectTarget }: SkyExplorerProps) {
-  const { targets, loading, selectedTopic } = useSkyTargets();
+  const { targets, allTargets, loading, selectedTopic } = useSkyTargets();
   const t = useT();
   const [nameSearch, setNameSearch] = useState('');
   const [popupTarget, setPopupTarget] = useState<Target | null>(null);
@@ -26,14 +26,18 @@ export function SkyExplorer({ embedded = false, onSelectTarget }: SkyExplorerPro
   const viewerRef = useRef<AladinViewerHandle>(null);
 
   const q = nameSearch.trim().toLowerCase();
+  // Search runs over the full catalog (not just the filter-passing markers) so a
+  // learner can always find the same target the instructor names, then click it.
+  const searchPool = allTargets.length > 0 ? allTargets : targets;
   const filteredTargets = q
-    ? targets.filter(
+    ? searchPool.filter(
         (t) =>
           t.name.toLowerCase().includes(q) ||
           t.id.toLowerCase().includes(q) ||
           t.constellation.toLowerCase().includes(q)
       )
     : targets;
+  const searchEmpty = q.length > 0 && filteredTargets.length === 0;
 
   useEffect(() => {
     setPopupTarget(null);
@@ -106,19 +110,48 @@ export function SkyExplorer({ embedded = false, onSelectTarget }: SkyExplorerPro
           onTargetClick={handleTargetClick}
         />
 
-        {/* Search overlay */}
+        {/* Search overlay — full-catalog name/constellation search */}
         <div className="sky-search-overlay">
-          <input
-            type="search"
-            className="sky-search-input"
-            placeholder={t('explorer.searchPlaceholder')}
-            value={nameSearch}
-            onChange={(e) => setNameSearch(e.target.value)}
-          />
-          {q && (
+          <div className="sky-search-box">
+            <svg
+              className="sky-search-icon"
+              viewBox="0 0 24 24"
+              width="16"
+              height="16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="7" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              type="text"
+              className="sky-search-input"
+              placeholder={t('explorer.searchPlaceholder')}
+              value={nameSearch}
+              onChange={(e) => setNameSearch(e.target.value)}
+            />
+            {nameSearch && (
+              <button
+                type="button"
+                className="sky-search-clear"
+                aria-label={t('explorer.searchClear')}
+                onClick={() => setNameSearch('')}
+              >
+                ×
+              </button>
+            )}
+          </div>
+          {q && !searchEmpty && (
             <span className="sky-search-count">
-              {filteredTargets.length} / {targets.length}
+              {filteredTargets.length} / {searchPool.length}
             </span>
+          )}
+          {searchEmpty && (
+            <span className="sky-search-empty">{t('explorer.searchNoMatch')}</span>
           )}
         </div>
 

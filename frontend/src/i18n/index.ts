@@ -33,7 +33,9 @@ export const strings: Record<Lang, Record<string, string>> = {
     'home.liveStats.sites': '관측소',
 
     // Sky Explorer
-    'explorer.searchPlaceholder': '이름 / 별자리 검색…',
+    'explorer.searchPlaceholder': '대상 검색  예: WASP-6 b',
+    'explorer.searchNoMatch': '일치하는 대상이 없어요. 이름이나 별자리로 다시 검색해 보세요.',
+    'explorer.searchClear': '검색어 지우기',
     'explorer.loading': '대상 불러오는 중…',
     'explorer.noTransitTargets': '현재 필터에 맞는 식 대상이 없습니다. 필터를 초기화하거나 최소 깊이를 낮춰보세요.',
     'explorer.magLegend': '등급',
@@ -151,7 +153,9 @@ export const strings: Record<Lang, Record<string, string>> = {
     'home.liveStats.sites': 'Observatories',
 
     // Sky Explorer
-    'explorer.searchPlaceholder': 'Search by name or constellation…',
+    'explorer.searchPlaceholder': 'Search target  e.g. WASP-6 b',
+    'explorer.searchNoMatch': 'No matching target. Try a name or constellation.',
+    'explorer.searchClear': 'Clear search',
     'explorer.loading': 'Loading targets…',
     'explorer.noTransitTargets': 'No transit targets matched the current filters. Reset filters or lower Min Depth.',
     'explorer.magLegend': 'Mag',

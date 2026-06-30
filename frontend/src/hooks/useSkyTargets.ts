@@ -5,10 +5,14 @@ import type { Target } from '../types/target';
 
 export function useSkyTargets() {
   const [targets, setTargets] = useState<Target[]>([]);
+  // Full unfiltered catalog for the topic — lets name search find any target,
+  // even ones the property filters (depth/period/magnitude) currently exclude.
+  const [allTargets, setAllTargets] = useState<Target[]>([]);
   const [loading, setLoading] = useState(false);
   const selectedTopic = useAppStore((s) => s.selectedTopic);
   const transitFilters = useAppStore((s) => s.transitFilters);
 
+  // Filtered set drives the map markers; refetches when the user changes filters.
   useEffect(() => {
     let cancelled = false;
 
@@ -38,5 +42,26 @@ export function useSkyTargets() {
     return () => { cancelled = true; };
   }, [selectedTopic, transitFilters]);
 
-  return { targets, loading, selectedTopic };
+  // Full catalog (no property filters) for search; only depends on the topic.
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!selectedTopic) {
+      setAllTargets([]);
+      return () => { cancelled = true; };
+    }
+
+    fetchTargets(selectedTopic)
+      .then((all) => {
+        if (!cancelled) setAllTargets(all);
+      })
+      .catch(() => {
+        // Search falls back to the filtered set if the full fetch fails.
+        if (!cancelled) setAllTargets([]);
+      });
+
+    return () => { cancelled = true; };
+  }, [selectedTopic]);
+
+  return { targets, allTargets, loading, selectedTopic };
 }
