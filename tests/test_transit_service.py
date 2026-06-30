@@ -532,6 +532,45 @@ def test_lazy_dataset_reads_cube_from_disk_in_chunks(tmp_path):
     assert np.allclose(lazy_subset, expected_flux[subset], equal_nan=True)
 
 
+def test_load_cutout_dataset_prefers_bundled_cutout(monkeypatch, tmp_path):
+    transit_service._cutout_cache.clear()
+    transit_service._hot_cutout_cache.clear()
+
+    flux = np.arange(2 * 5 * 5, dtype=np.float32).reshape(2, 5, 5)
+    bundled = tmp_path / "wasp_6_b__wasp_6_b_sector_0002__s0002__50px.fits"
+    _write_fake_cutout_fits(bundled, flux)
+    monkeypatch.setattr(transit_service, "_BUNDLED_CUTOUT_DIR", tmp_path)
+
+    def fail_urlopen(*args, **kwargs):
+        raise AssertionError("must not download when a bundled cutout exists")
+
+    monkeypatch.setattr(transit_service, "urlopen", fail_urlopen)
+
+    dataset = transit_service._load_cutout_dataset(
+        target_id="wasp_6_b",
+        observation_id="wasp_6_b_sector_0002",
+        ra=348.1571282,
+        dec=-22.6741248,
+        sector=2,
+        camera=1,
+        ccd=1,
+        cutout_url="",
+        size_px=50,
+    )
+
+    # Used the bundled file directly, lazily, with no network download.
+    assert dataset.flux_cube is None
+    assert dataset.fits_path == bundled
+    assert transit_service._cutout_shape(dataset) == (2, 5, 5)
+
+
+def test_bundled_cutout_path_absent_returns_none(monkeypatch, tmp_path):
+    monkeypatch.setattr(transit_service, "_BUNDLED_CUTOUT_DIR", tmp_path)
+    assert transit_service._bundled_cutout_path(
+        ("wasp_6_b", "wasp_6_b_sector_0002", 2, 50)
+    ) is None
+
+
 def test_dataset_is_readable_false_when_staged_fits_missing(tmp_path):
     dataset = transit_service.CutoutDataset(
         target_id="t",

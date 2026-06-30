@@ -40,3 +40,7 @@ backend/*.db-shm
 backend/*.db-wal
 backend/.cache/
 backend/submissions/
+# Demo cutouts are fetched into the Docker image at build time (and may be placed
+# locally for testing) — never commit the large FITS binaries.
+backend/bundled_cutouts/
+_scratch_bundle/

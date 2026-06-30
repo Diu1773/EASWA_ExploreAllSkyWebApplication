@@ -28,6 +28,11 @@ RUN pip install --no-cache-dir --upgrade pip \
 COPY backend/ /app/backend/
 COPY --from=frontend-build /app/frontend/dist /app/frontend/dist
 
+# Pre-fetch demo cutout(s) into the image so classroom practice loads instantly
+# (no runtime MAST dependency, survives Render spin-downs). Best-effort: the
+# script never raises and `|| true` keeps the build green if MAST is unreachable.
+RUN python scripts/fetch_bundled_cutouts.py || true
+
 EXPOSE 5895
 
 CMD ["sh", "-c", "python -m uvicorn main:app --host 0.0.0.0 --port ${PORT:-5895}"]

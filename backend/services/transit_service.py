@@ -75,6 +75,10 @@ _REMOTE_RETRY_ATTEMPTS = 3
 _REMOTE_RETRY_BASE_DELAY_SECONDS = 0.8
 _RETRYABLE_REMOTE_HTTP_STATUS_CODES = frozenset({429, 500, 502, 503, 504})
 _TRANSIT_STORAGE_ROOT = Path(__file__).resolve().parent.parent / ".cache" / "transit"
+# Demo cutouts baked into the image at build time (scripts/fetch_bundled_cutouts.py).
+# Read-only, always present, used before any MAST download — classroom practice
+# loads instantly with no network dependency.
+_BUNDLED_CUTOUT_DIR = Path(__file__).resolve().parent.parent / "bundled_cutouts"
 _TRANSIT_STAGE_DIR = (
     Path(TRANSIT_CUTOUT_STAGE_DIR)
     if TRANSIT_CUTOUT_STAGE_DIR
@@ -1246,6 +1250,25 @@ def _load_cutout_dataset(
                 return hot_entry[1]
             _hot_cutout_cache.pop(cache_key, None)
 
+    bundled_path = _bundled_cutout_path(cache_key)
+    if bundled_path is not None:
+        _notify_progress(progress_callback, 0.12, "Loading bundled practice cutout.")
+        dataset = _dataset_from_fits_path(
+            target_id=target_id,
+            observation_id=observation_id,
+            sector=sector,
+            camera=camera,
+            ccd=ccd,
+            size_px=size_px,
+            cutout_url=cutout_url,
+            ra=ra,
+            dec=dec,
+            fits_path=bundled_path,
+            progress_callback=progress_callback,
+        )
+        _store_cutout_dataset(cache_key, dataset)
+        return dataset
+
     cached_fits_path = _disk_cutout_cache_path(cache_key)
     if cached_fits_path is not None and cached_fits_path.exists():
         _notify_progress(progress_callback, 0.12, "Loading cached TESS cutout from local disk.")
@@ -1437,6 +1460,13 @@ def _disk_cutout_cache_path(cache_key: tuple[str, str, int, int]) -> Path | None
     target_id, observation_id, sector, size_px = cache_key
     filename = f"{target_id}__{observation_id}__s{sector:04d}__{size_px}px.fits"
     return _DISK_CUTOUT_CACHE_DIR / filename
+
+
+def _bundled_cutout_path(cache_key: tuple[str, str, int, int]) -> Path | None:
+    """Return the baked-in demo FITS for this cutout, if one ships in the image."""
+    target_id, observation_id, sector, size_px = cache_key
+    path = _BUNDLED_CUTOUT_DIR / f"{target_id}__{observation_id}__s{sector:04d}__{size_px}px.fits"
+    return path if path.exists() else None
 
 
 def _extract_temp_fits_from_zip(zip_path: Path) -> Path:
