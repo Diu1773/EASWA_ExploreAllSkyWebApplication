@@ -217,7 +217,7 @@ function PlotPanel({
     plotly.react(plotRef.current, traces, {
       title: {
         text: `<b>${targetName}</b>`,
-        font: { size: 14, color: '#eceff4', family: 'IBM Plex Sans, sans-serif' },
+        font: { size: 14, color: '#eceff4', family: 'Pretendard, sans-serif' },
       },
       xaxis: {
         title: { text: 'HJD', font: { color: '#9aa3b0', size: 12 } },
@@ -238,7 +238,7 @@ function PlotPanel({
       legend: {
         x: 1, y: 1, xanchor: 'right', yanchor: 'top',
         bgcolor: 'rgba(26,32,48,0.9)', bordercolor: '#252d3a', borderwidth: 1,
-        font: { family: 'IBM Plex Sans, sans-serif', size: 11, color: '#d4dae5' },
+        font: { family: 'Pretendard, sans-serif', size: 11, color: '#d4dae5' },
       },
     }, { responsive: true });
   }, [lcData, showSites, fitResult, targetName]);

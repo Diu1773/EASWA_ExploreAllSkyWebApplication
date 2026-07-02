@@ -287,7 +287,7 @@ export function CmdExplorer({ target, defaultOpen = false }: CmdExplorerProps) {
         text: [target.name],
         textposition: 'top center',
         textfont: {
-          family: 'IBM Plex Sans, sans-serif',
+          family: 'Pretendard, sans-serif',
           color: '#ffffff',
           size: 11,
         },
@@ -310,7 +310,7 @@ export function CmdExplorer({ target, defaultOpen = false }: CmdExplorerProps) {
           title: {
             text: lang === 'ko' ? '색-등급도 탐구' : 'Color-Magnitude Explorer',
             font: {
-              family: 'IBM Plex Sans, sans-serif',
+              family: 'Pretendard, sans-serif',
               color: '#f8fafc',
               size: 15,
             },
@@ -340,7 +340,7 @@ export function CmdExplorer({ target, defaultOpen = false }: CmdExplorerProps) {
             x: 0,
             y: -0.22,
             font: {
-              family: 'IBM Plex Sans, sans-serif',
+              family: 'Pretendard, sans-serif',
               color: '#cbd5e1',
               size: 10,
             },

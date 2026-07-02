@@ -134,7 +134,7 @@ export function ClusterCmdVisualizer({ data, onFitChange }: ClusterCmdVisualizer
     const layout: any = {
       title: {
         text: `${data.cluster.name} - ${lang === 'ko' ? '색-등급도 (CMD)' : 'Color-Magnitude Diagram'}`,
-        font: { family: 'IBM Plex Sans, sans-serif', color: '#f8fafc', size: 14 },
+        font: { family: 'Pretendard, sans-serif', color: '#f8fafc', size: 14 },
         x: 0,
         xanchor: 'left',
       },

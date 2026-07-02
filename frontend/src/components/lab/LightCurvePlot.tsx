@@ -293,7 +293,7 @@ export function LightCurvePlot({
                 showarrow: false,
                 text: '<b>EASWA</b>',
                 font: {
-                  family: 'IBM Plex Sans, sans-serif',
+                  family: 'Pretendard, sans-serif',
                   size: isCompactPlot ? 12 : 14,
                   color: '#ff6600',
                 },
@@ -308,7 +308,7 @@ export function LightCurvePlot({
                 showarrow: false,
                 text: formatResidualStdLabel(residualStd, plotData.y_label),
                 font: {
-                  family: 'IBM Plex Sans, sans-serif',
+                  family: 'Pretendard, sans-serif',
                   size: isCompactPlot ? 10 : 12,
                   color: '#2f2f2f',
                 },
@@ -327,7 +327,7 @@ export function LightCurvePlot({
                 showarrow: false,
                 text: `${lang === 'ko' ? '분석자' : 'Analyst'}: ${analystLabel}`,
                 font: {
-                  family: 'IBM Plex Sans, sans-serif',
+                  family: 'Pretendard, sans-serif',
                   size: isCompactPlot ? 10 : 12,
                   color: '#2f2f2f',
                 },
@@ -344,7 +344,7 @@ export function LightCurvePlot({
                 font: {
                   size: isCompactPlot ? 18 : 28,
                   color: '#111111',
-                  family: 'IBM Plex Sans, sans-serif',
+                  family: 'Pretendard, sans-serif',
                 },
               },
               dragmode: 'zoom',
@@ -415,7 +415,7 @@ export function LightCurvePlot({
                 bordercolor: 'rgba(0,0,0,0.08)',
                 borderwidth: 1,
                 font: {
-                  family: 'IBM Plex Sans, sans-serif',
+                  family: 'Pretendard, sans-serif',
                   size: isCompactPlot ? 10 : 11,
                   color: '#222',
                 },
@@ -450,7 +450,7 @@ export function LightCurvePlot({
               font: {
                 size: isCompactPlot ? 12 : 14,
                 color: '#1a1a1a',
-                family: 'IBM Plex Sans, sans-serif',
+                family: 'Pretendard, sans-serif',
               },
             },
             dragmode: enableRangeSelection && !isFolded ? 'select' : 'zoom',
@@ -495,7 +495,7 @@ export function LightCurvePlot({
                   bordercolor: 'rgba(0,0,0,0.08)',
                   borderwidth: 1,
                   font: {
-                    family: 'IBM Plex Sans, sans-serif',
+                    family: 'Pretendard, sans-serif',
                     size: isCompactPlot ? 10 : 11,
                     color: '#222',
                   },

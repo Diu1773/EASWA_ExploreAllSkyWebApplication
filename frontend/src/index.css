@@ -28,9 +28,9 @@
   --shadow-glow: 0 0 16px rgba(232, 114, 42, 0.2);
   --transition-lift: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 
-  --font-ui: 'IBM Plex Sans', 'Noto Sans KR', system-ui, -apple-system, sans-serif;
+  --font-ui: 'Pretendard', system-ui, -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
   --font-mono: 'IBM Plex Mono', 'Consolas', monospace;
-  --font-heading: 'IBM Plex Sans', 'Noto Sans KR', system-ui, sans-serif;
+  --font-heading: 'Pretendard', system-ui, -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
 
   font-family: var(--font-ui);
   font-size: 14px;
