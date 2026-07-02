@@ -1792,7 +1792,7 @@ body {
 .kmtnet-results {
   padding: 20px 24px 24px;
   background:
-    radial-gradient(circle at top right, rgba(125, 211, 252, 0.08), transparent 24%),
+    radial-gradient(circle at top right, rgba(232, 114, 42, 0.08), transparent 24%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 45%);
 }
 
@@ -1803,7 +1803,7 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background:
-    linear-gradient(135deg, rgba(125, 211, 252, 0.07), transparent 34%),
+    linear-gradient(135deg, rgba(232, 114, 42, 0.07), transparent 34%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.015)),
     #0b1119;
   box-shadow: var(--shadow-sm);
@@ -2795,9 +2795,9 @@ body {
   align-items: center;
   margin: 0 0 14px;
   padding: 14px 18px;
-  border: 1px solid rgba(56, 189, 248, 0.25);
+  border: 1px solid rgba(232, 114, 42, 0.25);
   border-radius: 12px;
-  background: rgba(56, 189, 248, 0.08);
+  background: rgba(232, 114, 42, 0.08);
 }
 
 .learning-mode-banner--advanced {
@@ -2811,7 +2811,7 @@ body {
 }
 
 .learning-mode-banner span {
-  color: #7dd3fc;
+  color: var(--accent);
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -2819,7 +2819,7 @@ body {
 }
 
 .learning-mode-banner--advanced span {
-  color: #a5b4fc;
+  color: var(--text-secondary);
 }
 
 .learning-mode-banner strong {
@@ -2849,7 +2849,7 @@ body {
 }
 
 .analysis-provenance-bar strong {
-  color: #7dd3fc;
+  color: var(--accent);
   font-size: 10px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -3292,9 +3292,9 @@ body {
   gap: 14px;
   margin-top: 16px;
   padding: 16px;
-  border: 1px solid rgba(56, 189, 248, 0.25);
+  border: 1px solid rgba(232, 114, 42, 0.25);
   border-radius: var(--radius-md);
-  background: rgba(56, 189, 248, 0.06);
+  background: rgba(232, 114, 42, 0.06);
 }
 
 .transit-reference-head {
@@ -3361,10 +3361,10 @@ body {
   gap: 14px;
   margin-top: 16px;
   padding: 16px;
-  border: 1px solid rgba(125, 211, 252, 0.24);
+  border: 1px solid rgba(232, 114, 42, 0.24);
   border-radius: var(--radius-md);
   background:
-    linear-gradient(180deg, rgba(125, 211, 252, 0.065), rgba(255, 255, 255, 0.02)),
+    linear-gradient(180deg, rgba(232, 114, 42, 0.065), rgba(255, 255, 255, 0.02)),
     rgba(8, 13, 20, 0.62);
 }
 
@@ -3473,8 +3473,8 @@ body {
 }
 
 .transit-callout-info {
-  border-color: rgba(125, 211, 252, 0.22);
-  background: rgba(125, 211, 252, 0.08);
+  border-color: rgba(232, 114, 42, 0.22);
+  background: rgba(232, 114, 42, 0.08);
 }
 
 /* ===== Step Guide (탐구 질문) ===== */
@@ -4885,7 +4885,7 @@ body {
   width: 56px;
   height: 56px;
   flex-shrink: 0;
-  filter: drop-shadow(0 0 14px rgba(125, 211, 252, 0.35));
+  filter: drop-shadow(0 0 14px rgba(232, 114, 42, 0.35));
 }
 
 .home-hero-brand-text {
@@ -5069,12 +5069,12 @@ body {
   gap: 6px;
   padding: 14px 16px;
   border-radius: 12px;
-  border: 1px solid rgba(56, 189, 248, 0.24);
-  background: rgba(56, 189, 248, 0.07);
+  border: 1px solid rgba(232, 114, 42, 0.24);
+  background: rgba(232, 114, 42, 0.07);
 }
 
 .module-inquiry-question span {
-  color: #7dd3fc;
+  color: var(--accent);
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -5133,7 +5133,7 @@ body {
 
 .inquiry-module-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(125, 211, 252, 0.28);
+  border-color: rgba(232, 114, 42, 0.28);
   box-shadow: var(--shadow-lg);
 }
 
@@ -5191,7 +5191,7 @@ body {
   width: fit-content;
   align-items: center;
   gap: 6px;
-  color: #7dd3fc;
+  color: var(--accent);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -5218,13 +5218,13 @@ body {
   display: grid;
   gap: 6px;
   padding: 12px 14px;
-  border: 1px solid rgba(125, 211, 252, 0.22);
+  border: 1px solid rgba(232, 114, 42, 0.22);
   border-radius: 8px;
-  background: rgba(56, 189, 248, 0.07);
+  background: rgba(232, 114, 42, 0.07);
 }
 
 .inquiry-question-box span {
-  color: #7dd3fc;
+  color: var(--accent);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -6140,7 +6140,7 @@ body {
 }
 
 .inquiry-inline-link {
-  color: #7dd3fc;
+  color: var(--accent);
   text-decoration: none;
 }
 
@@ -6179,7 +6179,7 @@ body {
 }
 
 .inquiry-record-field textarea:focus {
-  outline: 2px solid rgba(125, 211, 252, 0.45);
+  outline: 2px solid rgba(232, 114, 42, 0.45);
   outline-offset: 2px;
 }
 
@@ -6231,7 +6231,7 @@ body {
 .inquiry-analysis-slot {
   min-width: 0;
   overflow: hidden;
-  border: 1px solid rgba(125, 211, 252, 0.2);
+  border: 1px solid rgba(232, 114, 42, 0.2);
   border-radius: 8px;
   background: rgba(9, 13, 19, 0.72);
 }
@@ -6341,7 +6341,7 @@ body {
   border-radius: 28px;
   border: 1px solid rgba(148, 163, 184, 0.18);
   background:
-    radial-gradient(circle at top left, rgba(56, 189, 248, 0.16), transparent 34%),
+    radial-gradient(circle at top left, rgba(232, 114, 42, 0.16), transparent 34%),
     radial-gradient(circle at bottom right, rgba(251, 146, 60, 0.16), transparent 28%),
     rgba(15, 23, 42, 0.94);
   box-shadow: 0 30px 70px rgba(2, 8, 23, 0.34);
@@ -6439,7 +6439,7 @@ body {
   padding: 0.48rem 0.78rem;
   border-radius: 999px;
   background: rgba(15, 23, 42, 0.88);
-  border: 1px solid rgba(125, 211, 252, 0.28);
+  border: 1px solid rgba(232, 114, 42, 0.28);
   color: #e2e8f0;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -6483,7 +6483,7 @@ body {
 }
 
 .section-kicker {
-  color: #7dd3fc;
+  color: var(--accent);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-size: 0.78rem;
@@ -6613,7 +6613,7 @@ body {
   width: 42px;
   height: 20px;
   background: linear-gradient(145deg, rgba(14, 165, 233, 0.84), rgba(8, 47, 73, 0.94));
-  border: 1px solid rgba(125, 211, 252, 0.35);
+  border: 1px solid rgba(232, 114, 42, 0.35);
 }
 
 .tess-body {
@@ -6814,14 +6814,14 @@ body {
   gap: 18px;
   padding: 28px 30px;
   border-radius: 18px;
-  border: 1px solid rgba(56, 189, 248, 0.25);
+  border: 1px solid rgba(232, 114, 42, 0.25);
   background:
-    radial-gradient(circle at top right, rgba(56, 189, 248, 0.12), transparent 38%),
+    radial-gradient(circle at top right, rgba(232, 114, 42, 0.12), transparent 38%),
     var(--bg-card);
 }
 
 .edu-inquiry-kicker {
-  color: #7dd3fc;
+  color: var(--accent);
   font-size: 0.8rem;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -6891,7 +6891,7 @@ body {
 }
 
 .edu-mode-card--advanced > span {
-  color: #a5b4fc;
+  color: var(--text-secondary);
 }
 
 .edu-mode-card h3,
@@ -7212,7 +7212,7 @@ body {
   font-family: var(--font-mono);
   font-size: 2.5rem;
   font-weight: 800;
-  color: rgba(125, 211, 252, 0.35);
+  color: rgba(232, 114, 42, 0.35);
   letter-spacing: 0.08em;
 }
 
@@ -7249,7 +7249,7 @@ body {
   font-family: var(--font-mono);
   font-size: 1.375rem;
   font-weight: 800;
-  color: #7dd3fc;
+  color: var(--text-heading);
   letter-spacing: 0.04em;
 }
 
