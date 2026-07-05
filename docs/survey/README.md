@@ -29,27 +29,16 @@
 ## 2. 구글폼 만들기 (약 5분)
 
 1. `script.google.com` → **새 프로젝트** → `easwa_teacher_survey.gs` 내용 붙여넣기
-2. `createEASWAForm` 실행 → 권한 승인
-3. 실행 로그(보기 → 로그)에서 **편집 URL / 응답 URL** 확보
-4. **화면 이미지 삽입** — 폼 편집기에서 `3. EASWA 프로토타입 화면 확인` 섹션의 각 "화면 N" 설명 아래에
-   아래 매핑대로 이미지 추가(이미지 삽입 → 업로드):
-
-   | 폼의 화면 | 넣을 파일 |
-   |---|---|
-   | 화면 1 | `step0_intro.png` (+ `step1_select.png`) |
-   | 화면 2 | `step2_metadata.png` |
-   | 화면 3 | `step3_conditions.png` |
-   | 화면 4 | `step4_analysis.png` |
-   | 화면 5 | `step5_reference.png` |
-   | 화면 6 | `step6_record.png` |
-
-   > 자동화 원하면: PNG들을 Google Drive에 업로드 → 파일 ID 확보 → `.gs`의 해당 `addInfo(...)`를
-   > `addImg('화면 N. …', '설명', 'DRIVE_FILE_ID')`로 교체 (헬퍼는 `.gs` 하단 주석 참조).
-
+2. `createEASWAForm` 실행 → **권한 승인**(폼 생성 + 외부 이미지 접근 `UrlFetchApp` 권한 요청 → 허용)
+3. **끝.** 문항 + **화면 1~6 이미지가 자동 삽입**됩니다.
+   - 이미지는 GitHub raw(`docs/survey/screens/*.png`)에서 실행 시 자동으로 끌어옴 → 수동 업로드 불필요.
+4. 실행 로그(보기 → 로그)에서 **편집 URL / 응답 URL** 확보
 5. **폼 QR 생성**: 응답 URL로 아래 실행
    ```bash
    python make_qr.py "<응답_URL>" qr_form.png "설문 응답"
    ```
+
+> 이미지 URL은 `.gs`의 `IMG_BASE`(브랜치 `block-ux-overhaul`)를 가리킵니다. 브랜치명이 바뀌면 `IMG_BASE`도 수정.
 
 ---
 
