@@ -77,7 +77,7 @@ function createEASWAForm() {
     'SIMBAD, VizieR, WorldWide Telescope와 같은 기존 공공 천문자료 서비스는 신뢰성 있는 천문자료를 제공하지만, 학교 수업에서 바로 활용하기에는 자료 검색, 메타데이터 이해, 분석 절차 구성 등의 부담이 있을 수 있습니다.');
 
   form.addCheckboxItem()
-    .setTitle('5. 기존 공공 천문자료 서비스를 학교 수업에서 활용할 때 예상되는 어려움을 모두 선택해 주세요.')
+    .setTitle('5. 기존 공공 천문자료 서비스를 학교 수업에서 활용할 때 가장 크게 예상되는 어려움을 최대 3개까지 선택해 주세요.')
     .setChoiceValues([
       '자료 검색 절차가 복잡할 것 같음',
       '영어 인터페이스와 전문 용어가 부담될 것 같음',
@@ -89,7 +89,8 @@ function createEASWAForm() {
       '수업 시간 안에서 활용하기 어려울 것 같음'
     ])
     .showOtherOption(true)
-    .setRequired(true);
+    .setRequired(true)
+    .setValidation(FormApp.createCheckboxValidation().requireSelectAtMost(3).build());
 
   addPara('6. 위에서 선택한 어려움 중 가장 크게 느껴지는 것은 무엇이며, 그 이유는 무엇입니까?');
 
@@ -141,7 +142,7 @@ function createEASWAForm() {
   // ===== 5. 어려울 것으로 예상되는 단계 (표 4-10 · 6개) =====
   addPage('5. 어려울 것으로 예상되는 단계');
   form.addCheckboxItem()
-    .setTitle('15. 학생 또는 예비교사가 EASWA를 사용할 때 어려워할 것으로 예상되는 단계를 모두 선택해 주세요.')
+    .setTitle('15. 학생 또는 예비교사가 EASWA를 사용할 때 가장 어려워할 것으로 예상되는 단계를 최대 3개까지 선택해 주세요.')
     .setChoiceValues([
       '탐구 대상 또는 분석 대상 선택',
       '공공 천문자료 접근 및 분석 실행',
@@ -151,14 +152,15 @@ function createEASWAForm() {
       '기준값 비교와 결과 기록'
     ])
     .showOtherOption(true)
-    .setRequired(true);
+    .setRequired(true)
+    .setValidation(FormApp.createCheckboxValidation().requireSelectAtMost(3).build());
 
   addPara('16. 위에서 선택한 단계가 어렵다고 생각한 이유를 적어 주세요.');
 
   // ===== 6. 보완 요구 (표 4-10 · 7개) =====
   addPage('6. 보완 요구');
   form.addCheckboxItem()
-    .setTitle('17. EASWA를 보완하기 위해 중요하다고 생각하는 요소를 모두 선택해 주세요.')
+    .setTitle('17. EASWA를 보완하기 위해 가장 중요하다고 생각하는 요소를 최대 3개까지 선택해 주세요.')
     .setChoiceValues([
       '자료 출처와 분석 조건을 더 명확히 제시하는 것',
       '분석 과정과 품질 점검 정보를 더 자세히 제공하는 것',
@@ -169,7 +171,8 @@ function createEASWAForm() {
       '추가 탐구 주제를 제공하는 것'
     ])
     .showOtherOption(true)
-    .setRequired(true);
+    .setRequired(true)
+    .setValidation(FormApp.createCheckboxValidation().requireSelectAtMost(3).build());
 
   addPara('18. EASWA의 가장 큰 장점은 무엇이라고 생각합니까?');
   addPara('19. EASWA에서 가장 우선적으로 보완해야 할 점은 무엇이라고 생각합니까?');
