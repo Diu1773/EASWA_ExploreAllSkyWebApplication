@@ -142,12 +142,12 @@ export function SkyDataPanel({
           </div>
           <p className="inquiry-skydata-caption">
             {lang === 'ko'
-              ? `DSS 광학 탐사 이미지 · 시야 ${fovDeg}° (TESS 관측 화면이 아닙니다)`
-              : `DSS optical survey image · ${fovDeg}° field (not a TESS frame)`}
+              ? `이 사진은 위치·크기 비교용 DSS 광학 탐사 이미지입니다 (시야 ${fovDeg}°). 실제 분석에 쓰는 자료는 MAST에서 API로 받아오는 TESS cutout(대상 주변 픽셀 데이터)입니다.`
+              : `This is a DSS optical survey image for spatial context (${fovDeg}° field). The data actually analyzed is a TESS pixel cutout fetched from MAST via its API.`}
             {gridOn &&
               (lang === 'ko'
-                ? ' — 강조된 한 픽셀 안에 몇 개의 별이 들어가는지 보세요.'
-                : ' — note how many stars share the highlighted single pixel.')}
+                ? ' 격자는 TESS 픽셀 크기(21″)이며, 강조된 한 픽셀 안에 몇 개의 별이 들어가는지 보세요.'
+                : ' The grid shows the TESS pixel size (21″) — note how many stars share the highlighted pixel.')}
           </p>
         </div>
         {chips.length > 0 && (
