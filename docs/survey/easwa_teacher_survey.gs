@@ -114,11 +114,11 @@ function createEASWAForm() {
   }
   addImg('화면 1. 주제 소개 (Step 0)', '탐구 질문과 학습 목표를 먼저 확인합니다.', 'step0_intro.png');
   addImg('화면 1. 대상 선택 (Step 1)', '전천 지도에서 분석 대상(외계행성)을 선택합니다.', 'step1_select.png');
-  addImg('화면 2. 메타데이터 (Step 2)', '자료 출처(MAST 기반 TESS)·관측 정보·기준값 출처(NASA Exoplanet Archive)를 확인합니다. STEP별 self-check 퀴즈 포함.', 'step2_metadata.png');
-  addImg('화면 3. 분석 조건 (Step 3)', 'aperture·비교성·분석 구간(ROI)·모델 가정 등 분석 조건을 확인·조절합니다.', 'step3_conditions.png');
+  addImg('화면 2. 자료 확인 (Step 2)', '대상의 실제 하늘 이미지(DSS)에 TESS 픽셀 격자를 겹쳐 자료 특성(픽셀 크기·blending 가능성)을 눈으로 확인하고, 자료 출처·관측 정보를 봅니다.', 'step2_metadata.png');
+  addImg('화면 3. 분석 준비 (Step 3)', '구경 측광 시뮬레이션(구경·배경 고리·방사 프로파일·FWHM)으로 분석 설정의 영향을 체험하고, 실제 분석 설정과 모델 가정을 확인합니다.', 'step3_conditions.png');
   addImg('화면 4. 분석 · 시각화 (Step 4)', 'TESS 차등 광도곡선과 transit 모델 적합 결과, 품질 지표를 확인합니다.', 'step4_analysis.png');
-  addImg('화면 5. 기준값 비교 (Step 5)', '측정 산출값을 NASA Exoplanet Archive 기준값과 비교합니다. 기준값은 비교 기준이며 절대 정답이 아닙니다.', 'step5_reference.png');
-  addImg('화면 6. 해석 · 기록 (Step 6)', '기준값과의 차이 원인을 자료 품질·분석 조건·모델 가정을 근거로 기록·설명합니다.', 'step6_record.png');
+  addImg('화면 5. 기준값 비교 (Step 5)', '내 관측·적합 곡선 위에 카탈로그 기대 모델을 겹쳐 비교하고, 측정값과 기준값의 차이를 확인합니다. 기준값은 비교 기준이며 절대 정답이 아닙니다.', 'step5_reference.png');
+  addImg('화면 6. 해석 · 기록 (Step 6)', '내가 분석한 결과 요약을 보면서 차이 원인을 자료 품질·분석 조건·모델 가정을 근거로 기록·설명합니다.', 'step6_record.png');
 
   form.addMultipleChoiceItem()
     .setTitle('7. EASWA 프로토타입을 어떤 방식으로 확인하였습니까?')
