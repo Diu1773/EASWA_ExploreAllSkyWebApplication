@@ -6,9 +6,9 @@ import { useLangStore } from '../../i18n';
  * A bundled synthetic star field — clearly labeled as a simulation — where the
  * learner drags the measurement position and adjusts aperture + sky annulus,
  * watching enclosed flux, neighbor contamination, background estimate, mag and
- * SNR respond live. A radial-profile plot shows the Gaussian PSF and exactly
- * which radii feed the star measurement vs the background estimate.
- * Real (differential) photometry runs in Step 4 on TESS cutouts.
+ * SNR respond live. A radial-profile plot (right of the image) shows the
+ * Gaussian PSF, the FWHM, and exactly which radii feed the star measurement vs
+ * the background estimate. Real (differential) photometry runs in Step 4.
  */
 
 const N = 110; // fine-pixel grid size
@@ -16,6 +16,8 @@ const SCALE = 4; // display scale
 const BG = 20; // true sky background per pixel
 const READ_NOISE = 3;
 const PROF_MAX = 36; // radial profile extent (px)
+const PSF_SIGMA = 3.2;
+const FWHM = 2.355 * PSF_SIGMA; // ≈ 7.5 px
 
 interface Star {
   x: number;
@@ -28,8 +30,8 @@ interface Star {
 // Loosely modeled on the WASP-6 field: bright target center, one close
 // neighbor (blending story), a few field stars.
 const STARS: Star[] = [
-  { x: 55, y: 55, flux: 60000, sigma: 3.2, isTarget: true },
-  { x: 67, y: 47, flux: 16000, sigma: 3.2 },
+  { x: 55, y: 55, flux: 60000, sigma: PSF_SIGMA, isTarget: true },
+  { x: 67, y: 47, flux: 16000, sigma: PSF_SIGMA },
   { x: 22, y: 26, flux: 9000, sigma: 3.0 },
   { x: 88, y: 82, flux: 12000, sigma: 3.1 },
   { x: 31, y: 86, flux: 6000, sigma: 3.0 },
@@ -87,12 +89,13 @@ export function ApertureSandbox() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const draggingRef = useRef(false);
-  const [ap, setAp] = useState<ApertureConfig>({ r: 8, rIn: 22, rOut: 30 });
+  const [ap, setAp] = useState<ApertureConfig>({ r: 12, rIn: 22, rOut: 30 });
   const [pos, setPos] = useState({ x: 55, y: 55 });
 
   const scene = useMemo(buildScene, []);
 
-  // Paint the bundled star field once.
+  // Paint the bundled star field once — dark sky, bright stars, so it is
+  // obvious which regions must NOT be used as background.
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -101,8 +104,10 @@ export function ApertureSandbox() {
     const image = ctx.createImageData(N, N);
     let max = 0;
     for (let i = 0; i < N * N; i++) max = Math.max(max, scene.total[i]);
+    const floor = BG * 0.6; // push the sky toward black
     for (let i = 0; i < N * N; i++) {
-      const v = Math.pow(Math.min(scene.total[i] / max, 1), 0.42) * 255;
+      const norm = Math.max(scene.total[i] - floor, 0) / (max - floor);
+      const v = Math.pow(Math.min(norm, 1), 0.5) * 255;
       image.data[i * 4] = v;
       image.data[i * 4 + 1] = v * 0.96;
       image.data[i * 4 + 2] = v * 0.88;
@@ -180,13 +185,13 @@ export function ApertureSandbox() {
   const hint = useMemo(() => {
     if (stats.enclosed < 82) {
       return ko
-        ? '구경이 작거나 빗나가서 목표별 빛을 놓치고 있어요 → 등급이 어두워짐(값 커짐).'
-        : 'The aperture is missing target light (too small or off-center) → the magnitude gets fainter.';
+        ? '구경이 작거나 빗나가서 목표별 빛을 놓치고 있어요 → 등급이 어두워짐(값 커짐). 요령: 구경 반지름은 대개 FWHM의 1.5~2배로 잡습니다.'
+        : 'The aperture is missing target light (too small or off-center) → the magnitude gets fainter. Rule of thumb: set r to 1.5–2 × FWHM.';
     }
     if (stats.bgEst - BG > 1.5 || stats.annNeighborPerPix > 1.5) {
       return ko
-        ? '이웃별이 배경 고리(annulus)에 들어가 배경이 과대추정됐어요 → 별빛을 너무 많이 빼서 어두워집니다. 실제 파이프라인은 중앙값·시그마클리핑으로 이런 오염을 완화해요.'
-        : 'A neighbor sits inside the sky annulus, inflating the background estimate → too much gets subtracted. Real pipelines use clipped medians to resist this.';
+        ? '별이 배경 고리(annulus)에 들어가 배경이 과대추정됐어요 → 별빛을 너무 많이 빼서 어두워집니다. 고리를 별이 없는 곳으로 옮기세요. 실제 파이프라인은 중앙값·시그마클리핑으로 이런 오염을 완화해요.'
+        : 'A star sits inside the sky annulus, inflating the background estimate → too much gets subtracted. Move the ring to clean sky. Real pipelines use clipped medians to resist this.';
     }
     if (stats.contamination > 5) {
       return ko
@@ -195,12 +200,12 @@ export function ApertureSandbox() {
     }
     if (ap.r > 16) {
       return ko
-        ? '구경이 커서 배경 잡음이 함께 늘어 SNR이 떨어집니다.'
-        : 'A large aperture adds background noise, lowering the SNR.';
+        ? '구경이 FWHM의 2배를 훌쩍 넘으면 별빛은 거의 안 늘고 배경 잡음만 늘어 SNR이 떨어집니다.'
+        : 'Far beyond 2 × FWHM the aperture adds mostly background noise, lowering the SNR.';
     }
     return ko
-      ? '적절한 설정입니다 — 구경은 목표별 빛을 담고, 배경 고리는 별이 없는 깨끗한 하늘을 재고 있어요.'
-      : 'Good setup — the aperture holds the target and the annulus samples clean sky.';
+      ? `적절한 설정입니다 (r ≈ ${(ap.r / FWHM).toFixed(1)}×FWHM) — 구경은 목표별 빛을 담고, 배경 고리는 별이 없는 깨끗한 하늘을 재고 있어요.`
+      : `Good setup (r ≈ ${(ap.r / FWHM).toFixed(1)} × FWHM) — the aperture holds the target and the annulus samples clean sky.`;
   }, [stats, ap.r, ko]);
 
   const moveTo = (event: PointerEvent<HTMLDivElement>) => {
@@ -215,14 +220,14 @@ export function ApertureSandbox() {
     });
   };
 
-  // ---- radial profile plot geometry ----
+  // ---- radial profile plot geometry (sits to the right of the image) ----
   const plot = useMemo(() => {
-    const W = 560;
-    const H = 190;
-    const L = 46;
+    const W = 460;
+    const H = 400;
+    const L = 48;
     const R = 12;
-    const T = 12;
-    const B = 30;
+    const T = 16;
+    const B = 34;
     const innerW = W - L - R;
     const innerH = H - T - B;
     const yMax = Math.max(...stats.profile, BG * 3) * 1.08;
@@ -236,6 +241,7 @@ export function ApertureSandbox() {
 
   const sliderRow = (
     label: string,
+    valueLabel: string,
     value: number,
     min: number,
     max: number,
@@ -244,7 +250,7 @@ export function ApertureSandbox() {
   ) => (
     <label className={`inquiry-aperture-slider ${accentClass ?? ''}`}>
       <span>
-        {label} <strong>{value}px</strong>
+        {label} <strong>{valueLabel}</strong>
       </span>
       <input
         type="range"
@@ -314,140 +320,173 @@ export function ApertureSandbox() {
             {ko ? '배경 고리(annulus) — 하늘 밝기를 재서 빼는 영역' : 'Sky annulus — background sampled here'}
           </p>
         </div>
-        <div className="inquiry-aperture-controls">
-          {sliderRow(ko ? '구경 반지름 r' : 'Aperture radius r', ap.r, 3, 20, (v) =>
-            setAp((prev) => clampConfig({ ...prev, r: v })),
-          )}
-          {sliderRow(ko ? '고리 안쪽 r_in' : 'Annulus inner r_in', ap.rIn, 5, 30, (v) =>
-            setAp((prev) => clampConfig({ ...prev, rIn: v })),
-            'muted',
-          )}
-          {sliderRow(ko ? '고리 바깥 r_out' : 'Annulus outer r_out', ap.rOut, 8, 34, (v) =>
-            setAp((prev) => clampConfig({ ...prev, rOut: v })),
-            'muted',
-          )}
-          <dl className="inquiry-aperture-stats">
-            <div>
-              <dt>{ko ? '목표별 빛 포함' : 'Target light enclosed'}</dt>
-              <dd>{stats.enclosed.toFixed(0)}%</dd>
-            </div>
-            <div>
-              <dt>{ko ? '이웃별 혼입 (구경)' : 'Neighbor in aperture'}</dt>
-              <dd className={stats.contamination > 5 ? 'warn' : ''}>
-                {stats.contamination.toFixed(1)}%
-              </dd>
-            </div>
-            <div>
-              <dt>{ko ? '배경 추정 (고리 평균, 참값 20)' : 'Background est. (true 20)'}</dt>
-              <dd className={Math.abs(stats.bgEst - BG) > 1.5 ? 'warn' : ''}>
-                {stats.bgEst.toFixed(1)}
-              </dd>
-            </div>
-            <div>
-              <dt>{ko ? '기기 등급' : 'Instrumental mag'}</dt>
-              <dd>{stats.mag.toFixed(2)}</dd>
-            </div>
-            <div>
-              <dt>SNR</dt>
-              <dd>{stats.snr.toFixed(0)}</dd>
-            </div>
-          </dl>
-          <p className="inquiry-aperture-hint">{hint}</p>
+
+        <div className="inquiry-aperture-profile">
+          <span className="inquiry-aperture-profile-title">
+            {ko
+              ? `방사 프로파일 — 별의 가우시안 모양 · FWHM ≈ ${FWHM.toFixed(1)}px`
+              : `Radial profile — the star's Gaussian shape · FWHM ≈ ${FWHM.toFixed(1)}px`}
+          </span>
+          <svg viewBox={`0 0 ${plot.W} ${plot.H}`} role="img">
+            <rect
+              className="profile-zone-aperture"
+              x={plot.xOf(0)}
+              y={plot.T}
+              width={plot.xOf(ap.r) - plot.xOf(0)}
+              height={plot.innerH}
+            />
+            <rect
+              className="profile-zone-annulus"
+              x={plot.xOf(ap.rIn)}
+              y={plot.T}
+              width={plot.xOf(Math.min(ap.rOut, PROF_MAX)) - plot.xOf(ap.rIn)}
+              height={plot.innerH}
+            />
+            <line
+              className="profile-axis"
+              x1={plot.L}
+              y1={plot.T + plot.innerH}
+              x2={plot.L + plot.innerW}
+              y2={plot.T + plot.innerH}
+            />
+            <line className="profile-axis" x1={plot.L} y1={plot.T} x2={plot.L} y2={plot.T + plot.innerH} />
+            {[0, 10, 20, 30].map((radius) => (
+              <g key={radius}>
+                <line
+                  className="profile-tick"
+                  x1={plot.xOf(radius)}
+                  y1={plot.T + plot.innerH}
+                  x2={plot.xOf(radius)}
+                  y2={plot.T + plot.innerH + 4}
+                />
+                <text className="profile-text" x={plot.xOf(radius)} y={plot.T + plot.innerH + 15} textAnchor="middle">
+                  {radius}
+                </text>
+              </g>
+            ))}
+            <text
+              className="profile-text"
+              x={plot.L + plot.innerW / 2}
+              y={plot.H - 6}
+              textAnchor="middle"
+            >
+              {ko ? '중심에서의 거리 (px)' : 'Distance from center (px)'}
+            </text>
+            <text
+              className="profile-text"
+              x={14}
+              y={plot.T + plot.innerH / 2}
+              textAnchor="middle"
+              transform={`rotate(-90 14 ${plot.T + plot.innerH / 2})`}
+            >
+              {ko ? '픽셀 값' : 'Pixel value'}
+            </text>
+            {/* FWHM marker */}
+            <line
+              className="profile-fwhm"
+              x1={plot.xOf(FWHM)}
+              y1={plot.T}
+              x2={plot.xOf(FWHM)}
+              y2={plot.T + plot.innerH}
+            />
+            <text
+              className="profile-text fwhm-label"
+              x={plot.xOf(FWHM) + 4}
+              y={plot.T + plot.innerH - 8}
+            >
+              FWHM
+            </text>
+            <line
+              className="profile-bgline"
+              x1={plot.L}
+              y1={plot.yOf(stats.bgEst)}
+              x2={plot.L + plot.innerW}
+              y2={plot.yOf(stats.bgEst)}
+            />
+            <text
+              className="profile-text accent-muted"
+              x={plot.L + plot.innerW - 4}
+              y={plot.yOf(stats.bgEst) - 5}
+              textAnchor="end"
+            >
+              {ko ? `배경 추정 ${stats.bgEst.toFixed(1)}` : `bg est. ${stats.bgEst.toFixed(1)}`}
+            </text>
+            <polyline className="profile-line" points={plot.points} />
+            <text className="profile-text zone-label-aperture" x={plot.xOf(ap.r / 2)} y={plot.T + 12} textAnchor="middle">
+              {ko ? '구경' : 'aperture'}
+            </text>
+            <text
+              className="profile-text zone-label-annulus"
+              x={plot.xOf((ap.rIn + Math.min(ap.rOut, PROF_MAX)) / 2)}
+              y={plot.T + 12}
+              textAnchor="middle"
+            >
+              {ko ? '배경 고리' : 'annulus'}
+            </text>
+          </svg>
         </div>
       </div>
 
-      <div className="inquiry-aperture-profile">
-        <span className="inquiry-aperture-profile-title">
-          {ko
-            ? '방사 프로파일 — 중심에서 멀어질수록 픽셀 값이 어떻게 변하나 (별의 가우시안 모양)'
-            : 'Radial profile — pixel values vs distance from center (the star’s Gaussian shape)'}
-        </span>
-        <svg viewBox={`0 0 ${plot.W} ${plot.H}`} role="img">
-          <rect
-            className="profile-zone-aperture"
-            x={plot.xOf(0)}
-            y={plot.T}
-            width={plot.xOf(ap.r) - plot.xOf(0)}
-            height={plot.innerH}
-          />
-          <rect
-            className="profile-zone-annulus"
-            x={plot.xOf(ap.rIn)}
-            y={plot.T}
-            width={plot.xOf(Math.min(ap.rOut, PROF_MAX)) - plot.xOf(ap.rIn)}
-            height={plot.innerH}
-          />
-          <line
-            className="profile-axis"
-            x1={plot.L}
-            y1={plot.T + plot.innerH}
-            x2={plot.L + plot.innerW}
-            y2={plot.T + plot.innerH}
-          />
-          <line className="profile-axis" x1={plot.L} y1={plot.T} x2={plot.L} y2={plot.T + plot.innerH} />
-          {[0, 10, 20, 30].map((radius) => (
-            <g key={radius}>
-              <line
-                className="profile-tick"
-                x1={plot.xOf(radius)}
-                y1={plot.T + plot.innerH}
-                x2={plot.xOf(radius)}
-                y2={plot.T + plot.innerH + 4}
-              />
-              <text className="profile-text" x={plot.xOf(radius)} y={plot.T + plot.innerH + 15} textAnchor="middle">
-                {radius}
-              </text>
-            </g>
-          ))}
-          <text
-            className="profile-text"
-            x={plot.L + plot.innerW / 2}
-            y={plot.H - 4}
-            textAnchor="middle"
-          >
-            {ko ? '중심에서의 거리 (px)' : 'Distance from center (px)'}
-          </text>
-          <text
-            className="profile-text"
-            x={12}
-            y={plot.T + plot.innerH / 2}
-            textAnchor="middle"
-            transform={`rotate(-90 12 ${plot.T + plot.innerH / 2})`}
-          >
-            {ko ? '픽셀 값' : 'Pixel value'}
-          </text>
-          <line
-            className="profile-bgline"
-            x1={plot.L}
-            y1={plot.yOf(stats.bgEst)}
-            x2={plot.L + plot.innerW}
-            y2={plot.yOf(stats.bgEst)}
-          />
-          <text
-            className="profile-text accent-muted"
-            x={plot.L + plot.innerW - 4}
-            y={plot.yOf(stats.bgEst) - 5}
-            textAnchor="end"
-          >
-            {ko ? `배경 추정 ${stats.bgEst.toFixed(1)}` : `bg est. ${stats.bgEst.toFixed(1)}`}
-          </text>
-          <polyline className="profile-line" points={plot.points} />
-          <text className="profile-text zone-label-aperture" x={plot.xOf(ap.r / 2)} y={plot.T + 12} textAnchor="middle">
-            {ko ? '구경' : 'aperture'}
-          </text>
-          <text
-            className="profile-text zone-label-annulus"
-            x={plot.xOf((ap.rIn + Math.min(ap.rOut, PROF_MAX)) / 2)}
-            y={plot.T + 12}
-            textAnchor="middle"
-          >
-            {ko ? '배경 고리' : 'annulus'}
-          </text>
-        </svg>
+      <div className="inquiry-aperture-controls">
+        <div className="inquiry-aperture-sliders">
+          {sliderRow(
+            ko ? '구경 반지름 r' : 'Aperture radius r',
+            `${ap.r}px (${(ap.r / FWHM).toFixed(1)}×FWHM)`,
+            ap.r,
+            3,
+            20,
+            (v) => setAp((prev) => clampConfig({ ...prev, r: v })),
+          )}
+          {sliderRow(
+            ko ? '고리 안쪽 r_in' : 'Annulus inner r_in',
+            `${ap.rIn}px`,
+            ap.rIn,
+            5,
+            30,
+            (v) => setAp((prev) => clampConfig({ ...prev, rIn: v })),
+            'muted',
+          )}
+          {sliderRow(
+            ko ? '고리 바깥 r_out' : 'Annulus outer r_out',
+            `${ap.rOut}px`,
+            ap.rOut,
+            8,
+            34,
+            (v) => setAp((prev) => clampConfig({ ...prev, rOut: v })),
+            'muted',
+          )}
+        </div>
+        <dl className="inquiry-aperture-stats">
+          <div>
+            <dt>{ko ? '목표별 빛 포함' : 'Target light enclosed'}</dt>
+            <dd>{stats.enclosed.toFixed(0)}%</dd>
+          </div>
+          <div>
+            <dt>{ko ? '이웃별 혼입 (구경)' : 'Neighbor in aperture'}</dt>
+            <dd className={stats.contamination > 5 ? 'warn' : ''}>
+              {stats.contamination.toFixed(1)}%
+            </dd>
+          </div>
+          <div>
+            <dt>{ko ? '배경 추정 (고리 평균, 참값 20)' : 'Background est. (true 20)'}</dt>
+            <dd className={Math.abs(stats.bgEst - BG) > 1.5 ? 'warn' : ''}>
+              {stats.bgEst.toFixed(1)}
+            </dd>
+          </div>
+          <div>
+            <dt>{ko ? '기기 등급' : 'Instrumental mag'}</dt>
+            <dd>{stats.mag.toFixed(2)}</dd>
+          </div>
+          <div>
+            <dt>SNR</dt>
+            <dd>{stats.snr.toFixed(0)}</dd>
+          </div>
+        </dl>
+        <p className="inquiry-aperture-hint">{hint}</p>
         <p className="inquiry-aperture-note">
           {ko
-            ? '고리 구간의 프로파일이 평평하지 않고 솟아 있다면 별이 배경 측정을 오염시키고 있다는 뜻입니다. 참고: 여기서는 별 하나의 구경 측광만 다룹니다 — 실제 분석(다음 단계)은 여러 비교성과의 차등측광으로 수행되고, 거기서도 구경을 직접 조절할 수 있어요.'
-            : 'If the profile bumps up inside the annulus band, a star is contaminating the background estimate. Note: this shows single-star aperture photometry — the real analysis (next step) is differential photometry against comparison stars, where you can also tune the aperture.'}
+            ? `실전 요령: 구경 반지름은 대개 별 퍼짐(FWHM ≈ ${FWHM.toFixed(1)}px)의 1.5~2배(약 ${Math.round(FWHM * 1.5)}~${Math.round(FWHM * 2)}px)로 잡고, 배경 고리는 그 바깥 별이 없는 깨끗한 하늘에 둡니다. 고리 구간 프로파일이 솟아 있으면 별이 배경을 오염시키는 중입니다. 참고: 여기서는 별 하나의 구경 측광만 다룹니다 — 실제 분석(다음 단계)은 여러 비교성과의 차등측광이고, 거기서도 구경을 직접 조절할 수 있어요.`
+            : `Rule of thumb: set the aperture radius to about 1.5–2 × the stellar FWHM (≈ ${Math.round(FWHM * 1.5)}–${Math.round(FWHM * 2)}px here) and place the annulus on clean, starless sky beyond it. A bump in the annulus band means a star is contaminating the background. Note: this is single-star aperture photometry — the real analysis (next step) is differential photometry against comparison stars, where you can also tune the aperture.`}
         </p>
       </div>
     </section>
