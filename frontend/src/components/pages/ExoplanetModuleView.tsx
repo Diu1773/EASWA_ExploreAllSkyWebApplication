@@ -9,8 +9,14 @@ import type { ExplorationModuleConfig } from '../../explorationBlocks/types';
 import { buildTargetHref, type ExplorerRouteContext } from '../../utils/explorerNavigation';
 import { formatConstellation } from '../../utils/targetFormat';
 import { InquiryLayout } from '../inquiry';
+import { TransitComparison } from '../inquiry/TransitComparison';
+import { TransitResultSummary } from '../inquiry/TransitResultSummary';
 import { SkyExplorer } from '../sky/SkyExplorer';
-import { loadTransitFit, type SavedTransitFit } from '../../workflows/transit/fitBridge';
+import {
+  loadTransitFit,
+  TRANSIT_FIT_SAVED_EVENT,
+  type SavedTransitFit,
+} from '../../workflows/transit/fitBridge';
 
 const Transit3DScene = lazy(() => import('../sky/Transit3DScene'));
 
@@ -69,8 +75,12 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
   useEffect(() => {
     const read = () => setFit(loadTransitFit(targetId));
     read();
+    window.addEventListener(TRANSIT_FIT_SAVED_EVENT, read);
     window.addEventListener('focus', read);
-    return () => window.removeEventListener('focus', read);
+    return () => {
+      window.removeEventListener(TRANSIT_FIT_SAVED_EVENT, read);
+      window.removeEventListener('focus', read);
+    };
   }, [targetId]);
 
   const analysisHref = useMemo(() => buildTargetHref(targetId, ANALYSIS_CONTEXT), [targetId]);
@@ -126,50 +136,13 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
     </div>
   );
 
-  const fmt = (value: number, digits = 4) => (Number.isFinite(value) ? value.toFixed(digits) : '—');
   const archiveRpRs =
     target?.transit_depth_pct != null && target.transit_depth_pct > 0
       ? Math.sqrt(target.transit_depth_pct / 100)
       : null;
 
   const comparisonSlot = fit ? (
-    <section className="inquiry-info-panel">
-      <span className="inquiry-panel-kicker">
-        {lang === 'ko' ? '측정값 ↔ 기준값 (NASA Exoplanet Archive)' : 'Measured ↔ Reference (NASA Exoplanet Archive)'}
-      </span>
-      <h3>{target?.name ?? targetId}</h3>
-      <table className="inquiry-compare-table">
-        <thead>
-          <tr>
-            <th>{lang === 'ko' ? '항목' : 'Quantity'}</th>
-            <th>{lang === 'ko' ? '측정값 (fit)' : 'Measured (fit)'}</th>
-            <th>{lang === 'ko' ? '기준값 (아카이브)' : 'Archive'}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Rp/R*</td>
-            <td>{`${fmt(fit.rpRs)} ± ${fmt(fit.rpRsErr)}`}</td>
-            <td>{archiveRpRs != null ? fmt(archiveRpRs) : '—'}</td>
-          </tr>
-          <tr>
-            <td>{lang === 'ko' ? '주기 (일)' : 'Period (d)'}</td>
-            <td>{fmt(fit.period, 5)}</td>
-            <td>{target?.period_days != null ? fmt(target.period_days, 5) : '—'}</td>
-          </tr>
-          <tr>
-            <td>{lang === 'ko' ? '식 깊이 (%)' : 'Depth (%)'}</td>
-            <td>{fmt(fit.rpRs * fit.rpRs * 100, 3)}</td>
-            <td>{target?.transit_depth_pct != null ? fmt(target.transit_depth_pct, 3) : '—'}</td>
-          </tr>
-        </tbody>
-      </table>
-      <div className="inquiry-callout">
-        {lang === 'ko'
-          ? `기준 Rp/R*는 카탈로그 식 깊이에 Rp/R* = √(depth)를 적용한 비교용 추정값입니다 — 출판된 반지름비와 동일하게 보지 마세요. 적합 품질 χ²_red = ${fmt(fit.reducedChiSquared, 2)}. 측정값이 기준값과 다르다면 비교성 품질·별빛 혼입(blending)·aperture·ROI·잡음·모델 가정을 근거로 차이를 설명하세요.`
-          : `The reference Rp/R* is √(depth) from the catalog transit depth — a comparison estimate, not the published radius ratio. Fit quality χ²_red = ${fmt(fit.reducedChiSquared, 2)}. If your value differs, explain it through comparison-star quality, blending, aperture, ROI, noise, or model assumptions.`}
-      </div>
-    </section>
+    <TransitComparison fit={fit} target={target} />
   ) : (
     <div className="inquiry-lab-handoff">
       <p>
@@ -182,6 +155,10 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
       </button>
     </div>
   );
+
+  const resultSummarySlot = fit ? (
+    <TransitResultSummary fit={fit} targetName={target?.name} />
+  ) : undefined;
 
   const recordSave = fit
     ? {
@@ -221,6 +198,7 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
       selectionSlot={selectionSlot}
       analysisSlot={analysisSlot}
       comparisonSlot={comparisonSlot}
+      resultSummarySlot={resultSummarySlot}
       maxUnlockedStepIndex={fit ? undefined : 4}
       recordSave={recordSave}
     />

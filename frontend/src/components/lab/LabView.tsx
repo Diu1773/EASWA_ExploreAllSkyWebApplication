@@ -13,6 +13,13 @@ import { TransitLab } from './TransitLab';
 import { KmtnetLab } from './KmtnetLab';
 import { CmdExplorer } from './CmdExplorer';
 import { InquiryLayout } from '../inquiry';
+import { TransitComparison } from '../inquiry/TransitComparison';
+import { TransitResultSummary } from '../inquiry/TransitResultSummary';
+import {
+  loadTransitFit,
+  TRANSIT_FIT_SAVED_EVENT,
+  type SavedTransitFit,
+} from '../../workflows/transit/fitBridge';
 import { exoplanetTransitModule } from '../../explorationBlocks/configs';
 import {
   exoplanetAdapter,
@@ -107,6 +114,24 @@ export function LabView() {
   useEffect(() => {
     if (loadError) setErrorMessage(loadError);
   }, [loadError]);
+
+  // Read the fit the TransitLab bridges back, and refresh the moment a fit is
+  // saved (same-tab custom event) so Steps 5–6 fill with the learner's result.
+  const [transitFit, setTransitFit] = useState<SavedTransitFit | null>(null);
+  useEffect(() => {
+    if (!targetId) {
+      setTransitFit(null);
+      return;
+    }
+    const read = () => setTransitFit(loadTransitFit(targetId));
+    read();
+    window.addEventListener(TRANSIT_FIT_SAVED_EVENT, read);
+    window.addEventListener('focus', read);
+    return () => {
+      window.removeEventListener(TRANSIT_FIT_SAVED_EVENT, read);
+      window.removeEventListener('focus', read);
+    };
+  }, [targetId]);
 
   const handleRunPhotometry = async () => {
     if (!targetId || selectedIds.length === 0) return;
@@ -269,6 +294,12 @@ export function LabView() {
             seedRecordId={parsedSeedRecordId}
             learningMode={navigationContext.learningMode ?? 'guided'}
           />
+        }
+        comparisonSlot={
+          transitFit ? <TransitComparison fit={transitFit} target={target} /> : undefined
+        }
+        resultSummarySlot={
+          transitFit ? <TransitResultSummary fit={transitFit} targetName={target.name} /> : undefined
         }
       />
     );

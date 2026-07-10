@@ -35,6 +35,7 @@ interface InquiryLayoutProps<TContext = unknown> {
   introSlot?: ReactNode;
   selectionSlot?: ReactNode;
   comparisonSlot?: ReactNode;
+  resultSummarySlot?: ReactNode;
   maxUnlockedStepIndex?: number;
   recordSave?: RecordSaveConfig;
 }
@@ -49,6 +50,7 @@ export function InquiryLayout<TContext = unknown>({
   introSlot,
   selectionSlot,
   comparisonSlot,
+  resultSummarySlot,
   maxUnlockedStepIndex,
   recordSave,
 }: InquiryLayoutProps<TContext>) {
@@ -183,6 +185,7 @@ export function InquiryLayout<TContext = unknown>({
 
     return (
       <>
+        {resultSummarySlot}
         <ReflectionPanel
           prompts={result.interpretationPrompts}
           notes={notes}
