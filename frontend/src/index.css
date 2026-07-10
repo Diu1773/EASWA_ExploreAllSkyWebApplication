@@ -10386,3 +10386,29 @@ body {
 @media (max-width: 560px) {
   .inquiry-aperture-stage { width: 100% !important; height: auto !important; aspect-ratio: 1; }
 }
+
+/* ---------- ApertureSandbox v2: annulus + radial profile ---------- */
+.inquiry-aperture-figure { flex: 0 1 auto; min-width: 280px; }
+.inquiry-aperture-overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.inquiry-aperture-overlay .ring-aperture { fill: none; stroke: var(--accent); stroke-width: 0.6; }
+.inquiry-aperture-overlay .ring-annulus-fill { fill: none; stroke: rgba(154, 163, 176, 0.16); }
+.inquiry-aperture-overlay .ring-annulus-edge { fill: none; stroke: rgba(154, 163, 176, 0.75); stroke-width: 0.35; stroke-dasharray: 1.6 1.2; }
+.inquiry-aperture-legend { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 6px 0 0; font-size: 12px; color: var(--text-muted); }
+.inquiry-aperture-legend .key { display: inline-block; width: 14px; height: 14px; border-radius: 50%; flex: none; }
+.inquiry-aperture-legend .key-aperture { border: 2px solid var(--accent); }
+.inquiry-aperture-legend .key-annulus { border: 2px dashed rgba(154, 163, 176, 0.85); margin-left: 10px; }
+.inquiry-aperture-slider.muted strong { color: var(--text-secondary); }
+.inquiry-aperture-slider.muted input[type='range'] { accent-color: #6b7585; }
+.inquiry-aperture-profile { margin-top: 14px; }
+.inquiry-aperture-profile svg { width: 100%; max-width: 640px; height: auto; display: block; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-md); }
+.inquiry-aperture-profile-title { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
+.profile-axis { stroke: var(--border-light); stroke-width: 1; }
+.profile-tick { stroke: var(--border-light); stroke-width: 1; }
+.profile-text { fill: var(--text-muted); font-size: 10px; }
+.profile-line { fill: none; stroke: var(--text-primary); stroke-width: 1.6; }
+.profile-bgline { stroke: var(--accent); stroke-width: 1; stroke-dasharray: 4 3; opacity: 0.9; }
+.profile-zone-aperture { fill: rgba(232, 114, 42, 0.13); }
+.profile-zone-annulus { fill: rgba(154, 163, 176, 0.13); }
+.profile-text.zone-label-aperture { fill: var(--accent); font-weight: 600; }
+.profile-text.zone-label-annulus { fill: var(--text-secondary); font-weight: 600; }
+.profile-text.accent-muted { fill: var(--accent); }
