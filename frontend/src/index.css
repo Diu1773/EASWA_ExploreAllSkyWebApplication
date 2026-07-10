@@ -6099,6 +6099,7 @@ body {
 
 .inquiry-field-list {
   display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 8px;
   margin: 0;
 }
@@ -6106,11 +6107,26 @@ body {
 .inquiry-field-list div {
   display: grid;
   gap: 4px;
-  padding: 9px 0;
+  align-content: start;
+  padding: 9px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+/* compact variant keeps the slim single-column list for narrow panels */
+.inquiry-field-list.compact {
+  grid-template-columns: 1fr;
+}
+
+.inquiry-field-list.compact div {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
   border-bottom: 1px solid rgba(148, 163, 184, 0.12);
 }
 
-.inquiry-field-list div:last-child {
+.inquiry-field-list.compact div:last-child {
   border-bottom: 0;
 }
 
