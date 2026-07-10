@@ -3,6 +3,13 @@
 // exoplanet block reads it (keyed by target id) to drive the Step 5 comparison
 // (measured fit value vs NASA Exoplanet Archive) and to gate Steps 5-6.
 
+export interface SavedTransitFitCurve {
+  /** Orbital phase relative to the fitted T0, sorted ascending (downsampled). */
+  phase: number[];
+  flux: number[];
+  model: number[];
+}
+
 export interface SavedTransitFit {
   targetId: string;
   rpRs: number;
@@ -10,6 +17,9 @@ export interface SavedTransitFit {
   period: number;
   reducedChiSquared: number;
   savedAt: number;
+  t0?: number;
+  /** Downsampled light curve + best-fit model for the Step 5 HOPS-style overlay. */
+  curve?: SavedTransitFitCurve;
 }
 
 const KEY_PREFIX = 'easwa:transit-fit:';

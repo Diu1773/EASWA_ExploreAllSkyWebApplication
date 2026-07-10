@@ -219,6 +219,34 @@ export function useTransitFit({
       });
       patch({ fitResult: normalizedResponse });
       // Bridge the result to the guided block (Step 5 comparison + gating).
+      // Include a downsampled phase-folded curve so Step 5 can draw the
+      // HOPS-style data + best-fit + expected-model overlay.
+      let savedCurve;
+      {
+        const times = normalizedResponse.data_time;
+        const flux = normalizedResponse.data_flux;
+        const residuals = normalizedResponse.residuals;
+        if (
+          times.length > 1 &&
+          times.length === flux.length &&
+          flux.length === residuals.length &&
+          normalizedResponse.period > 0
+        ) {
+          const stride = Math.max(1, Math.ceil(times.length / 240));
+          const samples: Array<{ p: number; f: number; m: number }> = [];
+          for (let i = 0; i < times.length; i += stride) {
+            let p = (times[i] - normalizedResponse.t0) / normalizedResponse.period;
+            p -= Math.round(p);
+            samples.push({ p, f: flux[i], m: flux[i] - residuals[i] });
+          }
+          samples.sort((a, b) => a.p - b.p);
+          savedCurve = {
+            phase: samples.map((s) => Number(s.p.toFixed(6))),
+            flux: samples.map((s) => Number(s.f.toFixed(6))),
+            model: samples.map((s) => Number(s.m.toFixed(6))),
+          };
+        }
+      }
       saveTransitFit({
         targetId: normalizedResponse.target_id,
         rpRs: normalizedResponse.fitted_params.rp_rs,
@@ -226,6 +254,8 @@ export function useTransitFit({
         period: normalizedResponse.period,
         reducedChiSquared: normalizedResponse.fitted_params.reduced_chi_squared,
         savedAt: Date.now(),
+        t0: normalizedResponse.t0,
+        curve: savedCurve,
       });
     } catch (error) {
       console.error('Transit fitting failed', error);
