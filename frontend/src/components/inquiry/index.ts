@@ -1,4 +1,5 @@
 export { AnalysisControlPanel } from './AnalysisControlPanel';
+export { ApertureSandbox } from './ApertureSandbox';
 export { ComparisonPanel } from './ComparisonPanel';
 export { DataSourcePanel } from './DataSourcePanel';
 export { InquiryLayout } from './InquiryLayout';

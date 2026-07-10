@@ -8,7 +8,7 @@ import { moduleAdapters } from '../../explorationBlocks/adapters';
 import type { ExplorationModuleConfig } from '../../explorationBlocks/types';
 import { buildTargetHref, type ExplorerRouteContext } from '../../utils/explorerNavigation';
 import { formatConstellation } from '../../utils/targetFormat';
-import { InquiryLayout, SkyDataPanel } from '../inquiry';
+import { ApertureSandbox, InquiryLayout, SkyDataPanel } from '../inquiry';
 import { TransitComparison } from '../inquiry/TransitComparison';
 import { TransitResultSummary } from '../inquiry/TransitResultSummary';
 import { SkyExplorer } from '../sky/SkyExplorer';
@@ -221,6 +221,7 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
       introSlot={introSlot}
       selectionSlot={selectionSlot}
       metadataSlot={metadataSlot}
+      conditionsSlot={<ApertureSandbox />}
       analysisSlot={analysisSlot}
       comparisonSlot={comparisonSlot}
       resultSummarySlot={resultSummarySlot}

@@ -10341,3 +10341,48 @@ body {
 .inquiry-skydata-chip { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 8px 12px; }
 .inquiry-skydata-chip dt { font-size: 11px; color: var(--text-muted); margin-bottom: 2px; }
 .inquiry-skydata-chip dd { margin: 0; font-size: 14px; color: var(--text-heading); }
+
+/* ---------- Step 3 분석 준비: aperture concept sandbox (ApertureSandbox) ---------- */
+.inquiry-aperture-body { display: flex; gap: 18px; flex-wrap: wrap; align-items: flex-start; }
+.inquiry-aperture-stage {
+  position: relative; flex: 0 0 auto; max-width: 100%;
+  border: 1px solid var(--border); border-radius: var(--radius-md);
+  overflow: hidden; background: #05070c; cursor: crosshair; touch-action: none;
+}
+.inquiry-aperture-stage canvas { display: block; width: 100%; height: 100%; image-rendering: auto; }
+.inquiry-aperture-ring {
+  position: absolute; transform: translate(-50%, -50%);
+  border: 2px solid var(--accent); border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(5, 7, 12, 0.6);
+  pointer-events: none;
+}
+.inquiry-aperture-sim-tag {
+  position: absolute; left: 8px; bottom: 8px;
+  background: rgba(5, 7, 12, 0.75); color: var(--text-secondary);
+  font-size: 11px; padding: 2px 8px; border-radius: var(--radius-sm);
+  pointer-events: none;
+}
+.inquiry-aperture-controls { flex: 1 1 240px; min-width: 220px; display: grid; gap: 12px; align-content: start; }
+.inquiry-aperture-slider { display: grid; gap: 6px; font-size: 13px; color: var(--text-secondary); }
+.inquiry-aperture-slider strong { color: var(--accent); font-family: var(--font-mono, monospace); }
+.inquiry-aperture-slider input[type='range'] { width: 100%; accent-color: var(--accent); }
+.inquiry-aperture-stats {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 8px; margin: 0;
+}
+.inquiry-aperture-stats div {
+  background: var(--bg-secondary); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 8px 12px;
+}
+.inquiry-aperture-stats dt { font-size: 11px; color: var(--text-muted); margin-bottom: 2px; }
+.inquiry-aperture-stats dd { margin: 0; font-size: 16px; color: var(--text-heading); font-family: var(--font-mono, monospace); }
+.inquiry-aperture-stats dd.warn { color: var(--accent); }
+.inquiry-aperture-hint {
+  margin: 0; font-size: 13px; line-height: 1.6; color: var(--text-primary);
+  border-left: 3px solid var(--accent); background: var(--accent-dim);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0; padding: 8px 12px;
+}
+.inquiry-aperture-note { margin: 0; font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+@media (max-width: 560px) {
+  .inquiry-aperture-stage { width: 100% !important; height: auto !important; aspect-ratio: 1; }
+}

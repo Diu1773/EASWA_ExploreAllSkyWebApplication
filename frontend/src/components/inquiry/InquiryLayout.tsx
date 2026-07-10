@@ -35,6 +35,7 @@ interface InquiryLayoutProps<TContext = unknown> {
   introSlot?: ReactNode;
   selectionSlot?: ReactNode;
   metadataSlot?: ReactNode;
+  conditionsSlot?: ReactNode;
   comparisonSlot?: ReactNode;
   resultSummarySlot?: ReactNode;
   maxUnlockedStepIndex?: number;
@@ -51,6 +52,7 @@ export function InquiryLayout<TContext = unknown>({
   introSlot,
   selectionSlot,
   metadataSlot,
+  conditionsSlot,
   comparisonSlot,
   resultSummarySlot,
   maxUnlockedStepIndex,
@@ -150,10 +152,13 @@ export function InquiryLayout<TContext = unknown>({
 
     if (activeStep.kind === 'analysis') {
       return (
-        <AnalysisControlPanel
-          analysisConfig={module.analysisConfig}
-          conditions={result.analysisConditions}
-        />
+        <div className="inquiry-step-stack">
+          {conditionsSlot}
+          <AnalysisControlPanel
+            analysisConfig={module.analysisConfig}
+            conditions={result.analysisConditions}
+          />
+        </div>
       );
     }
 

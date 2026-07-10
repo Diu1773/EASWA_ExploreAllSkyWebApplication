@@ -12,7 +12,7 @@ import { LightCurvePlot } from './LightCurvePlot';
 import { TransitLab } from './TransitLab';
 import { KmtnetLab } from './KmtnetLab';
 import { CmdExplorer } from './CmdExplorer';
-import { InquiryLayout, SkyDataPanel } from '../inquiry';
+import { ApertureSandbox, InquiryLayout, SkyDataPanel } from '../inquiry';
 import { TransitComparison } from '../inquiry/TransitComparison';
 import { TransitResultSummary } from '../inquiry/TransitResultSummary';
 import {
@@ -318,6 +318,7 @@ export function LabView() {
             ]}
           />
         }
+        conditionsSlot={<ApertureSandbox />}
         analysisSlot={
           <TransitLab
             target={target}
