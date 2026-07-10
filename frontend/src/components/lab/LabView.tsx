@@ -12,7 +12,7 @@ import { LightCurvePlot } from './LightCurvePlot';
 import { TransitLab } from './TransitLab';
 import { KmtnetLab } from './KmtnetLab';
 import { CmdExplorer } from './CmdExplorer';
-import { InquiryLayout } from '../inquiry';
+import { InquiryLayout, SkyDataPanel } from '../inquiry';
 import { TransitComparison } from '../inquiry/TransitComparison';
 import { TransitResultSummary } from '../inquiry/TransitResultSummary';
 import {
@@ -285,6 +285,38 @@ export function LabView() {
               className="lab-header-preview"
             />
           </div>
+        }
+        metadataSlot={
+          <SkyDataPanel
+            targetName={target.name}
+            ra={target.ra}
+            dec={target.dec}
+            pixelScaleArcsec={21}
+            chips={[
+              {
+                label: { ko: 'TESS Sector', en: 'TESS sectors' },
+                value:
+                  observations.length > 0
+                    ? observations.map((obs) => obs.sector).filter(Boolean).join(' · ')
+                    : '—',
+              },
+              {
+                label: { ko: '케이던스', en: 'Cadence' },
+                value: observations[0]?.exposure_sec
+                  ? `${Math.round(observations[0].exposure_sec / 60)}분 (${observations[0].exposure_sec}초)`
+                  : '—',
+              },
+              {
+                label: { ko: '총 프레임', en: 'Total frames' },
+                value: observations.some((obs) => obs.frame_count)
+                  ? observations
+                      .reduce((sum, obs) => sum + (obs.frame_count ?? 0), 0)
+                      .toLocaleString()
+                  : '—',
+              },
+              { label: { ko: '픽셀 스케일', en: 'Pixel scale' }, value: '21″/px' },
+            ]}
+          />
         }
         analysisSlot={
           <TransitLab

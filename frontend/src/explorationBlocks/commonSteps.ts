@@ -71,10 +71,10 @@ const baseSteps: InquiryStepConfig[] = [
     id: 'step2_metadata',
     number: 2,
     kind: 'metadata',
-    title: { ko: '자료 출처 및 메타데이터 확인', en: 'Check Data Source and Metadata' },
+    title: { ko: '자료 확인 — 자료 출처와 관측 정보', en: 'Check the Data — Source and Observations' },
     summary: {
-      ko: '자료가 어디서 왔고 어떤 관측 조건을 갖는지 확인합니다.',
-      en: 'Inspect where the data came from and what observing conditions it carries.',
+      ko: '자료가 어디서 왔고 어떤 관측 조건을 갖는지 눈으로 확인합니다.',
+      en: 'See where the data came from and what observing conditions it carries.',
     },
     questions: [
       {
@@ -107,10 +107,10 @@ const baseSteps: InquiryStepConfig[] = [
     id: 'step3_analysis_conditions',
     number: 3,
     kind: 'analysis',
-    title: { ko: '분석 조건 설정 또는 확인', en: 'Set or Check Analysis Conditions' },
+    title: { ko: '분석 준비 — 분석 설정과 모델 가정 확인', en: 'Prepare the Analysis — Settings and Assumptions' },
     summary: {
-      ko: '자동 실행되는 계산도 어떤 조건과 가정으로 수행되는지 확인합니다.',
-      en: 'Check the conditions and assumptions used even when the analysis is automated.',
+      ko: '자동 실행되는 계산도 어떤 설정과 가정으로 수행되는지 미리 이해합니다. 실제 조정은 다음 단계에서 합니다.',
+      en: 'Understand the settings and assumptions behind the automated analysis before running it. You adjust them in the next step.',
     },
     questions: [
       {

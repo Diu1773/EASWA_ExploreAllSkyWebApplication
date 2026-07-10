@@ -18,8 +18,8 @@ import { StepPanel } from './StepPanel';
 const STEP_SHORT_LABELS: Record<string, Record<string, string>> = {
   step0_intro: { ko: '주제 소개', en: 'Intro' },
   step1_select: { ko: '대상 선택', en: 'Select' },
-  step2_metadata: { ko: '메타데이터', en: 'Metadata' },
-  step3_analysis_conditions: { ko: '분석 조건', en: 'Conditions' },
+  step2_metadata: { ko: '자료 확인', en: 'Data Check' },
+  step3_analysis_conditions: { ko: '분석 준비', en: 'Prep' },
   step4_run_visualize: { ko: '분석·시각화', en: 'Analyze' },
   step5_compare: { ko: '기준값 비교', en: 'Compare' },
   step6_reflect: { ko: '해석·기록', en: 'Reflect' },
@@ -34,6 +34,7 @@ interface InquiryLayoutProps<TContext = unknown> {
   analysisSlot?: ReactNode;
   introSlot?: ReactNode;
   selectionSlot?: ReactNode;
+  metadataSlot?: ReactNode;
   comparisonSlot?: ReactNode;
   resultSummarySlot?: ReactNode;
   maxUnlockedStepIndex?: number;
@@ -49,6 +50,7 @@ export function InquiryLayout<TContext = unknown>({
   analysisSlot,
   introSlot,
   selectionSlot,
+  metadataSlot,
   comparisonSlot,
   resultSummarySlot,
   maxUnlockedStepIndex,
@@ -139,6 +141,7 @@ export function InquiryLayout<TContext = unknown>({
     if (activeStep.kind === 'metadata') {
       return (
         <div className="inquiry-step-stack">
+          {metadataSlot}
           <DataSourcePanel dataSource={module.dataSource} />
           <MetadataPanel fields={result.metadata} />
         </div>

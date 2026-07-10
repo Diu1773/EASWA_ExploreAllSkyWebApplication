@@ -8,7 +8,7 @@ import { moduleAdapters } from '../../explorationBlocks/adapters';
 import type { ExplorationModuleConfig } from '../../explorationBlocks/types';
 import { buildTargetHref, type ExplorerRouteContext } from '../../utils/explorerNavigation';
 import { formatConstellation } from '../../utils/targetFormat';
-import { InquiryLayout } from '../inquiry';
+import { InquiryLayout, SkyDataPanel } from '../inquiry';
 import { TransitComparison } from '../inquiry/TransitComparison';
 import { TransitResultSummary } from '../inquiry/TransitResultSummary';
 import { SkyExplorer } from '../sky/SkyExplorer';
@@ -136,6 +136,30 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
     </div>
   );
 
+  const metadataSlot = target ? (
+    <SkyDataPanel
+      targetName={target.name}
+      ra={target.ra}
+      dec={target.dec}
+      pixelScaleArcsec={21}
+      chips={[
+        {
+          label: { ko: '탐구 대상', en: 'Target' },
+          value: target.name,
+        },
+        {
+          label: { ko: '문헌 공전 주기', en: 'Catalog period' },
+          value: target.period_days ? `${target.period_days} d` : '—',
+        },
+        { label: { ko: '픽셀 스케일', en: 'Pixel scale' }, value: '21″/px' },
+      ]}
+    />
+  ) : (
+    <div className="inquiry-lab-handoff">
+      <p>{lang === 'ko' ? '먼저 Step 1에서 대상을 선택하세요.' : 'Select a target in Step 1 first.'}</p>
+    </div>
+  );
+
   const archiveRpRs =
     target?.transit_depth_pct != null && target.transit_depth_pct > 0
       ? Math.sqrt(target.transit_depth_pct / 100)
@@ -196,6 +220,7 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
       contextSlot={contextSlot}
       introSlot={introSlot}
       selectionSlot={selectionSlot}
+      metadataSlot={metadataSlot}
       analysisSlot={analysisSlot}
       comparisonSlot={comparisonSlot}
       resultSummarySlot={resultSummarySlot}

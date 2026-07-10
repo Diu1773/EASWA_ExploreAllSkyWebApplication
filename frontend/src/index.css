@@ -10297,3 +10297,31 @@ body {
 .transit-result-metric.primary .metric-value { color: var(--accent); }
 .transit-result-metric .metric-sub { font-size: 11px; color: var(--text-secondary); }
 .transit-result-note { font-size: 12px; color: var(--text-secondary); margin: 0; line-height: 1.6; }
+
+/* ---------- Step 2 자료 확인: DSS sky + TESS pixel grid (SkyDataPanel) ---------- */
+.inquiry-skydata-body { display: flex; gap: 18px; flex-wrap: wrap; align-items: flex-start; }
+.inquiry-skydata-figure { flex: 1 1 340px; min-width: 280px; max-width: 560px; }
+.inquiry-skydata-toggles { display: flex; gap: 6px; margin-bottom: 8px; }
+.inquiry-skydata-toggle {
+  background: var(--bg-tertiary); color: var(--text-secondary);
+  border: 1px solid var(--border-light); border-radius: var(--radius-sm);
+  padding: 3px 12px; font-size: 12px; cursor: pointer;
+}
+.inquiry-skydata-toggle:hover { color: var(--text-primary); }
+.inquiry-skydata-toggle.active {
+  background: var(--accent-dim); color: var(--accent);
+  border-color: var(--accent); font-weight: 600;
+}
+.inquiry-skydata-stage { position: relative; border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; background: #05070c; }
+.inquiry-skydata-stage img { display: block; width: 100%; aspect-ratio: 8 / 5; object-fit: cover; }
+.inquiry-skydata-grid { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.inquiry-skydata-grid line { stroke: rgba(154, 163, 176, 0.4); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.inquiry-skydata-grid .inquiry-skydata-grid-highlight { fill: none; stroke: var(--accent); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.inquiry-skydata-grid .inquiry-skydata-scalebar { stroke: var(--text-primary); stroke-width: 2.5; vector-effect: non-scaling-stroke; }
+.inquiry-skydata-grid .inquiry-skydata-scaletext { fill: var(--text-primary); font-size: 13px; paint-order: stroke; stroke: rgba(5, 7, 12, 0.85); stroke-width: 3px; }
+.inquiry-skydata-fallback { padding: 28px 16px; font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+.inquiry-skydata-caption { margin: 6px 0 0; font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+.inquiry-skydata-chips { flex: 1 1 220px; min-width: 200px; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin: 0; }
+.inquiry-skydata-chip { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 8px 12px; }
+.inquiry-skydata-chip dt { font-size: 11px; color: var(--text-muted); margin-bottom: 2px; }
+.inquiry-skydata-chip dd { margin: 0; font-size: 14px; color: var(--text-heading); }

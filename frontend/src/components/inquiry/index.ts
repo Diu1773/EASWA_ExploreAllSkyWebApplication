@@ -6,6 +6,7 @@ export { MetadataPanel } from './MetadataPanel';
 export { ModuleCard } from './ModuleCard';
 export { ModuleSelector } from './ModuleSelector';
 export { ReflectionPanel } from './ReflectionPanel';
+export { SkyDataPanel } from './SkyDataPanel';
 export { ReportSummaryPanel } from './ReportSummaryPanel';
 export { StepNavigator } from './StepNavigator';
 export { StepPanel } from './StepPanel';
