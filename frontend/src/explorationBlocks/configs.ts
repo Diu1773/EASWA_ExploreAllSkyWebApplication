@@ -206,7 +206,7 @@ export const exoplanetTransitModule: ExplorationModuleConfig = {
   ],
   teacherNotes: [
     { ko: '정답 수치보다 차이 원인을 자료와 조건으로 설명하는 활동에 초점을 둔다.', en: 'Focus on explaining differences through data and conditions rather than matching a single numeric answer.' },
-    { ko: '입문형은 권장 설정을 따르고, 심화형은 aperture와 ROI 변경 효과를 비교한다.', en: 'Guided mode can follow recommended settings; advanced mode can compare aperture and ROI choices.' },
+    { ko: '권장 설정으로 시작하고, 익숙해지면 구경과 ROI를 바꿔 결과가 어떻게 달라지는지 비교해 본다.', en: 'Start with the recommended settings; once comfortable, change the aperture and ROI to compare how results shift.' },
   ],
   classroomUse: {
     suggestedTime: { ko: '45~90분', en: '45-90 minutes' },
