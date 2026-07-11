@@ -84,7 +84,7 @@ export const exoplanetTransitModule: ExplorationModuleConfig = {
           type: 'ox',
           question: { ko: 'TESS는 픽셀이 커서 주변 별빛이 섞이면(blending) 측정한 식 깊이가 실제보다 얕게 나올 수 있다.', en: 'Because TESS pixels are large, blending from nearby stars can make the measured transit depth shallower than the true value.' },
           correct: 'O',
-          explanation: { ko: '혼입광이 신호를 희석해 식 깊이를 과소평가하게 만듭니다.', en: 'Blended light dilutes the signal, biasing the depth low.' },
+          explanation: { ko: '주변 별빛 오염이 신호를 희석해 식 깊이를 과소평가하게 만듭니다.', en: 'Blended light dilutes the signal, biasing the depth low.' },
         },
       ],
     },

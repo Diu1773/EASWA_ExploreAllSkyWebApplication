@@ -217,7 +217,7 @@ const STEP_GUIDES: Record<TransitStep, GuideQuestion[]> = {
         { ko: '데이터 품질(TESS 노이즈)', en: 'Data quality (TESS noise)' },
       ],
       correct: '데이터 품질(TESS 노이즈)',
-      explanation: { ko: '지상 관측과 달리 TESS는 우주 망원경이라 대기 영향은 없지만, TESS 자체의 픽셀 크기(21"/px)로 인한 혼입(contamination)이 주요 오차 원인입니다.', en: 'Unlike ground-based observations, TESS avoids atmospheric effects as a space telescope. However, its large pixel scale (21\"/px) causes flux contamination, which is the main error source.' },
+      explanation: { ko: '지상 관측과 달리 TESS는 우주 망원경이라 대기 영향은 없지만, TESS 자체의 픽셀 크기(21"/px)로 인한 오염(contamination)이 주요 오차 원인입니다.', en: 'Unlike ground-based observations, TESS avoids atmospheric effects as a space telescope. However, its large pixel scale (21\"/px) causes flux contamination, which is the main error source.' },
     },
     { type: 'open', id: 'rec_q3', text: { ko: '이번 탐구에서 가장 흥미로웠던 점이나 추가로 알고 싶은 것을 적어보자.', en: 'Write down the most interesting aspect of this investigation, or what you would like to explore further.' } },
   ],
@@ -628,7 +628,7 @@ const TRANSIT_RECORD_KO: Record<string, RecordQuestionLocale> = {
     label: '분석 과정에서 확인한 문제를 선택하세요.',
     options: {
       few_comparisons: '적절한 비교성이 부족함',
-      blended_field: '주변 별빛이 혼입됨',
+      blended_field: '주변 별빛에 오염됨',
       noisy_curve: '광도곡선 잡음이 큼',
       field_too_small: '분석 시야가 너무 좁음',
       none: '뚜렷한 문제 없음',
@@ -643,7 +643,7 @@ const TRANSIT_RECORD_KO: Record<string, RecordQuestionLocale> = {
     placeholder:
       'Rp/R*, 식 깊이 또는 공전 주기를 비교하고, 차이가 발생한 원인을 자료와 분석 조건을 근거로 설명하세요.',
     helpText:
-      '비교성 품질, 별빛 혼입, 구경 크기, 선택한 시간 구간, 잡음, 모델 가정을 고려하세요.',
+      '비교성 품질, 별빛 오염, 구경 크기, 선택한 시간 구간, 잡음, 모델 가정을 고려하세요.',
   },
   next_step: {
     label: '분석을 다시 수행한다면 무엇을 바꾸겠는가?',
@@ -4070,7 +4070,7 @@ export function TransitLab({
                   </div>
                   <p className="transit-reference-note">
                     {lang === 'ko'
-                      ? '기준 Rp/R*는 카탈로그 식 깊이에 Rp/R* = √(depth)를 적용한 비교용 추정값입니다. 직접 출판된 반지름비와 동일한 값으로 간주하지 말고, 비교성 품질·별빛 혼입·구경·ROI·잡음·모델 가정을 근거로 차이를 설명하세요.'
+                      ? '기준 Rp/R*는 카탈로그 식 깊이에 Rp/R* = √(depth)를 적용한 비교용 추정값입니다. 직접 출판된 반지름비와 동일한 값으로 간주하지 말고, 비교성 품질·별빛 오염·구경·ROI·잡음·모델 가정을 근거로 차이를 설명하세요.'
                       : 'The reference Rp/R* is estimated from the catalog transit depth using Rp/R* = sqrt(depth). It is a comparison benchmark, not a direct published radius-ratio measurement. Explain the difference using comparison-star quality, blending, aperture choice, ROI, noise, and model assumptions.'}
                   </p>
                 </div>

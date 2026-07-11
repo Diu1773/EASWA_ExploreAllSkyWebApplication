@@ -260,7 +260,7 @@ export function TransitComparison({ fit, target }: TransitComparisonProps) {
 
       <div className="inquiry-callout">
         {lang === 'ko'
-          ? '기준 Rp/R*는 카탈로그 식 깊이에 Rp/R* = √(depth)를 적용한 비교용 추정값입니다 — 출판된 반지름비와 동일하게 보지 마세요. 측정값이 기준값과 다르다면 비교성 품질·별빛 혼입(blending)·aperture·ROI·잡음·모델 가정을 근거로 차이를 설명하세요.'
+          ? '기준 Rp/R*는 카탈로그 식 깊이에 Rp/R* = √(depth)를 적용한 비교용 추정값입니다 — 출판된 반지름비와 동일하게 보지 마세요. 측정값이 기준값과 다르다면 비교성 품질·별빛 오염(blending)·aperture·ROI·잡음·모델 가정을 근거로 차이를 설명하세요.'
           : 'The reference Rp/R* is √(depth) from the catalog depth — a comparison estimate, not the published radius ratio. If your value differs, explain it via comparison-star quality, blending, aperture, ROI, noise, or model assumptions.'}
       </div>
     </section>

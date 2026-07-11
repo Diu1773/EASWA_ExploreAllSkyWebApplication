@@ -462,7 +462,7 @@ export function ApertureSandbox() {
             <dd>{stats.enclosed.toFixed(0)}%</dd>
           </div>
           <div>
-            <dt>{ko ? '이웃별 혼입 (구경)' : 'Neighbor in aperture'}</dt>
+            <dt>{ko ? '이웃별 오염 (구경)' : 'Neighbor in aperture'}</dt>
             <dd className={stats.contamination > 5 ? 'warn' : ''}>
               {stats.contamination.toFixed(1)}%
             </dd>

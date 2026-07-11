@@ -10436,3 +10436,20 @@ body {
 .hops-zero { stroke: var(--accent); stroke-width: 1; opacity: 0.8; }
 .hops-legend rect { fill: rgba(11, 14, 20, 0.82); stroke: var(--border-light); stroke-width: 1; }
 .transit-hops-caption { margin: 6px 0 0; font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+
+
+/* ---------- Step hierarchy slim-down: one real title per page ---------- */
+.inquiry-step-panel-head { display: flex; align-items: baseline; gap: 10px 14px; flex-wrap: wrap; }
+.inquiry-step-panel-head h2 { margin: 0; }
+.inquiry-step-panel-head p { margin: 0; font-size: 12.5px; color: var(--text-muted); flex-basis: 100%; }
+@media (min-width: 900px) { .inquiry-step-panel-head p { flex-basis: auto; } }
+.inquiry-prompt {
+  background: transparent !important;
+  border: 0 !important;
+  border-left: 3px solid var(--accent) !important;
+  border-radius: 0 !important;
+  padding: 4px 12px !important;
+}
+.inquiry-prompt strong { font-size: 13.5px; font-weight: 600; color: var(--text-primary); }
+.inquiry-prompt span { font-size: 12px; color: var(--text-muted); }
+.inquiry-info-panel > h3 { font-size: 1.02rem; margin: 2px 0 12px; }
