@@ -5273,7 +5273,9 @@ body {
 
 .inquiry-layout {
   min-height: 100%;
-  padding: 22px;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 26px clamp(22px, 4vw, 56px) 56px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent 18%),
     #090d13;
