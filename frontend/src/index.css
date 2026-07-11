@@ -10471,7 +10471,7 @@ body {
 
 /* ---------- QA sweep batch: empty-space & stretch fixes ---------- */
 /* #4 hero CTA should size to its label, not stretch full-width */
-.home-hero-actions .btn-primary, .home-hero-actions .btn-secondary { flex: 0 0 auto; align-self: flex-start; }
+.home-hero-actions .btn-primary, .home-hero-actions .btn-secondary { flex: 0 0 auto; align-self: flex-start; width: fit-content; min-width: 260px; }
 /* #5 selection 'next action' panel: cap width so content isn't marooned left */
 .inquiry-selection-card { max-width: 760px; }
 /* #6 sky-data chips: compact 2-col block beside the image instead of stretching */

@@ -68,3 +68,17 @@
 확대 크롭: zoom_step3_plot.png, zoom_step3_sliders.png, zoom_step4_substepper_1440.png, zoom_step4_substepper_1900.png
 
 캡처 스크립트: `...\scratchpad\cap2\qa_sweep_full.js` (domcontentloaded + 본문 폴링, 내부 스크롤 해제 후 fullPage — networkidle 미사용)
+
+---
+
+# 2회차 스윕 (2026-07-11, /qa-sweep 스킬 첫 실행)
+
+- 대상: 18캡처 (홈·인트로·Step0~6 × 1440/1900), 커밋 f105cfb 이후 폴리싱 반영 빌드.
+- 직전 배치에서 라이브 검증된 화면(인트로·Step2·3·5·6, Step4@1900)은 회귀 스팟만, 미확인 화면(홈·Step0·1·Step4@1440)은 정밀 검사.
+
+| # | 화면 | 위치 | 문제 | 심각도 | 처리 |
+|---|---|---|---|---|---|
+| R1 | home_1900/1440 | 히어로 CTA | 1회차 #4 수정이 무효했음 — 버튼이 여전히 컨테이너 전폭(1096px). 원인: flex/align 지정만으로는 부족(명시 width 부재 시 스트레치 지속). | 하(재발) | **자동 수정**: `.home-hero-actions .btn-*`에 `width: fit-content; min-width: 260px` — computed 260px 확인 + 1900 재캡처 육안 통과 |
+
+- 그 외 신규 발견 0건. Step4 하위 스텝퍼는 1440에서도 6단계 전부 표시(줄바꿈) 확인.
+- 1회차 보류 항목 현황: #21(랩 사이드바)·#22(홈 카드 이미지 톤) — 의도적 보류 유지 (자산/에셋 필요).
