@@ -372,14 +372,8 @@ export function ApertureSandbox() {
             >
               {ko ? '중심에서의 거리 (px)' : 'Distance from center (px)'}
             </text>
-            <text
-              className="profile-text"
-              x={14}
-              y={plot.T + plot.innerH / 2}
-              textAnchor="middle"
-              transform={`rotate(-90 14 ${plot.T + plot.innerH / 2})`}
-            >
-              {ko ? '픽셀 값' : 'Pixel value'}
+            <text className="profile-text" x={8} y={plot.T - 4} textAnchor="start">
+              {ko ? '↑ 픽셀 값' : '↑ pixel value'}
             </text>
             {/* FWHM marker */}
             <line
@@ -405,8 +399,8 @@ export function ApertureSandbox() {
             />
             <text
               className="profile-text accent-muted"
-              x={plot.L + plot.innerW - 4}
-              y={plot.yOf(stats.bgEst) - 5}
+              x={plot.L + plot.innerW - 10}
+              y={plot.yOf(stats.bgEst) - 7}
               textAnchor="end"
             >
               {ko ? `배경 추정 ${stats.bgEst.toFixed(1)}` : `bg est. ${stats.bgEst.toFixed(1)}`}

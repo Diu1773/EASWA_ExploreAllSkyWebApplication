@@ -95,8 +95,7 @@ export function InquiryLayout<TContext = unknown>({
           {introSlot && <div className="inquiry-intro-media">{introSlot}</div>}
           <div className="inquiry-two-column">
           <section className="inquiry-info-panel">
-            <span className="inquiry-panel-kicker">{lang === 'ko' ? '학습 목표' : 'Learning Goals'}</span>
-            <h3>{localize(module.title, lang)}</h3>
+            <span className="inquiry-panel-kicker">{lang === 'ko' ? '이 탐구에서 할 일' : 'What You’ll Do'}</span>
             <ul className="inquiry-check-list">
               {module.learningGoals.map((goal, index) => (
                 <li key={`${localize(goal, lang)}-${index}`}>{localize(goal, lang)}</li>
@@ -129,7 +128,6 @@ export function InquiryLayout<TContext = unknown>({
       return (
         <section className="inquiry-info-panel inquiry-selection-card">
           <span className="inquiry-panel-kicker">{lang === 'ko' ? '다음 행동' : 'Next Action'}</span>
-          <h3>{lang === 'ko' ? '대상 또는 자료 선택' : 'Select a Target or Dataset'}</h3>
           <p>{primaryAction?.helperText ? localize(primaryAction.helperText, lang) : localize(module.entry.helperText, lang)}</p>
           {primaryAction && (
             <Link to={primaryAction.href} className="btn-primary inquiry-panel-action">

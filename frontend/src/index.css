@@ -2350,6 +2350,8 @@ body {
 .transit-step-indicator {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  row-gap: 12px;
   gap: 0;
   padding: 16px 20px;
   background: rgba(255, 255, 255, 0.015);
@@ -6101,7 +6103,7 @@ body {
 
 .inquiry-field-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 8px;
   margin: 0;
 }
@@ -10400,7 +10402,7 @@ body {
 .inquiry-aperture-legend .key-aperture { border: 2px solid var(--accent); }
 .inquiry-aperture-legend .key-annulus { border: 2px dashed rgba(154, 163, 176, 0.85); margin-left: 10px; }
 .inquiry-aperture-slider.muted strong { color: var(--text-secondary); }
-.inquiry-aperture-slider.muted input[type='range'] { accent-color: #6b7585; }
+.inquiry-aperture-slider.muted input[type='range'] { accent-color: #b06a3a; }
 .inquiry-aperture-profile { margin-top: 14px; }
 .inquiry-aperture-profile svg { width: 100%; max-width: 640px; height: auto; display: block; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-md); }
 .inquiry-aperture-profile-title { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
@@ -10465,3 +10467,15 @@ body {
 /* consistent card heights in field grids */
 .inquiry-field-list div { min-height: 64px; }
 .inquiry-selfcheck-options.choice { flex-direction: row; align-items: flex-start; }
+
+
+/* ---------- QA sweep batch: empty-space & stretch fixes ---------- */
+/* #4 hero CTA should size to its label, not stretch full-width */
+.home-hero-actions .btn-primary, .home-hero-actions .btn-secondary { flex: 0 0 auto; align-self: flex-start; }
+/* #5 selection 'next action' panel: cap width so content isn't marooned left */
+.inquiry-selection-card { max-width: 760px; }
+/* #6 sky-data chips: compact 2-col block beside the image instead of stretching */
+.inquiry-skydata-chips { align-self: flex-start; flex: 0 1 380px; grid-template-columns: repeat(2, minmax(150px, 1fr)); }
+/* #8 target header: keep copy + thumbnail together rather than pushed to far edges */
+.inquiry-target-context { justify-content: flex-start; }
+.inquiry-target-context .lab-header-preview { margin-left: auto; }
