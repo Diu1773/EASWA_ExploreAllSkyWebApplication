@@ -18,7 +18,7 @@ export function SelfCheckPanel({ items }: SelfCheckPanelProps) {
 
   return (
     <section className="inquiry-selfcheck">
-      <span className="inquiry-panel-kicker">{lang === 'ko' ? '생각해보기' : 'Check Yourself'}</span>
+      <span className="inquiry-panel-kicker">{lang === 'ko' ? '🤔 생각해보기' : '🤔 Check Yourself'}</span>
       {items.map((item) => {
         const answer = answers[item.id];
         const answered = answer !== undefined;

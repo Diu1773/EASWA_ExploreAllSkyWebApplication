@@ -462,7 +462,7 @@ export function ApertureSandbox() {
             </dd>
           </div>
           <div>
-            <dt>{ko ? '배경 추정 (고리 평균, 참값 20)' : 'Background est. (true 20)'}</dt>
+            <dt>{ko ? '배경 추정 (참값 20)' : 'Background est. (true 20)'}</dt>
             <dd className={Math.abs(stats.bgEst - BG) > 1.5 ? 'warn' : ''}>
               {stats.bgEst.toFixed(1)}
             </dd>

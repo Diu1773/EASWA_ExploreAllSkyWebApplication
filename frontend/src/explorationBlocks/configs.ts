@@ -186,8 +186,8 @@ export const exoplanetTransitModule: ExplorationModuleConfig = {
   comparisonConfig: {
     referenceSource: 'NASA Exoplanet Archive',
     comparisonValues: [
-      { id: 'depth', label: { ko: 'Transit depth', en: 'Transit depth' }, value: { ko: '카탈로그 depth와 측정 depth 비교', en: 'Catalog depth compared with measured depth' } },
-      { id: 'rp_rs', label: 'Rp/R*', value: { ko: 'sqrt(depth) 기준값과 fit 결과 비교', en: 'sqrt(depth) reference compared with fit result' } },
+      { id: 'depth', label: { ko: '식 깊이 (transit depth)', en: 'Transit depth' }, value: { ko: '카탈로그 depth와 측정 depth 비교', en: 'Catalog depth compared with measured depth' } },
+      { id: 'rp_rs', label: { ko: '반지름비 Rp/R*', en: 'Radius ratio Rp/R*' }, value: { ko: 'sqrt(depth) 기준값과 fit 결과 비교', en: 'sqrt(depth) reference compared with fit result' } },
       { id: 'period', label: { ko: '공전 주기', en: 'Orbital period' }, value: { ko: '카탈로그 주기와 fit 주기 비교', en: 'Catalog period compared with fitted period' } },
     ],
     qualityCriteria: [

@@ -266,7 +266,7 @@ function LightCurveOverlay({ phase }: { phase: number }) {
         <span
           className={`transit3d-curve-label-dip${inTransit ? ' is-active' : ''}`}
         >
-          <span className="transit3d-curve-line transit3d-curve-line--dip" /> transit 깊이 −{(depth * 100).toFixed(1)}%
+          <span className="transit3d-curve-line transit3d-curve-line--dip" /> transit 깊이 −{(depth * 100).toFixed(1)}% (세로축 과장)
         </span>
       </div>
       <svg

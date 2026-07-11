@@ -10479,3 +10479,9 @@ body {
 /* #8 target header: keep copy + thumbnail together rather than pushed to far edges */
 .inquiry-target-context { justify-content: flex-start; }
 .inquiry-target-context .lab-header-preview { margin-left: auto; }
+
+/* ---------- QA sweep batch 2 ---------- */
+/* #2 intro 3D stage: cap width so it doesn't become a huge near-empty box on wide screens */
+.transit3d-stage { max-width: 920px; margin-left: auto; margin-right: auto; }
+/* #16 sandbox stat chips: pin values to a shared bottom baseline even when labels wrap */
+.inquiry-aperture-stats div { display: flex; flex-direction: column; justify-content: space-between; gap: 4px; }

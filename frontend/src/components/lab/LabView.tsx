@@ -30,6 +30,7 @@ import type {
   LightCurveResponse,
 } from '../../types/photometry';
 import { buildDssPreviewUrl } from '../../utils/surveys';
+import { formatTargetType } from '../../utils/targetFormat';
 import {
   alignExplorerContext,
   buildLabHref,
@@ -37,7 +38,7 @@ import {
   buildTargetHref,
   getExplorerContext,
 } from '../../utils/explorerNavigation';
-import { useLangStore } from '../../i18n';
+import { useLangStore, useT } from '../../i18n';
 import { formatConstellation } from '../../utils/targetFormat';
 
 // Map topic_id → workflow identifier
@@ -48,6 +49,7 @@ const TOPIC_WORKFLOW: Record<string, string> = {
 
 export function LabView() {
   const lang = useLangStore((s) => s.lang);
+  const t = useT();
   const { targetId } = useParams<{ targetId: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const { target, observations, error: loadError } = useLabData(targetId);
@@ -218,7 +220,7 @@ export function LabView() {
             <div className="lab-header-copy">
               <h2>{lang === 'ko' ? '미시중력렌즈 Lab' : 'Microlensing Lab'}: {target.name}</h2>
               <div className="target-meta">
-                <span className="badge">{target.type}</span>
+                <span className="badge">{formatTargetType(target.type, t)}</span>
                 <span>{formatConstellation(target.constellation, lang)}</span>
                 <span>KMTNet</span>
               </div>
@@ -274,7 +276,7 @@ export function LabView() {
               </Link>
               <h2>{lang === 'ko' ? '식현상 Lab' : 'Transit Lab'}: {target.name}</h2>
               <div className="target-meta">
-                <span className="badge">{target.type}</span>
+                <span className="badge">{formatTargetType(target.type, t)}</span>
                 <span>{formatConstellation(target.constellation, lang)}</span>
                 {target.period_days && <span>P = {target.period_days} d</span>}
               </div>
@@ -302,9 +304,12 @@ export function LabView() {
               },
               {
                 label: { ko: '케이던스', en: 'Cadence' },
-                value: observations[0]?.exposure_sec
-                  ? `${Math.round(observations[0].exposure_sec / 60)}분 (${observations[0].exposure_sec}초)`
-                  : '—',
+                value: (() => {
+                  const exposures = [...new Set(observations.map((obs) => obs.exposure_sec).filter(Boolean))] as number[];
+                  if (exposures.length === 0) return '—';
+                  if (exposures.length === 1) return `${Math.round(exposures[0] / 60)}분 (${exposures[0]}초)`;
+                  return `섹터별 상이 (${Math.min(...exposures)}–${Math.max(...exposures)}초)`;
+                })(),
               },
               {
                 label: { ko: '총 프레임', en: 'Total frames' },
@@ -348,7 +353,7 @@ export function LabView() {
           <div className="lab-header-copy">
             <h2>{lang === 'ko' ? '분석 Lab' : 'Lab'}: {target.name}</h2>
             <div className="target-meta">
-              <span className="badge">{target.type}</span>
+              <span className="badge">{formatTargetType(target.type, t)}</span>
               <span>{formatConstellation(target.constellation, lang)}</span>
               {target.period_days && <span>P = {target.period_days} d</span>}
             </div>

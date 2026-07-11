@@ -274,7 +274,7 @@ export function InquiryLayout<TContext = unknown>({
             <span className="inquiry-step-progress">
               {activeStep.number} / {module.steps[module.steps.length - 1].number}
             </span>
-            {stepIndex < module.steps.length - 1 && (
+            {stepIndex < module.steps.length - 1 ? (
               <button
                 type="button"
                 className="btn-primary"
@@ -282,6 +282,18 @@ export function InquiryLayout<TContext = unknown>({
                 onClick={() => goToStep(1)}
               >
                 {lang === 'ko' ? '다음 단계' : 'Next'} →
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() =>
+                  document
+                    .querySelector('.inquiry-record-fields')
+                    ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }
+              >
+                {lang === 'ko' ? '탐구 마무리 — 기록 작성하기 ↑' : 'Wrap Up — Write Your Notes ↑'}
               </button>
             )}
           </div>

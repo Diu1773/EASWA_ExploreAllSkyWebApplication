@@ -75,7 +75,7 @@ export const strings: Record<Lang, Record<string, string>> = {
     'detail.period': '주기',
     'detail.source': '출처',
     'detail.vHost': 'V 등급 (주성)',
-    'detail.type.transitPlanet': '외계행성 식',
+    'detail.type.transitPlanet': '식현상 행성',
     'detail.source.nasaArchive': 'NASA 외계행성 아카이브',
     'detail.source.curatedFallback': '큐레이션 대체 데이터',
 

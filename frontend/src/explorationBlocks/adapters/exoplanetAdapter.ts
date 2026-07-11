@@ -65,7 +65,7 @@ function derivedValuesFromTarget(target: Target | null | undefined): KeyValueFie
 
   return [
     literalField('target_depth', { ko: '카탈로그 식 깊이', en: 'Catalog transit depth' }, `${formatNumber(target.transit_depth_pct, 3)}%`),
-    literalField('estimated_rp_rs', 'sqrt(depth) Rp/R*', estimatedRpRs === null ? 'n/a' : estimatedRpRs.toFixed(5)),
+    literalField('estimated_rp_rs', { ko: '반지름비 Rp/R* (√depth 추정)', en: 'Radius ratio Rp/R* (√depth estimate)' }, estimatedRpRs === null ? 'n/a' : estimatedRpRs.toFixed(5)),
     literalField('period', { ko: '카탈로그 주기', en: 'Catalog period' }, `${formatNumber(target.period_days, 6)} d`),
   ];
 }
