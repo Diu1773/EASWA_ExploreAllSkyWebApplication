@@ -16,7 +16,7 @@ export function AnalysisControlPanel({ analysisConfig, conditions }: AnalysisCon
       <h3>{localize(analysisConfig.method, lang)}</h3>
       <div className="inquiry-callout">
         {lang === 'ko'
-          ? '자동화된 분석도 입력 조건과 모델 가정을 숨기지 않습니다.'
+          ? '아래는 이번 분석에 실제로 쓰이는 설정과 가정입니다 — 결과가 이상하게 나오면 여기로 돌아와 확인하세요.'
           : 'Automated analysis still exposes input conditions and model assumptions.'}
       </div>
       <dl className="inquiry-field-list">

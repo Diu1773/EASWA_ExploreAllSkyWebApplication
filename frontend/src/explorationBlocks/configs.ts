@@ -141,28 +141,28 @@ export const exoplanetTransitModule: ExplorationModuleConfig = {
     parameters: [
       {
         id: 'aperture',
-        label: { ko: 'Aperture / annulus', en: 'Aperture / annulus' },
-        value: { ko: '학생이 조정 가능', en: 'Student-adjustable' },
+        label: { ko: '측광 구경·배경 고리', en: 'Aperture and sky annulus' },
+        value: { ko: '기본 r=2.5px — 다음 단계에서 직접 조절', en: 'Default r=2.5px — you adjust it in the next step' },
         adjustable: true,
-        description: { ko: '목표별과 비교성의 flux 측정 범위', en: 'Flux measurement region for target and comparison stars' },
+        description: { ko: '별 주위 원 안의 빛을 더해 밝기를 재고, 고리에서 잰 배경을 뺍니다.', en: 'Light inside the circle is summed; sky measured in the ring is subtracted.' },
       },
       {
         id: 'fit_roi',
-        label: { ko: 'Fit ROI', en: 'Fit ROI' },
-        value: { ko: 'Step 4에서 선택한 BJD 또는 phase 구간', en: 'BJD or phase interval selected in Step 4' },
+        label: { ko: '분석 구간 (ROI)', en: 'Fit range (ROI)' },
+        value: { ko: '식 전후가 함께 들어가게 다음 단계에서 직접 선택', en: 'You pick it in the next step — include time before and after the dip' },
         adjustable: true,
       },
       {
         id: 'model',
         label: { ko: '모델', en: 'Model' },
-        value: { ko: 'batman 기반 transit fit 또는 단순 모델 fallback', en: 'batman transit fit or simplified fallback' },
+        value: { ko: '행성이 별을 가리는 밝기 변화 곡선을 데이터에 맞춥니다 (batman 모델)', en: 'Fits the transit dimming curve to your data (batman model)' },
         adjustable: false,
       },
     ],
     assumptions: [
-      { ko: '비교성 ensemble은 목표별 외부 요인을 보정하는 안정적 기준으로 사용된다.', en: 'The comparison ensemble is treated as a stable reference for correcting external effects.' },
-      { ko: '모델 적합값은 ROI와 전처리 조건에 의존한다.', en: 'Fit values depend on ROI and preprocessing conditions.' },
-      { ko: '카탈로그 depth 기반 Rp/R*는 비교 기준이지 절대 정답이 아니다.', en: 'Catalog-depth-based Rp/R* is a comparison benchmark, not an unquestioned answer.' },
+      { ko: '여러 비교성의 평균을 기준 삼아, 목표별의 진짜 밝기 변화만 남깁니다.', en: 'Several comparison stars are averaged so only the target’s real variation remains.' },
+      { ko: '적합 결과는 어떤 구간(ROI)을 골랐는지에 따라 달라질 수 있습니다.', en: 'The fitted values can change with the range (ROI) you choose.' },
+      { ko: '카탈로그 값은 비교 기준일 뿐, 절대 정답이 아닙니다.', en: 'Catalog values are a benchmark for comparison, not the “right answer”.' },
     ],
     qualitySignals: [
       { ko: '비교성 RMS/MAD', en: 'Comparison-star RMS/MAD' },
