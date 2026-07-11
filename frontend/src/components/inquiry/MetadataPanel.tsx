@@ -12,7 +12,7 @@ export function MetadataPanel({ fields, title }: MetadataPanelProps) {
 
   return (
     <section className="inquiry-info-panel">
-      <span className="inquiry-panel-kicker">{lang === 'ko' ? '메타데이터' : 'Metadata'}</span>
+      <span className="inquiry-panel-kicker">{lang === 'ko' ? '자료 정보' : 'Data Info'}</span>
       <h3>{title ?? (lang === 'ko' ? '자료와 대상 정보' : 'Dataset and Target Info')}</h3>
       <dl className="inquiry-field-list">
         {fields.map((field) => (

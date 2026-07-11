@@ -12,7 +12,7 @@ export function AnalysisControlPanel({ analysisConfig, conditions }: AnalysisCon
 
   return (
     <section className="inquiry-info-panel">
-      <span className="inquiry-panel-kicker">{lang === 'ko' ? '분석 조건' : 'Analysis Conditions'}</span>
+      <span className="inquiry-panel-kicker">{lang === 'ko' ? '분석 설정' : 'Analysis Settings'}</span>
       <h3>{localize(analysisConfig.method, lang)}</h3>
       <div className="inquiry-callout">
         {lang === 'ko'
