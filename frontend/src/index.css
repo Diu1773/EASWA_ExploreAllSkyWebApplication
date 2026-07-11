@@ -10453,3 +10453,15 @@ body {
 .inquiry-prompt strong { font-size: 13.5px; font-weight: 600; color: var(--text-primary); }
 .inquiry-prompt span { font-size: 12px; color: var(--text-muted); }
 .inquiry-info-panel > h3 { font-size: 1.02rem; margin: 2px 0 12px; }
+
+/* ---------- Visual hierarchy & measure fixes (step content) ---------- */
+/* headings must outweigh their body text (undo over-demotion) */
+.inquiry-info-panel > h3 { font-size: 1.16rem; font-weight: 600; color: var(--text-heading); margin: 2px 0 12px; }
+/* long-form text keeps a readable measure instead of stretching the container */
+.inquiry-callout, .inquiry-prompt, .inquiry-selfcheck-item, .inquiry-record-field { max-width: 860px; }
+/* multiple-choice options size to their text, wrap as chips — no full-width bars */
+.inquiry-selfcheck-options.choice { display: flex; flex-wrap: wrap; gap: 8px; }
+.inquiry-selfcheck-options.choice .inquiry-selfcheck-btn { width: auto; flex: 0 1 auto; text-align: left; padding: 8px 16px; }
+/* consistent card heights in field grids */
+.inquiry-field-list div { min-height: 64px; }
+.inquiry-selfcheck-options.choice { flex-direction: row; align-items: flex-start; }
