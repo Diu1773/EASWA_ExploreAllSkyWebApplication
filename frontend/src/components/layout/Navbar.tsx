@@ -62,8 +62,6 @@ export function Navbar() {
   const navLinks: NavLinkItem[] = [
     { to: '/', label: t('nav.home'), active: location.pathname === '/' },
     { to: defaultExplorerHref, label: t('nav.explorer'), active: isExplorerContext },
-    { to: '/tess', label: t('nav.tess'), active: location.pathname.startsWith('/tess') },
-    { to: '/kmtnet', label: t('nav.kmtnet'), active: isKmtnetContext },
   ];
 
   // Close menus when clicking outside
