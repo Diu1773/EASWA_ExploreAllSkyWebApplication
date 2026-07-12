@@ -33,12 +33,22 @@ function pct(sorted: number[], p: number): number {
 // Globular: a known astrophysical turn-off (faint, below the giant branch) from the data file.
 function turnoffFor(cluster: IntroCluster): [number, number] {
   if (cluster.id === 'm13') {
-    // snap the known astrophysical turn-off to the nearest plotted point (normalised
-    // by typical color/mag spreads) so the marker always lands on real data
+    // Snap the catalog turn-off to the nearest point on the DENSE main-sequence
+    // locus: isolated blue stragglers/field stars are excluded by requiring
+    // neighbours, and color differences weigh heavily so the marker cannot
+    // drift blueward off the sequence.
+    const dense = cluster.points.filter(
+      (p) =>
+        cluster.points.filter(
+          (q) => Math.abs(q[0] - p[0]) < 0.08 && Math.abs(q[1] - p[1]) < 0.4,
+        ).length >= 4,
+    );
+    const pool = dense.length ? dense : cluster.points;
     const [tc, tg] = cluster.turnoff;
-    const d = (p: [number, number]) => ((p[0] - tc) / 2) ** 2 + ((p[1] - tg) / 8) ** 2;
-    return cluster.points.reduce((best, p) => (d(p) < d(best) ? p : best), cluster.points[0]);
+    const d = (p: [number, number]) => ((p[0] - tc) / 0.25) ** 2 + ((p[1] - tg) / 4) ** 2;
+    return pool.reduce((best, p) => (d(p) < d(best) ? p : best), pool[0]);
   }
+  // Young open cluster: the main-sequence tip = brightest blue member.
   const blue = cluster.points.filter((p) => p[0] < 0.6);
   const src = blue.length ? blue : cluster.points;
   return src.reduce((best, p) => (p[1] < best[1] ? p : best), src[0]);
@@ -54,16 +64,18 @@ function CmdSvg({ cluster, ko }: { cluster: IntroCluster; ko: boolean }) {
 
   const cs = cluster.points.map((p) => p[0]).sort((a, b) => a - b);
   const gs = cluster.points.map((p) => p[1]).sort((a, b) => a - b);
-  // clip axis range to robust percentiles so a few outliers don't stretch it
-  const cMin = pct(cs, 0.01);
-  const cMax = pct(cs, 0.99);
-  const gMin = pct(gs, 0.005);
-  const gMax = pct(gs, 0.995);
+  const [toC, toG] = turnoffFor(cluster);
+  // clip axis range to robust percentiles so a few outliers don't stretch it,
+  // but always include the turn-off marker so it is never clamped to an edge
+  const cMin = Math.min(pct(cs, 0.01), toC - 0.15);
+  const cMax = Math.max(pct(cs, 0.99), toC + 0.05);
+  const gMin = Math.min(pct(gs, 0.005), toG - 0.9);
+  const gMax = Math.max(pct(gs, 0.995), toG + 0.3);
   const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
   const xFor = (c: number) => left + ((clamp(c, cMin, cMax) - cMin) / (cMax - cMin)) * (right - left);
   const yFor = (g: number) => top + ((clamp(g, gMin, gMax) - gMin) / (gMax - gMin)) * (bottom - top); // bright (small g) at top
 
-  const [tc, tg] = turnoffFor(cluster);
+  const [tc, tg] = [toC, toG];
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="cluster-intro-cmd-svg" role="img" aria-label={ko ? '색-등급도' : 'CMD'}>

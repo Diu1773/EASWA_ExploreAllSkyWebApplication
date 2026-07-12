@@ -10485,3 +10485,6 @@ body {
 .transit3d-stage { max-width: 920px; margin-left: auto; margin-right: auto; }
 /* #16 sandbox stat chips: pin values to a shared bottom baseline even when labels wrap */
 .inquiry-aperture-stats div { display: flex; flex-direction: column; justify-content: space-between; gap: 4px; }
+
+/* CMD intro: keep the turn-off label readable over dense point clouds */
+.cluster-intro-cmd-svg .ti-note { paint-order: stroke; stroke: rgba(11, 14, 20, 0.85); stroke-width: 3px; }
