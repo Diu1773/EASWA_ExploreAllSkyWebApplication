@@ -28,7 +28,8 @@ function createEASWAForm() {
     '본 조사는 공공 천문자료 기반 천문탐구를 지원하기 위해 개발 중인 교육용 웹 플랫폼 EASWA의 프로토타입에 대한 현장 반응과 보완 요구를 파악하기 위한 것입니다.\n\n' +
     'EASWA는 MAST 기반 TESS 공개 관측자료로 외계행성 식현상 광도곡선을 분석하고, 산출값을 NASA Exoplanet Archive의 기준값과 비교하여 해석하도록 구성한 웹 기반 탐구 플랫폼입니다.\n\n' +
     'EASWA 프로토타입 웹 링크: https://easwa-webapp.onrender.com/\n\n' +
-    '본 조사는 사용 효과나 학습 성취도 변화를 검증하기 위한 실험이 아니라, 프로토타입의 수업 적용 가능성과 개선 방향을 파악하기 위한 형성적 반응 조사입니다. 응답은 연구 및 프로토타입 개선 목적으로만 활용되며, 개인을 식별할 수 있는 정보는 수집하지 않습니다. 참여는 자발적이며 언제든 중단할 수 있습니다.'
+    '본 조사는 사용 효과나 학습 성취도 변화를 검증하기 위한 실험이 아니라, 프로토타입의 수업 적용 가능성과 개선 방향을 파악하기 위한 형성적 반응 조사입니다. 응답은 연구 및 프로토타입 개선 목적으로만 활용되며, 개인을 식별할 수 있는 정보는 수집하지 않습니다.' +
+    '\n\n제시된 화면 이미지만으로도 충분히 응답하실 수 있으며, 약 10분이 소요됩니다. 웹 링크 확인은 선택 사항입니다. 참여는 자발적이며 언제든 중단할 수 있습니다.'
   );
 
   form.setCollectEmail(false);
@@ -43,6 +44,12 @@ function createEASWAForm() {
     if (help) it.setHelpText(help);
   }
   function addPara(t){ form.addParagraphTextItem().setTitle(t).setRequired(false); }
+  // 화면 이미지 자동 삽입 — 실행 시 GitHub raw에서 스크린샷을 끌어와 폼에 넣음(수동 업로드 불필요).
+  var IMG_BASE = 'https://raw.githubusercontent.com/Diu1773/EASWA_ExploreAllSkyWebApplication/block-ux-overhaul/docs/survey/screens/';
+  function addImg(title, help, file) {
+    var item = form.addImageItem().setTitle(title).setImage(UrlFetchApp.fetch(IMG_BASE + file).getBlob());
+    if (help) item.setHelpText(help);
+  }
 
   // ===== 연구 참여 동의 =====
   form.addMultipleChoiceItem()
@@ -58,14 +65,14 @@ function createEASWAForm() {
     .setChoiceValues([
       '현직 지구과학교사',
       '예비 지구과학교사 또는 지구과학교육 전공자',
-      '과학교육 전공자',
+      '과학교육 전공자 (지구과학교육 외)',
       '천문학 또는 우주과학 관련 전공자'
     ])
     .showOtherOption(true)
     .setRequired(true);
 
   form.addScaleItem()
-    .setTitle('2. 천문 수업, 천문 활동, 천문자료 활용 경험은 어느 정도입니까?')
+    .setTitle('2. 천문 관련 교육 또는 자료 활용 경험은 어느 정도입니까?')
     .setBounds(1,5).setLabels('거의 없음','매우 많음').setRequired(true);
 
   form.addMultipleChoiceItem()
@@ -79,10 +86,12 @@ function createEASWAForm() {
   // ===== 2. 기존 공공 천문자료 서비스 활용 장벽 (표 4-8) =====
   addPage('2. 기존 공공 천문자료 서비스 활용 장벽');
   addInfo('기존 공공 천문자료 서비스 예시',
-    'SIMBAD, VizieR, WorldWide Telescope와 같은 기존 공공 천문자료 서비스는 신뢰성 있는 천문자료를 제공하지만, 학교 수업에서 바로 활용하기에는 자료 검색, 메타데이터 이해, 분석 절차 구성 등의 부담이 있을 수 있습니다.');
+    'SIMBAD, VizieR 같은 자료 검색 서비스와 WorldWide Telescope 같은 시각화 도구 등 기존 공공 천문자료 서비스는 신뢰성 있는 천문자료를 제공하지만, 학교 수업에서 바로 활용하기에는 자료 검색, 메타데이터 이해, 분석 절차 구성 등의 부담이 있을 수 있습니다.');
+  addImg('예시 A. SIMBAD — 검색·참조형 화면 (실제 화면)', 'WASP-6를 검색한 실제 화면입니다. 좌표·식별자·서지 중심의 연구자용 구조입니다.', 'existing_simbad.png');
+  addImg('예시 B. NASA Exoplanet Archive — 대상 개요 화면 (실제 화면)', 'WASP-6 개요의 실제 화면입니다. 영문 인터페이스와 파라미터 표 중심 구조입니다.', 'existing_archive.png');
 
   form.addCheckboxItem()
-    .setTitle('5. 기존 공공 천문자료 서비스를 학교 수업에서 활용할 때 예상되는 어려움을 모두 선택해 주세요.')
+    .setTitle('5. 기존 공공 천문자료 서비스를 학교 수업에서 활용할 때 경험했거나 예상되는 어려움을 모두 선택해 주세요.')
     .setChoiceValues([
       '자료 검색 절차가 복잡할 것 같음',
       '영어 인터페이스와 전문 용어가 부담될 것 같음',
@@ -91,7 +100,8 @@ function createEASWAForm() {
       '코딩 또는 별도 분석 프로그램 사용이 필요할 것 같음',
       '그래프 또는 분석 결과를 해석하기 어려울 것 같음',
       '학생 수준에 맞게 자료를 재구성하기 어려울 것 같음',
-      '수업 시간 안에서 활용하기 어려울 것 같음'
+      '수업 시간 안에서 활용하기 어려울 것 같음',
+      '특별히 어려운 점 없음'
     ])
     .showOtherOption(true)
     .setRequired(true);
@@ -105,27 +115,21 @@ function createEASWAForm() {
     'EASWA 프로토타입 웹 링크: https://easwa-webapp.onrender.com/\n\n' +
     '서버가 처음 활성화되는 데 시간이 걸릴 수 있습니다. 화면이 바로 열리지 않을 경우 잠시 후 새로고침해 주세요.');
 
-  // 화면 이미지 자동 삽입 — 실행 시 GitHub raw에서 스크린샷을 끌어와 폼에 넣음(수동 업로드 불필요).
-  // (이미지는 docs/survey/screens/*.png 를 저장소에 커밋해 둔 것. 라벨은 최신 앱 공통 탐구블럭 Step 0~6.)
-  var IMG_BASE = 'https://raw.githubusercontent.com/Diu1773/EASWA_ExploreAllSkyWebApplication/block-ux-overhaul/docs/survey/screens/';
-  function addImg(title, help, file) {
-    var item = form.addImageItem().setTitle(title).setImage(UrlFetchApp.fetch(IMG_BASE + file).getBlob());
-    if (help) item.setHelpText(help);
-  }
-  addImg('화면 1. 주제 소개 (Step 0)', '탐구 질문과 학습 목표를 먼저 확인합니다.', 'step0_intro.png');
-  addImg('화면 1. 대상 선택 (Step 1)', '전천 지도에서 분석 대상(외계행성)을 선택합니다.', 'step1_select.png');
-  addImg('화면 2. 자료 확인 (Step 2)', '대상의 실제 하늘 이미지(DSS)에 TESS 픽셀 격자를 겹쳐 자료 특성(픽셀 크기·blending 가능성)을 눈으로 확인하고, 자료 출처·관측 정보를 봅니다.', 'step2_metadata.png');
-  addImg('화면 3. 분석 준비 (Step 3)', '구경 측광 시뮬레이션(구경·배경 고리·방사 프로파일·FWHM)으로 분석 설정의 영향을 체험하고, 실제 분석 설정과 모델 가정을 확인합니다.', 'step3_conditions.png');
-  addImg('화면 4. 분석 · 시각화 (Step 4)', 'TESS 차등 광도곡선과 transit 모델 적합 결과, 품질 지표를 확인합니다.', 'step4_analysis.png');
-  addImg('화면 5. 기준값 비교 (Step 5)', '내 관측·적합 곡선 위에 카탈로그 기대 모델을 겹쳐 비교하고, 측정값과 기준값의 차이를 확인합니다. 기준값은 비교 기준이며 절대 정답이 아닙니다.', 'step5_reference.png');
-  addImg('화면 6. 해석 · 기록 (Step 6)', '내가 분석한 결과 요약을 보면서 차이 원인을 자료 품질·분석 조건·모델 가정을 근거로 기록·설명합니다.', 'step6_record.png');
+  addImg('화면 1. 주제 소개', '탐구 질문과 학습 목표를 먼저 확인합니다.', 'step0_intro.png');
+  addImg('화면 2. 대상 선택', '전천 지도에서 분석 대상(외계행성)을 선택합니다.', 'step1_select.png');
+  addImg('화면 3. 자료 확인', '대상의 실제 하늘 이미지(DSS)에 TESS 픽셀 격자를 겹쳐 자료 특성(픽셀 크기·blending 가능성)을 눈으로 확인하고, 자료 출처·관측 정보를 봅니다.', 'step2_metadata.png');
+  addImg('화면 4. 분석 준비', '구경 측광 시뮬레이션(구경·배경 고리·방사 프로파일·FWHM)으로 분석 설정의 영향을 체험하고, 실제 분석 설정과 모델 가정을 확인합니다.', 'step3_conditions.png');
+  addImg('화면 5. 분석 · 시각화', 'TESS 차등 광도곡선과 transit 모델 적합 결과, 품질 지표를 확인합니다.', 'step4_analysis.png');
+  addImg('화면 6. 기준값 비교', '내 관측·적합 곡선 위에 카탈로그 기대 모델을 겹쳐 비교하고, 측정값과 기준값의 차이를 확인합니다. 기준값은 비교 기준이며 절대 정답이 아닙니다.', 'step5_reference.png');
+  addImg('화면 7. 해석 · 기록', '내가 분석한 결과 요약을 보면서 차이 원인을 자료 품질·분석 조건·모델 가정을 근거로 기록·설명합니다.', 'step6_record.png');
 
   form.addMultipleChoiceItem()
     .setTitle('7. EASWA 프로토타입을 어떤 방식으로 확인하였습니까?')
     .setChoiceValues([
       '웹 링크를 직접 열어 주요 기능을 확인함',
       '제시된 화면 이미지를 중심으로 확인함',
-      '웹 링크와 화면 이미지를 모두 확인함'
+      '웹 링크와 화면 이미지를 모두 확인함',
+      '충분히 확인하지 못함'
     ])
     .setRequired(true);
 
@@ -136,11 +140,11 @@ function createEASWAForm() {
 
   addScale('8. EASWA는 천체명이나 자료 검색보다 탐구 주제와 탐구 질문에서 출발하도록 구성되어 있다.');
   addScale('9. EASWA는 별도의 코딩 환경 없이 공공 천문자료 분석 과정을 따라갈 수 있도록 돕는다.');
-  addScale('10. EASWA는 자료 출처, 분석 조건, 품질 점검 정보를 확인할 수 있도록 제시한다.');
+  addScale('10. EASWA는 자료 출처, 분석 조건, 품질 점검 정보를 확인할 수 있도록 제시한다.', '화면 3(자료 확인)·화면 4(분석 준비)·화면 5의 품질 지표를 참고해 주세요.');
   addScale('11. EASWA는 비교성 선택과 분석 조건을 학습자가 확인하고 조절할 수 있도록 구성되어 있다.',
-    '비교성: 목표 천체의 밝기 변화를 보정하기 위해 함께 측정하는 비교 별입니다.');
+    '비교성: 목표 천체의 밝기 변화를 보정하기 위해 함께 측정하는 비교 별입니다. 실제 조절 화면은 화면 5(분석·시각화) 왼쪽의 별 선택·구경 패널을 참고해 주세요.');
   addScale('12. EASWA의 화면 구성은 복잡하여 각 단계의 탐구 흐름을 파악하기 어렵다.');
-  addScale('13. EASWA의 STEP별 질문과 생각해보기 문항은 각 단계에서 무엇을 확인해야 하는지 이해하는 데 도움이 된다.');
+  addScale('13. EASWA의 STEP별 질문과 생각해보기 문항은 각 단계에서 무엇을 확인해야 하는지 이해하는 데 도움이 된다.', '화면 3~5의 생각해보기 상자(O/X·선택형 자가점검)를 참고해 주세요.');
   addScale('14. EASWA는 광도곡선과 식현상 모델 적합 결과를 해석할 수 있도록 제시한다.',
     '광도곡선: 시간에 따른 별의 밝기 변화 그래프 / 식현상 모델 적합: 밝기 감소 구간에 모델 곡선을 맞추는 과정.');
   addScale('15. EASWA의 기준값 비교 및 결과 기록 화면은 무엇을 해석해야 하는지 파악하기 어렵다.');
@@ -153,13 +157,16 @@ function createEASWAForm() {
   addPage('5. 어려울 것으로 예상되는 단계');
   form.addCheckboxItem()
     .setTitle('19. 학생 또는 예비교사가 EASWA를 사용할 때 어려워할 것으로 예상되는 단계를 모두 선택해 주세요.')
+    .setHelpText('위에서 본 화면 1~7의 단계입니다.')
     .setChoiceValues([
-      '탐구 대상 또는 분석 대상 선택',
-      '공공 천문자료 접근 및 분석 실행',
-      '품질 점검 정보 확인',
-      '시각화 결과(광도곡선) 해석',
-      '모델 결과 또는 산출값(Rp/R* 등) 해석',
-      '기준값 비교와 결과 기록'
+      '주제 소개 (화면 1)',
+      '대상 선택 (화면 2)',
+      '자료 확인 — 출처·관측 정보 (화면 3)',
+      '분석 준비 — 설정·모델 가정 (화면 4)',
+      '분석 실행·시각화 — 측광·품질 점검·광도곡선·모델 적합 (화면 5)',
+      '기준값 비교 (화면 6)',
+      '해석·기록 (화면 7)',
+      '특별히 없음'
     ])
     .showOtherOption(true)
     .setRequired(true);
@@ -183,7 +190,7 @@ function createEASWAForm() {
     .setRequired(true);
 
   addPara('22. EASWA의 가장 큰 장점은 무엇이라고 생각합니까?');
-  addPara('23. EASWA에서 가장 우선적으로 보완해야 할 점은 무엇이라고 생각합니까?');
+  addPara('23. 21번에서 선택한 요소 중 가장 시급한 한 가지는 무엇이며, 그 이유는 무엇입니까?');
   addPara('24. EASWA를 학교 수업 또는 예비교사 교육에서 활용한다면 어떤 방식이 적절하다고 생각합니까? 기타 의견이 있다면 함께 적어 주세요.');
 
   Logger.log('편집 URL: ' + form.getEditUrl());
@@ -192,7 +199,7 @@ function createEASWAForm() {
 
 /*
  * 화면 이미지는 createEASWAForm 실행 시 GitHub raw(IMG_BASE)에서 자동으로 삽입됩니다.
- * 별도 업로드·첨부 불필요. 실행 한 번이면 문항 + 화면 1~6 이미지까지 완성.
+ * 별도 업로드·첨부 불필요. 실행 한 번이면 문항 + 기존 서비스 예시 2장 + 화면 1~7 이미지까지 완성.
  * 이미지 원본: docs/survey/screens/*.png (저장소 커밋됨).
  * 최초 실행 시 UrlFetchApp·외부 이미지 접근 권한 승인이 필요할 수 있습니다.
  */
