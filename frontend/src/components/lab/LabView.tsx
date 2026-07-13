@@ -303,12 +303,15 @@ export function LabView() {
                     : '—',
               },
               {
-                label: { ko: '케이던스', en: 'Cadence' },
+                label: { ko: '케이던스 (FFI)', en: 'Cadence (FFI)' },
+                // FFI cadence follows the mission phase, not the stored metadata:
+                // sectors 1-26 = 30 min, 27-55 = 10 min, 56+ = 200 s.
                 value: (() => {
-                  const exposures = [...new Set(observations.map((obs) => obs.exposure_sec).filter(Boolean))] as number[];
-                  if (exposures.length === 0) return '—';
-                  if (exposures.length === 1) return `${Math.round(exposures[0] / 60)}분 (${exposures[0]}초)`;
-                  return `섹터별 상이 (${Math.min(...exposures)}–${Math.max(...exposures)}초)`;
+                  const cadences = [...new Set(observations.map((obs) => {
+                    const s = obs.sector ?? 0;
+                    return s >= 56 ? '200초' : s >= 27 ? '10분' : '30분';
+                  }))];
+                  return cadences.length ? `${cadences.join('·')}${cadences.length > 1 ? ' (섹터별)' : ''}` : '—';
                 })(),
               },
               {
