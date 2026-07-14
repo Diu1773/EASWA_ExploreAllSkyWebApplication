@@ -608,8 +608,10 @@ body {
   color: var(--text-secondary);
 }
 
-.inquiry-record-save .btn-primary {
+.inquiry-record-save .btn-primary,
+.inquiry-record-save .btn-secondary {
   align-self: flex-start;
+  width: fit-content; /* .btn-secondary base is width:100% — pin like the hero CTA */
 }
 
 .inquiry-record-save-done {

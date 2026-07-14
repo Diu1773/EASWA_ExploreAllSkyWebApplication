@@ -213,6 +213,10 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
       }
     : undefined;
 
+  // Anonymous (no-login) submission stays visible even before a fit exists —
+  // the panel itself explains why the button is disabled.
+  const anonSubmit = targetId ? { targetId, fit } : undefined;
+
   return (
     <InquiryLayout
       module={module}
@@ -227,6 +231,7 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
       resultSummarySlot={resultSummarySlot}
       maxUnlockedStepIndex={fit ? undefined : 4}
       recordSave={recordSave}
+      anonSubmit={anonSubmit}
     />
   );
 }

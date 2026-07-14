@@ -342,6 +342,7 @@ export function LabView() {
         resultSummarySlot={
           transitFit ? <TransitResultSummary fit={transitFit} targetName={target.name} /> : undefined
         }
+        anonSubmit={{ targetId: targetId ?? target.id, fit: transitFit }}
       />
     );
   }

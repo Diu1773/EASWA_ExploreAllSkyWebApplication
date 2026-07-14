@@ -13,6 +13,7 @@
 | `easwa_teacher_survey.gs` | **교사·예비교사 반응조사** 폼 생성 스크립트 (동의 1 + 30문항, 2026-07-14 직접수행 개정). 배포 대상 = 이 폼 |
 | `easwa_teacher_survey_백업_P0전.gs` | 2026-07-14 개정 전 백업본 |
 | `easwa_expert_cvi.gs` | 전문가 내용타당도(CVI) 폼 — 대상이 다른 별도 조사(참고 보관) |
+| `easwa_record_sink.gs` | **비로그인 익명 결과 제출 수신부** — 앱 Step 6 '결과 제출 (익명)' → Google Sheets 저장 (Render 무료 파일시스템 휘발성 대응) |
 | `screens/step0_intro.png` | 화면 1a — 주제 소개 (Step 0) |
 | `screens/step1_select.png` | 화면 1b — 대상 선택, 전천 지도 (Step 1) |
 | `screens/step2_metadata.png` | 화면 2 — 메타데이터: 자료 출처·관측정보 (Step 2) |
@@ -40,6 +41,12 @@
    ```
 
 > 이미지 URL은 `.gs`의 `IMG_BASE`(브랜치 `block-ux-overhaul`)를 가리킵니다. 브랜치명이 바뀌면 `IMG_BASE`도 수정.
+
+### 익명 결과 제출 수신부 배포 (약 3분)
+
+1. 새 스프레드시트 → 확장 프로그램 → Apps Script → `easwa_record_sink.gs` 붙여넣기
+2. 배포 → 웹 앱 (실행: 나 / 액세스: **모든 사용자**) → URL 확보
+3. URL을 `frontend/.env`와 Render 환경변수의 `VITE_RECORD_SINK_URL`에 설정 → 재빌드/재배포 (미설정 시 버튼은 '제출 서버 미설정' 비활성 표시)
 
 ---
 

@@ -13,6 +13,7 @@ import { DataSourcePanel } from './DataSourcePanel';
 import { MetadataPanel } from './MetadataPanel';
 import { ReflectionPanel } from './ReflectionPanel';
 import { RecordSavePanel, type RecordSaveConfig } from './RecordSavePanel';
+import { AnonSubmitPanel, type AnonSubmitConfig } from './AnonSubmitPanel';
 import { StepPanel } from './StepPanel';
 
 const STEP_SHORT_LABELS: Record<string, Record<string, string>> = {
@@ -40,6 +41,8 @@ interface InquiryLayoutProps<TContext = unknown> {
   resultSummarySlot?: ReactNode;
   maxUnlockedStepIndex?: number;
   recordSave?: RecordSaveConfig;
+  /** No-login anonymous submission to the Google Sheets sink (Step 6). */
+  anonSubmit?: AnonSubmitConfig;
 }
 
 export function InquiryLayout<TContext = unknown>({
@@ -57,6 +60,7 @@ export function InquiryLayout<TContext = unknown>({
   resultSummarySlot,
   maxUnlockedStepIndex,
   recordSave,
+  anonSubmit,
 }: InquiryLayoutProps<TContext>) {
   const lang = useLangStore((state) => state.lang);
   const [activeStepId, setActiveStepId] = useState<InquiryStepId>(
@@ -198,6 +202,7 @@ export function InquiryLayout<TContext = unknown>({
           onNoteChange={handleNoteChange}
         />
         {recordSave && <RecordSavePanel config={recordSave} answers={notes} />}
+        {anonSubmit && <AnonSubmitPanel config={anonSubmit} notes={notes} />}
       </>
     );
   };
