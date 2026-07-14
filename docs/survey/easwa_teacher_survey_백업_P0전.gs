@@ -19,7 +19,7 @@
  *   16 결과 해석의 학습자 수행
  *   17 수업 적용 가능성 지원
  *   18 종합 적절성
- * ※ 역문항 12·15는 일방적 동의 경향 점검용 부정 진술 문항 — 응답자에게 위치를 공개하지 않음. 집계 시 (6 − 점수)로 역채점.
+ * ※ 역문항 12·15는 응답자에게 위치를 공개하지 않음(무성의 응답 탐지 유지). 집계 시 (6 − 점수)로 역채점.
  */
 function createEASWAForm() {
   const form = FormApp.create('EASWA 프로토타입 반응 및 보완 요구 조사');
@@ -29,7 +29,7 @@ function createEASWAForm() {
     'EASWA는 MAST 기반 TESS 공개 관측자료로 외계행성 식현상 광도곡선을 분석하고, 산출값을 NASA Exoplanet Archive의 기준값과 비교하여 해석하도록 구성한 웹 기반 탐구 플랫폼입니다.\n\n' +
     'EASWA 프로토타입 웹 링크: https://easwa-webapp.onrender.com/\n\n' +
     '본 조사는 사용 효과나 학습 성취도 변화를 검증하기 위한 실험이 아니라, 프로토타입의 수업 적용 가능성과 개선 방향을 파악하기 위한 형성적 반응 조사입니다. 응답은 연구 및 프로토타입 개선 목적으로만 활용되며, 개인을 식별할 수 있는 정보는 수집하지 않습니다.' +
-    '\n\n행사 참여자는 진행자의 안내에 따라 EASWA 주요 단계를 직접 수행한 뒤 응답해 주십시오. 온라인 참여자는 가능한 경우 웹 링크에서 직접 수행해 보신 뒤 응답해 주시고, 여의치 않으면 화면 이미지만으로도 응답하실 수 있습니다(약 10분). 확인 방식은 응답 해석을 위해 구분 수집합니다. 참여는 자발적이며 언제든 중단할 수 있습니다.'
+    '\n\n제시된 화면 이미지만으로도 충분히 응답하실 수 있으며, 약 10분이 소요됩니다. 웹 링크 확인은 선택 사항입니다. 참여는 자발적이며 언제든 중단할 수 있습니다.'
   );
 
   form.setCollectEmail(false);
@@ -43,10 +43,7 @@ function createEASWAForm() {
       .setLabels('전혀 그렇지 않다','매우 그렇다').setRequired(true);
     if (help) it.setHelpText(help);
   }
-  function addPara(t, help, required){
-    const it = form.addParagraphTextItem().setTitle(t).setRequired(!!required);
-    if (help) it.setHelpText(help);
-  }
+  function addPara(t){ form.addParagraphTextItem().setTitle(t).setRequired(false); }
   // 화면 이미지 자동 삽입 — 실행 시 GitHub raw에서 스크린샷을 끌어와 폼에 넣음(수동 업로드 불필요).
   var IMG_BASE = 'https://raw.githubusercontent.com/Diu1773/EASWA_ExploreAllSkyWebApplication/block-ux-overhaul/docs/survey/screens/';
   function addImg(title, help, file) {
@@ -54,14 +51,11 @@ function createEASWAForm() {
     if (help) item.setHelpText(help);
   }
 
-  // ===== 연구 참여 동의 (비동의 시 제출 종료 분기) =====
-  const consentItem = form.addMultipleChoiceItem()
+  // ===== 연구 참여 동의 =====
+  form.addMultipleChoiceItem()
     .setTitle('본 조사의 목적과 익명 처리 안내를 확인하였으며, 연구 목적의 응답 활용에 동의합니다.')
+    .setChoiceValues(['동의합니다'])
     .setRequired(true);
-  consentItem.setChoices([
-    consentItem.createChoice('동의합니다', FormApp.PageNavigationType.CONTINUE),
-    consentItem.createChoice('동의하지 않습니다', FormApp.PageNavigationType.SUBMIT)
-  ]);
 
   // ===== 1. 응답자 배경 (표 3-4 · 표 4-7) =====
   addPage('1. 응답자 배경');
@@ -92,7 +86,7 @@ function createEASWAForm() {
   // ===== 2. 기존 공공 천문자료 서비스 활용 장벽 (표 4-8) =====
   addPage('2. 기존 공공 천문자료 서비스 활용 장벽');
   addInfo('기존 공공 천문자료 서비스 예시',
-    'SIMBAD, VizieR 같은 자료 검색 서비스와 WorldWide Telescope 같은 시각화 도구 등 기존 공공 천문자료 서비스는 신뢰성 있는 천문자료를 제공하지만, 학교 수업에서 바로 활용하기에는 자료 검색, 메타데이터 이해, 분석 절차 구성 등의 부담이 있을 수 있습니다.\n\n행사 참여 시 진행자의 안내가 있기 전에는 다음 영역으로 넘어가지 마십시오.');
+    'SIMBAD, VizieR 같은 자료 검색 서비스와 WorldWide Telescope 같은 시각화 도구 등 기존 공공 천문자료 서비스는 신뢰성 있는 천문자료를 제공하지만, 학교 수업에서 바로 활용하기에는 자료 검색, 메타데이터 이해, 분석 절차 구성 등의 부담이 있을 수 있습니다.');
   addImg('예시 A. SIMBAD — 검색·참조형 화면 (실제 화면)', 'WASP-6를 검색한 실제 화면입니다. 좌표·식별자·서지 중심의 연구자용 구조입니다.', 'existing_simbad.png');
   addImg('예시 B. NASA Exoplanet Archive — 대상 개요 화면 (실제 화면)', 'WASP-6 개요의 실제 화면입니다. 영문 인터페이스와 파라미터 표 중심 구조입니다.', 'existing_archive.png');
 
@@ -109,7 +103,6 @@ function createEASWAForm() {
       '수업 시간 안에서 활용하기 어려울 것 같음',
       '특별히 어려운 점 없음'
     ])
-    .setHelpText('기존 서비스를 사용해 본 경우 실제 경험 기준으로, 없는 경우 예상 기준으로 응답해 주십시오.')
     .showOtherOption(true)
     .setRequired(true);
 
@@ -133,35 +126,10 @@ function createEASWAForm() {
   form.addMultipleChoiceItem()
     .setTitle('7. EASWA 프로토타입을 어떤 방식으로 확인하였습니까?')
     .setChoiceValues([
-      '진행자의 안내에 따라 주요 단계를 직접 수행함',
-      '웹 링크에 접속하여 스스로 주요 단계를 직접 수행함',
-      '웹 링크에 접속했지만 일부 단계만 확인함',
-      '웹사이트를 사용하지 않고 화면 이미지만 확인함',
+      '웹 링크를 직접 열어 주요 기능을 확인함',
+      '제시된 화면 이미지를 중심으로 확인함',
+      '웹 링크와 화면 이미지를 모두 확인함',
       '충분히 확인하지 못함'
-    ])
-    .setRequired(true);
-
-  form.addMultipleChoiceItem()
-    .setTitle('7-1. EASWA의 어느 단계까지 직접 수행하였습니까?')
-    .setChoiceValues([
-      'Step 0~6 전체 완료 (해석·기록까지)',
-      '분석 실행·시각화(광도곡선·모델 적합)까지 완료',
-      '자료 확인·분석 준비까지 완료',
-      '일부 화면만 확인함',
-      '오류·접속 문제로 완료하지 못함',
-      '직접 수행하지 않음'
-    ])
-    .setRequired(true);
-
-  form.addMultipleChoiceItem()
-    .setTitle('7-2. 직접 수행에 걸린 시간은 어느 정도입니까?')
-    .setChoiceValues([
-      '10분 미만',
-      '10~20분',
-      '20~30분',
-      '30분 이상',
-      '완료하지 못함',
-      '직접 수행하지 않음'
     ])
     .setRequired(true);
 
@@ -185,31 +153,12 @@ function createEASWAForm() {
   addScale('17. EASWA의 단계별 안내와 질문은 학교 천문탐구 수업 또는 예비교사 교육에서 활용하기 적절하다.');
   addScale('18. EASWA는 공공 천문자료 기반 천문탐구를 지원하는 교육용 웹 플랫폼으로 적절하다.');
 
-  // ===== 5. 어려움을 경험한/예상되는 단계 (표 4-10) =====
-  addPage('5. 어려움을 경험한 단계와 예상되는 단계');
+  // ===== 5. 어려울 것으로 예상되는 단계 (표 4-10 · 6개) =====
+  addPage('5. 어려울 것으로 예상되는 단계');
   form.addCheckboxItem()
-    .setTitle('19. 직접 사용하면서 본인이 어려움을 경험한 단계를 모두 선택해 주세요.')
-    .setHelpText('접속 과정과 위에서 본 화면 1~7의 단계입니다.')
+    .setTitle('19. 학생 또는 예비교사가 EASWA를 사용할 때 어려워할 것으로 예상되는 단계를 모두 선택해 주세요.')
+    .setHelpText('위에서 본 화면 1~7의 단계입니다.')
     .setChoiceValues([
-      '접속·서버 활성화',
-      '주제 소개 (화면 1)',
-      '대상 선택 (화면 2)',
-      '자료 확인 — 출처·관측 정보 (화면 3)',
-      '분석 준비 — 설정·모델 가정 (화면 4)',
-      '분석 실행·시각화 — 측광·품질 점검·광도곡선·모델 적합 (화면 5)',
-      '기준값 비교 (화면 6)',
-      '해석·기록 (화면 7)',
-      '특별히 없음',
-      '직접 수행하지 않음'
-    ])
-    .showOtherOption(true)
-    .setRequired(true);
-
-  form.addCheckboxItem()
-    .setTitle('19-1. 학교 학생이 EASWA를 사용할 때 어려워할 것으로 예상되는 단계를 모두 선택해 주세요.')
-    .setHelpText('접속 과정과 위에서 본 화면 1~7의 단계입니다.')
-    .setChoiceValues([
-      '접속·서버 활성화',
       '주제 소개 (화면 1)',
       '대상 선택 (화면 2)',
       '자료 확인 — 출처·관측 정보 (화면 3)',
@@ -222,13 +171,7 @@ function createEASWAForm() {
     .showOtherOption(true)
     .setRequired(true);
 
-  addPara('20. 위 두 문항에서 선택한 단계가 어렵다고 생각한 이유를 적어 주세요.');
-
-  addPara(
-    '20-1. EASWA에서 확인한 산출값(식 깊이, Rp/R* 등)과 NASA Exoplanet Archive 기준값 사이에 차이가 생길 수 있는 원인을 한 가지 이상 적어 주세요.',
-    '직접 수행하지 않은 경우 "해당 없음"이라고 적어 주세요.',
-    true
-  );
+  addPara('20. 위에서 선택한 단계가 어렵다고 생각한 이유를 적어 주세요.');
 
   // ===== 6. 보완 요구 (표 4-10 · 7개) =====
   addPage('6. 보완 요구');
@@ -246,21 +189,8 @@ function createEASWAForm() {
     .showOtherOption(true)
     .setRequired(true);
 
-  addScale('21-1. 활동지와 교사용 안내 자료가 제공된다면, EASWA를 실제 수업 또는 예비교사 교육에 활용할 의향이 있다.');
-
-  form.addMultipleChoiceItem()
-    .setTitle('21-2. EASWA 외계행성 탐구 활동에 적절하다고 생각하는 수업 시간은?')
-    .setChoiceValues([
-      '1차시 이내',
-      '2차시',
-      '3차시 이상',
-      '동아리·과제연구가 적합',
-      '실제 수업 적용은 어려움'
-    ])
-    .setRequired(true);
-
   addPara('22. EASWA의 가장 큰 장점은 무엇이라고 생각합니까?');
-  addPara('23. 21번에서 선택한 요소 중 가장 시급한 한 가지는 무엇이며, 그 이유는 무엇입니까?', null, true);
+  addPara('23. 21번에서 선택한 요소 중 가장 시급한 한 가지는 무엇이며, 그 이유는 무엇입니까?');
   addPara('24. EASWA를 학교 수업 또는 예비교사 교육에서 활용한다면 어떤 방식이 적절하다고 생각합니까? 기타 의견이 있다면 함께 적어 주세요.');
 
   Logger.log('편집 URL: ' + form.getEditUrl());
