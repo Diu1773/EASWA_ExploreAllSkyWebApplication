@@ -255,6 +255,8 @@ export interface FitProgressEvent {
   pct: number;
   step?: number;
   total?: number;
+  /** Server-provided label, e.g. queue-position notice while another fit runs. */
+  message?: string;
 }
 
 export async function fitTransitModelStreaming(

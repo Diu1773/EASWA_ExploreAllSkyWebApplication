@@ -1,9 +1,12 @@
 import json
+from collections.abc import AsyncGenerator, Callable, Generator
 from functools import lru_cache
 
 from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import StreamingResponse
+from starlette.concurrency import iterate_in_threadpool
 
+import config
 from schemas.transit import (
     TransitCutoutPreviewResponse,
     TransitPhotometryRequest,
@@ -13,8 +16,78 @@ from schemas.transit import (
 from schemas.transit_fit import TransitFitRequest, TransitFitResponse
 from services.rate_limit_service import enforce_rate_limit
 from services import transit_service
+from services.stream_gate import (
+    FIT_STREAM_GATE,
+    PHOTOMETRY_STREAM_GATE,
+    QueueTimeoutError,
+    StreamGate,
+    wait_turn_events,
+)
 
 router = APIRouter(tags=["transit"])
+
+
+def _ndjson_line(payload: dict) -> str:
+    return json.dumps(payload) + "\n"
+
+
+async def _gated_ndjson_stream(
+    gate: StreamGate,
+    events_factory: Callable[[], Generator[dict, None, None]],
+    *,
+    queued_message: str,
+) -> AsyncGenerator[str, None]:
+    """Run a sync NDJSON event generator behind a global concurrency gate.
+
+    While waiting for a slot, periodically emits ``queued`` progress events in
+    the streams' existing progress schema so the frontend can render them with
+    its normal progress path. If no slot frees up within
+    ``config.STREAM_QUEUE_WAIT_SECONDS``, ends the stream with the streams'
+    existing error-event schema. See docs/LOAD_TEST_2026-07.md for why the cap
+    must be global (per-IP limits are defeated behind the Render proxy).
+    """
+    acquired = gate.try_acquire()
+    try:
+        if not acquired:
+            try:
+                async for position in wait_turn_events(
+                    gate,
+                    timeout_seconds=config.STREAM_QUEUE_WAIT_SECONDS,
+                ):
+                    yield _ndjson_line({
+                        "type": "progress",
+                        "stage": "queued",
+                        "pct": 0.0,
+                        "message": (
+                            f"{queued_message} 잠시만 기다려 주세요 "
+                            f"(대기 {position}번째)."
+                        ),
+                    })
+                acquired = True
+            except QueueTimeoutError:
+                yield _ndjson_line({
+                    "type": "error",
+                    "message": (
+                        "지금 동시에 실행 중인 분석이 많아 "
+                        f"{config.STREAM_QUEUE_WAIT_SECONDS}초 동안 차례가 오지 "
+                        "않았습니다. 잠시 후 다시 실행해 주세요."
+                    ),
+                })
+                return
+        try:
+            async for event in iterate_in_threadpool(events_factory()):
+                if event["type"] == "result":
+                    yield _ndjson_line({
+                        "type": "result",
+                        "data": event["data"].model_dump(),
+                    })
+                else:
+                    yield _ndjson_line(event)
+        except Exception as error:
+            yield _ndjson_line({"type": "error", "message": str(error)})
+    finally:
+        if acquired:
+            gate.release()
 
 
 @lru_cache(maxsize=1)
@@ -120,20 +193,14 @@ def run_transit_photometry(request: Request, req: TransitPhotometryRequest):
 def run_transit_photometry_stream(request: Request, req: TransitPhotometryRequest):
     enforce_rate_limit(request, "transit_photometry")
 
-    def generate():
-        try:
-            for event in transit_service.run_transit_photometry_streaming(req):
-                if event["type"] == "result":
-                    yield json.dumps({
-                        "type": "result",
-                        "data": event["data"].model_dump(),
-                    }) + "\n"
-                else:
-                    yield json.dumps(event) + "\n"
-        except Exception as error:
-            yield json.dumps({"type": "error", "message": str(error)}) + "\n"
-
-    return StreamingResponse(generate(), media_type="application/x-ndjson")
+    return StreamingResponse(
+        _gated_ndjson_stream(
+            PHOTOMETRY_STREAM_GATE,
+            lambda: transit_service.run_transit_photometry_streaming(req),
+            queued_message="다른 측광 분석이 진행 중입니다.",
+        ),
+        media_type="application/x-ndjson",
+    )
 
 
 @router.post(
@@ -161,6 +228,7 @@ def fit_transit(request: Request, req: TransitFitRequest):
             baseline_order=req.baseline_order,
             sigma_clip_sigma=req.sigma_clip_sigma,
             sigma_clip_iterations=req.sigma_clip_iterations,
+            refine_mcmc=req.refine_mcmc,
         )
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
@@ -173,38 +241,41 @@ def fit_transit(request: Request, req: TransitFitRequest):
 
 @router.post("/transit/fit-stream")
 def fit_transit_stream(request: Request, req: TransitFitRequest):
-    """Streaming version: yields NDJSON lines with progress, then the result."""
+    """Streaming version: yields NDJSON lines with progress, then the result.
+
+    Guarded by a global concurrency gate (default 3): unlimited concurrent
+    MCMC fits are what killed the Render free instance in the 2026-07 load
+    test (docs/LOAD_TEST_2026-07.md).
+    """
     enforce_rate_limit(request, "transit_fit")
     transit_fit_service = _get_transit_fit_service()
 
-    def generate():
-        try:
-            for event in transit_fit_service.fit_transit_model_streaming(
-                points=req.points,
-                period=req.period,
-                t0=req.t0,
-                target_id=req.target_id,
-                filter_name=req.filter_name,
-                stellar_temperature=req.stellar_temperature,
-                stellar_logg=req.stellar_logg,
-                stellar_metallicity=req.stellar_metallicity,
-                fit_mode=req.fit_mode,
-                bjd_start=req.bjd_start,
-                bjd_end=req.bjd_end,
-                fit_limb_darkening=req.fit_limb_darkening,
-                fit_window_phase=req.fit_window_phase,
-                baseline_order=req.baseline_order,
-                sigma_clip_sigma=req.sigma_clip_sigma,
-                sigma_clip_iterations=req.sigma_clip_iterations,
-            ):
-                if event["type"] == "result":
-                    yield json.dumps({
-                        "type": "result",
-                        "data": event["data"].model_dump(),
-                    }) + "\n"
-                else:
-                    yield json.dumps(event) + "\n"
-        except Exception as error:
-            yield json.dumps({"type": "error", "message": str(error)}) + "\n"
+    def make_events():
+        return transit_fit_service.fit_transit_model_streaming(
+            points=req.points,
+            period=req.period,
+            t0=req.t0,
+            target_id=req.target_id,
+            filter_name=req.filter_name,
+            stellar_temperature=req.stellar_temperature,
+            stellar_logg=req.stellar_logg,
+            stellar_metallicity=req.stellar_metallicity,
+            fit_mode=req.fit_mode,
+            bjd_start=req.bjd_start,
+            bjd_end=req.bjd_end,
+            fit_limb_darkening=req.fit_limb_darkening,
+            fit_window_phase=req.fit_window_phase,
+            baseline_order=req.baseline_order,
+            sigma_clip_sigma=req.sigma_clip_sigma,
+            sigma_clip_iterations=req.sigma_clip_iterations,
+            refine_mcmc=req.refine_mcmc,
+        )
 
-    return StreamingResponse(generate(), media_type="application/x-ndjson")
+    return StreamingResponse(
+        _gated_ndjson_stream(
+            FIT_STREAM_GATE,
+            make_events,
+            queued_message="다른 분석이 진행 중입니다.",
+        ),
+        media_type="application/x-ndjson",
+    )

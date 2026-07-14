@@ -180,6 +180,45 @@ TRANSIT_CUTOUT_STAGE_DIR = os.getenv(
     "EASWA_TRANSIT_CUTOUT_STAGE_DIR",
     "",
 ).strip()
+# Global (IP-independent) concurrency caps for the CPU-bound NDJSON stream
+# endpoints. Rationale: docs/LOAD_TEST_2026-07.md — 12+ concurrent MCMC fits
+# killed the 512 MB Render free instance (502), and the per-IP rate limiter is
+# defeated behind the Render proxy (proxy IPs fragment the buckets). These caps
+# apply regardless of client IP. Both the EASWA_-prefixed and bare env names
+# are accepted; the prefixed name wins if both are set.
+FIT_MAX_CONCURRENCY = max(
+    1,
+    _parse_int("EASWA_FIT_MAX_CONCURRENCY", _parse_int("FIT_MAX_CONCURRENCY", 3)),
+)
+PHOTOMETRY_MAX_CONCURRENCY = max(
+    1,
+    _parse_int(
+        "EASWA_PHOTOMETRY_MAX_CONCURRENCY",
+        _parse_int("PHOTOMETRY_MAX_CONCURRENCY", 8),
+    ),
+)
+# How long a queued stream request may wait for a slot before it is rejected
+# with a clear error event.
+STREAM_QUEUE_WAIT_SECONDS = max(
+    1,
+    _parse_int("EASWA_STREAM_QUEUE_WAIT_SECONDS", 90),
+)
+# Transit fit engine: emcee MCMC refinement is opt-in. The always-on 32x1500
+# MCMC is what made a solo fit ~70 s on Render (docs/LOAD_TEST_2026-07.md);
+# the default is the least-squares solution + Jacobian uncertainties.
+# A request can override via its `refine_mcmc` field.
+FIT_MCMC_DEFAULT = _parse_bool(
+    "EASWA_FIT_MCMC_DEFAULT",
+    _parse_bool("FIT_MCMC_DEFAULT", False),
+)
+FIT_MCMC_WALKERS = max(
+    4,
+    _parse_int("EASWA_FIT_MCMC_WALKERS", _parse_int("FIT_MCMC_WALKERS", 16)),
+)
+FIT_MCMC_STEPS = max(
+    100,
+    _parse_int("EASWA_FIT_MCMC_STEPS", _parse_int("FIT_MCMC_STEPS", 500)),
+)
 RECORD_REQUIRE_LOGIN = _parse_bool("EASWA_RECORD_REQUIRE_LOGIN", True)
 ADMIN_EMAILS: frozenset[str] = frozenset(
     email for email in (

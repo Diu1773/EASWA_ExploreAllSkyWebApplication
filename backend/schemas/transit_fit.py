@@ -19,6 +19,10 @@ class TransitFitRequest(BaseModel):
     stellar_temperature: float | None = None
     stellar_logg: float | None = None
     stellar_metallicity: float | None = None
+    # Opt-in emcee MCMC refinement. None -> server default (FIT_MCMC_DEFAULT,
+    # normally off): the least-squares solution + Jacobian uncertainties is
+    # returned instead (2026-07 load test: the always-on MCMC dominated fit time).
+    refine_mcmc: bool | None = None
     points: list[LightCurvePoint] = Field(default_factory=list)
 
 

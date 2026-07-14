@@ -319,3 +319,59 @@ def test_runtime_dependency_status_reports_flags(monkeypatch):
             "error": None,
         },
     }
+
+
+def test_fit_transit_model_skips_mcmc_by_default():
+    """MCMC must be opt-in: with emcee installed and no refine_mcmc flag, the
+    fit returns the least-squares solution (used_mcmc False) with nonzero
+    Jacobian-based uncertainties."""
+    assert transit_fit_service._HAS_EMCEE, "test requires emcee installed"
+    assert transit_fit_service.app_config.FIT_MCMC_DEFAULT is False
+
+    result = transit_fit_service.fit_transit_model(
+        points=_build_synthetic_points(),
+        period=2.0,
+        t0=1.0,
+        fit_mode="bjd_window",
+        bjd_start=0.82,
+        bjd_end=1.18,
+        fit_limb_darkening=False,
+        baseline_order=0,
+        sigma_clip_sigma=0.0,
+        sigma_clip_iterations=0,
+    )
+
+    assert result.used_mcmc is False
+    assert result.fitted_params.rp_rs_err > 0.0
+
+
+def test_fit_transit_model_refine_mcmc_opt_in_matches_least_squares(monkeypatch):
+    """refine_mcmc=True re-enables MCMC; its Rp/R* must agree with the
+    least-squares solution within the combined uncertainties."""
+    assert transit_fit_service._HAS_EMCEE, "test requires emcee installed"
+    # Keep the opt-in run quick in CI: fewer walkers/steps than production.
+    monkeypatch.setattr(transit_fit_service.app_config, "FIT_MCMC_WALKERS", 8)
+    monkeypatch.setattr(transit_fit_service.app_config, "FIT_MCMC_STEPS", 200)
+
+    common = dict(
+        points=_build_synthetic_points(),
+        period=2.0,
+        t0=1.0,
+        fit_mode="bjd_window",
+        bjd_start=0.82,
+        bjd_end=1.18,
+        fit_limb_darkening=False,
+        baseline_order=0,
+        sigma_clip_sigma=0.0,
+        sigma_clip_iterations=0,
+    )
+    lsq = transit_fit_service.fit_transit_model(refine_mcmc=False, **common)
+    mcmc = transit_fit_service.fit_transit_model(refine_mcmc=True, **common)
+
+    assert lsq.used_mcmc is False
+    assert mcmc.used_mcmc is True
+    tolerance = max(
+        lsq.fitted_params.rp_rs_err + mcmc.fitted_params.rp_rs_err,
+        0.005,
+    )
+    assert abs(lsq.fitted_params.rp_rs - mcmc.fitted_params.rp_rs) <= tolerance

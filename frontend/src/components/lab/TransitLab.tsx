@@ -3807,6 +3807,11 @@ export function TransitLab({
                   <p className="transit-progress-label">
                     {!fitProgress || fitProgress.stage === 'init'
                       ? lang === 'ko' ? '자료 준비 중...' : 'Preparing data...'
+                        : fitProgress.stage === 'queued'
+                          ? fitProgress.message ??
+                            (lang === 'ko'
+                              ? '다른 분석이 끝나기를 기다리는 중...'
+                              : 'Waiting for another analysis to finish...')
                         : fitProgress.stage === 'phase_fold'
                           ? fitDataSource === 'bjd_window'
                             ? lang === 'ko' ? 'BJD 구간을 선택하고 transit 중심을 맞추는 중...' : 'Selecting BJD window and aligning the transit center...'

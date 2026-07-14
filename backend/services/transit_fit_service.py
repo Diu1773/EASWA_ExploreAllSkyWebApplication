@@ -8,6 +8,7 @@ from typing import Any, Callable, Generator
 import numpy as np
 from scipy.optimize import least_squares
 
+import config as app_config
 from adapters.transit_archive import archive as transit_archive
 
 logger = logging.getLogger(__name__)
@@ -54,9 +55,10 @@ from schemas.transit_fit import (
 )
 
 _MODEL_PHASE_GRID = 4096
-_MCMC_NWALKERS = 32
-_MCMC_NSTEPS = 1500
-_MCMC_BURN = 500
+# MCMC refinement is opt-in (request `refine_mcmc` / env FIT_MCMC_DEFAULT).
+# The 2026-07 load test showed the old always-on 32x1500 MCMC is what made a
+# solo fit ~70 s on Render; walker/step counts now come from config
+# (FIT_MCMC_WALKERS / FIT_MCMC_STEPS, default 16x500).
 _MCMC_CHUNK = 100
 _MIN_FIT_WINDOW_PHASE = 0.04
 _MAX_FIT_WINDOW_PHASE = 0.35
@@ -355,10 +357,13 @@ def fit_transit_model(
     baseline_order: int = 1,
     sigma_clip_sigma: float = 4.0,
     sigma_clip_iterations: int = 2,
+    refine_mcmc: bool | None = None,
     progress_cb: Callable[[dict[str, Any]], None] | None = None,
 ) -> TransitFitResponse:
     if not _HAS_BATMAN:
         raise ValueError(_batman_missing_message())
+    if refine_mcmc is None:
+        refine_mcmc = app_config.FIT_MCMC_DEFAULT
     _notify_progress(progress_cb, "init", 0.0)
     (
         times,
@@ -410,6 +415,7 @@ def fit_transit_model(
         u2_init=u2_init,
         exposure_phase=exposure_phase,
         fit_limb_darkening=fit_limb_darkening,
+        refine_mcmc=bool(refine_mcmc),
         progress_cb=progress_cb,
     )
 
@@ -454,6 +460,7 @@ def fit_transit_model_streaming(
     baseline_order: int = 1,
     sigma_clip_sigma: float = 4.0,
     sigma_clip_iterations: int = 2,
+    refine_mcmc: bool | None = None,
 ) -> Generator[dict, None, None]:
     progress_queue: Queue[dict[str, Any]] = Queue()
     result_holder: dict[str, TransitFitResponse] = {}
@@ -478,6 +485,7 @@ def fit_transit_model_streaming(
                 baseline_order=baseline_order,
                 sigma_clip_sigma=sigma_clip_sigma,
                 sigma_clip_iterations=sigma_clip_iterations,
+                refine_mcmc=refine_mcmc,
                 progress_cb=lambda event: progress_queue.put(event),
             )
         except Exception as error:  # pragma: no cover - surfaced to client
@@ -734,6 +742,7 @@ def _solve_fit(
     u2_init: float,
     exposure_phase: float,
     fit_limb_darkening: bool,
+    refine_mcmc: bool = False,
     progress_cb: Callable[[dict[str, Any]], None] | None = None,
 ) -> tuple[
     TransitFitParameters,
@@ -807,15 +816,45 @@ def _solve_fit(
         data_residuals = (flux - model) / np.maximum(error, 1e-6)
         return np.concatenate([data_residuals, prior_residuals])
 
-    least_squares_result = least_squares(
-        residual_function,
-        initial_vector,
-        bounds=(lower, upper),
-        method="trf",
-        loss="soft_l1",
-        f_scale=1.0,
-        max_nfev=300,
-    )
+    # Multi-start over a/R*: the duration-based initial guess can saturate
+    # (e.g. sparse windows -> a/R* clipped at 30) and a single start then
+    # converges to a grazing local minimum (b ~ 1, inflated Rp/R*). Starting
+    # from a small a/R* ladder and keeping the lowest-cost solution makes the
+    # least-squares result robust on its own — essential now that MCMC
+    # refinement is opt-in.
+    a_rs_starts: list[float] = []
+    for candidate in (initial_params.a_rs, 4.0, 7.0, 12.0, 20.0):
+        candidate = float(np.clip(candidate, lower[1], upper[1]))
+        if all(abs(candidate - kept) / kept > 0.15 for kept in a_rs_starts):
+            a_rs_starts.append(candidate)
+
+    least_squares_result = None
+    for start_index, a_rs_start in enumerate(a_rs_starts):
+        start_vector = initial_vector.copy()
+        start_vector[1] = a_rs_start
+        start_vector[2] = _inclination_to_impact_parameter(
+            a_rs_start,
+            initial_params.inclination,
+        )
+        candidate_result = least_squares(
+            residual_function,
+            start_vector,
+            bounds=(lower, upper),
+            method="trf",
+            loss="soft_l1",
+            f_scale=1.0,
+            max_nfev=300,
+        )
+        if (
+            least_squares_result is None
+            or candidate_result.cost < least_squares_result.cost
+        ):
+            least_squares_result = candidate_result
+        _notify_progress(
+            progress_cb,
+            "least_squares",
+            0.35 + 0.17 * ((start_index + 1) / len(a_rs_starts)),
+        )
     _notify_progress(progress_cb, "least_squares", 0.52)
 
     ls_vector = least_squares_result.x
@@ -824,7 +863,7 @@ def _solve_fit(
     final_uncertainty = ls_uncertainty
     used_mcmc = False
 
-    if _HAS_EMCEE:
+    if refine_mcmc and _HAS_EMCEE:
         try:
             final_vector, final_uncertainty = _run_mcmc(
                 phase=phase,
@@ -1283,13 +1322,21 @@ def _run_mcmc(
             return -np.inf
         return prior + likelihood
 
+    # Walker/step counts are config-driven (FIT_MCMC_WALKERS / FIT_MCMC_STEPS).
+    # emcee needs an even walker count of at least 2*ndim.
+    nwalkers = max(int(app_config.FIT_MCMC_WALKERS), 2 * ndim)
+    if nwalkers % 2:
+        nwalkers += 1
+    nsteps = max(int(app_config.FIT_MCMC_STEPS), 2 * _MCMC_CHUNK)
+    burn = max(1, nsteps // 3)
+
     scatter = np.abs(initial) * 0.01 + 1e-5
-    positions = initial + scatter * np.random.randn(_MCMC_NWALKERS, ndim)
+    positions = initial + scatter * np.random.randn(nwalkers, ndim)
     positions = np.clip(positions, bounds_lower + 1e-6, bounds_upper - 1e-6)
 
-    sampler = emcee.EnsembleSampler(_MCMC_NWALKERS, ndim, log_probability)
-    n_chunks = max(1, _MCMC_NSTEPS // _MCMC_CHUNK)
-    steps_per_chunk = _MCMC_NSTEPS // n_chunks
+    sampler = emcee.EnsembleSampler(nwalkers, ndim, log_probability)
+    n_chunks = max(1, nsteps // _MCMC_CHUNK)
+    steps_per_chunk = nsteps // n_chunks
     for chunk_index in range(n_chunks):
         sampler.run_mcmc(
             positions if chunk_index == 0 else None,
@@ -1299,10 +1346,10 @@ def _run_mcmc(
         if progress_cb is not None:
             progress_cb(chunk_index + 1, n_chunks)
 
-    flat_samples = sampler.get_chain(discard=_MCMC_BURN, flat=True)
+    flat_samples = sampler.get_chain(discard=burn, flat=True)
     if flat_samples.shape[0] == 0:
         return initial, np.zeros(ndim)
-    flat_log_prob = sampler.get_log_prob(discard=_MCMC_BURN, flat=True)
+    flat_log_prob = sampler.get_log_prob(discard=burn, flat=True)
     if flat_log_prob.shape[0] != flat_samples.shape[0]:
         return np.median(flat_samples, axis=0), np.std(flat_samples, axis=0)
     best_index = int(np.nanargmax(flat_log_prob))
