@@ -40,7 +40,9 @@ backend/*.db-shm
 backend/*.db-wal
 backend/.cache/
 backend/submissions/
-# Demo cutouts are fetched into the Docker image at build time (and may be placed
-# locally for testing) — never commit the large FITS binaries.
-backend/bundled_cutouts/
+# Demo cutouts: the WASP-6 b practice cutout is committed so the image always
+# ships it (no build-time MAST dependency). Any other FITS placed here stays
+# untracked.
+backend/bundled_cutouts/*
+!backend/bundled_cutouts/wasp_6_b__wasp_6_b_sector_0002__s0002__50px.fits
 _scratch_bundle/

@@ -28,10 +28,12 @@ RUN pip install --no-cache-dir --upgrade pip \
 COPY backend/ /app/backend/
 COPY --from=frontend-build /app/frontend/dist /app/frontend/dist
 
-# Pre-fetch demo cutout(s) into the image so classroom practice loads instantly
-# (no runtime MAST dependency, survives Render spin-downs). Best-effort: the
-# script never raises and `|| true` keeps the build green if MAST is unreachable.
-RUN python scripts/fetch_bundled_cutouts.py || true
+# The WASP-6 b practice cutout is committed under backend/bundled_cutouts/, so it
+# is copied into the image above and this step is a no-op for it (no runtime MAST
+# dependency, survives Render spin-downs). If any *additional* demo cutout is
+# added later and cannot be fetched, this FAILS the build instead of silently
+# shipping it missing.
+RUN python scripts/fetch_bundled_cutouts.py
 
 EXPOSE 5895
 

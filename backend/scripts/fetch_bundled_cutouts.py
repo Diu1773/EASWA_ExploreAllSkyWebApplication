@@ -4,9 +4,10 @@ Shipping an always-ready practice cutout inside the Docker image lets classroom
 demos load instantly with no runtime MAST dependency, and it survives Render free
 spin-downs (it is part of the image, not the ephemeral /tmp staging).
 
-Best-effort by design: if MAST is unreachable during the build, this logs a
-warning and exits 0 so the build still succeeds — the app then falls back to the
-normal runtime download for that target.
+The primary demo cutout (WASP-6 b) is committed to the repo, so this script is a
+no-op for it (the file already exists and is skipped). For any *additional* demo
+cutout not yet committed, it fetches from MAST and FAILS THE BUILD if it cannot —
+so a deploy can never silently ship a missing practice cutout.
 
 Filename convention matches transit_service._bundled_cutout_path():
     {target_id}__{observation_id}__s{sector:04d}__{size_px}px.fits
@@ -50,20 +51,37 @@ def _fetch_fits(ra: float, dec: float, sector: int, size_px: int) -> bytes:
 
 def main() -> int:
     _OUT_DIR.mkdir(parents=True, exist_ok=True)
+    failures: list[str] = []
     for target_id, observation_id, ra, dec, sector, size_px in _DEMO_CUTOUTS:
         out_path = _OUT_DIR / f"{target_id}__{observation_id}__s{sector:04d}__{size_px}px.fits"
-        if out_path.exists():
+        # A committed cutout (WASP-6 b) is already present -> skip, no MAST call.
+        if out_path.exists() and out_path.stat().st_size > 0:
             print(f"[bundled-cutouts] already present, skipping: {out_path.name}")
             continue
-        try:
-            data = _fetch_fits(ra, dec, sector, size_px)
-            out_path.write_bytes(data)
-            print(f"[bundled-cutouts] saved {out_path.name} ({len(data) / 1024 / 1024:.1f} MB)")
-        except Exception as error:  # noqa: BLE001 - best-effort, never fail the build
-            print(
-                f"[bundled-cutouts] WARNING: could not fetch {out_path.name}: {error}",
-                file=sys.stderr,
-            )
+        # Retry a few times: MAST tesscut can be briefly flaky at build time.
+        last_error: Exception | None = None
+        for attempt in range(1, 4):
+            try:
+                data = _fetch_fits(ra, dec, sector, size_px)
+                out_path.write_bytes(data)
+                print(f"[bundled-cutouts] saved {out_path.name} ({len(data) / 1024 / 1024:.1f} MB)")
+                last_error = None
+                break
+            except Exception as error:  # noqa: BLE001
+                last_error = error
+                print(
+                    f"[bundled-cutouts] attempt {attempt}/3 failed for {out_path.name}: {error}",
+                    file=sys.stderr,
+                )
+        if last_error is not None:
+            failures.append(out_path.name)
+    if failures:
+        # Fail the build loudly rather than silently shipping a missing demo cutout.
+        print(
+            f"[bundled-cutouts] ERROR: could not obtain {failures} — failing build.",
+            file=sys.stderr,
+        )
+        return 1
     return 0
 
 
