@@ -13,12 +13,18 @@ import { TransitComparison } from '../inquiry/TransitComparison';
 import { TransitResultSummary } from '../inquiry/TransitResultSummary';
 import { SkyExplorer } from '../sky/SkyExplorer';
 import {
+  clearTransitFit,
   loadTransitFit,
   TRANSIT_FIT_SAVED_EVENT,
   type SavedTransitFit,
 } from '../../workflows/transit/fitBridge';
 
 const Transit3DScene = lazy(() => import('../sky/Transit3DScene'));
+
+// The only fully bundled analysis target (TESS sector 2, 50px cutout baked into
+// the image) — clicking it loads instantly with no MAST download, ideal for the
+// teacher-training demo.
+const RECOMMENDED_TARGET_ID = 'wasp_6_b';
 
 const ANALYSIS_CONTEXT: ExplorerRouteContext = {
   moduleId: 'tess',
@@ -38,10 +44,14 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
   const navigate = useNavigate();
   const setTopic = useAppStore((s) => s.setTopic);
 
-  const handleSelectTarget = (selected: Target) => {
+  const selectTargetById = (id: string) => {
     const next = new URLSearchParams(searchParams);
-    next.set('target', selected.id);
+    next.set('target', id);
     setSearchParams(next, { replace: false });
+  };
+
+  const handleSelectTarget = (selected: Target) => {
+    selectTargetById(selected.id);
   };
 
   const [target, setTarget] = useState<Target | null>(null);
@@ -106,6 +116,23 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
 
   const selectionSlot = (
     <div className="inquiry-sky-embed">
+      <div className="inquiry-recommended-target">
+        <span className="inquiry-recommended-kicker">
+          {lang === 'ko' ? '추천 대상 · 즉시 로드' : 'Recommended · instant'}
+        </span>
+        <button
+          type="button"
+          className={`inquiry-recommended-pick${targetId === RECOMMENDED_TARGET_ID ? ' is-active' : ''}`}
+          onClick={() => selectTargetById(RECOMMENDED_TARGET_ID)}
+        >
+          <strong>WASP-6 b</strong>
+          <span>
+            {lang === 'ko'
+              ? '번들된 TESS sector 2 — 다운로드 없이 바로 분석'
+              : 'Bundled TESS sector 2 — analyze instantly, no download'}
+          </span>
+        </button>
+      </div>
       <p className="inquiry-sky-embed-hint">
         {target
           ? lang === 'ko'
@@ -127,7 +154,7 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
           : `Run differential photometry and transit fitting for ${target.name} in the Lab.`}
       </p>
       <button type="button" className="btn-primary" onClick={() => navigate(analysisHref)}>
-        {lang === 'ko' ? '관측 자료 선택하고 분석 →' : 'Pick observations & analyze →'}
+        {lang === 'ko' ? '관측자료 분석 →' : 'Analyze observations →'}
       </button>
     </div>
   ) : (
@@ -166,7 +193,26 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
       : null;
 
   const comparisonSlot = fit ? (
-    <TransitComparison fit={fit} target={target} />
+    <div className="inquiry-comparison-wrap">
+      <div className="inquiry-comparison-toolbar">
+        <span className="inquiry-comparison-toolbar-note">
+          {lang === 'ko'
+            ? '이 값은 Lab에서 저장한 적합 결과입니다.'
+            : 'This value is the fit result saved from the Lab.'}
+        </span>
+        <button
+          type="button"
+          className="btn-secondary btn-sm"
+          onClick={() => {
+            clearTransitFit(targetId);
+            setFit(null);
+          }}
+        >
+          {lang === 'ko' ? '이전 결과 지우기' : 'Clear saved result'}
+        </button>
+      </div>
+      <TransitComparison fit={fit} target={target} />
+    </div>
   ) : (
     <div className="inquiry-lab-handoff">
       <p>
@@ -175,7 +221,7 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
           : 'No analysis result yet. Finish the Lab analysis in Step 4; your measured value will then be compared with the NASA archive here.'}
       </p>
       <button type="button" className="btn-primary" onClick={() => navigate(analysisHref)}>
-        {lang === 'ko' ? '관측 자료 선택하고 분석 →' : 'Pick observations & analyze →'}
+        {lang === 'ko' ? '관측자료 분석 →' : 'Analyze observations →'}
       </button>
     </div>
   );
@@ -224,6 +270,11 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
       contextSlot={contextSlot}
       introSlot={introSlot}
       selectionSlot={selectionSlot}
+      selectionConfirm={{
+        ready: Boolean(target),
+        label: { ko: '이 대상으로 확인 →', en: 'Confirm this target →' },
+        hint: { ko: '먼저 지도에서 대상을 선택하세요.', en: 'Select a target on the map first.' },
+      }}
       metadataSlot={metadataSlot}
       conditionsSlot={<ApertureSandbox />}
       analysisSlot={analysisSlot}

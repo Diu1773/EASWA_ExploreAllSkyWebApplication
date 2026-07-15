@@ -40,6 +40,12 @@ interface InquiryLayoutProps<TContext = unknown> {
   comparisonSlot?: ReactNode;
   resultSummarySlot?: ReactNode;
   maxUnlockedStepIndex?: number;
+  /** Optional explicit "confirm selection" control shown under the selection step. */
+  selectionConfirm?: {
+    ready: boolean;
+    label: { ko: string; en: string };
+    hint: { ko: string; en: string };
+  };
   recordSave?: RecordSaveConfig;
   /** No-login anonymous submission to the Google Sheets sink (Step 6). */
   anonSubmit?: AnonSubmitConfig;
@@ -59,6 +65,7 @@ export function InquiryLayout<TContext = unknown>({
   comparisonSlot,
   resultSummarySlot,
   maxUnlockedStepIndex,
+  selectionConfirm,
   recordSave,
   anonSubmit,
 }: InquiryLayoutProps<TContext>) {
@@ -83,6 +90,10 @@ export function InquiryLayout<TContext = unknown>({
   const activeStep = module.steps.find((step) => step.id === activeStepId) ?? module.steps[0];
   const stepIndex = module.steps.findIndex((step) => step.id === activeStep.id);
   const maxUnlocked = maxUnlockedStepIndex ?? module.steps.length - 1;
+  // On the visualization step the in-body Lab handoff button ("관측자료 분석 →")
+  // is the real forward action, so the footer "다음 단계" would be a confusing
+  // second primary button — hide it there.
+  const hideFooterNext = activeStep.kind === 'visualization' && Boolean(analysisSlot);
   const goToStep = (delta: number) => {
     const next = module.steps[stepIndex + delta];
     if (next) setActiveStepId(next.id);
@@ -126,8 +137,29 @@ export function InquiryLayout<TContext = unknown>({
     }
 
     if (activeStep.kind === 'selection') {
+      const confirmBlock = selectionConfirm ? (
+        <div className="inquiry-selection-confirm">
+          {selectionConfirm.ready ? (
+            <button
+              type="button"
+              className="btn-primary"
+              disabled={stepIndex >= maxUnlocked}
+              onClick={() => goToStep(1)}
+            >
+              {selectionConfirm.label[lang]}
+            </button>
+          ) : (
+            <p className="inquiry-selection-confirm-hint">{selectionConfirm.hint[lang]}</p>
+          )}
+        </div>
+      ) : null;
       if (selectionSlot) {
-        return <>{selectionSlot}</>;
+        return (
+          <>
+            {selectionSlot}
+            {confirmBlock}
+          </>
+        );
       }
       return (
         <section className="inquiry-info-panel inquiry-selection-card">
@@ -279,7 +311,9 @@ export function InquiryLayout<TContext = unknown>({
             <span className="inquiry-step-progress">
               {activeStep.number} / {module.steps[module.steps.length - 1].number}
             </span>
-            {stepIndex < module.steps.length - 1 ? (
+            {hideFooterNext ? (
+              <span className="inquiry-step-footer-spacer" />
+            ) : stepIndex < module.steps.length - 1 ? (
               <button
                 type="button"
                 className="btn-primary"

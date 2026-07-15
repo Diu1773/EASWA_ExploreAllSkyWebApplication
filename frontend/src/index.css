@@ -428,6 +428,87 @@ body {
   color: var(--text-secondary);
 }
 
+.inquiry-recommended-target {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.inquiry-recommended-kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.inquiry-recommended-pick {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-start;
+  text-align: left;
+  padding: 10px 14px;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--text-heading);
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.inquiry-recommended-pick:hover {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.inquiry-recommended-pick.is-active {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.inquiry-recommended-pick strong {
+  font-size: 14px;
+}
+
+.inquiry-recommended-pick span {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.inquiry-comparison-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.inquiry-comparison-toolbar-note {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.inquiry-step-footer-spacer {
+  display: inline-block;
+}
+
+.inquiry-selection-confirm {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.inquiry-selection-confirm-hint {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
 .sky-embed-filters {
   display: flex;
   flex-wrap: wrap;
@@ -2532,6 +2613,31 @@ body {
   display: flex;
   gap: 10px;
   align-items: center;
+}
+
+.transit-fit-method {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.transit-fit-method-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.transit-fit-method .transit-field-size-select {
+  min-width: 260px;
+  max-width: 100%;
+}
+
+.transit-fit-method-help {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-secondary);
 }
 
 .transit-run-done {

@@ -42,6 +42,23 @@ export function saveTransitFit(fit: SavedTransitFit): void {
   }
 }
 
+/** Remove a saved fit (e.g. a leftover from a previous learner on a shared/demo
+ *  machine) so Steps 5–6 revert to their "no result yet" state. Dispatches the
+ *  saved event so same-tab views re-read immediately. */
+export function clearTransitFit(targetId: string): void {
+  if (!targetId) return;
+  try {
+    localStorage.removeItem(KEY_PREFIX + targetId);
+  } catch {
+    // localStorage unavailable — non-fatal.
+  }
+  try {
+    window.dispatchEvent(new CustomEvent(TRANSIT_FIT_SAVED_EVENT, { detail: targetId }));
+  } catch {
+    // SSR / no window — non-fatal.
+  }
+}
+
 export function loadTransitFit(targetId: string): SavedTransitFit | null {
   if (!targetId) return null;
   try {

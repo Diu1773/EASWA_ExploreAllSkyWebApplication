@@ -16,6 +16,8 @@ export interface TransitFitRequest {
   stellar_temperature?: number | null;
   stellar_logg?: number | null;
   stellar_metallicity?: number | null;
+  /** Opt-in emcee MCMC refinement. null/undefined -> server default (FIT_MCMC_DEFAULT). */
+  refine_mcmc?: boolean | null;
   points: LightCurvePoint[];
 }
 

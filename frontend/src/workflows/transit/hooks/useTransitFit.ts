@@ -31,6 +31,7 @@ interface UseTransitFitParams {
   fitSigmaClipSigma: number;
   fitSigmaClipIterations: number;
   fitResult: TransitFitResponse | null;
+  refineMcmc: boolean;
   bjdWindowStart: number | null;
   bjdWindowEnd: number | null;
   phaseFoldReferenceT0: number;
@@ -53,6 +54,7 @@ export function useTransitFit({
   fitBaselineOrder,
   fitSigmaClipSigma,
   fitSigmaClipIterations,
+  refineMcmc,
   bjdWindowStart,
   bjdWindowEnd,
   phaseFoldReferenceT0,
@@ -179,6 +181,7 @@ export function useTransitFit({
           stellar_logg: typeof target.stellar_logg === 'number' ? target.stellar_logg : null,
           stellar_metallicity:
             typeof target.stellar_metallicity === 'number' ? target.stellar_metallicity : null,
+          refine_mcmc: refineMcmc,
           points: roiPoints,
         },
         (event) => {

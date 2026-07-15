@@ -695,6 +695,8 @@ export function TransitLab({
   const [recordTemplate, setRecordTemplate] = useState<RecordTemplate | null>(
     defaultTransitRecordTemplate
   );
+  // Fit method: false = fast least-squares (default), true = precise MCMC.
+  const [refineMcmc, setRefineMcmc] = useState(false);
 
   // ── Reducer ──────────────────────────────────────────────────────────
   const stateDefaults = useMemo<TransitLabDefaults>(
@@ -1881,6 +1883,7 @@ export function TransitLab({
     fitSigmaClipSigma,
     fitSigmaClipIterations,
     fitResult,
+    refineMcmc,
     bjdWindowStart,
     bjdWindowEnd,
     phaseFoldReferenceT0,
@@ -3777,6 +3780,36 @@ export function TransitLab({
                     <span>T₀</span>
                     <span>{phaseFoldReferenceT0.toFixed(6)} d</span>
                   </div>
+                </div>
+              )}
+
+              {canRunTransitFit && !fitResult && !fitting && (
+                <div className="transit-fit-method">
+                  <label className="transit-fit-method-label" htmlFor="transit-fit-method-select">
+                    {lang === 'ko' ? '적합 방법' : 'Fit method'}
+                  </label>
+                  <select
+                    id="transit-fit-method-select"
+                    className="transit-field-size-select"
+                    value={refineMcmc ? 'mcmc' : 'lsq'}
+                    onChange={(e) => setRefineMcmc(e.target.value === 'mcmc')}
+                  >
+                    <option value="lsq">
+                      {lang === 'ko'
+                        ? '빠른 적합 — 최소제곱 (기본, 수 초)'
+                        : 'Fast fit — least squares (default, seconds)'}
+                    </option>
+                    <option value="mcmc">
+                      {lang === 'ko'
+                        ? '정밀 적합 — MCMC (느림, 수십 초)'
+                        : 'Precise fit — MCMC (slow, tens of seconds)'}
+                    </option>
+                  </select>
+                  <p className="transit-fit-method-help">
+                    {lang === 'ko'
+                      ? '정밀 적합은 MCMC로 불확도를 더 정교하게 추정하지만 시간이 더 걸립니다.'
+                      : 'The precise fit uses MCMC to estimate uncertainties more rigorously, but takes longer.'}
+                  </p>
                 </div>
               )}
 
