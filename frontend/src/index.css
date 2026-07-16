@@ -811,6 +811,11 @@ body {
   white-space: nowrap;
 }
 
+/* Upload failed — the notes are still safe locally, so this warns without alarm. */
+.inquiry-autosave-status.failed {
+  color: var(--text-secondary);
+}
+
 /* Pre-submit receipt: spells out what the row will contain, so the submission
    is not a black box and an unfinished analysis is visible before sending. */
 .inquiry-submit-summary {

@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useLangStore } from '../../i18n';
 import {
-  getAnonId,
+  buildAnonRecordPayload,
   getRecordSinkUrl,
   hasSubmittedAnonRecord,
   markAnonRecordSubmitted,
-  submitAnonRecord,
+  syncAnonRecord,
 } from '../../utils/recordSink';
 import { loadLabDraft } from '../../utils/inquiryDraft';
 
@@ -86,24 +86,22 @@ export function AnonSubmitPanel({ config, notes, selfCheck }: AnonSubmitPanelPro
     setState('sending');
     const fit = config.fit;
     try {
-      await submitAnonRecord(sinkUrl, {
-        anon_id: getAnonId(),
-        target_id: config.targetId,
-        rp_rs: fit.rpRs,
-        rp_rs_err: fit.rpRsErr,
-        depth_pct: fit.rpRs * fit.rpRs * 100,
-        period_days: fit.period,
-        chi2_red: fit.reducedChiSquared,
-        steps_note_json: JSON.stringify(notes),
-        selfcheck_json: JSON.stringify(selfCheck.responses),
-        selfcheck_answered: selfCheck.answered,
-        selfcheck_total: selfCheck.total,
-        selfcheck_correct: selfCheck.correct,
-        lab_guide_json: JSON.stringify(labGuideAnswers),
-        lab_guide_answered: labGuideCount,
-        app_version: (import.meta.env.VITE_APP_VERSION as string | undefined) ?? 'dev',
-        user_agent: navigator.userAgent.slice(0, 160),
-      });
+      // Same row the autosave has been refreshing all along — this only flips it
+      // to status 'submitted'.
+      await syncAnonRecord(
+        sinkUrl,
+        buildAnonRecordPayload({
+          targetId: config.targetId,
+          status: 'submitted',
+          fit,
+          notes,
+          selfCheckResponses: selfCheck.responses,
+          selfCheckAnswered: selfCheck.answered,
+          selfCheckTotal: selfCheck.total,
+          selfCheckCorrect: selfCheck.correct,
+          labGuideAnswers,
+        }),
+      );
       // Reaching here means the sheet answered {ok:true} — the row exists.
       markAnonRecordSubmitted(config.targetId);
       setState('done');
@@ -187,8 +185,8 @@ export function AnonSubmitPanel({ config, notes, selfCheck }: AnonSubmitPanelPro
 
           <p className="inquiry-submit-pending">
             {lang === 'ko'
-              ? '아직 제출되지 않았습니다 — 아래 버튼을 눌러야 기록이 전송됩니다.'
-              : 'Not submitted yet — your work is sent only when you press the button below.'}
+              ? '기록은 작성하는 대로 자동 전송되고 있습니다 — 아래 버튼은 “다 했다”는 표시입니다.'
+              : 'Your notes upload automatically as you write — this button just marks them final.'}
           </p>
 
           {submitError && (

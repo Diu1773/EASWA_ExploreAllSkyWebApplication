@@ -50,11 +50,17 @@ export function markAnonRecordSubmitted(targetId: string): void {
 export interface AnonRecordPayload {
   anon_id: string;
   target_id: string;
-  rp_rs: number;
-  rp_rs_err: number;
-  depth_pct: number;
-  period_days: number;
-  chi2_red: number;
+  /** 'draft' for an autosave, 'submitted' once the learner presses the button.
+   *  The sheet upserts on (anon_id, target_id), so a row exists from the first
+   *  autosave and the button only flips its status — work is never lost because
+   *  someone closed the tab before pressing anything. */
+  status: 'draft' | 'submitted';
+  /** null until the Lab fit is bridged back — a draft row can precede the fit. */
+  rp_rs: number | null;
+  rp_rs_err: number | null;
+  depth_pct: number | null;
+  period_days: number | null;
+  chi2_red: number | null;
   /** All Step-6 reflection textareas bundled as one JSON string. */
   steps_note_json: string;
   /** Block "생각해보기" responses: [{step, id, answer, correct}, …] as JSON. */
@@ -71,7 +77,10 @@ export interface AnonRecordPayload {
 }
 
 /**
- * POST to the Apps Script sink, resolving only once the sheet confirms the row.
+ * Upsert the learner's row in the sheet, resolving only once the sheet confirms.
+ * Used both for the periodic autosave (status 'draft') and for the explicit
+ * submission (status 'submitted') — the script keys on (anon_id, target_id), so
+ * repeated calls update one row instead of piling up new ones.
  *
  * CORS note: `text/plain` keeps this a "simple request" so the browser skips the
  * preflight, which Apps Script would not answer. The deployed Web App does send
@@ -84,7 +93,7 @@ export interface AnonRecordPayload {
  * "제출됨". Reading the real reply is the whole point: a learner who is told
  * their work was submitted when it was not has lost it silently.
  */
-export async function submitAnonRecord(sinkUrl: string, payload: AnonRecordPayload): Promise<void> {
+export async function syncAnonRecord(sinkUrl: string, payload: AnonRecordPayload): Promise<void> {
   const response = await fetch(sinkUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -109,4 +118,49 @@ export async function submitAnonRecord(sinkUrl: string, payload: AnonRecordPaylo
   if (parsed.ok !== true) {
     throw new Error(parsed.error ?? 'sink rejected the submission');
   }
+}
+
+/** Everything the sheet row needs, minus the bits recordSink fills in itself. */
+export interface AnonRecordInput {
+  targetId: string;
+  status: 'draft' | 'submitted';
+  fit: {
+    rpRs: number;
+    rpRsErr: number;
+    period: number;
+    reducedChiSquared: number;
+  } | null;
+  notes: Record<string, string>;
+  selfCheckResponses: unknown;
+  selfCheckAnswered: number;
+  selfCheckTotal: number;
+  selfCheckCorrect: number;
+  labGuideAnswers: Record<string, string>;
+}
+
+/** Single place that shapes the row, so an autosave and a submission can never
+ *  disagree about what a record looks like. */
+export function buildAnonRecordPayload(input: AnonRecordInput): AnonRecordPayload {
+  const { fit } = input;
+  return {
+    anon_id: getAnonId(),
+    target_id: input.targetId,
+    status: input.status,
+    rp_rs: fit ? fit.rpRs : null,
+    rp_rs_err: fit ? fit.rpRsErr : null,
+    depth_pct: fit ? fit.rpRs * fit.rpRs * 100 : null,
+    period_days: fit ? fit.period : null,
+    chi2_red: fit ? fit.reducedChiSquared : null,
+    steps_note_json: JSON.stringify(input.notes),
+    selfcheck_json: JSON.stringify(input.selfCheckResponses),
+    selfcheck_answered: input.selfCheckAnswered,
+    selfcheck_total: input.selfCheckTotal,
+    selfcheck_correct: input.selfCheckCorrect,
+    lab_guide_json: JSON.stringify(input.labGuideAnswers),
+    lab_guide_answered: Object.values(input.labGuideAnswers).filter(
+      (answer) => typeof answer === 'string' && answer.trim() !== '',
+    ).length,
+    app_version: (import.meta.env.VITE_APP_VERSION as string | undefined) ?? 'dev',
+    user_agent: navigator.userAgent.slice(0, 160),
+  };
 }

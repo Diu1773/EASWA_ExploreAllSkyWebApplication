@@ -22,12 +22,26 @@ import { StepPanel } from './StepPanel';
 import {
   inquiryDraftScope,
   loadInquiryDraft,
+  loadLabDraft,
   saveInquiryDraft,
 } from '../../utils/inquiryDraft';
+import {
+  buildAnonRecordPayload,
+  getRecordSinkUrl,
+  syncAnonRecord,
+} from '../../utils/recordSink';
 
 /** Debounce for the autosave write — long enough not to hit localStorage on
  *  every keystroke, short enough that a reload right after typing keeps it. */
 const AUTOSAVE_DELAY_MS = 600;
+
+/** Debounce before pushing a draft row to the sheet. Deliberately far longer
+ *  than the local one: this is a network round-trip to Apps Script (which has
+ *  execution quotas), and the intent is "they stopped typing", not "they typed".
+ *  The local autosave already covers a crash a second after the last keystroke. */
+const SHEET_SYNC_DELAY_MS = 4000;
+
+type SheetSyncState = 'idle' | 'syncing' | 'synced' | 'failed';
 
 const STEP_SHORT_LABELS: Record<string, Record<string, string>> = {
   step0_intro: { ko: '주제 소개', en: 'Intro' },
@@ -96,6 +110,7 @@ export function InquiryLayout<TContext = unknown>({
   // every step change, and the answers have to survive to the Step 6 submission.
   const [selfCheckAnswers, setSelfCheckAnswers] = useState<Record<string, string | number>>({});
   const [savedAt, setSavedAt] = useState<number | null>(null);
+  const [sheetSyncState, setSheetSyncState] = useState<SheetSyncState>('idle');
   const draftScope = useMemo(
     () => inquiryDraftScope(module.id, draftTargetId),
     [module.id, draftTargetId],
@@ -126,6 +141,7 @@ export function InquiryLayout<TContext = unknown>({
     }, AUTOSAVE_DELAY_MS);
     return () => clearTimeout(timer);
   }, [draftScope, notes, selfCheckAnswers]);
+
 
   const result = useMemo(
     () => adapter.createInitialResult(module, context),
@@ -178,6 +194,41 @@ export function InquiryLayout<TContext = unknown>({
       correct: responses.filter((response) => response.correct).length,
     };
   }, [module.steps, selfCheckAnswers]);
+
+  // Push a draft row to the sheet once the learner stops typing. Without this a
+  // record only reached the sheet if someone remembered to press submit at the
+  // very end — anyone who closed the tab first left nothing behind. The script
+  // upserts on (anon_id, target_id), so this keeps refreshing one row rather
+  // than appending. Local autosave still runs at 600ms; this is the slow lane.
+  const anonTargetId = anonSubmit?.targetId ?? null;
+  const anonFit = anonSubmit?.fit ?? null;
+  useEffect(() => {
+    if (!anonTargetId || !dirtyRef.current) return;
+    const sinkUrl = getRecordSinkUrl();
+    if (!sinkUrl) return;
+    const timer = setTimeout(() => {
+      setSheetSyncState('syncing');
+      syncAnonRecord(
+        sinkUrl,
+        buildAnonRecordPayload({
+          targetId: anonTargetId,
+          status: 'draft',
+          fit: anonFit,
+          notes,
+          selfCheckResponses: selfCheckSummary.responses,
+          selfCheckAnswered: selfCheckSummary.answered,
+          selfCheckTotal: selfCheckSummary.total,
+          selfCheckCorrect: selfCheckSummary.correct,
+          labGuideAnswers: loadLabDraft(anonTargetId)?.guideAnswers ?? {},
+        }),
+      )
+        .then(() => setSheetSyncState('synced'))
+        // Non-fatal: the notes are already safe in this browser and the next
+        // edit retries. A network error mid-typing is not the learner's problem.
+        .catch(() => setSheetSyncState('failed'));
+    }, SHEET_SYNC_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [anonTargetId, anonFit, notes, selfCheckSummary]);
 
   // Notes are keyed `${stepId}:${fieldId}`, but the backend record template
   // expects bare question ids — configs keep field ids identical to template
@@ -462,12 +513,27 @@ export function InquiryLayout<TContext = unknown>({
             <span className="inquiry-step-progress">
               {activeStep.number} / {module.steps[module.steps.length - 1].number}
               {savedAt !== null && (
-                <em className="inquiry-autosave-status">
-                  {lang === 'ko' ? '이 브라우저에 자동 저장됨 ' : 'Autosaved in this browser '}
-                  {new Date(savedAt).toLocaleTimeString(lang === 'ko' ? 'ko-KR' : 'en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
+                <em className={`inquiry-autosave-status${sheetSyncState === 'failed' ? ' failed' : ''}`}>
+                  {sheetSyncState === 'syncing'
+                    ? lang === 'ko'
+                      ? '자동 저장 중…'
+                      : 'Autosaving…'
+                    : sheetSyncState === 'synced'
+                      ? lang === 'ko'
+                        ? '자동 저장됨 '
+                        : 'Autosaved '
+                      : sheetSyncState === 'failed'
+                        ? lang === 'ko'
+                          ? '이 브라우저에만 저장됨 (전송 실패) '
+                          : 'Saved in this browser only (upload failed) '
+                        : lang === 'ko'
+                          ? '이 브라우저에 자동 저장됨 '
+                          : 'Autosaved in this browser '}
+                  {sheetSyncState !== 'syncing' &&
+                    new Date(savedAt).toLocaleTimeString(lang === 'ko' ? 'ko-KR' : 'en-US', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
                 </em>
               )}
             </span>

@@ -17,10 +17,22 @@
  *
  * 수신 형식: POST body = JSON 문자열 (프런트는 preflight 회피를 위해
  * Content-Type: text/plain;charset=utf-8 로 보냄 — e.postData.contents로 동일하게 수신됨)
+ *
+ * 동작: (anon_id, target_id) 기준 upsert. 앱이 학습자의 입력이 멎을 때마다
+ * 같은 키로 계속 보내므로, 한 학습자·한 대상은 시트에서 항상 한 행이고 그
+ * 행이 갱신된다. 그래서 제출 버튼을 누르지 않아도 기록이 시트에 남는다
+ * (status=draft). 버튼을 누르면 같은 행이 status=submitted로 바뀐다.
+ *
+ * ⚠️ 이 파일을 고친 뒤에는 "배포 관리 → 편집(연필) → 버전: 새 버전 → 배포"로
+ * 재배포해야 반영된다. "새 배포"를 누르면 URL이 바뀌어 앱과 끊어진다.
+ * ⚠️ HEADERS는 시트가 비어 있을 때만 기록된다. 열 구성이 바뀌었으므로 기존
+ * 시트를 계속 쓰려면 1행을 지우거나 새 시트로 시작할 것.
  */
 
 var HEADERS = [
-  'timestamp', // 서버(Apps Script) 수신 시각 — 클라이언트 시계 신뢰하지 않음
+  'created_at', // 이 학습자·대상 조합이 처음 도착한 시각 (갱신돼도 유지)
+  'updated_at', // 마지막 자동저장 수신 시각 — 클라이언트 시계는 신뢰하지 않음
+  'status', // draft = 자동저장 진행 중 / submitted = 학습자가 제출 버튼을 누름
   'anon_id', // 브라우저 localStorage에 1회 생성·저장되는 익명 UUID
   'target_id', // 예: wasp_6_b
   'rp_rs', // 적합된 행성/항성 반지름비
@@ -47,14 +59,73 @@ function doPost(e) {
     return jsonResponse_({ ok: false, error: 'invalid JSON' });
   }
 
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
-  if (sheet.getLastRow() === 0) {
-    sheet.appendRow(HEADERS);
-    sheet.setFrozenRows(1);
+  if (!data.anon_id || !data.target_id) {
+    return jsonResponse_({ ok: false, error: 'anon_id and target_id are required' });
   }
 
-  sheet.appendRow([
-    new Date(), // 서버 타임스탬프
+  // 자동저장이 계속 들어오므로 upsert가 필수: append로 두면 학습자 한 명이
+  // 수십 행을 만든다. 같은 시각에 두 요청이 같은 행을 찾으면 둘 다 append로
+  // 빠질 수 있어 락으로 직렬화한다.
+  var lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(20000);
+  } catch (err) {
+    return jsonResponse_({ ok: false, error: 'busy, retry' });
+  }
+
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(HEADERS);
+      sheet.setFrozenRows(1);
+    }
+
+    var row = buildRow_(data);
+    var existing = findRow_(sheet, data.anon_id, data.target_id);
+    var rowNumber;
+
+    if (existing > 0) {
+      // 기존 행 갱신 — created_at(첫 열)은 최초 값 유지, updated_at만 갱신
+      var created = sheet.getRange(existing, 1).getValue();
+      row[0] = created || new Date();
+      sheet.getRange(existing, 1, 1, row.length).setValues([row]);
+      rowNumber = existing;
+    } else {
+      sheet.appendRow(row);
+      rowNumber = sheet.getLastRow();
+    }
+
+    SpreadsheetApp.flush();
+    return jsonResponse_({ ok: true, row: rowNumber, updated: existing > 0 });
+  } catch (err) {
+    return jsonResponse_({ ok: false, error: String(err) });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/** (anon_id, target_id)로 기존 행 번호를 찾는다. 없으면 -1.
+ *  두 열만 읽어 학급 규모에서 충분히 빠르다. */
+function findRow_(sheet, anonId, targetId) {
+  var last = sheet.getLastRow();
+  if (last < 2) return -1;
+  var anonCol = HEADERS.indexOf('anon_id') + 1;
+  var targetCol = HEADERS.indexOf('target_id') + 1;
+  var anons = sheet.getRange(2, anonCol, last - 1, 1).getValues();
+  var targets = sheet.getRange(2, targetCol, last - 1, 1).getValues();
+  for (var i = 0; i < anons.length; i++) {
+    if (String(anons[i][0]) === String(anonId) && String(targets[i][0]) === String(targetId)) {
+      return i + 2; // 헤더 1행 + 0-index 보정
+    }
+  }
+  return -1;
+}
+
+function buildRow_(data) {
+  return [
+    new Date(), // created_at — 갱신 시 doPost가 최초값으로 되돌린다
+    new Date(), // updated_at — 서버 수신 시각
+    truncate_(data.status, 16) || 'draft',
     truncate_(data.anon_id, 64),
     truncate_(data.target_id, 64),
     toNumberOrBlank_(data.rp_rs),
@@ -71,9 +142,7 @@ function doPost(e) {
     toNumberOrBlank_(data.lab_guide_answered),
     truncate_(data.app_version, 40),
     truncate_(data.user_agent, 160),
-  ]);
-
-  return jsonResponse_({ ok: true });
+  ];
 }
 
 function jsonResponse_(obj) {
