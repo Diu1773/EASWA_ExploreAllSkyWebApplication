@@ -13,7 +13,11 @@ export interface RecordSaveConfig {
 
 interface RecordSavePanelProps {
   config: RecordSaveConfig;
-  answers: Record<string, string>;
+  /** Answers keyed by template question id (checkbox values are string arrays). */
+  answers: Record<string, unknown>;
+  /** Localized labels of required template questions still unanswered — the
+   *  backend rejects the submission anyway, so surface it before the click. */
+  missingRequiredLabels?: string[];
 }
 
 /**
@@ -21,12 +25,17 @@ interface RecordSavePanelProps {
  * analysis output + the learner's notes as one record — the block, not the
  * Lab, owns saving.
  */
-export function RecordSavePanel({ config, answers }: RecordSavePanelProps) {
+export function RecordSavePanel({
+  config,
+  answers,
+  missingRequiredLabels = [],
+}: RecordSavePanelProps) {
   const lang = useLangStore((s) => s.lang);
   const user = useAuthStore((s) => s.user);
   const [saving, setSaving] = useState(false);
   const [savedId, setSavedId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const missingRequired = missingRequiredLabels.length > 0;
 
   const handleSave = async () => {
     if (!user) {
@@ -72,7 +81,12 @@ export function RecordSavePanel({ config, answers }: RecordSavePanelProps) {
               ? '이번 탐구의 산출값·기준값 비교·해석 기록을 한 번에 저장합니다.'
               : 'Save the derived values, reference comparison, and your interpretation in one record.'}
           </p>
-          <button type="button" className="btn-primary" disabled={saving} onClick={handleSave}>
+          <button
+            type="button"
+            className="btn-primary"
+            disabled={saving || missingRequired}
+            onClick={handleSave}
+          >
             {saving
               ? lang === 'ko'
                 ? '저장 중…'
@@ -81,6 +95,12 @@ export function RecordSavePanel({ config, answers }: RecordSavePanelProps) {
                 ? '내 기록에 저장'
                 : 'Save to My Records'}
           </button>
+          {missingRequired && (
+            <p className="inquiry-record-save-hint">
+              {lang === 'ko' ? '필수 기록이 남아 있습니다: ' : 'Required notes missing: '}
+              {missingRequiredLabels.join(' · ')}
+            </p>
+          )}
           {error && <p className="error-text" style={{ marginTop: 8 }}>{error}</p>}
         </>
       )}

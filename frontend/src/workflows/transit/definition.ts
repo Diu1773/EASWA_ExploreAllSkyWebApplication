@@ -381,7 +381,9 @@ function clampTransitStep(
   options: TransitStepAvailability
 ): TransitWorkflowStep {
   if (requestedStep === 'record') {
-    return options.hasResult ? 'record' : clampTransitStep('transitfit', options);
+    // The Lab no longer has a record step — the record moved to the block's
+    // Step 6. Old URLs/sessionStorage may still say 'record'; land on the fit.
+    return clampTransitStep('transitfit', options);
   }
   if (requestedStep === 'transitfit') {
     return options.hasResult ? 'transitfit' : clampTransitStep('lightcurve', options);

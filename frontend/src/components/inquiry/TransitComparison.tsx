@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useLangStore } from '../../i18n';
 import type { Target } from '../../types/target';
 import type { SavedTransitFit } from '../../workflows/transit/fitBridge';
+import { TransitValidationStatsPanel } from '../lab/TransitValidationStatsPanel';
 
 interface TransitComparisonProps {
   fit: SavedTransitFit;
@@ -257,6 +258,10 @@ export function TransitComparison({ fit, target }: TransitComparisonProps) {
           {lang === 'ko' ? '— 단독 판정값이 아니라 해석 근거입니다.' : '— an interpretation cue, not a verdict on its own.'}
         </span>
       </div>
+
+      {/* Paper-ready diagnostics used to live in the Lab's (removed) record step,
+          duplicating this comparison. They ride along on the bridged fit now. */}
+      {fit.validationStats && <TransitValidationStatsPanel stats={fit.validationStats} />}
 
       <div className="inquiry-callout">
         {lang === 'ko'

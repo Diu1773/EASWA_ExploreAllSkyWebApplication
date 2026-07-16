@@ -20,6 +20,11 @@ export interface SavedTransitFit {
   t0?: number;
   /** Downsampled light curve + best-fit model for the Step 5 HOPS-style overlay. */
   curve?: SavedTransitFitCurve;
+  /** Paper-ready diagnostics (residual RMS/MAD, clipping, reference deltas, …).
+   *  Computed in the Lab, displayed in the block's Step 5 — the Lab's fit step
+   *  itself only surfaces χ²_red, so this ride-along is what the comparison
+   *  step renders. Merged in by TransitLab after the fit lands. */
+  validationStats?: import('./validationStats').TransitValidationStats;
 }
 
 const KEY_PREFIX = 'easwa:transit-fit:';

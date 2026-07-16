@@ -29,6 +29,20 @@ export interface InquiryPrompt {
   helperText?: LocalizedText;
 }
 
+export interface InquiryRecordOption {
+  value: string;
+  label: LocalizedText;
+}
+
+/** A record field the learner fills in. Defaults to a free textarea; typed
+ *  inputs let module configs mirror the backend record template exactly, so the
+ *  field id doubles as the template question id at save time. */
+export interface InquiryRecordField extends InquiryPrompt {
+  input?: 'textarea' | 'radio' | 'checkbox';
+  options?: InquiryRecordOption[];
+  required?: boolean;
+}
+
 export type SelfCheckItem =
   | {
       id: string;
@@ -53,7 +67,7 @@ export interface InquiryStepConfig {
   title: LocalizedText;
   summary: LocalizedText;
   questions: InquiryPrompt[];
-  recordFields: InquiryPrompt[];
+  recordFields: InquiryRecordField[];
   selfChecks?: SelfCheckItem[];
 }
 

@@ -111,6 +111,66 @@ export const exoplanetTransitModule: ExplorationModuleConfig = {
         },
       ],
     },
+    // Field ids match backend/survey_templates/transit_record.json question ids
+    // 1:1 — the block's Step 6 IS the record form now (the Lab's record step was
+    // removed), and the save panel submits these answers to that template.
+    step6_reflect: {
+      recordFields: [
+        {
+          id: 'transit_visible',
+          required: true,
+          input: 'radio',
+          question: {
+            ko: '광도곡선에서 식현상으로 보이는 밝기 감소가 확인되는가?',
+            en: 'Is a transit-like dip visible in the light curve?',
+          },
+          options: [
+            { value: 'clear', label: { ko: '예, 뚜렷하게 보인다', en: 'Yes, clearly visible' } },
+            { value: 'possible', label: { ko: '식현상일 가능성이 있다', en: 'Possibly visible' } },
+            { value: 'unclear', label: { ko: '불분명하거나 잡음이 많다', en: 'Unclear / noisy' } },
+            { value: 'not_seen', label: { ko: '뚜렷한 밝기 감소가 보이지 않는다', en: 'No obvious dip' } },
+          ],
+        },
+        {
+          id: 'issues_observed',
+          input: 'checkbox',
+          question: {
+            ko: '분석 과정에서 확인한 문제를 선택하세요.',
+            en: 'What issues did you notice?',
+          },
+          options: [
+            { value: 'few_comparisons', label: { ko: '적절한 비교성이 부족함', en: 'Too few good comparison stars' } },
+            { value: 'blended_field', label: { ko: '주변 별빛에 오염됨', en: 'Nearby stars appear blended' } },
+            { value: 'noisy_curve', label: { ko: '광도곡선 잡음이 큼', en: 'Light curve is noisy' } },
+            { value: 'field_too_small', label: { ko: '분석 시야가 너무 좁음', en: 'Field of view felt too small' } },
+            { value: 'none', label: { ko: '뚜렷한 문제 없음', en: 'No major issues' } },
+          ],
+        },
+        {
+          id: 'reference_comparison',
+          required: true,
+          question: {
+            ko: '측정값은 NASA Exoplanet Archive 기준값과 어떻게 다른가? 차이의 원인은 무엇인가?',
+            en: 'How does your measured result compare with the NASA reference value, and what causes the difference?',
+          },
+          helperText: {
+            ko: 'Rp/R*·식 깊이·공전 주기를 비교하고, 비교성 품질·별빛 오염·구경 크기·ROI·잡음·모델 가정을 근거로 설명하세요.',
+            en: 'Compare Rp/R*, depth, and period; explain using comparison-star quality, blending, aperture, ROI, noise, and model assumptions.',
+          },
+        },
+        {
+          id: 'next_step',
+          question: {
+            ko: '분석을 다시 수행한다면 무엇을 바꾸겠는가?',
+            en: 'If you repeated this analysis, what would you change?',
+          },
+          helperText: {
+            ko: '예: 시야 확대, 비교성 변경, 다른 Sector 분석',
+            en: 'e.g., a wider field, different comparison stars, another sector',
+          },
+        },
+      ],
+    },
   }),
   metadataFields: [
     {
@@ -200,10 +260,10 @@ export const exoplanetTransitModule: ExplorationModuleConfig = {
       en: 'When measured values differ from references, explain the difference through comparison quality, blending, aperture, ROI, noise, and model assumptions.',
     },
   },
-  reflectionQuestions: [
-    makePrompt('transit_reflect_quality', '이번 분석에서 가장 큰 불확실성 원인은 무엇인가?', 'What is the largest uncertainty source in this analysis?'),
-    makePrompt('transit_reflect_claim', '이 결과로 어떤 수준의 주장을 할 수 있고, 무엇은 주장할 수 없는가?', 'What can this result support, and what can it not support?'),
-  ],
+  // Emptied on purpose: the two former prompts (uncertainty source, claim
+  // limits) are covered by the typed Step 6 record fields above — keeping both
+  // meant answering the same question twice on one screen.
+  reflectionQuestions: [],
   teacherNotes: [
     { ko: '정답 수치보다 차이 원인을 자료와 조건으로 설명하는 활동에 초점을 둔다.', en: 'Focus on explaining differences through data and conditions rather than matching a single numeric answer.' },
     { ko: '권장 설정으로 시작하고, 익숙해지면 구경과 ROI를 바꿔 결과가 어떻게 달라지는지 비교해 본다.', en: 'Start with the recommended settings; once comfortable, change the aperture and ROI to compare how results shift.' },

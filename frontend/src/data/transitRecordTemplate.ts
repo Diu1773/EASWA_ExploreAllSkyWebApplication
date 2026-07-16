@@ -1,21 +1,18 @@
 import type { RecordTemplate } from '../types/record';
 
+// Mirror of backend/survey_templates/transit_record.json (v3) — used to seed
+// recordAnswers defaults. v3 trimmed the form to the four interpretation
+// questions rendered in the block's Step 6; the title is auto-generated, and
+// the quality/confidence/free-note questions were removed as duplicates of the
+// fit-step diagnostics.
 export const defaultTransitRecordTemplate: RecordTemplate = {
   id: 'transit_record',
   workflow: 'transit_lab',
   title: 'Transit Analysis Record',
   description:
-    'Store a short interpretation of the transit result, the chosen comparison stars, and any issues you noticed during the activity.',
-  version: 2,
+    'Interpretation record for the transit block (Step 6): visibility judgement, observed issues, reference comparison, and a follow-up plan.',
+  version: 3,
   questions: [
-    {
-      id: 'summary_title',
-      label: 'Record Title',
-      type: 'text',
-      required: true,
-      placeholder: 'Example: WASP-18 b Sector 3 transit check',
-      options: [],
-    },
     {
       id: 'transit_visible',
       label: 'Is a transit-like dip visible in the light curve?',
@@ -27,27 +24,6 @@ export const defaultTransitRecordTemplate: RecordTemplate = {
         { value: 'unclear', label: 'Unclear / noisy' },
         { value: 'not_seen', label: 'No obvious dip' },
       ],
-    },
-    {
-      id: 'curve_quality',
-      label: 'How usable is this light curve?',
-      type: 'select',
-      required: true,
-      options: [
-        { value: 'high', label: 'High quality' },
-        { value: 'medium', label: 'Usable with caveats' },
-        { value: 'low', label: 'Low quality' },
-      ],
-    },
-    {
-      id: 'confidence_score',
-      label: 'Confidence Score (1-5)',
-      type: 'number',
-      required: true,
-      min_value: 1,
-      max_value: 5,
-      help_text: 'A quick self-rating for how confident you are in this interpretation.',
-      options: [],
     },
     {
       id: 'issues_observed',
@@ -62,17 +38,9 @@ export const defaultTransitRecordTemplate: RecordTemplate = {
       ],
     },
     {
-      id: 'analysis_note',
-      label: 'Analysis Note',
-      type: 'textarea',
-      required: true,
-      placeholder:
-        'Summarize what you selected, what the curve looked like, and what you think it means.',
-      options: [],
-    },
-    {
       id: 'reference_comparison',
-      label: 'How does your measured result compare with the NASA reference value?',
+      label:
+        'How does your measured result compare with the NASA reference value, and what causes the difference?',
       type: 'textarea',
       required: true,
       placeholder:

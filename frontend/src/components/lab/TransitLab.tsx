@@ -1,9 +1,6 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState, type ReactNode } from 'react';
 import {
-  downloadMyRecordPhotometryCsv,
   fetchMyRecordSubmission,
-  fetchRecordTemplate,
-  submitRecordTemplate,
 } from '../../api/client';
 import { useAppStore } from '../../stores/useAppStore';
 import { useAuthStore } from '../../stores/useAuthStore';
@@ -16,12 +13,13 @@ import type {
   TransitApertureConfig,
   TransitComparisonDiagnostic,
 } from '../../types/transit';
-import type { RecordQuestion, RecordQuestionOption, RecordTemplate } from '../../types/record';
 import { defaultTransitRecordTemplate } from '../../data/transitRecordTemplate';
+import type { RecordTemplate } from '../../types/record';
 import { useWorkflowController } from '../../hooks/useWorkflowController';
 import type { WorkflowSessionSource } from '../../utils/workflowSession';
 import type { LearningMode } from '../../utils/explorerNavigation';
 import { loadLabDraft, saveLabDraft } from '../../utils/inquiryDraft';
+import { loadTransitFit, saveTransitFit } from '../../workflows/transit/fitBridge';
 import {
   createTransitWorkflowDefinition,
   type PersistedTransitLabState,
@@ -47,15 +45,13 @@ import {
 } from '../../workflows/transit/lightCurve';
 import {
   computeTransitValidationStats,
-  type TransitValidationStats,
-} from '../../workflows/transit/validationStats';
+  } from '../../workflows/transit/validationStats';
 import { useTransitPreview } from '../../workflows/transit/hooks/useTransitPreview';
 import { useTransitPhotometry } from '../../workflows/transit/hooks/useTransitPhotometry';
 import { useTransitFit } from '../../workflows/transit/hooks/useTransitFit';
 import {
   createInitialTransitLabState,
   transitLabReducer,
-  type ComparisonStar,
   type StarKey,
   type TransitLabDefaults,
   type TransitLabState,
@@ -80,7 +76,6 @@ const STEPS: Array<{ id: TransitStep; label: { ko: string; en: string }; number:
   { id: 'comparisonqc', label: { ko: '비교별 품질 점검', en: 'Comparison QC' }, number: 3 },
   { id: 'lightcurve', label: { ko: '광도곡선 확인', en: 'Light Curve' }, number: 4 },
   { id: 'transitfit', label: { ko: '식현상 모델 적합', en: 'Transit Fit' }, number: 5 },
-  { id: 'record', label: { ko: '결과 기록', en: 'Record Result' }, number: 6 },
 ];
 
 function defaultFitDisplayXAxis(
@@ -243,117 +238,32 @@ function describeLimbDarkeningSource(source: string | null | undefined): string 
   return source.replace(/_/g, ' ');
 }
 
-function formatNullableNumber(
-  value: number | null | undefined,
-  digits = 3,
-  suffix = ''
-): string {
-  if (typeof value !== 'number' || !Number.isFinite(value)) return 'n/a';
-  return `${value.toFixed(digits)}${suffix}`;
-}
 
-function formatFluxPpm(value: number | null | undefined): string {
-  if (typeof value !== 'number' || !Number.isFinite(value)) return 'n/a';
-  return `${(value * 1_000_000).toFixed(0)} ppm`;
-}
 
-function formatPercentValue(value: number | null | undefined, digits = 1): string {
-  if (typeof value !== 'number' || !Number.isFinite(value)) return 'n/a';
-  return `${(value * 100).toFixed(digits)}%`;
-}
 
-function TransitValidationStatsPanel({ stats }: { stats: TransitValidationStats }) {
-  const lang = useLangStore((s) => s.lang);
-  const depthDiff = stats.referenceComparison.depthDifferencePctPoints;
-  const periodDiffSeconds = stats.referenceComparison.periodDifferenceSeconds;
-  const methodText =
-    `N=${stats.sample.dataPoints}, retained=${stats.sample.retainedPoints}, ` +
-    `clipped=${stats.sample.clippedPoints}, reduced chi-squared=` +
-    `${formatNullableNumber(stats.fit.reducedChiSquared, 3)}, residual RMS=` +
-    `${formatFluxPpm(stats.residuals.rms)}.`;
+function MobileFoldSection({
+  compact,
+  title,
+  defaultOpen = false,
+  children,
+}: {
+  compact: boolean;
+  title: string;
+  defaultOpen?: boolean;
+  children: ReactNode;
+}) {
+  if (!compact) return <>{children}</>;
 
   return (
-    <div className="transit-validation-panel">
-      <div className="transit-reference-head">
-        <div>
-          <span className="record-section-kicker">
-            {lang === 'ko' ? '검증 통계' : 'Validation statistics'}
-          </span>
-          <h4>{lang === 'ko' ? '논문/보고서용 진단값' : 'Paper-Ready Diagnostics'}</h4>
-        </div>
-        <span>{stats.fit.usedBatman ? 'batman model' : 'simplified model'}</span>
+    <details className="transit-mobile-fold" open={defaultOpen || undefined}>
+      <summary className="transit-mobile-fold-summary">
+        <span>{title}</span>
+        <span className="transit-mobile-fold-icon" aria-hidden="true" />
+      </summary>
+      <div className="transit-mobile-fold-body">
+        {children}
       </div>
-      <div className="transit-validation-grid">
-        <div className="transit-summary-card">
-          <span className="transit-summary-label">Fitted N</span>
-          <strong>{stats.sample.dataPoints.toLocaleString()}</strong>
-        </div>
-        <div className="transit-summary-card">
-          <span className="transit-summary-label">Clipped</span>
-          <strong>{formatPercentValue(stats.sample.clippedFraction)}</strong>
-        </div>
-        <div className="transit-summary-card">
-          <span className="transit-summary-label">Residual RMS</span>
-          <strong>{formatFluxPpm(stats.residuals.rms)}</strong>
-        </div>
-        <div className="transit-summary-card">
-          <span className="transit-summary-label">Residual MAD</span>
-          <strong>{formatFluxPpm(stats.residuals.mad)}</strong>
-        </div>
-        <div className="transit-summary-card">
-          <span className="transit-summary-label">Norm. RMS</span>
-          <strong>{formatNullableNumber(stats.residuals.normalizedRms, 2)}</strong>
-        </div>
-        <div className="transit-summary-card">
-          <span className="transit-summary-label">chi2 red</span>
-          <strong>{formatNullableNumber(stats.fit.reducedChiSquared, 3)}</strong>
-        </div>
-        <div className="transit-summary-card">
-          <span className="transit-summary-label">Depth diff.</span>
-          <strong>
-            {typeof depthDiff === 'number' && Number.isFinite(depthDiff)
-              ? `${depthDiff >= 0 ? '+' : ''}${depthDiff.toFixed(3)}%p`
-              : 'n/a'}
-          </strong>
-        </div>
-        <div className="transit-summary-card">
-          <span className="transit-summary-label">Period diff.</span>
-          <strong>
-            {typeof periodDiffSeconds === 'number' && Number.isFinite(periodDiffSeconds)
-              ? `${periodDiffSeconds >= 0 ? '+' : ''}${periodDiffSeconds.toFixed(1)} s`
-              : 'n/a'}
-          </strong>
-        </div>
-        <div className="transit-summary-card">
-          <span className="transit-summary-label">Comp. RMS med.</span>
-          <strong>{formatFluxPpm(stats.comparisonQuality.medianRms)}</strong>
-        </div>
-        <div className="transit-summary-card">
-          <span className="transit-summary-label">Eff. comps</span>
-          <strong>
-            {formatNullableNumber(stats.comparisonQuality.effectiveComparisonCount, 2)}
-          </strong>
-        </div>
-      </div>
-      <div className="transit-validation-method">
-        <strong>{lang === 'ko' ? '방법 문장' : 'Method sentence'}</strong>
-        <p>{methodText}</p>
-      </div>
-      {stats.flags.length > 0 ? (
-        <div className="transit-validation-flags">
-          <strong>{lang === 'ko' ? '해석 주의' : 'Interpretation flags'}</strong>
-          {stats.flags.map((flag) => (
-            <span key={flag}>{flag}</span>
-          ))}
-        </div>
-      ) : (
-        <p className="transit-reference-note">
-          {lang === 'ko'
-            ? '자동 플래그는 없습니다. 그래도 잔차 모양, 비교성 품질, ROI 선택 근거를 함께 확인하세요.'
-            : 'No automatic flags. Still inspect residual shape, comparison quality, and ROI justification.'}
-        </p>
-      )}
-    </div>
+    </details>
   );
 }
 
@@ -380,32 +290,6 @@ function useCompactTransitLayout() {
   }, []);
 
   return compact;
-}
-
-function MobileFoldSection({
-  compact,
-  title,
-  defaultOpen = false,
-  children,
-}: {
-  compact: boolean;
-  title: string;
-  defaultOpen?: boolean;
-  children: ReactNode;
-}) {
-  if (!compact) return <>{children}</>;
-
-  return (
-    <details className="transit-mobile-fold" open={defaultOpen || undefined}>
-      <summary className="transit-mobile-fold-summary">
-        <span>{title}</span>
-        <span className="transit-mobile-fold-icon" aria-hidden="true" />
-      </summary>
-      <div className="transit-mobile-fold-body">
-        {children}
-      </div>
-    </details>
-  );
 }
 
 function StepGuide({
@@ -573,17 +457,6 @@ function arePixelPositionsNear(
   return Math.hypot(left.x - right.x, left.y - right.y) <= tolerancePx;
 }
 
-function toTransitApertureConfig(
-  position: PixelCoordinate,
-  aperture: ApertureParams
-): TransitApertureConfig {
-  return {
-    position,
-    aperture_radius: aperture.apertureRadius,
-    inner_annulus: aperture.innerAnnulus,
-    outer_annulus: aperture.outerAnnulus,
-  };
-}
 
 function buildInitialRecordAnswers(template: RecordTemplate | null): Record<string, unknown> {
   if (!template) return {};
@@ -597,90 +470,9 @@ function buildInitialRecordAnswers(template: RecordTemplate | null): Record<stri
   }, {});
 }
 
-interface RecordQuestionLocale {
-  label: string;
-  placeholder?: string;
-  helpText?: string;
-  options?: Record<string, string>;
-}
 
-const TRANSIT_RECORD_KO: Record<string, RecordQuestionLocale> = {
-  summary_title: {
-    label: '기록 제목',
-    placeholder: '예: WASP-26 b Sector 29 식현상 분석',
-  },
-  transit_visible: {
-    label: '광도곡선에서 식현상으로 보이는 밝기 감소가 확인되는가?',
-    options: {
-      clear: '예, 뚜렷하게 보인다',
-      possible: '식현상일 가능성이 있다',
-      unclear: '불분명하거나 잡음이 많다',
-      not_seen: '뚜렷한 밝기 감소가 보이지 않는다',
-    },
-  },
-  curve_quality: {
-    label: '이 광도곡선은 해석에 어느 정도 활용할 수 있는가?',
-    options: {
-      high: '품질이 높다',
-      medium: '주의사항을 고려하면 활용할 수 있다',
-      low: '품질이 낮다',
-    },
-  },
-  confidence_score: {
-    label: '해석 확신도 (1~5)',
-    helpText: '현재 해석을 얼마나 신뢰하는지 스스로 평가하세요.',
-  },
-  issues_observed: {
-    label: '분석 과정에서 확인한 문제를 선택하세요.',
-    options: {
-      few_comparisons: '적절한 비교성이 부족함',
-      blended_field: '주변 별빛에 오염됨',
-      noisy_curve: '광도곡선 잡음이 큼',
-      field_too_small: '분석 시야가 너무 좁음',
-      none: '뚜렷한 문제 없음',
-    },
-  },
-  analysis_note: {
-    label: '분석 결과 해석',
-    placeholder: '선택한 자료와 그래프의 특징, 그 결과가 의미하는 바를 근거와 함께 적으세요.',
-  },
-  reference_comparison: {
-    label: '측정값은 NASA Exoplanet Archive 기준값 또는 문헌값과 어떻게 다른가?',
-    placeholder:
-      'Rp/R*, 식 깊이 또는 공전 주기를 비교하고, 차이가 발생한 원인을 자료와 분석 조건을 근거로 설명하세요.',
-    helpText:
-      '비교성 품질, 별빛 오염, 구경 크기, 선택한 시간 구간, 잡음, 모델 가정을 고려하세요.',
-  },
-  next_step: {
-    label: '분석을 다시 수행한다면 무엇을 바꾸겠는가?',
-    placeholder: '예: 시야 확대, 비교성 변경, 다른 Sector 분석',
-  },
-};
 
-function localizeRecordQuestion(
-  question: RecordQuestion,
-  lang: 'ko' | 'en'
-): {
-  label: string;
-  placeholder: string;
-  helpText: string | null;
-  options: RecordQuestionOption[];
-} {
-  const locale = lang === 'ko' ? TRANSIT_RECORD_KO[question.id] : undefined;
-  return {
-    label: locale?.label ?? question.label,
-    placeholder: locale?.placeholder ?? question.placeholder ?? '',
-    helpText: locale?.helpText ?? question.help_text ?? null,
-    options: (question.options ?? []).map((option) => ({
-      ...option,
-      label: locale?.options?.[option.value] ?? option.label,
-    })),
-  };
-}
 
-function isScoreQuestion(question: RecordTemplate['questions'][number]): boolean {
-  return question.type === 'number' && question.min_value === 1 && question.max_value === 5;
-}
 
 export function TransitLab({
   target,
@@ -698,9 +490,6 @@ export function TransitLab({
     useAppStore.persist.hasHydrated()
   );
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [recordTemplate, setRecordTemplate] = useState<RecordTemplate | null>(
-    defaultTransitRecordTemplate
-  );
   // Fit method: false = fast least-squares (default), true = precise MCMC.
   const [refineMcmc, setRefineMcmc] = useState(false);
 
@@ -767,8 +556,6 @@ export function TransitLab({
     showTicMarkers,
     selectedComparisonDiagnostic,
     qcIncludedComparisonLabels,
-    recordLoading,
-    recordSubmitting,
   } = state;
 
 
@@ -795,7 +582,6 @@ export function TransitLab({
       guideAnswersRef.current = loadLabDraft(target.id)?.guideAnswers ?? {};
     }
   }
-  const recordTemplateRequestedRef = useRef(false);
   const loadedRecordIdRef = useRef<number | null>(null);
   const restoringSessionPreviewRef = useRef(false);
   const suppressAnalysisInvalidationRef = useRef(false);
@@ -837,21 +623,6 @@ export function TransitLab({
           )}${fitLimbDarkeningFilter ? ` for the ${fitLimbDarkeningFilter} band` : ''}, using the host-star parameters when available, and then held fixed during the fit.`
     : null;
   const referenceTransitDepthPct = target.transit_depth_pct ?? null;
-  const referenceRpRs =
-    referenceTransitDepthPct !== null && referenceTransitDepthPct >= 0
-      ? Math.sqrt(referenceTransitDepthPct / 100)
-      : null;
-  const measuredRpRs = fitResult?.fitted_params.rp_rs ?? null;
-  const measuredTransitDepthPct =
-    measuredRpRs !== null ? measuredRpRs ** 2 * 100 : null;
-  const rpRsDifference =
-    measuredRpRs !== null && referenceRpRs !== null
-      ? measuredRpRs - referenceRpRs
-      : null;
-  const periodDifference =
-    fitResult && target.period_days !== null
-      ? fitResult.period - target.period_days
-      : null;
   const validationStats = useMemo(
     () =>
       fitResult
@@ -864,6 +635,18 @@ export function TransitLab({
         : null,
     [fitResult, referenceTransitDepthPct, target.period_days, result?.comparison_diagnostics]
   );
+
+  // Ride the diagnostics along on the bridged fit. useTransitFit saves the fit
+  // itself when the stream lands, but the stats are computed here (they need the
+  // archive reference + comparison diagnostics), so merge them in afterwards —
+  // the block's Step 5 renders them; the Lab only shows χ²_red.
+  useEffect(() => {
+    if (!validationStats) return;
+    const saved = loadTransitFit(target.id);
+    if (!saved || saved.validationStats === validationStats) return;
+    saveTransitFit({ ...saved, validationStats });
+  }, [validationStats, target.id]);
+
   const workflowSessionSource: WorkflowSessionSource =
     draftId && draftId.trim() !== ''
       ? { kind: 'draft', id: draftId }
@@ -936,11 +719,9 @@ export function TransitLab({
   const currentDefaults = useMemo<TransitLabDefaults>(
     () => ({
       aperture: DEFAULT_APERTURE,
-      recordAnswers: recordTemplate
-        ? buildInitialRecordAnswers(recordTemplate)
-        : stateDefaults.recordAnswers,
+      recordAnswers: stateDefaults.recordAnswers,
     }),
-    [recordTemplate, stateDefaults.recordAnswers],
+    [stateDefaults.recordAnswers],
   );
 
   // ── Workflow controller ──────────────────────────────────────────────
@@ -1204,7 +985,7 @@ export function TransitLab({
               }
             : payload.context?.aperture ?? { ...DEFAULT_APERTURE },
           selectedStar: 'T',
-          recordAnswers: payload.answers ?? buildInitialRecordAnswers(recordTemplate),
+          recordAnswers: payload.answers ?? buildInitialRecordAnswers(defaultTransitRecordTemplate),
           recordTitle: record.title,
           seedRecordSummary: {
             submission_id: record.submission_id,
@@ -1233,7 +1014,6 @@ export function TransitLab({
     hasRestoredSnapshot,
     patch,
     seedRecordId,
-    recordTemplate,
     replaceStep,
     selectAllObservations,
     target.id,
@@ -1267,40 +1047,6 @@ export function TransitLab({
 
   // NOTE: auto-fold and auto-BJD-window effects live in useTransitFit hook.
 
-  useEffect(() => {
-    if (recordLoading || recordTemplateRequestedRef.current) return;
-    let cancelled = false;
-    recordTemplateRequestedRef.current = true;
-    patch({ recordLoading: true });
-    fetchRecordTemplate('transit_record')
-      .then((template) => {
-        if (cancelled) return;
-        setRecordTemplate(template);
-        dispatch({
-          type: 'update',
-          updater: (s) => ({
-            recordAnswers:
-              Object.keys(s.recordAnswers).length > 0
-                ? s.recordAnswers
-                : buildInitialRecordAnswers(template),
-          }),
-        });
-      })
-      .catch((error) => {
-        if (cancelled) return;
-        console.error('Failed to load record template', error);
-        patch({
-          errorMessage:
-            error instanceof Error ? error.message : 'Failed to load record form.',
-        });
-      })
-      .finally(() => {
-        if (!cancelled) patch({ recordLoading: false });
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [recordTemplate, recordLoading]);
 
   // Invalidate result only after hydration when the analysis inputs truly change
   useEffect(() => {
@@ -1379,14 +1125,6 @@ export function TransitLab({
   const qcIncludedDiagnostics = comparisonDiagnostics.filter((diagnostic) =>
     qcIncludedComparisonLabels.includes(diagnostic.label)
   );
-  const persistedComparisonStars: ComparisonStar[] = comparisonDiagnostics.map((diagnostic) => ({
-    position: diagnostic.position,
-    aperture: {
-      apertureRadius: diagnostic.aperture_radius,
-      innerAnnulus: diagnostic.inner_annulus,
-      outerAnnulus: diagnostic.outer_annulus,
-    },
-  }));
   const qcBestDiagnostic: TransitComparisonDiagnostic | null =
     [...comparisonDiagnostics].sort(
       (left, right) => left.differential_rms - right.differential_rms
@@ -1457,7 +1195,6 @@ export function TransitLab({
     'comparisonqc',
     'lightcurve',
     'transitfit',
-    'record',
   ];
   const currentStepIndex = stepOrder.indexOf(step);
 
@@ -1493,11 +1230,6 @@ export function TransitLab({
       if (!result) return 'locked';
       if (currentStepIndex > targetIndex) return 'completed';
       if (step === 'transitfit') return 'accessible';
-      return 'locked';
-    }
-    if (stepId === 'record') {
-      if (!result) return 'locked';
-      if (step === 'record') return 'accessible';
       return 'locked';
     }
     return 'locked';
@@ -1604,133 +1336,7 @@ export function TransitLab({
     return () => clearTimeout(timer);
   }, [target.id, recordAnswers, labDraftTick]);
 
-  const handleRecordAnswerChange = (questionId: string, value: unknown) => {
-    labDirtyRef.current = true;
-    dispatch({
-      type: 'update',
-      updater: (s) => ({
-        submittedRecord: null,
-        recordAnswers: { ...s.recordAnswers, [questionId]: value },
-      }),
-    });
-  };
 
-  const handleSubmitRecord = async () => {
-    if (!result) {
-      patch({ errorMessage: 'No photometry result is available to save.' });
-      return;
-    }
-
-    const submissionObservationId =
-      result.observation_id?.trim() || activeObservationId || preview?.observation_id || '';
-    if (!submissionObservationId) {
-      patch({ errorMessage: 'Missing observation context for this analysis record.' });
-      return;
-    }
-
-    const submissionSector = preview?.sector ?? activeObservation?.sector ?? result.sector;
-    const submissionFieldSizePx =
-      preview?.cutout_size_px ??
-      cutoutSizePx ??
-      pendingCutoutSizePx ??
-      DEFAULT_TRANSIT_CUTOUT_SIZE_PX;
-    const submissionTargetPosition =
-      effectiveTargetPosition ?? targetPositionOffset ?? result.target_position ?? null;
-    const submissionObservationContext =
-      submissionSector !== null && submissionSector !== undefined
-        ? {
-            sector: submissionSector,
-            camera: preview?.camera ?? activeObservation?.camera ?? null,
-            ccd: preview?.ccd ?? activeObservation?.ccd ?? null,
-          }
-        : null;
-
-    patch({ recordSubmitting: true, errorMessage: null });
-    try {
-      const response = await submitRecordTemplate('transit_record', {
-        workflow: 'transit_lab',
-        target_id: target.id,
-        observation_ids: [submissionObservationId],
-        title: recordTitle.trim() || `${target.name} Sector ${submissionSector}`,
-        context: {
-          target_name: target.name,
-          sector: submissionSector,
-          observation_id: submissionObservationId,
-          field_size_px: submissionFieldSizePx,
-          frame_count: result.frame_count,
-          target_context: {
-            ra: target.ra,
-            dec: target.dec,
-            period_days: target.period_days,
-            transit_depth_pct: target.transit_depth_pct ?? null,
-            transit_duration_hours: target.transit_duration_hours ?? null,
-            reference_rp_rs_from_depth: referenceRpRs,
-          },
-          observation_context: submissionObservationContext,
-          target_position: submissionTargetPosition,
-          target_aperture: submissionTargetPosition
-            ? toTransitApertureConfig(submissionTargetPosition, targetAperture)
-            : null,
-          comparison_positions: persistedComparisonStars.map((star) => star.position),
-          comparison_apertures: persistedComparisonStars.map((star) =>
-            toTransitApertureConfig(star.position, star.aperture)
-          ),
-          aperture: targetAperture,
-          transit_fit: fitResult ? {
-            rp_rs: fitResult.fitted_params.rp_rs,
-            rp_rs_err: fitResult.fitted_params.rp_rs_err,
-            a_rs: fitResult.fitted_params.a_rs,
-            a_rs_err: fitResult.fitted_params.a_rs_err,
-            inclination: fitResult.fitted_params.inclination,
-            inclination_err: fitResult.fitted_params.inclination_err,
-            u1: fitResult.fitted_params.u1,
-            u2: fitResult.fitted_params.u2,
-            chi_squared_red: fitResult.fitted_params.reduced_chi_squared,
-            period: fitResult.period,
-            t0: fitResult.t0,
-            used_batman: fitResult.used_batman,
-            used_mcmc: fitResult.used_mcmc,
-            preprocessing: fitResult.preprocessing,
-          } : null,
-          fit_controls: {
-            fit_data_source: fitDataSource,
-            display_x_axis: fitDisplayXAxis,
-            display_y_axis: fitDisplayYAxis,
-            bjd_start: resolvedBjdWindow?.start ?? null,
-            bjd_end: resolvedBjdWindow?.end ?? null,
-            fit_window_phase: requestedFitWindowPhase,
-            baseline_order: 0,
-            sigma_clip_sigma: 0,
-            sigma_clip_iterations: 0,
-            fit_limb_darkening: false,
-          },
-          learning_mode: learningMode,
-          reference_comparison: fitResult ? {
-            measured_rp_rs: measuredRpRs,
-            measured_depth_pct: measuredTransitDepthPct,
-            reference_rp_rs_from_depth: referenceRpRs,
-            reference_depth_pct: referenceTransitDepthPct,
-            rp_rs_difference: rpRsDifference,
-            measured_period_days: fitResult.period,
-            reference_period_days: target.period_days,
-            period_difference_days: periodDifference,
-          } : null,
-          validation_stats: validationStats,
-        },
-        answers: recordAnswers,
-        guide_answers: guideAnswersRef.current,
-      });
-      patch({ submittedRecord: response });
-    } catch (error) {
-      console.error('Failed to submit analysis record', error);
-      patch({
-        errorMessage:
-          error instanceof Error ? error.message : 'Failed to submit analysis record.',
-      });
-    } finally {
-      patch({ recordSubmitting: false });
-    }
-  };
 
   // NOTE: runTransitPhotometryForComparisons, handleRunPhotometry, handleStop,
   // handleToggleQcComparison, handleSelectAllQcComparisons, handleApplyComparisonQc
@@ -1796,8 +1402,7 @@ export function TransitLab({
     result !== null &&
     (
       step === 'lightcurve' ||
-      step === 'transitfit' ||
-      step === 'record'
+      step === 'transitfit'
     );
   const showBlockingPreviewLoad =
     previewLoading && preview === null && !canRenderRestoreStateWithoutPreview;
@@ -2010,7 +1615,7 @@ export function TransitLab({
             : 'Suggested 45–90 minutes · Output: light-curve evidence, NASA Exoplanet Archive comparison, and an explanation of differences'}
           {labSavedAt !== null && (
             <em className="inquiry-autosave-status">
-              {lang === 'ko' ? '자동 저장됨 ' : 'Autosaved '}
+              {lang === 'ko' ? '이 브라우저에 자동 저장됨 ' : 'Autosaved in this browser '}
               {new Date(labSavedAt).toLocaleTimeString(lang === 'ko' ? 'ko-KR' : 'en-US', {
                 hour: '2-digit',
                 minute: '2-digit',
@@ -2868,61 +2473,6 @@ export function TransitLab({
           </div>
         )}
 
-        {step === 'record' && (
-          <div className="transit-controls-card">
-            <h4>{lang === 'ko' ? '분석 기록 보관' : 'Archive Record'}</h4>
-            <p className="hint">
-              {lang === 'ko'
-                ? '이번 분석과 해석을 학습 기록으로 저장합니다. 저장한 결과는 나중에 내 분석 기록에서 다시 확인할 수 있습니다.'
-                : 'Save this run as a learning record for later review in My Analyses.'}
-            </p>
-            {!user && (
-              <div className="transit-callout" style={{ marginTop: 12 }}>
-                {lang === 'ko'
-                  ? '이 분석을 내 기록에 저장하려면 Google로 로그인하세요.'
-                  : 'Sign in with Google to submit this analysis to your archive history.'}
-              </div>
-            )}
-            {submittedRecord ? (
-              <div className="transit-config-summary" style={{ marginTop: 12 }}>
-                <div className="transit-config-row">
-                  <span>{lang === 'ko' ? '제출 기록' : 'Submission'}</span>
-                  <span>#{submittedRecord.submission_id}</span>
-                </div>
-                <div className="transit-config-row">
-                  <span>{lang === 'ko' ? '저장 위치' : 'Saved To'}</span>
-                  <span>{submittedRecord.export_path}</span>
-                </div>
-                {seedRecordSummary && (
-                  <div className="transit-config-row">
-                    <span>{lang === 'ko' ? '초안 원본' : 'Draft Seed'}</span>
-                    <span>{lang === 'ko' ? '기록' : 'Record'} #{seedRecordSummary.submission_id}</span>
-                  </div>
-                )}
-              </div>
-            ) : seedRecordSummary ? (
-              <div className="transit-config-summary" style={{ marginTop: 12 }}>
-                <div className="transit-config-row">
-                  <span>{lang === 'ko' ? '초안 원본' : 'Draft Seed'}</span>
-                  <span>{lang === 'ko' ? '기록' : 'Record'} #{seedRecordSummary.submission_id}</span>
-                </div>
-              </div>
-            ) : (
-              <div className="transit-config-summary" style={{ marginTop: 12 }}>
-                <div className="transit-config-row">
-                  <span>{lang === 'ko' ? '대상' : 'Target'}</span>
-                  <span>{target.name}</span>
-                </div>
-                {result && (
-                  <div className="transit-config-row">
-                    <span>{lang === 'ko' ? '프레임' : 'Frames'}</span>
-                    <span>{result.frame_count.toLocaleString()}</span>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
         </div>
       </div>
 
@@ -3972,9 +3522,6 @@ export function TransitLab({
                       <span>{fitResult.preprocessing.retained_points}</span>
                     </div>
                   </div>
-                  {validationStats && (
-                    <TransitValidationStatsPanel stats={validationStats} />
-                  )}
                   <div className="transit-run-actions" style={{ marginTop: 12 }}>
                     <button
                       type="button"
@@ -3999,482 +3546,18 @@ export function TransitLab({
                 <button type="button" className="btn-sm" onClick={handlePrevious}>
                    {lang === 'ko' ? '이전' : 'Previous'}
                 </button>
-                <button type="button" className="btn-primary" disabled={!canGoNext} onClick={handleNext}>
-                   {lang === 'ko' ? '다음: 결과 기록' : 'Next: Record Result'}
-                </button>
+                {fitResult && (
+                  <span className="transit-fit-done-hint">
+                    {lang === 'ko'
+                      ? '적합 결과 저장됨 — 위 탐구 단계 Step 5(기준값 비교)로 이동하세요'
+                      : 'Fit saved — continue with Step 5 (reference comparison) in the stepper above'}
+                  </span>
+                )}
               </div>
             </div>
           </>
         )}
 
-        {step === 'record' && result && (
-          <div className="transit-panel">
-            <div className="transit-panel-header">
-              <div>
-                <h3>{lang === 'ko' ? '6. 분석 결과 기록과 해석' : '6. Record This Analysis'}</h3>
-                <p className="hint">
-                  {lang === 'ko'
-                    ? '산출값을 기준값과 비교하고, 차이가 발생한 원인을 자료와 분석 조건을 근거로 설명하세요.'
-                    : 'Turn this run into a reusable archive record. Compare the result with reference values and explain the difference with evidence.'}
-                </p>
-              </div>
-            </div>
-
-            <StepGuide
-              step="record"
-              initialAnswers={guideAnswersRef.current}
-              onAnswersChange={handleGuideAnswers}
-              defaultOpen={!isCompactTransitLayout}
-              storageKeySuffix={isCompactTransitLayout ? 'mobile' : 'desktop'}
-            />
-
-            <MobileFoldSection
-              compact={isCompactTransitLayout}
-              title={lang === 'ko' ? '분석 맥락' : 'Record context'}
-            >
-              <div className="transit-summary-grid">
-                <div className="transit-summary-card">
-                  <span className="transit-summary-label">{lang === 'ko' ? '대상' : 'Target'}</span>
-                  <strong>{target.name}</strong>
-                </div>
-                <div className="transit-summary-card">
-                  <span className="transit-summary-label">Sector</span>
-                  <strong>{result.sector}</strong>
-                </div>
-                <div className="transit-summary-card">
-                  <span className="transit-summary-label">{lang === 'ko' ? '프레임' : 'Frames'}</span>
-                  <strong>{result.frame_count.toLocaleString()}</strong>
-                </div>
-                <div className="transit-summary-card">
-                  <span className="transit-summary-label">{lang === 'ko' ? '비교성' : 'Comparisons'}</span>
-                  <strong>{result.comparison_count}</strong>
-                </div>
-              </div>
-            </MobileFoldSection>
-
-            {/* Fit result summary in Record step */}
-            {fitResult && (
-              <MobileFoldSection
-                compact={isCompactTransitLayout}
-                title={lang === 'ko' ? '식현상 모델 적합 결과' : 'Transit fit summary'}
-              >
-                <div className="transit-record-fit-summary">
-                  <h4>{lang === 'ko' ? '측정 산출값' : 'Transit Fit Result'}</h4>
-                  <div className="transit-fit-params-grid">
-                    <div className="transit-fit-param-card">
-                      <span className="transit-fit-param-label">Rp/R*</span>
-                      <strong>{fitResult.fitted_params.rp_rs.toFixed(5)} <span className="transit-fit-param-err">± {fitResult.fitted_params.rp_rs_err.toFixed(5)}</span></strong>
-                      <p className="transit-fit-param-desc">
-                        Planet-to-star radius ratio. Rp/R* = {fitResult.fitted_params.rp_rs.toFixed(4)} means the planet's
-                        radius is about {(fitResult.fitted_params.rp_rs * 100).toFixed(1)}% of the host star,
-                        causing a {((fitResult.fitted_params.rp_rs ** 2) * 100).toFixed(2)}% dip in brightness during transit.
-                      </p>
-                    </div>
-                    <div className="transit-fit-param-card">
-                      <span className="transit-fit-param-label">a/R*</span>
-                      <strong>{fitResult.fitted_params.a_rs.toFixed(2)} <span className="transit-fit-param-err">± {fitResult.fitted_params.a_rs_err.toFixed(2)}</span></strong>
-                      <p className="transit-fit-param-desc">
-                        Scaled semi-major axis (orbital distance in units of stellar radii).
-                        The planet orbits at {fitResult.fitted_params.a_rs.toFixed(1)}x the star's radius from its center.
-                        {' '}Compare this value with the transit shape and residuals before interpreting it.
-                      </p>
-                    </div>
-                    <div className="transit-fit-param-card">
-                      <span className="transit-fit-param-label">{lang === 'ko' ? '궤도 경사각' : 'Inclination'}</span>
-                      <strong>{fitResult.fitted_params.inclination.toFixed(2)}° <span className="transit-fit-param-err">± {fitResult.fitted_params.inclination_err.toFixed(2)}°</span></strong>
-                      <p className="transit-fit-param-desc">
-                        Orbital inclination relative to our line of sight. 90° = edge-on.
-                        {' '}Use the curve shape and parameter uncertainty to decide whether the
-                        geometry is well constrained.
-                      </p>
-                    </div>
-                    <div className="transit-fit-param-card">
-                      <span className="transit-fit-param-label">{lang === 'ko' ? '공전 주기' : 'Period'}</span>
-                      <strong>{fitResult.period.toFixed(6)} d</strong>
-                      <p className="transit-fit-param-desc">
-                        Orbital period — the planet completes one orbit every {fitResult.period.toFixed(4)} days
-                        ({(fitResult.period * 24).toFixed(1)} hours).
-                      </p>
-                    </div>
-                    <div className="transit-fit-param-card">
-                      <span className="transit-fit-param-label">{lang === 'ko' ? '주연감광' : 'Limb Darkening'}</span>
-                      <strong>u₁ = {fitResult.fitted_params.u1.toFixed(3)}, u₂ = {fitResult.fitted_params.u2.toFixed(3)}</strong>
-                      <p className="transit-fit-param-desc">
-                        Quadratic limb darkening coefficients describe how the star appears
-                        darker at its edges. Affects the transit shape during ingress/egress.
-                      </p>
-                      {fitLimbDarkeningExplanation && (
-                        <p className="transit-fit-param-note">
-                          {fitLimbDarkeningExplanation}
-                        </p>
-                      )}
-                    </div>
-                    <div className="transit-fit-param-card">
-                      <span className="transit-fit-param-label">{lang === 'ko' ? '적합도 지표' : 'Fit Quality'}</span>
-                      <strong>χ²_red = {fitResult.fitted_params.reduced_chi_squared.toFixed(3)}</strong>
-                      <p className="transit-fit-param-desc">
-                        Reduced chi-squared is one diagnostic, not a conclusion. Inspect the residual
-                        pattern, retained points, and model assumptions together.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </MobileFoldSection>
-            )}
-
-            {fitResult && (
-              <MobileFoldSection
-                compact={isCompactTransitLayout}
-                title={lang === 'ko' ? '측정값과 기준값 비교' : 'Measured vs reference values'}
-              >
-                <div className="transit-reference-comparison">
-                  <div className="transit-reference-head">
-                    <div>
-                      <span className="record-section-kicker">
-                        {lang === 'ko' ? '해석 근거' : 'Interpretation evidence'}
-                      </span>
-                      <h4>{lang === 'ko' ? 'NASA Exoplanet Archive 기준값과 이번 분석 결과' : 'NASA reference and this analysis'}</h4>
-                    </div>
-                    <span>
-                      {lang === 'ko'
-                        ? 'NASA Exoplanet Archive 수록값'
-                        : 'NASA Exoplanet Archive catalog values'}
-                    </span>
-                  </div>
-                  <div className="transit-reference-table-wrap">
-                    <table className="transit-reference-table">
-                      <thead>
-                        <tr>
-                          <th>{lang === 'ko' ? '산출량' : 'Quantity'}</th>
-                          <th>{lang === 'ko' ? '기준값' : 'Reference'}</th>
-                          <th>{lang === 'ko' ? '측정값' : 'Measured'}</th>
-                          <th>{lang === 'ko' ? '차이' : 'Difference'}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td>{lang === 'ko' ? '식 깊이' : 'Transit depth'}</td>
-                          <td>{referenceTransitDepthPct !== null ? `${referenceTransitDepthPct.toFixed(3)}%` : lang === 'ko' ? '자료 없음' : 'Unavailable'}</td>
-                          <td>{measuredTransitDepthPct !== null ? `${measuredTransitDepthPct.toFixed(3)}%` : lang === 'ko' ? '자료 없음' : 'Unavailable'}</td>
-                          <td>
-                            {referenceTransitDepthPct !== null && measuredTransitDepthPct !== null
-                              ? `${(measuredTransitDepthPct - referenceTransitDepthPct).toFixed(3)}%p`
-                              : lang === 'ko' ? '자료 없음' : 'Unavailable'}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>Rp/R*</td>
-                          <td>{referenceRpRs !== null ? referenceRpRs.toFixed(5) : lang === 'ko' ? '자료 없음' : 'Unavailable'}</td>
-                          <td>{measuredRpRs !== null ? measuredRpRs.toFixed(5) : lang === 'ko' ? '자료 없음' : 'Unavailable'}</td>
-                          <td>{rpRsDifference !== null ? `${rpRsDifference >= 0 ? '+' : ''}${rpRsDifference.toFixed(5)}` : lang === 'ko' ? '자료 없음' : 'Unavailable'}</td>
-                        </tr>
-                        <tr>
-                          <td>{lang === 'ko' ? '공전 주기' : 'Orbital period'}</td>
-                          <td>{target.period_days !== null ? `${target.period_days.toFixed(6)} d` : lang === 'ko' ? '자료 없음' : 'Unavailable'}</td>
-                          <td>{fitResult.period.toFixed(6)} d</td>
-                          <td>{periodDifference !== null ? `${periodDifference >= 0 ? '+' : ''}${periodDifference.toFixed(6)} d` : lang === 'ko' ? '자료 없음' : 'Unavailable'}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  <p className="transit-reference-note">
-                    {lang === 'ko'
-                      ? '기준 Rp/R*는 카탈로그 식 깊이에 Rp/R* = √(depth)를 적용한 비교용 추정값입니다. 직접 출판된 반지름비와 동일한 값으로 간주하지 말고, 비교성 품질·별빛 오염·구경·ROI·잡음·모델 가정을 근거로 차이를 설명하세요.'
-                      : 'The reference Rp/R* is estimated from the catalog transit depth using Rp/R* = sqrt(depth). It is a comparison benchmark, not a direct published radius-ratio measurement. Explain the difference using comparison-star quality, blending, aperture choice, ROI, noise, and model assumptions.'}
-                  </p>
-                </div>
-              </MobileFoldSection>
-            )}
-
-            {validationStats && (
-              <MobileFoldSection
-                compact={isCompactTransitLayout}
-                title={lang === 'ko' ? '검증 통계' : 'Validation statistics'}
-              >
-                <TransitValidationStatsPanel stats={validationStats} />
-              </MobileFoldSection>
-            )}
-
-            {!recordTemplate && recordLoading && (
-              <div className="transit-empty-state">Loading record form...</div>
-            )}
-
-            {recordTemplate && (
-              <div className="record-form-shell">
-                <div className="record-form-head">
-                  <div>
-                    <h4>
-                      {lang === 'ko' ? '외계행성 식 분석 기록' : recordTemplate.title}
-                    </h4>
-                    <p className="hint">
-                      {lang === 'ko'
-                        ? '그래프와 산출값을 근거로 분석 결과, 기준값과의 차이, 후속 탐구 계획을 기록하세요.'
-                        : recordTemplate.description}
-                    </p>
-                  </div>
-                  <span className="analysis-launcher-tag">
-                    {user
-                      ? `${lang === 'ko' ? '로그인' : 'SIGNED IN AS'} ${user.name.toUpperCase()}`
-                      : lang === 'ko' ? '저장하려면 로그인 필요' : 'SIGN IN REQUIRED'}
-                  </span>
-                </div>
-
-                <div className="record-cover-card">
-                  <div className="record-cover-head">
-                    <div>
-                      <span className="record-section-kicker">{lang === 'ko' ? '최종 기록' : 'Submission'}</span>
-                      <h4>{lang === 'ko' ? '분석 결과 저장' : 'Save This Transit Analysis'}</h4>
-                    </div>
-                    <span className="record-required-note">
-                      {lang === 'ko' ? '* 필수' : '* Required'}
-                    </span>
-                  </div>
-                  <label className="record-form-field">
-                    <span className="record-field-label">
-                      {lang === 'ko' ? '저장 기록 제목' : 'Saved Record Title'}
-                      <strong className="record-required">*</strong>
-                    </span>
-                    <input
-                      type="text"
-                      value={recordTitle}
-                      onChange={(event) => patch({ recordTitle: event.target.value })}
-                      placeholder={`${target.name} Sector ${result.sector}`}
-                    />
-                  </label>
-                </div>
-
-                <div className="record-form-grid">
-
-                  {recordTemplate.questions.map((question) => {
-                    const value = recordAnswers[question.id];
-                    const localizedQuestion = localizeRecordQuestion(question, lang);
-                    const options = localizedQuestion.options;
-                    const requiredMark = question.required ? (
-                      <strong className="record-required">*</strong>
-                    ) : null;
-                    const questionHead = (
-                      <div className="record-question-head">
-                        <span className="record-field-label">
-                          {localizedQuestion.label}
-                          {requiredMark}
-                        </span>
-                        {localizedQuestion.helpText && (
-                          <small className="record-question-help">{localizedQuestion.helpText}</small>
-                        )}
-                      </div>
-                    );
-
-                    if (question.type === 'textarea') {
-                      return (
-                        <label
-                          key={question.id}
-                          className="record-question-card record-question-card-wide"
-                        >
-                          {questionHead}
-                          <textarea
-                            value={typeof value === 'string' ? value : ''}
-                            placeholder={localizedQuestion.placeholder}
-                            onChange={(event) =>
-                              handleRecordAnswerChange(question.id, event.target.value)
-                            }
-                          />
-                        </label>
-                      );
-                    }
-
-                    if (question.type === 'select') {
-                      return (
-                        <label key={question.id} className="record-question-card">
-                          {questionHead}
-                          <select
-                            value={typeof value === 'string' ? value : ''}
-                            onChange={(event) =>
-                              handleRecordAnswerChange(question.id, event.target.value)
-                            }
-                          >
-                            <option value="">{lang === 'ko' ? '선택...' : 'Select...'}</option>
-                            {options.map((option) => (
-                              <option key={option.value} value={option.value}>
-                                {option.label}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                      );
-                    }
-
-                    if (question.type === 'radio') {
-                      return (
-                        <div
-                          key={question.id}
-                          className="record-question-card record-question-card-wide"
-                        >
-                          {questionHead}
-                          <div className="record-radio-group">
-                            {options.map((option) => (
-                              <label key={option.value} className="record-choice-row">
-                                <input
-                                  type="radio"
-                                  name={question.id}
-                                  checked={value === option.value}
-                                  onChange={() =>
-                                    handleRecordAnswerChange(question.id, option.value)
-                                  }
-                                />
-                                <span>{option.label}</span>
-                              </label>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    }
-
-                    if (question.type === 'checkbox') {
-                      const selectedValues = Array.isArray(value) ? value : [];
-                      return (
-                        <div
-                          key={question.id}
-                          className="record-question-card record-question-card-wide"
-                        >
-                          {questionHead}
-                          <div className="record-checkbox-group">
-                            {options.map((option) => {
-                              const checked = selectedValues.includes(option.value);
-                              return (
-                                <label key={option.value} className="record-choice-row">
-                                  <input
-                                    type="checkbox"
-                                    checked={checked}
-                                    onChange={() => {
-                                      const next = checked
-                                        ? selectedValues.filter((item) => item !== option.value)
-                                        : [...selectedValues, option.value];
-                                      handleRecordAnswerChange(question.id, next);
-                                    }}
-                                  />
-                                  <span>{option.label}</span>
-                                </label>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      );
-                    }
-
-                    if (question.type === 'number') {
-                      if (isScoreQuestion(question)) {
-                        const min = question.min_value ?? 1;
-                        const max = question.max_value ?? 5;
-                        return (
-                          <div key={question.id} className="record-question-card">
-                            {questionHead}
-                            <div className="record-score-row">
-                              {Array.from({ length: max - min + 1 }, (_, index) => min + index).map(
-                                (score) => (
-                                  <button
-                                    key={score}
-                                    type="button"
-                                    className={`record-score-pill ${
-                                      Number(value) === score ? 'active' : ''
-                                    }`}
-                                    onClick={() => handleRecordAnswerChange(question.id, score)}
-                                  >
-                                    {score}
-                                  </button>
-                                )
-                              )}
-                            </div>
-                          </div>
-                        );
-                      }
-
-                      return (
-                        <label key={question.id} className="record-question-card">
-                          {questionHead}
-                          <input
-                            type="number"
-                            min={question.min_value ?? undefined}
-                            max={question.max_value ?? undefined}
-                            step="1"
-                            value={typeof value === 'number' || typeof value === 'string' ? value : ''}
-                            onChange={(event) =>
-                              handleRecordAnswerChange(question.id, event.target.value)
-                            }
-                          />
-                        </label>
-                      );
-                    }
-
-                    return (
-                      <label key={question.id} className="record-question-card">
-                        {questionHead}
-                        <input
-                          type="text"
-                          value={typeof value === 'string' ? value : ''}
-                          placeholder={localizedQuestion.placeholder}
-                          onChange={(event) =>
-                            handleRecordAnswerChange(question.id, event.target.value)
-                          }
-                        />
-                      </label>
-                    );
-                  })}
-                </div>
-
-                {submittedRecord && (
-                  <div className="transit-run-done transit-record-saved">
-                    <div className="transit-record-saved-msg">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green, #4ade80)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                        <polyline points="22 4 12 14.01 9 11.01" />
-                      </svg>
-                      <span>
-                        {lang === 'ko'
-                          ? `기록 #${submittedRecord.submission_id} 저장 완료`
-                          : `Record #${submittedRecord.submission_id} saved.`}
-                      </span>
-                    </div>
-                    <div className="transit-record-saved-actions">
-                      <button
-                        type="button"
-                        className="btn-sm"
-                        onClick={() => { void downloadMyRecordPhotometryCsv(submittedRecord.submission_id); }}
-                      >
-                        {lang === 'ko' ? 'CSV 내려받기' : 'Download CSV'}
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                <div className="transit-step-nav">
-                  <button type="button" className="btn-sm" onClick={handleReset}>
-                    {lang === 'ko' ? '초기화' : 'Reset'}
-                  </button>
-                  <div className="transit-step-nav-actions">
-                    <button type="button" className="btn-sm" onClick={handlePrevious}>
-                      {lang === 'ko' ? '이전' : 'Previous'}
-                    </button>
-                    {!user && (
-                      <a href="/api/auth/login" className="btn-sm">
-                        {lang === 'ko' ? '로그인 후 저장' : 'Sign In to Save'}
-                      </a>
-                    )}
-                    <button
-                      type="button"
-                      className="btn-primary"
-                      disabled={recordSubmitting || !user}
-                      onClick={handleSubmitRecord}
-                    >
-                      {recordSubmitting
-                        ? lang === 'ko' ? '저장 중...' : 'Submitting...'
-                        : lang === 'ko' ? '분석 기록 저장' : 'Submit Record'}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
       </div>
     </div>
     </div>

@@ -183,6 +183,52 @@ export function InquiryLayout<TContext = unknown>({
     };
   }, [module.steps, selfCheckAnswers]);
 
+  // Notes are keyed `${stepId}:${fieldId}`, but the backend record template
+  // expects bare question ids — configs keep field ids identical to template
+  // ids, so stripping the step prefix IS the mapping. Checkbox answers are
+  // JSON-string arrays in notes (see StepPanel) and unpack to real arrays here.
+  const templateAnswers = useMemo(() => {
+    const out: Record<string, unknown> = {};
+    module.steps.forEach((step) => {
+      step.recordFields.forEach((field) => {
+        const raw = notes[`${step.id}:${field.id}`];
+        if (raw === undefined || raw.trim() === '') return;
+        if (field.input === 'checkbox') {
+          try {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed) && parsed.length > 0) out[field.id] = parsed;
+          } catch {
+            // corrupt checkbox note — skip rather than send garbage
+          }
+        } else {
+          out[field.id] = raw;
+        }
+      });
+    });
+    return out;
+  }, [module.steps, notes]);
+
+  const missingRequiredLabels = useMemo(
+    () =>
+      module.steps.flatMap((step) =>
+        step.recordFields
+          .filter((field) => field.required && templateAnswers[field.id] === undefined)
+          .map((field) => localize(field.question, lang)),
+      ),
+    [module.steps, templateAnswers, lang],
+  );
+
+  // Progression gate: a step that asks for notes wants at least ONE of them
+  // before moving on — enough to keep the record habit without demanding every
+  // box (a full-completion gate would stall a classroom on the first snag).
+  const isStepAnswered = (step: (typeof module.steps)[number]) =>
+    step.recordFields.length === 0 ||
+    step.recordFields.some((field) => {
+      const raw = notes[`${step.id}:${field.id}`];
+      return raw !== undefined && raw.trim() !== '' && raw !== '[]';
+    });
+  const gateBlocked = !isStepAnswered(activeStep);
+
   const renderStepBody = () => {
     if (activeStep.kind === 'intro') {
       return (
@@ -308,12 +354,20 @@ export function InquiryLayout<TContext = unknown>({
     return (
       <>
         {resultSummarySlot}
-        <ReflectionPanel
-          prompts={result.interpretationPrompts}
-          notes={notes}
-          onNoteChange={handleNoteChange}
-        />
-        {recordSave && <RecordSavePanel config={recordSave} answers={notes} />}
+        {result.interpretationPrompts.length > 0 && (
+          <ReflectionPanel
+            prompts={result.interpretationPrompts}
+            notes={notes}
+            onNoteChange={handleNoteChange}
+          />
+        )}
+        {recordSave && (
+          <RecordSavePanel
+            config={recordSave}
+            answers={templateAnswers}
+            missingRequiredLabels={missingRequiredLabels}
+          />
+        )}
         {anonSubmit && (
           <AnonSubmitPanel config={anonSubmit} notes={notes} selfCheck={selfCheckSummary} />
         )}
@@ -342,7 +396,7 @@ export function InquiryLayout<TContext = unknown>({
         {module.steps.map((step, index) => {
           const isCurrent = index === stepIndex;
           const isCompleted = index < stepIndex;
-          const isLocked = index > maxUnlocked;
+          const isLocked = index > maxUnlocked || (gateBlocked && index > stepIndex);
           const shortLabel = STEP_SHORT_LABELS[step.id]?.[lang] ?? localize(step.title, lang);
           return (
             <div key={step.id} className="transit-step-indicator-item">
@@ -396,7 +450,7 @@ export function InquiryLayout<TContext = unknown>({
               {activeStep.number} / {module.steps[module.steps.length - 1].number}
               {savedAt !== null && (
                 <em className="inquiry-autosave-status">
-                  {lang === 'ko' ? '자동 저장됨 ' : 'Autosaved '}
+                  {lang === 'ko' ? '이 브라우저에 자동 저장됨 ' : 'Autosaved in this browser '}
                   {new Date(savedAt).toLocaleTimeString(lang === 'ko' ? 'ko-KR' : 'en-US', {
                     hour: '2-digit',
                     minute: '2-digit',
@@ -410,7 +464,14 @@ export function InquiryLayout<TContext = unknown>({
               <button
                 type="button"
                 className="btn-primary"
-                disabled={stepIndex >= maxUnlocked}
+                disabled={stepIndex >= maxUnlocked || gateBlocked}
+                title={
+                  gateBlocked
+                    ? lang === 'ko'
+                      ? '탐구 기록을 한 가지 이상 작성하면 넘어갈 수 있습니다'
+                      : 'Write at least one inquiry note to continue'
+                    : undefined
+                }
                 onClick={() => goToStep(1)}
               >
                 {lang === 'ko' ? '다음 단계' : 'Next'} →
@@ -429,6 +490,13 @@ export function InquiryLayout<TContext = unknown>({
               </button>
             )}
           </div>
+          {gateBlocked && !hideFooterNext && stepIndex < module.steps.length - 1 && (
+            <p className="inquiry-step-gate-hint">
+              {lang === 'ko'
+                ? '다음 단계로 가려면 이 단계의 ✍️ 탐구 기록을 한 가지 이상 작성하세요.'
+                : 'Write at least one ✍️ inquiry note in this step to continue.'}
+            </p>
+          )}
         </main>
       </div>
     </div>
