@@ -262,12 +262,34 @@ export function LabView() {
         [['workflow', 'transit']],
       ),
     };
+    // Step 1 on this page. Without an explicit slot InquiryLayout falls back to a
+    // generic "다음 행동" card whose button is the adapter's primary action —
+    // which here resolves to labHref, i.e. the page you are already on. Clicking
+    // it did nothing. The target is already chosen (it is in the URL), so show
+    // that instead, with a way back to the map to pick a different one.
+    const labSelectionSlot = (
+      <section className="inquiry-info-panel inquiry-selection-card">
+        <span className="inquiry-panel-kicker">
+          {lang === 'ko' ? '선택한 탐구 대상' : 'Selected target'}
+        </span>
+        <h3>{target.name}</h3>
+        <p>
+          {lang === 'ko'
+            ? '이 대상의 관측자료로 분석을 진행하고 있습니다. 다른 대상을 고르려면 전천 지도로 돌아가세요.'
+            : 'You are analyzing this target’s observations. Go back to the sky map to choose a different one.'}
+        </p>
+        <Link to={exoplanetTransitModule.entry.href} className="btn-secondary inquiry-panel-action">
+          {lang === 'ko' ? '전천 지도에서 다른 대상 고르기' : 'Choose another target on the sky map'}
+        </Link>
+      </section>
+    );
     return (
       <InquiryLayout
         module={exoplanetTransitModule}
         adapter={exoplanetAdapter}
         context={transitContext}
         initialStepId="step4_run_visualize"
+        selectionSlot={labSelectionSlot}
         contextSlot={
           <div className="inquiry-target-context">
             <div className="inquiry-target-context-copy">
