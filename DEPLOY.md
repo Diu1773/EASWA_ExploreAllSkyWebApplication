@@ -21,9 +21,26 @@ This repo also includes a starter `render.yaml` for Render Blueprints.
 
 ## Required environment variables
 
-Set these in the hosting platform:
+Set these in the hosting platform.
+
+> **`render.yaml` is not the source of truth for the live service.** The Render
+> service was created by hand, not from a Blueprint, so it never reads
+> `render.yaml` — the dashboard's Environment tab is the only thing that takes
+> effect. `render.yaml` is a reference list of what the service *should* have;
+> when you add a variable there, add it in the dashboard too. Symptom that
+> caught this on 2026-07-17: rows arrived in the sheet with `app_version=dev`
+> even though `render.yaml` sets `VITE_APP_VERSION=render`.
 
 - `EASWA_BASE_URL=https://your-public-domain`
+
+  **Do not omit this.** It sets the OAuth callback, but it also decides whether
+  the process thinks it is a dev box: `config.py` reads a `localhost` BASE_URL as
+  "development" and hands out development defaults. On a 512 MB Render instance
+  that silently meant a **96 MB cutout cache (vs 16 MB)** and **2 preview / 4
+  frame-count workers (vs 1 each)** — the OOM guards were effectively off, with
+  nothing in the logs to say so. Only the variables you set explicitly were
+  production-shaped; everything left to its default was not.
+
 - `EASWA_SESSION_SECRET=<long-random-secret>`
 
 If you want Google sign-in:
@@ -36,7 +53,33 @@ If you use Google sign-in, register this callback URL in Google Cloud:
 
 - `https://your-public-domain/api/auth/callback`
 
+## Frontend (`VITE_*`) variables — baked in at build time
+
+These are read by Vite while the bundle is compiled, not by the server at
+runtime. Two consequences:
+
+- **Changing one needs a re-deploy, not a restart.** A restart re-runs the same
+  image and the old value is still inside the JS.
+- **They must reach the Docker build.** Render passes service env vars to the
+  build as build args, but only if the Dockerfile declares a matching `ARG` —
+  see the `frontend-build` stage. Without that the dashboard value is silently
+  dropped and the bundle ships with the fallback.
+
+- `VITE_RECORD_SINK_URL=https://script.google.com/macros/s/.../exec`
+  Apps Script Web App that receives anonymous records (`docs/survey/easwa_record_sink.gs`).
+  Unset → the app keeps records in the browser only and never uploads.
+
+- `VITE_APP_VERSION=render`
+  Tagged onto every row. This is how real classroom data is told apart from
+  local test rows in the sheet — leave it unset and everything reads `dev`.
+
 ## Optional environment variables
+
+- `EASWA_TRANSIT_CUTOUT_MAX_DOWNLOAD_BYTES=629145600`
+  Hard cap on the TESSCut ZIP download (600 MB). Pair it with
+  `EASWA_TRANSIT_MAX_CUTOUT_SIZE_PX`: raising the pixel cap to 99 without this
+  lets a 99 px cutout of a 200 s-cadence sector fill the ephemeral disk instead
+  of failing fast with a clear message. Default is `0` = unlimited.
 
 - `EASWA_RECORD_REQUIRE_LOGIN=false`
   Use this if poster visitors should be able to submit records without logging in.
