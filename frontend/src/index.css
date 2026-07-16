@@ -1474,6 +1474,22 @@ body {
   height: 100%;
 }
 
+/* Aladin Lite ships its own chrome that this app already provides or does not
+   want. The constructor flags (showFrame / showGotoControl) do not suppress
+   these in v3, so hide them here.
+
+   .aladin-location — a coordinate goto box in the top-left. EASWA has its own
+   "대상 검색" field, so this is a second, RA/Dec-shaped search box competing
+   with it — the wrong first impression for a learner told to "click a star".
+
+   .aladin-status-bar-message — leaks raw loader URLs onto the sky
+   ("fetching: https://alaskybis.unistra.fr/MocServer/query?..."), which reads
+   as an error to anyone who is not an astronomer with a network tab open. */
+.aladin-container .aladin-location,
+.aladin-container .aladin-status-bar-message {
+  display: none !important;
+}
+
 .sky-center-reticle {
   position: absolute;
   top: 50%;
