@@ -13,9 +13,18 @@ export function ObservationTable({ observations }: ObservationTableProps) {
   const clearSelections = useAppStore((s) => s.clearSelections);
   const lang = useLangStore((s) => s.lang);
 
-  const allSelected = observations.length > 0 && selected.length === observations.length;
   const isTessTable = observations.some((obs) => obs.mission === 'TESS');
   const isKmtnetTable = observations.some((obs) => obs.mission === 'KMTNet');
+
+  // Classroom/demo safety: when practice cutouts ship for this target, only those
+  // sectors are selectable — the rest would trigger a multi-minute MAST download
+  // mid-lesson. Disabled with the reason shown (not hidden), and driven by the
+  // backend's `bundled` flag, so bundling another sector enables it automatically.
+  const hasBundled = isTessTable && observations.some((obs) => obs.bundled);
+  const isPickable = (obs: Observation) => !hasBundled || obs.bundled === true;
+  const pickable = observations.filter(isPickable);
+  const allSelected =
+    pickable.length > 0 && pickable.every((obs) => selected.includes(obs.id));
 
   return (
     <div className="observation-table-wrap">
@@ -23,9 +32,13 @@ export function ObservationTable({ observations }: ObservationTableProps) {
         <div>
           <h4>{lang === 'ko' ? '관측 자료' : 'Observations'}</h4>
           <p className="obs-table-subtitle">
-          {isTessTable
-            ? lang === 'ko' ? 'TESS Sector와 cutout 자료' : 'TESS sectors and cutout products'
-            : lang === 'ko' ? '관측 아카이브 기록' : 'Archive observation records'}
+          {hasBundled
+            ? lang === 'ko'
+              ? 'TESS Sector와 cutout 자료 — 수업용으로 준비된 Sector만 선택할 수 있습니다(즉시 분석).'
+              : 'TESS sectors and cutout products — only classroom-ready sectors are selectable (instant).'
+            : isTessTable
+              ? lang === 'ko' ? 'TESS Sector와 cutout 자료' : 'TESS sectors and cutout products'
+              : lang === 'ko' ? '관측 아카이브 기록' : 'Archive observation records'}
           </p>
         </div>
         <div className="obs-table-actions">
@@ -34,7 +47,7 @@ export function ObservationTable({ observations }: ObservationTableProps) {
             onClick={() =>
               allSelected
                 ? clearSelections()
-                : selectAll(observations.map((o) => o.id))
+                : selectAll(pickable.map((o) => o.id))
             }
           >
             {allSelected
@@ -84,18 +97,37 @@ export function ObservationTable({ observations }: ObservationTableProps) {
           {observations.map((obs) => (
             <tr
               key={obs.id}
-              className={selected.includes(obs.id) ? 'selected' : ''}
+              className={`${selected.includes(obs.id) ? 'selected' : ''}${
+                isPickable(obs) ? '' : ' obs-row-unavailable'
+              }`}
             >
               <td>
                 <input
                   type="checkbox"
                   checked={selected.includes(obs.id)}
+                  disabled={!isPickable(obs)}
                   onChange={() => toggle(obs.id)}
+                  title={
+                    isPickable(obs)
+                      ? undefined
+                      : lang === 'ko'
+                        ? '수업용으로 준비되지 않은 Sector입니다 — 선택하면 자료를 새로 내려받아야 해 수 분이 걸립니다.'
+                        : 'Not prepared for classroom use — selecting it would require a multi-minute download.'
+                  }
                 />
               </td>
               {isTessTable ? (
                 <>
-                  <td>{obs.display_label ?? `Sector ${obs.sector ?? '-'}`}</td>
+                  <td>
+                    {obs.display_label ?? `Sector ${obs.sector ?? '-'}`}
+                    {hasBundled && (
+                      <span className={`obs-badge${obs.bundled ? ' instant' : ''}`}>
+                        {obs.bundled
+                          ? lang === 'ko' ? '즉시 분석' : 'Instant'
+                          : lang === 'ko' ? '다운로드 필요' : 'Download needed'}
+                      </span>
+                    )}
+                  </td>
                   <td>{obs.camera ?? '-'}</td>
                   <td>{obs.ccd ?? '-'}</td>
                   <td>{obs.filter_band}</td>

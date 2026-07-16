@@ -51,4 +51,7 @@ export interface Observation {
   display_subtitle?: string | null;
   cutout_url?: string | null;
   frame_count?: number | null;
+  /** Practice cutout ships in the image — analyses instantly, no MAST download.
+   *  Non-bundled sectors are disabled in the picker (classroom/demo safety). */
+  bundled?: boolean;
 }

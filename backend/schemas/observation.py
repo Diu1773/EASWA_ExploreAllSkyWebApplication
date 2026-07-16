@@ -18,6 +18,10 @@ class Observation(BaseModel):
     display_subtitle: str | None = None
     cutout_url: str | None = None
     frame_count: int | None = None
+    # True when a practice cutout for this sector ships inside the image, so it
+    # analyses instantly with no MAST download. The UI restricts classroom/demo
+    # runs to these; it is derived from the bundled files, never hard-coded.
+    bundled: bool = False
 
 
 class ObservationListResponse(BaseModel):

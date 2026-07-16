@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from functools import lru_cache
 import logging
+from pathlib import Path
 import re
 from typing import Any
 from urllib.error import URLError
@@ -15,6 +16,26 @@ from astropy.coordinates import SkyCoord
 import astropy.units as u
 
 _EXOPLANET_ARCHIVE_TAP_URL = "https://exoplanetarchive.ipac.caltech.edu/TAP/sync"
+
+# Practice cutouts baked into the image (scripts/fetch_bundled_cutouts.py). A
+# sector is "bundled" when its FITS is present here, so classroom/demo runs can
+# be restricted to instant, download-free sectors. Derived from the files on
+# disk — adding a bundled cutout automatically enables that sector.
+_BUNDLED_CUTOUT_DIR = Path(__file__).resolve().parent.parent / "bundled_cutouts"
+_BUNDLED_CUTOUT_SIZE_PX = 50
+
+
+def _is_bundled(target_id: str, observation_id: str, sector: int) -> bool:
+    path = (
+        _BUNDLED_CUTOUT_DIR
+        / f"{target_id}__{observation_id}__s{sector:04d}__{_BUNDLED_CUTOUT_SIZE_PX}px.fits"
+    )
+    try:
+        return path.is_file() and path.stat().st_size > 0
+    except OSError:
+        return False
+
+
 _TESSCUT_SECTOR_URL = "https://mast.stsci.edu/tesscut/api/v0.1/sector"
 _TESSCUT_ASTROCUT_URL = "https://mast.stsci.edu/tesscut/api/v0.1/astrocut"
 _DEFAULT_CUTOUT_SIZE_PX = 35
@@ -278,9 +299,11 @@ def _sector_observations(
         sector = int(item["sector"])
         camera = int(item["camera"])
         ccd = int(item["ccd"])
+        observation_id = f"{target_id}_sector_{sector:04d}"
         observations.append(
             {
-                "id": f"{target_id}_sector_{sector:04d}",
+                "id": observation_id,
+                "bundled": _is_bundled(target_id, observation_id, sector),
                 "target_id": target_id,
                 "epoch": "2000-01-01T00:00:00Z",
                 "hjd": float(sector),
