@@ -52,11 +52,13 @@ export function AnonSubmitPanel({ config, notes, selfCheck }: AnonSubmitPanelPro
   const lang = useLangStore((s) => s.lang);
   const sinkUrl = getRecordSinkUrl();
   const [state, setState] = useState<SubmitState>('idle');
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const writtenNoteCount = Object.values(notes).filter((note) => note.trim() !== '').length;
 
   // Duplicate-submission guard persists across reloads (localStorage flag).
   useEffect(() => {
     setState(hasSubmittedAnonRecord(config.targetId) ? 'done' : 'idle');
+    setSubmitError(null);
   }, [config.targetId]);
 
   const disabledReason = !sinkUrl
@@ -71,6 +73,7 @@ export function AnonSubmitPanel({ config, notes, selfCheck }: AnonSubmitPanelPro
 
   const handleSubmit = async () => {
     if (!sinkUrl || !config.fit || state !== 'idle') return;
+    setSubmitError(null);
     setState('sending');
     const fit = config.fit;
     try {
@@ -90,11 +93,13 @@ export function AnonSubmitPanel({ config, notes, selfCheck }: AnonSubmitPanelPro
         app_version: (import.meta.env.VITE_APP_VERSION as string | undefined) ?? 'dev',
         user_agent: navigator.userAgent.slice(0, 160),
       });
-      // Optimistic: with no-cors the response is opaque, so reaching here only
-      // means the request was dispatched (see recordSink.ts).
+      // Reaching here means the sheet answered {ok:true} — the row exists.
       markAnonRecordSubmitted(config.targetId);
       setState('done');
-    } catch {
+    } catch (error) {
+      // Surface it. Silently dropping back to idle looked identical to "not
+      // pressed yet", so a learner would walk away believing they submitted.
+      setSubmitError(error instanceof Error ? error.message : String(error));
       setState('idle');
     }
   };
@@ -168,6 +173,15 @@ export function AnonSubmitPanel({ config, notes, selfCheck }: AnonSubmitPanelPro
               ? '아직 제출되지 않았습니다 — 아래 버튼을 눌러야 기록이 전송됩니다.'
               : 'Not submitted yet — your work is sent only when you press the button below.'}
           </p>
+
+          {submitError && (
+            <p className="inquiry-submit-error">
+              {lang === 'ko'
+                ? '제출하지 못했습니다 — 기록은 이 브라우저에 남아 있으니 다시 눌러 주세요.'
+                : 'Submission failed — your notes are still saved in this browser, please try again.'}
+              <span>{submitError}</span>
+            </p>
+          )}
 
           <button
             type="button"
