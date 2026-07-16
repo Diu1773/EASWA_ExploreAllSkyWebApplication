@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import A from 'aladin-lite';
 import type { Target } from '../../types/target';
 
@@ -87,6 +87,12 @@ function AladinViewer(
   const aladinApiRef = useRef<any>(null);
   const onTargetClickRef = useRef(onTargetClick);
   onTargetClickRef.current = onTargetClick;
+  // State, not a ref: the marker effect below has to re-run once Aladin is up.
+  // The catalog only exists after the async A.init resolves, while `targets`
+  // arrives from a local API call long before that — so the effect used to fire
+  // while the catalog was still null, bail out, and never run again, leaving the
+  // sky with no clickable targets at all.
+  const [aladinReady, setAladinReady] = useState(false);
 
   useImperativeHandle(ref, () => ({
     gotoTarget: async (target: Target) => {
@@ -239,6 +245,8 @@ function AladinViewer(
             onTargetClickRef.current(object.data as Target);
           }
         });
+
+        setAladinReady(true);
       })
       .catch((error) => {
         console.error('Failed to initialize Aladin Lite', error);
@@ -246,9 +254,10 @@ function AladinViewer(
 
     return () => { cancelled = true; };
   }, []);
-  // Update markers when targets change
+  // Update markers when targets change — and once Aladin finishes initializing,
+  // since the targets are usually already here by then.
   useEffect(() => {
-    if (!catalogRef.current || !aladinApiRef.current) return;
+    if (!aladinReady || !catalogRef.current || !aladinApiRef.current) return;
     const api = aladinApiRef.current;
 
     catalogRef.current.removeAll();
@@ -259,7 +268,7 @@ function AladinViewer(
       })
     );
     catalogRef.current.addSources(sources);
-  }, [targets]);
+  }, [targets, aladinReady]);
 
   return (
     <div className="aladin-shell">
