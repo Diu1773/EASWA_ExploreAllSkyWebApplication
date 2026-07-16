@@ -187,11 +187,6 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
     </div>
   );
 
-  const archiveRpRs =
-    target?.transit_depth_pct != null && target.transit_depth_pct > 0
-      ? Math.sqrt(target.transit_depth_pct / 100)
-      : null;
-
   const comparisonSlot = fit ? (
     <div className="inquiry-comparison-wrap">
       <div className="inquiry-comparison-toolbar">
@@ -230,34 +225,10 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
     <TransitResultSummary fit={fit} targetName={target?.name} />
   ) : undefined;
 
-  const recordSave = fit
-    ? {
-        workflow: 'transit_lab',
-        templateId: 'transit_record',
-        targetId,
-        title: target?.name ?? targetId,
-        context: {
-          source: 'exoplanet-block',
-          transit_fit: {
-            rp_rs: fit.rpRs,
-            rp_rs_err: fit.rpRsErr,
-            period: fit.period,
-            reduced_chi_squared: fit.reducedChiSquared,
-            depth_pct: fit.rpRs * fit.rpRs * 100,
-          },
-          reference_comparison: {
-            reference_rp_rs_from_depth: archiveRpRs,
-            reference_depth_pct: target?.transit_depth_pct ?? null,
-            reference_period_days: target?.period_days ?? null,
-          },
-          target_context: {
-            name: target?.name ?? null,
-            constellation: target?.constellation ?? null,
-            period_days: target?.period_days ?? null,
-          },
-        },
-      }
-    : undefined;
+  // No login-gated "내 기록에 저장" panel: notes autosave to this browser as they
+  // are typed, and the one deliberate action at the end is the anonymous
+  // submission. A second save button — which also demanded required fields
+  // before it would light up — was friction on top of an already-saved record.
 
   // Anonymous (no-login) submission stays visible even before a fit exists —
   // the panel itself explains why the button is disabled.
@@ -281,7 +252,6 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
       comparisonSlot={comparisonSlot}
       resultSummarySlot={resultSummarySlot}
       maxUnlockedStepIndex={fit ? undefined : 4}
-      recordSave={recordSave}
       anonSubmit={anonSubmit}
       draftTargetId={targetId}
     />

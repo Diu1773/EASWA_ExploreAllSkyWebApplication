@@ -157,19 +157,10 @@ const baseSteps: InquiryStepConfig[] = [
         },
       },
     ],
-    recordFields: [
-      {
-        id: 'visual_note',
-        question: {
-          ko: '그래프나 이미지에서 확인한 핵심 근거를 기록하세요.',
-          en: 'Record the key evidence you found in the plot or image.',
-        },
-        helperText: {
-          ko: '그래프/이미지에서 현상을 뒷받침하는 구체적 특징(위치·크기)을 짚어보세요.',
-          en: 'Point to a concrete feature (location, size) in the plot that supports the phenomenon.',
-        },
-      },
-    ],
+    // No record field: this step is where the Lab runs, and the Lab already asks
+    // its own step-by-step questions while the learner works. A second "write
+    // what you see" box on the same screen was pure duplication.
+    recordFields: [],
   },
   {
     id: 'step5_compare',
@@ -189,19 +180,10 @@ const baseSteps: InquiryStepConfig[] = [
         },
       },
     ],
-    recordFields: [
-      {
-        id: 'comparison_note',
-        question: {
-          ko: '비교값과 차이, 그리고 가능한 원인을 기록하세요.',
-          en: 'Record the reference comparison, difference, and possible causes.',
-        },
-        helperText: {
-          ko: '측정값과 기준값의 차이 + 가능한 원인(자료 품질·분석 조건·모델 가정 중)을 적어보세요.',
-          en: 'The difference from the reference, plus a likely cause (data quality, conditions, assumptions).',
-        },
-      },
-    ],
+    // No record field: "측정값과 기준값의 차이 + 원인" is exactly what Step 6's
+    // reference_comparison asks. Asking it here too made learners write the same
+    // answer twice, one screen apart.
+    recordFields: [],
   },
   {
     id: 'step6_reflect',

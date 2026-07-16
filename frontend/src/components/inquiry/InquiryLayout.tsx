@@ -138,10 +138,6 @@ export function InquiryLayout<TContext = unknown>({
   const activeStep = module.steps.find((step) => step.id === activeStepId) ?? module.steps[0];
   const stepIndex = module.steps.findIndex((step) => step.id === activeStep.id);
   const maxUnlocked = maxUnlockedStepIndex ?? module.steps.length - 1;
-  // On the visualization step the in-body Lab handoff button ("관측자료 분석 →")
-  // is the real forward action, so the footer "다음 단계" would be a confusing
-  // second primary button — hide it there.
-  const hideFooterNext = activeStep.kind === 'visualization' && Boolean(analysisSlot);
   const goToStep = (delta: number) => {
     const next = module.steps[stepIndex + delta];
     if (next) setActiveStepId(next.id);
@@ -228,6 +224,23 @@ export function InquiryLayout<TContext = unknown>({
       return raw !== undefined && raw.trim() !== '' && raw !== '[]';
     });
   const gateBlocked = !isStepAnswered(activeStep);
+
+  // Why "다음 단계" is unavailable, or null when it is. Never hide the button:
+  // a missing control reads as a broken page (the learner finished the Lab fit
+  // and had no way forward), whereas a disabled one with a reason teaches.
+  const nextBlockedReason: string | null = gateBlocked
+    ? lang === 'ko'
+      ? '다음 단계로 가려면 이 단계의 ✍️ 탐구 기록을 한 가지 이상 작성하세요.'
+      : 'Write at least one ✍️ inquiry note in this step to continue.'
+    : stepIndex >= maxUnlocked
+      ? activeStep.kind === 'visualization'
+        ? lang === 'ko'
+          ? '정밀 분석(Lab)에서 모델 적합까지 마치면 다음 단계가 열립니다.'
+          : 'Finish the model fit in the Lab to unlock the next step.'
+        : lang === 'ko'
+          ? '이 단계를 완료하면 다음 단계가 열립니다.'
+          : 'Complete this step to unlock the next one.'
+      : null;
 
   const renderStepBody = () => {
     if (activeStep.kind === 'intro') {
@@ -458,20 +471,12 @@ export function InquiryLayout<TContext = unknown>({
                 </em>
               )}
             </span>
-            {hideFooterNext ? (
-              <span className="inquiry-step-footer-spacer" />
-            ) : stepIndex < module.steps.length - 1 ? (
+            {stepIndex < module.steps.length - 1 ? (
               <button
                 type="button"
                 className="btn-primary"
-                disabled={stepIndex >= maxUnlocked || gateBlocked}
-                title={
-                  gateBlocked
-                    ? lang === 'ko'
-                      ? '탐구 기록을 한 가지 이상 작성하면 넘어갈 수 있습니다'
-                      : 'Write at least one inquiry note to continue'
-                    : undefined
-                }
+                disabled={nextBlockedReason !== null}
+                title={nextBlockedReason ?? undefined}
                 onClick={() => goToStep(1)}
               >
                 {lang === 'ko' ? '다음 단계' : 'Next'} →
@@ -490,12 +495,8 @@ export function InquiryLayout<TContext = unknown>({
               </button>
             )}
           </div>
-          {gateBlocked && !hideFooterNext && stepIndex < module.steps.length - 1 && (
-            <p className="inquiry-step-gate-hint">
-              {lang === 'ko'
-                ? '다음 단계로 가려면 이 단계의 ✍️ 탐구 기록을 한 가지 이상 작성하세요.'
-                : 'Write at least one ✍️ inquiry note in this step to continue.'}
-            </p>
+          {nextBlockedReason !== null && stepIndex < module.steps.length - 1 && (
+            <p className="inquiry-step-gate-hint">{nextBlockedReason}</p>
           )}
         </main>
       </div>

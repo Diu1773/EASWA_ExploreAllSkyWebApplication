@@ -7,6 +7,7 @@ import {
   markAnonRecordSubmitted,
   submitAnonRecord,
 } from '../../utils/recordSink';
+import { loadLabDraft } from '../../utils/inquiryDraft';
 
 /** Fit values needed for the anonymous submission. Structurally compatible
  *  with SavedTransitFit (workflows/transit/fitBridge) so callers pass it as-is. */
@@ -54,6 +55,14 @@ export function AnonSubmitPanel({ config, notes, selfCheck }: AnonSubmitPanelPro
   const [state, setState] = useState<SubmitState>('idle');
   const [submitError, setSubmitError] = useState<string | null>(null);
   const writtenNoteCount = Object.values(notes).filter((note) => note.trim() !== '').length;
+  // The Lab keeps its own "생각해보기" answers (O/X, choice, short text) in its
+  // draft — a separate store from the block's notes, so they were never reaching
+  // the sheet. Read them at submit time rather than threading state through the
+  // Lab, which lives in a different React tree on the /lab route.
+  const labGuideAnswers = loadLabDraft(config.targetId)?.guideAnswers ?? {};
+  const labGuideCount = Object.values(labGuideAnswers).filter(
+    (answer) => typeof answer === 'string' && answer.trim() !== '',
+  ).length;
 
   // Duplicate-submission guard persists across reloads (localStorage flag).
   useEffect(() => {
@@ -90,6 +99,8 @@ export function AnonSubmitPanel({ config, notes, selfCheck }: AnonSubmitPanelPro
         selfcheck_answered: selfCheck.answered,
         selfcheck_total: selfCheck.total,
         selfcheck_correct: selfCheck.correct,
+        lab_guide_json: JSON.stringify(labGuideAnswers),
+        lab_guide_answered: labGuideCount,
         app_version: (import.meta.env.VITE_APP_VERSION as string | undefined) ?? 'dev',
         user_agent: navigator.userAgent.slice(0, 160),
       });
@@ -161,9 +172,15 @@ export function AnonSubmitPanel({ config, notes, selfCheck }: AnonSubmitPanelPro
               </dd>
             </div>
             <div>
-              <dt>{lang === 'ko' ? '생각해보기' : 'Self-checks'}</dt>
+              <dt>{lang === 'ko' ? '생각해보기 (탐구 단계)' : 'Self-checks (block)'}</dt>
               <dd>
                 {selfCheck.answered} / {selfCheck.total} {lang === 'ko' ? '응답' : 'answered'}
+              </dd>
+            </div>
+            <div>
+              <dt>{lang === 'ko' ? '생각해보기 (정밀 분석)' : 'Self-checks (Lab)'}</dt>
+              <dd>
+                {labGuideCount} {lang === 'ko' ? '응답' : 'answered'}
               </dd>
             </div>
           </dl>

@@ -262,26 +262,6 @@ export function LabView() {
         [['workflow', 'transit']],
       ),
     };
-    // Same save config as ExoplanetModuleView: the record form lives in the
-    // block's Step 6, and this page renders that same block around the Lab.
-    const transitRecordSave = transitFit
-      ? {
-          workflow: 'transit_lab',
-          templateId: 'transit_record',
-          targetId: targetId ?? target.id,
-          title: target.name,
-          context: {
-            source: 'lab-page',
-            transit_fit: {
-              rp_rs: transitFit.rpRs,
-              rp_rs_err: transitFit.rpRsErr,
-              period: transitFit.period,
-              reduced_chi_squared: transitFit.reducedChiSquared,
-              depth_pct: transitFit.rpRs * transitFit.rpRs * 100,
-            },
-          },
-        }
-      : undefined;
     return (
       <InquiryLayout
         module={exoplanetTransitModule}
@@ -363,7 +343,6 @@ export function LabView() {
           transitFit ? <TransitResultSummary fit={transitFit} targetName={target.name} /> : undefined
         }
         anonSubmit={{ targetId: targetId ?? target.id, fit: transitFit }}
-        recordSave={transitRecordSave}
         /* Same scope as ExoplanetModuleView so notes typed in the module page
            survive the target-detail → Lab hop (this is a separate React tree). */
         draftTargetId={targetId ?? target.id}

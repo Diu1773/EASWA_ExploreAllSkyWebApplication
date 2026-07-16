@@ -29,10 +29,12 @@ var HEADERS = [
   'period_days', // 적합에 사용된 공전 주기 [일]
   'chi2_red', // 환산 카이제곱 (reduced chi-squared)
   'steps_note_json', // Step 6 탐구 기록 textarea 묶음 (JSON 문자열)
-  'selfcheck_json', // 생각해보기 응답 [{step,id,answer,correct}, …] (JSON 문자열)
+  'selfcheck_json', // 탐구 단계(블럭) 생각해보기 [{step,id,answer,correct}, …] (JSON)
   'selfcheck_answered', // 응답한 문항 수
   'selfcheck_total', // 모듈이 제공하는 생각해보기 문항 총수
   'selfcheck_correct', // 정답 문항 수
+  'lab_guide_json', // 정밀 분석(Lab) 자체 생각해보기 {문항id: 답} (JSON)
+  'lab_guide_answered', // Lab 생각해보기 응답 수
   'app_version',
   'user_agent', // 축약된 UA (환경 파악용)
 ];
@@ -65,6 +67,8 @@ function doPost(e) {
     toNumberOrBlank_(data.selfcheck_answered),
     toNumberOrBlank_(data.selfcheck_total),
     toNumberOrBlank_(data.selfcheck_correct),
+    truncate_(data.lab_guide_json, 8000),
+    toNumberOrBlank_(data.lab_guide_answered),
     truncate_(data.app_version, 40),
     truncate_(data.user_agent, 160),
   ]);
