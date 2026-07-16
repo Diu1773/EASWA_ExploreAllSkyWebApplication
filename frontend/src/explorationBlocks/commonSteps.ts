@@ -21,19 +21,11 @@ const baseSteps: InquiryStepConfig[] = [
         },
       },
     ],
-    recordFields: [
-      {
-        id: 'intro_goal_note',
-        question: {
-          ko: '오늘 탐구에서 확인하고 싶은 점을 한 문장으로 적어보세요.',
-          en: 'Write one sentence describing what you want to verify in this investigation.',
-        },
-        helperText: {
-          ko: '예: 이 탐구로 무엇을 확인·비교하고 싶은지 한 문장으로.',
-          en: 'e.g., one sentence on what you want to verify or compare.',
-        },
-      },
-    ],
+    // 표 4(논문 §4)의 이 단계 화면 구성 요소는 '탐구 질문·학습 목표·수업 적용 카드'이고
+    // 학습자 활동은 '확인한다'이다. 서술형 기록 칸은 Step 6 행에만 있다. 여기 기록칸은
+    // 그 서술과 어긋났고, 이동 게이트와 겹쳐 한 글자('D')만 치고 넘기게 만들었다.
+    // STEP별 스캐폴딩은 질문·생각해보기가 담당하며 그대로 남는다.
+    recordFields: [],
   },
   {
     id: 'step1_select',
@@ -53,19 +45,8 @@ const baseSteps: InquiryStepConfig[] = [
         },
       },
     ],
-    recordFields: [
-      {
-        id: 'selected_target_note',
-        question: {
-          ko: '선택한 대상/자료와 선택 이유를 기록하세요.',
-          en: 'Record the selected target or dataset and why you chose it.',
-        },
-        helperText: {
-          ko: '왜 이 대상이 질문에 적합한지 근거 한 가지(밝기·신호 크기·비교 용이성 등).',
-          en: 'One reason this target fits the question (brightness, signal size, ease of comparison…).',
-        },
-      },
-    ],
+    // 기록은 Step 6으로 (표 4: 이 단계 활동은 '확인한다').
+    recordFields: [],
   },
   {
     id: 'step2_metadata',
@@ -89,19 +70,8 @@ const baseSteps: InquiryStepConfig[] = [
         },
       },
     ],
-    recordFields: [
-      {
-        id: 'metadata_note',
-        question: {
-          ko: '해석에 중요하다고 생각한 메타데이터를 기록하세요.',
-          en: 'Record the metadata you think matters for interpretation.',
-        },
-        helperText: {
-          ko: '결과 해석을 제한할 수 있는 메타데이터 1~2개와 그 이유(예: 필터·노출·구성원 선별 기준).',
-          en: '1–2 metadata items that could limit your interpretation, and why.',
-        },
-      },
-    ],
+    // 기록은 Step 6으로 (표 4: 이 단계 활동은 '확인한다').
+    recordFields: [],
   },
   {
     id: 'step3_analysis_conditions',
@@ -125,19 +95,8 @@ const baseSteps: InquiryStepConfig[] = [
         },
       },
     ],
-    recordFields: [
-      {
-        id: 'condition_note',
-        question: {
-          ko: '사용한 분석 조건과 주의할 점을 기록하세요.',
-          en: 'Record the analysis conditions and any cautions.',
-        },
-        helperText: {
-          ko: '결과에 가장 큰 영향을 줄 조건 한 가지와 그 이유를 적어보세요.',
-          en: 'Note the one condition most likely to affect the result, and why.',
-        },
-      },
-    ],
+    // 기록은 Step 6으로 (표 4: 이 단계 활동은 '예측한다').
+    recordFields: [],
   },
   {
     id: 'step4_run_visualize',
