@@ -283,6 +283,7 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
       maxUnlockedStepIndex={fit ? undefined : 4}
       recordSave={recordSave}
       anonSubmit={anonSubmit}
+      draftTargetId={targetId}
     />
   );
 }

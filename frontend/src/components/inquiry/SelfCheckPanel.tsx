@@ -1,26 +1,34 @@
-import { useState } from 'react';
 import { useLangStore } from '../../i18n';
 import { localize } from '../../explorationBlocks/localize';
 import type { SelfCheckItem } from '../../explorationBlocks/types';
 
 interface SelfCheckPanelProps {
   items: SelfCheckItem[];
+  /** Step id. Scopes answer keys to `${scope}:${item.id}` so that the same item
+   *  id appearing in two steps or modules cannot collide in the lifted state. */
+  scope: string;
+  answers: Record<string, string | number>;
+  onAnswer: (key: string, value: string | number) => void;
 }
 
 /**
  * Interactive "생각해보기" self-checks (O/X and multiple-choice) with immediate
  * feedback — turns the otherwise read-only info steps into an active check,
  * mirroring the Transit Lab's self-check pattern.
+ *
+ * Answers are owned by InquiryLayout rather than this panel: they have to
+ * survive step navigation (this unmounts on every step change) and they ride
+ * along with the Step 6 anonymous submission.
  */
-export function SelfCheckPanel({ items }: SelfCheckPanelProps) {
+export function SelfCheckPanel({ items, scope, answers, onAnswer }: SelfCheckPanelProps) {
   const lang = useLangStore((state) => state.lang);
-  const [answers, setAnswers] = useState<Record<string, string | number>>({});
 
   return (
     <section className="inquiry-selfcheck">
       <span className="inquiry-panel-kicker">{lang === 'ko' ? '🤔 생각해보기' : '🤔 Check Yourself'}</span>
       {items.map((item) => {
-        const answer = answers[item.id];
+        const key = `${scope}:${item.id}`;
+        const answer = answers[key];
         const answered = answer !== undefined;
         const isCorrect =
           item.type === 'ox' ? answer === item.correct : answer === item.correctIndex;
@@ -40,7 +48,7 @@ export function SelfCheckPanel({ items }: SelfCheckPanelProps) {
                       key={opt}
                       type="button"
                       className={`inquiry-selfcheck-btn${chosen ? ' chosen' : ''}${markCorrect ? ' correct' : ''}${markWrong ? ' wrong' : ''}`}
-                      onClick={() => setAnswers((a) => ({ ...a, [item.id]: opt }))}
+                      onClick={() => onAnswer(key, opt)}
                     >
                       {opt}
                     </button>
@@ -58,7 +66,7 @@ export function SelfCheckPanel({ items }: SelfCheckPanelProps) {
                       key={idx}
                       type="button"
                       className={`inquiry-selfcheck-btn${chosen ? ' chosen' : ''}${markCorrect ? ' correct' : ''}${markWrong ? ' wrong' : ''}`}
-                      onClick={() => setAnswers((a) => ({ ...a, [item.id]: idx }))}
+                      onClick={() => onAnswer(key, idx)}
                     >
                       {localize(opt, lang)}
                     </button>

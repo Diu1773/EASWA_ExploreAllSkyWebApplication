@@ -384,6 +384,7 @@ export function KmtnetModuleView({ module }: KmtnetModuleViewProps) {
       comparisonSlot={comparisonSlot}
       recordSave={recordSave}
       maxUnlockedStepIndex={fit ? undefined : 4}
+      draftTargetId={selectedId}
     />
   );
 }

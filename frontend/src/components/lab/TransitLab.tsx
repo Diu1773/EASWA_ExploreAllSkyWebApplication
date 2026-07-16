@@ -1929,21 +1929,16 @@ export function TransitLab({
 
   return (
     <div className="transit-lab-wrap">
-      <div className={`learning-mode-banner learning-mode-banner--${learningMode}`}>
+      {/* Every learner follows the same flow — aperture, ROI and comparison stars
+          are adjustable regardless of learningMode — so this banner must not
+          imply a guided/advanced split the UI does not offer. */}
+      <div className="learning-mode-banner">
         <div>
-          <span>
-            {learningMode === 'advanced'
-              ? lang === 'ko' ? '심화형 탐구' : 'Advanced investigation'
-              : lang === 'ko' ? '안내형 탐구' : 'Guided investigation'}
-          </span>
+          <span>{lang === 'ko' ? '탐구 개요' : 'Overview'}</span>
           <strong>
-            {learningMode === 'advanced'
-              ? lang === 'ko'
-                ? '분석 조건과 모델 가정을 확인하며 결과의 신뢰도를 검토합니다.'
-                : 'Inspect analysis conditions and model assumptions to evaluate the reliability of the result.'
-              : lang === 'ko'
-                ? '단계별 안내를 따라 분석하고, 근거를 기록하며 결과를 해석합니다.'
-                : 'Follow the guided steps, record evidence, and interpret the result.'}
+            {lang === 'ko'
+              ? '단계별 안내를 따라 분석하고, 분석 조건과 모델 가정을 확인하며 결과를 해석합니다.'
+              : 'Follow the guided steps, check the analysis conditions and model assumptions, and interpret the result.'}
           </strong>
         </div>
         <p>
@@ -2861,8 +2856,13 @@ export function TransitLab({
 
       {/* ===== MAIN PANEL ===== */}
       <div className="lab-results transit-results">
-        {/* Step Progress Indicator */}
-        <div className="transit-step-indicator">
+        {/* Analysis sub-steps. Rendered inside the block's Step 4 panel, so it is
+            deliberately subordinate to the block stepper: no numbers (they would
+            collide with the block's 4/5/6) and dots instead of numbered circles. */}
+        <span className="lab-substepper-kicker">
+          {lang === 'ko' ? '정밀 분석 단계 — Step 4 안에서 진행' : 'Analysis sub-steps — within Step 4'}
+        </span>
+        <div className="transit-step-indicator lab-substepper">
           {STEPS.map((item, index) => {
             const state = getStepState(item.id);
             const isActive = step === item.id;
@@ -2884,15 +2884,8 @@ export function TransitLab({
                   disabled={state === 'locked'}
                   onClick={() => handleStepClick(item.id)}
                   title={item.label[lang]}
-                >
-                  {state === 'completed' && !isActive ? (
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  ) : (
-                    <span>{item.number}</span>
-                  )}
-                </button>
+                  aria-label={item.label[lang]}
+                />
                 <span
                   className={`transit-step-label ${isActive ? 'current' : ''} ${
                     state === 'locked' ? 'locked' : ''

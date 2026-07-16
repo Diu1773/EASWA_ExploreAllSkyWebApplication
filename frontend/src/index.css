@@ -459,8 +459,51 @@ body {
   transition: background 0.12s ease, border-color 0.12s ease;
 }
 
+/* Sector rows that would need a MAST download stay visible but inert, with the
+   reason on the badge — never hidden, so the learner sees what exists and why. */
+.obs-row-unavailable {
+  opacity: 0.45;
+}
+
+.obs-row-unavailable input[type='checkbox'] {
+  cursor: not-allowed;
+}
+
+.obs-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 7px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  vertical-align: middle;
+}
+
+.obs-badge.instant {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 .inquiry-recommended-pick:hover {
   background: color-mix(in srgb, var(--accent) 18%, transparent);
+  animation-play-state: paused;
+}
+
+/* Draws the eye to the intended starting point without neon/glow: the accent
+   border breathes, nothing else moves. Pauses on hover; off for reduced motion. */
+.inquiry-recommended-pick {
+  border-width: 2px;
+  animation: inquiry-recommended-breathe 2.4s ease-in-out infinite;
+}
+
+@keyframes inquiry-recommended-breathe {
+  0%, 100% { border-color: var(--accent); }
+  50% { border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inquiry-recommended-pick { animation: none; }
 }
 
 .inquiry-recommended-pick.is-active {
@@ -703,6 +746,59 @@ body {
 .inquiry-record-save-hint {
   font-size: 0.82rem;
   opacity: 0.8;
+}
+
+/* Autosave receipt next to the step counter — quiet by default; its job is to
+   reassure that leaving the page will not lose the notes, not to draw the eye. */
+.inquiry-autosave-status {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-style: normal;
+  white-space: nowrap;
+}
+
+/* Pre-submit receipt: spells out what the row will contain, so the submission
+   is not a black box and an unfinished analysis is visible before sending. */
+.inquiry-submit-summary {
+  display: grid;
+  margin: 2px 0 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.inquiry-submit-summary div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding: 7px 12px;
+}
+
+.inquiry-submit-summary div + div {
+  border-top: 1px solid var(--border);
+}
+
+.inquiry-submit-summary dt {
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+}
+
+.inquiry-submit-summary dd {
+  margin: 0;
+  color: var(--text-heading);
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* Compound selector, not !important: `.inquiry-record-save p` sets the muted
+   colour and would otherwise win on specificity. */
+.inquiry-record-save .inquiry-submit-pending {
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 600;
 }
 
 /* ===== Topic Bar (horizontal WWT-style) ===== */
@@ -2471,6 +2567,52 @@ body {
 
 .transit-step-connector.completed {
   background: var(--accent);
+}
+
+/* Lab sub-stepper — the analysis flow rendered inside the block's Step 4 panel.
+   The block stepper already owns numbered circles 0–6; repeating numbered
+   circles here made "Lab step 6" read as "block step 6". Dots + a kicker keep
+   this flow visibly subordinate. */
+.lab-substepper-kicker {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  margin: 0 0 6px 4px;
+}
+.lab-substepper {
+  padding: 10px 16px 12px;
+}
+.lab-substepper .transit-step-circle {
+  width: 11px;
+  height: 11px;
+  min-width: 11px;
+  border-width: 0;
+  background: var(--border);
+  color: transparent;
+  font-size: 0;
+}
+.lab-substepper .transit-step-circle.completed {
+  background: var(--text-secondary);
+  color: transparent;
+}
+.lab-substepper .transit-step-circle.current {
+  width: 14px;
+  height: 14px;
+  min-width: 14px;
+  background: var(--accent);
+  box-shadow: none;
+}
+.lab-substepper .transit-step-circle.locked {
+  background: var(--border);
+  opacity: 0.5;
+}
+.lab-substepper .transit-step-label {
+  font-size: 11px;
+}
+.lab-substepper .transit-step-connector {
+  opacity: 0.5;
 }
 
 .transit-step-circle {
@@ -6282,9 +6424,28 @@ body {
   gap: 12px;
 }
 
+/* Same shell as .inquiry-selfcheck so 생각해보기 / 탐구 기록 read as one family. */
+.inquiry-record-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
 .inquiry-record-field {
   display: grid;
   gap: 8px;
+}
+
+/* The step-specific prompt is the anchor — matches .inquiry-selfcheck-item strong. */
+.inquiry-record-field strong {
+  color: var(--text-heading);
+  font-size: 0.95rem;
+  line-height: 1.5;
 }
 
 .inquiry-record-field span {

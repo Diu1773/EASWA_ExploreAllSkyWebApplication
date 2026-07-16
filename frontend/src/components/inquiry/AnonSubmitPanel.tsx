@@ -23,10 +23,21 @@ export interface AnonSubmitConfig {
   fit: AnonSubmitFit | null;
 }
 
+/** "생각해보기" responses collected across the steps, already graded by
+ *  InquiryLayout (which owns the module config holding the correct answers). */
+export interface SelfCheckSummary {
+  responses: Array<{ step: string; id: string; answer: string | number; correct: boolean }>;
+  /** Number of self-check items the module defines, answered or not. */
+  total: number;
+  answered: number;
+  correct: number;
+}
+
 interface AnonSubmitPanelProps {
   config: AnonSubmitConfig;
   /** Step-6 reflection notes (InquiryLayout notes state), keyed by prompt id. */
   notes: Record<string, string>;
+  selfCheck: SelfCheckSummary;
 }
 
 type SubmitState = 'idle' | 'sending' | 'done';
@@ -37,10 +48,11 @@ type SubmitState = 'idle' | 'sending' | 'done';
  * Render's free filesystem is ephemeral, so the sheet is the only persistent
  * store for anonymous submissions. Complements the login-gated RecordSavePanel.
  */
-export function AnonSubmitPanel({ config, notes }: AnonSubmitPanelProps) {
+export function AnonSubmitPanel({ config, notes, selfCheck }: AnonSubmitPanelProps) {
   const lang = useLangStore((s) => s.lang);
   const sinkUrl = getRecordSinkUrl();
   const [state, setState] = useState<SubmitState>('idle');
+  const writtenNoteCount = Object.values(notes).filter((note) => note.trim() !== '').length;
 
   // Duplicate-submission guard persists across reloads (localStorage flag).
   useEffect(() => {
@@ -71,6 +83,10 @@ export function AnonSubmitPanel({ config, notes }: AnonSubmitPanelProps) {
         period_days: fit.period,
         chi2_red: fit.reducedChiSquared,
         steps_note_json: JSON.stringify(notes),
+        selfcheck_json: JSON.stringify(selfCheck.responses),
+        selfcheck_answered: selfCheck.answered,
+        selfcheck_total: selfCheck.total,
+        selfcheck_correct: selfCheck.correct,
         app_version: (import.meta.env.VITE_APP_VERSION as string | undefined) ?? 'dev',
         user_agent: navigator.userAgent.slice(0, 160),
       });
@@ -114,6 +130,45 @@ export function AnonSubmitPanel({ config, notes }: AnonSubmitPanelProps) {
               ? '로그인 없이 측정 결과(RP/R*·식깊이·주기)와 탐구 기록을 익명으로 제출합니다. 개인 정보는 수집하지 않습니다.'
               : 'Submit your measured values (RP/R*, depth, period) and notes anonymously — no login, no personal data.'}
           </p>
+
+          {/* What actually goes in the row. Shown before sending because the
+              submission is otherwise invisible — and because learners who wrote
+              notes but never pressed the button lose all of it silently. */}
+          <dl className="inquiry-submit-summary">
+            <div>
+              <dt>{lang === 'ko' ? '측정 결과' : 'Measured values'}</dt>
+              <dd>
+                {config.fit
+                  ? `Rp/R* ${config.fit.rpRs.toFixed(4)} · ${lang === 'ko' ? '식깊이' : 'depth'} ${(
+                      config.fit.rpRs * config.fit.rpRs * 100
+                    ).toFixed(2)}%`
+                  : lang === 'ko'
+                    ? '분석 미완료'
+                    : 'Analysis not finished'}
+              </dd>
+            </div>
+            <div>
+              <dt>{lang === 'ko' ? '탐구 기록' : 'Inquiry notes'}</dt>
+              <dd>
+                {lang === 'ko'
+                  ? `${writtenNoteCount}개 문항 작성`
+                  : `${writtenNoteCount} answered`}
+              </dd>
+            </div>
+            <div>
+              <dt>{lang === 'ko' ? '생각해보기' : 'Self-checks'}</dt>
+              <dd>
+                {selfCheck.answered} / {selfCheck.total} {lang === 'ko' ? '응답' : 'answered'}
+              </dd>
+            </div>
+          </dl>
+
+          <p className="inquiry-submit-pending">
+            {lang === 'ko'
+              ? '아직 제출되지 않았습니다 — 아래 버튼을 눌러야 기록이 전송됩니다.'
+              : 'Not submitted yet — your work is sent only when you press the button below.'}
+          </p>
+
           <button
             type="button"
             className="btn-secondary"

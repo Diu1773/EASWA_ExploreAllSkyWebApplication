@@ -201,6 +201,7 @@ export function ClusterModuleView({ module }: ClusterModuleViewProps) {
       analysisSlot={analysisSlot}
       comparisonSlot={comparisonSlot}
       recordSave={recordSave}
+      draftTargetId={selectedId}
     />
   );
 }

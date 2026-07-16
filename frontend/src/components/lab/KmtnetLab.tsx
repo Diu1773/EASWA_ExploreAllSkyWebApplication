@@ -1058,13 +1058,12 @@ export function KmtnetLab({
 
   return (
     <div className="kmtnet-lab">
-      <div className={`learning-mode-banner learning-mode-banner--${learningMode}`}>
+      {/* Same flow for every learner — see the note on TransitLab's banner. */}
+      <div className="learning-mode-banner">
         <div>
-          <span>{learningMode === 'advanced' ? '심화형 탐구' : '안내형 탐구'}</span>
+          <span>탐구 개요</span>
           <strong>
-            {learningMode === 'advanced'
-              ? '세 관측소 자료와 상세 추출 조건을 비교하며 사건 해석의 근거를 점검합니다.'
-              : '단계별 안내와 빠른 추출 설정으로 관측망 자료의 의미를 해석합니다.'}
+            단계별 안내를 따라 세 관측소 자료와 추출 조건을 비교하며 사건 해석의 근거를 점검합니다.
           </strong>
         </div>
         <p>권장 45~90분 · 결과물: 관측소 비교, 병합 곡선 근거, 모델 해석 기록</p>

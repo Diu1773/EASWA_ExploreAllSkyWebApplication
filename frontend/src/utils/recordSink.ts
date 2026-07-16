@@ -57,6 +57,12 @@ export interface AnonRecordPayload {
   chi2_red: number;
   /** All Step-6 reflection textareas bundled as one JSON string. */
   steps_note_json: string;
+  /** "생각해보기" responses: [{step, id, answer, correct}, …] as a JSON string. */
+  selfcheck_json: string;
+  /** Denormalised counts so the sheet can be summarised without parsing JSON. */
+  selfcheck_answered: number;
+  selfcheck_total: number;
+  selfcheck_correct: number;
   app_version: string;
   user_agent: string;
 }

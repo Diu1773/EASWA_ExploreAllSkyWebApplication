@@ -343,6 +343,9 @@ export function LabView() {
           transitFit ? <TransitResultSummary fit={transitFit} targetName={target.name} /> : undefined
         }
         anonSubmit={{ targetId: targetId ?? target.id, fit: transitFit }}
+        /* Same scope as ExoplanetModuleView so notes typed in the module page
+           survive the target-detail → Lab hop (this is a separate React tree). */
+        draftTargetId={targetId ?? target.id}
       />
     );
   }

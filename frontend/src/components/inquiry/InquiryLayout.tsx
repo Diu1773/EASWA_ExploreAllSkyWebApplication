@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useLangStore } from '../../i18n';
 import { localize } from '../../explorationBlocks/localize';
@@ -13,8 +13,21 @@ import { DataSourcePanel } from './DataSourcePanel';
 import { MetadataPanel } from './MetadataPanel';
 import { ReflectionPanel } from './ReflectionPanel';
 import { RecordSavePanel, type RecordSaveConfig } from './RecordSavePanel';
-import { AnonSubmitPanel, type AnonSubmitConfig } from './AnonSubmitPanel';
+import {
+  AnonSubmitPanel,
+  type AnonSubmitConfig,
+  type SelfCheckSummary,
+} from './AnonSubmitPanel';
 import { StepPanel } from './StepPanel';
+import {
+  inquiryDraftScope,
+  loadInquiryDraft,
+  saveInquiryDraft,
+} from '../../utils/inquiryDraft';
+
+/** Debounce for the autosave write — long enough not to hit localStorage on
+ *  every keystroke, short enough that a reload right after typing keeps it. */
+const AUTOSAVE_DELAY_MS = 600;
 
 const STEP_SHORT_LABELS: Record<string, Record<string, string>> = {
   step0_intro: { ko: '주제 소개', en: 'Intro' },
@@ -49,6 +62,10 @@ interface InquiryLayoutProps<TContext = unknown> {
   recordSave?: RecordSaveConfig;
   /** No-login anonymous submission to the Google Sheets sink (Step 6). */
   anonSubmit?: AnonSubmitConfig;
+  /** Selected target id. Scopes the autosaved draft, so the same target opened
+   *  from the module page and from the Lab shares one set of notes. Omit and the
+   *  draft falls back to a per-module key. */
+  draftTargetId?: string | null;
 }
 
 export function InquiryLayout<TContext = unknown>({
@@ -68,16 +85,47 @@ export function InquiryLayout<TContext = unknown>({
   selectionConfirm,
   recordSave,
   anonSubmit,
+  draftTargetId,
 }: InquiryLayoutProps<TContext>) {
   const lang = useLangStore((state) => state.lang);
   const [activeStepId, setActiveStepId] = useState<InquiryStepId>(
     initialStepId ?? module.steps[0].id,
   );
   const [notes, setNotes] = useState<Record<string, string>>({});
+  // Self-check answers live here, not in SelfCheckPanel: that panel unmounts on
+  // every step change, and the answers have to survive to the Step 6 submission.
+  const [selfCheckAnswers, setSelfCheckAnswers] = useState<Record<string, string | number>>({});
+  const [savedAt, setSavedAt] = useState<number | null>(null);
+  const draftScope = useMemo(
+    () => inquiryDraftScope(module.id, draftTargetId),
+    [module.id, draftTargetId],
+  );
+  // Only write after the learner actually edits something. Without this the
+  // hydration below would immediately re-save what it just read, and an empty
+  // mount would overwrite a real draft with {}.
+  const dirtyRef = useRef(false);
 
   useEffect(() => {
     setActiveStepId(initialStepId ?? module.steps[0].id);
   }, [initialStepId, module.id, module.steps]);
+
+  // Hydrate from the autosaved draft whenever the task (module + target) changes.
+  useEffect(() => {
+    const draft = loadInquiryDraft(draftScope);
+    dirtyRef.current = false;
+    setNotes(draft?.notes ?? {});
+    setSelfCheckAnswers(draft?.selfChecks ?? {});
+    setSavedAt(draft?.savedAt ?? null);
+  }, [draftScope]);
+
+  useEffect(() => {
+    if (!dirtyRef.current) return;
+    const timer = setTimeout(() => {
+      const at = saveInquiryDraft(draftScope, notes, selfCheckAnswers);
+      if (at !== null) setSavedAt(at);
+    }, AUTOSAVE_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [draftScope, notes, selfCheckAnswers]);
 
   const result = useMemo(
     () => adapter.createInitialResult(module, context),
@@ -100,8 +148,40 @@ export function InquiryLayout<TContext = unknown>({
   };
 
   const handleNoteChange = (fieldId: string, value: string) => {
+    dirtyRef.current = true;
     setNotes((current) => ({ ...current, [fieldId]: value }));
   };
+
+  const handleSelfCheckAnswer = (key: string, value: string | number) => {
+    dirtyRef.current = true;
+    setSelfCheckAnswers((current) => ({ ...current, [key]: value }));
+  };
+
+  // Grading lives here rather than in the submit panel because the correct
+  // answers are on the module config, which the panel does not receive.
+  const selfCheckSummary = useMemo<SelfCheckSummary>(() => {
+    const responses: SelfCheckSummary['responses'] = [];
+    let total = 0;
+    module.steps.forEach((step) => {
+      (step.selfChecks ?? []).forEach((item) => {
+        total += 1;
+        const answer = selfCheckAnswers[`${step.id}:${item.id}`];
+        if (answer === undefined) return;
+        responses.push({
+          step: step.id,
+          id: item.id,
+          answer,
+          correct: item.type === 'ox' ? answer === item.correct : answer === item.correctIndex,
+        });
+      });
+    });
+    return {
+      responses,
+      total,
+      answered: responses.length,
+      correct: responses.filter((response) => response.correct).length,
+    };
+  }, [module.steps, selfCheckAnswers]);
 
   const renderStepBody = () => {
     if (activeStep.kind === 'intro') {
@@ -234,7 +314,9 @@ export function InquiryLayout<TContext = unknown>({
           onNoteChange={handleNoteChange}
         />
         {recordSave && <RecordSavePanel config={recordSave} answers={notes} />}
-        {anonSubmit && <AnonSubmitPanel config={anonSubmit} notes={notes} />}
+        {anonSubmit && (
+          <AnonSubmitPanel config={anonSubmit} notes={notes} selfCheck={selfCheckSummary} />
+        )}
       </>
     );
   };
@@ -296,6 +378,8 @@ export function InquiryLayout<TContext = unknown>({
             step={activeStep}
             notes={notes}
             onNoteChange={handleNoteChange}
+            selfCheckAnswers={selfCheckAnswers}
+            onSelfCheckAnswer={handleSelfCheckAnswer}
           >
             {renderStepBody()}
           </StepPanel>
@@ -310,6 +394,15 @@ export function InquiryLayout<TContext = unknown>({
             </button>
             <span className="inquiry-step-progress">
               {activeStep.number} / {module.steps[module.steps.length - 1].number}
+              {savedAt !== null && (
+                <em className="inquiry-autosave-status">
+                  {lang === 'ko' ? '자동 저장됨 ' : 'Autosaved '}
+                  {new Date(savedAt).toLocaleTimeString(lang === 'ko' ? 'ko-KR' : 'en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </em>
+              )}
             </span>
             {hideFooterNext ? (
               <span className="inquiry-step-footer-spacer" />
