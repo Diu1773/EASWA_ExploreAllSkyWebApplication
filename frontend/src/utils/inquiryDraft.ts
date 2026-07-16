@@ -83,3 +83,65 @@ export function clearInquiryDraft(scope: string | null): void {
     // non-fatal
   }
 }
+
+// ---------------------------------------------------------------------------
+// Lab (정밀 분석) draft
+//
+// The Lab keeps its own inputs, separate from the block above it: the StepGuide
+// "생각해보기" answers (O/X, multiple choice, short text) and the Step 6 record
+// template answers. Neither survived a reload — the guide answers sat in a
+// component useState that unmounts on every Lab step change, and recordAnswers
+// only persisted through the login-gated backend draft. Same reasoning as the
+// block draft above: the browser is the only free, no-login, restart-proof store.
+// ---------------------------------------------------------------------------
+
+const LAB_KEY_PREFIX = 'easwa:lab-draft:';
+
+export interface LabDraft {
+  v: number;
+  /** StepGuide answers, keyed by question id. */
+  guideAnswers: Record<string, string>;
+  /** Lab record-template answers, keyed by question id. */
+  recordAnswers: Record<string, unknown>;
+  savedAt: number;
+}
+
+function labKeyFor(targetId: string): string {
+  return LAB_KEY_PREFIX + targetId;
+}
+
+export function loadLabDraft(targetId: string | null | undefined): LabDraft | null {
+  if (!targetId) return null;
+  try {
+    const raw = localStorage.getItem(labKeyFor(targetId));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<LabDraft>;
+    if (parsed.v !== SCHEMA_VERSION) return null;
+    return {
+      v: SCHEMA_VERSION,
+      guideAnswers: parsed.guideAnswers ?? {},
+      recordAnswers: parsed.recordAnswers ?? {},
+      savedAt: parsed.savedAt ?? 0,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function saveLabDraft(
+  targetId: string | null | undefined,
+  guideAnswers: Record<string, string>,
+  recordAnswers: Record<string, unknown>,
+): number | null {
+  if (!targetId) return null;
+  const savedAt = Date.now();
+  try {
+    localStorage.setItem(
+      labKeyFor(targetId),
+      JSON.stringify({ v: SCHEMA_VERSION, guideAnswers, recordAnswers, savedAt } satisfies LabDraft),
+    );
+    return savedAt;
+  } catch {
+    return null;
+  }
+}

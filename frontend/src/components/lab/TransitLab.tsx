@@ -21,6 +21,7 @@ import { defaultTransitRecordTemplate } from '../../data/transitRecordTemplate';
 import { useWorkflowController } from '../../hooks/useWorkflowController';
 import type { WorkflowSessionSource } from '../../utils/workflowSession';
 import type { LearningMode } from '../../utils/explorerNavigation';
+import { loadLabDraft, saveLabDraft } from '../../utils/inquiryDraft';
 import {
   createTransitWorkflowDefinition,
   type PersistedTransitLabState,
@@ -409,11 +410,16 @@ function MobileFoldSection({
 
 function StepGuide({
   step,
+  initialAnswers,
   onAnswersChange,
   defaultOpen = true,
   storageKeySuffix = 'default',
 }: {
   step: TransitStep;
+  /** Autosaved answers for this step. This component unmounts on every Lab step
+   *  change, so without seeding here the learner's answers disappear the moment
+   *  they move on — and never come back on reload. */
+  initialAnswers?: GuideAnswers;
   onAnswersChange?: (answers: GuideAnswers) => void;
   defaultOpen?: boolean;
   storageKeySuffix?: string;
@@ -429,7 +435,7 @@ function StepGuide({
       return defaultOpen;
     }
   });
-  const [answers, setAnswers] = useState<GuideAnswers>({});
+  const [answers, setAnswers] = useState<GuideAnswers>(() => initialAnswers ?? {});
   const questions = STEP_GUIDES[step];
   if (!questions?.length) return null;
 
@@ -766,8 +772,29 @@ export function TransitLab({
   } = state;
 
 
+  // ── Autosave (생각해보기 + 결과 기록) ─────────────────────────────────
+  // Anonymous learners have no other durable store: the backend draft API is
+  // login-only and Render's free plan wipes the SQLite file on every deploy.
+  const [labSavedAt, setLabSavedAt] = useState<number | null>(null);
+  const [labDraftTick, setLabDraftTick] = useState(0);
+  const labHydratedRef = useRef(false);
+  // Only write once the learner actually answers something. Otherwise mounting
+  // the Lab would save the empty record-template defaults and claim "자동 저장됨"
+  // before anything was typed.
+  const labDirtyRef = useRef(false);
+
   // ── Refs (side-effects only, not in reducer) ─────────────────────────
   const guideAnswersRef = useRef<Record<string, string>>({});
+  // Seed during render, not in an effect: StepGuide reads this as its initial
+  // answers when it mounts, which happens before effects run — seeding later
+  // leaves it stuck on {} and the restored answers never appear.
+  const guideSeededRef = useRef(false);
+  if (!guideSeededRef.current) {
+    guideSeededRef.current = true;
+    if (!seedRecordId && !draftId) {
+      guideAnswersRef.current = loadLabDraft(target.id)?.guideAnswers ?? {};
+    }
+  }
   const recordTemplateRequestedRef = useRef(false);
   const loadedRecordIdRef = useRef<number | null>(null);
   const restoringSessionPreviewRef = useRef(false);
@@ -1540,9 +1567,45 @@ export function TransitLab({
 
   const handleGuideAnswers = useCallback((answers: Record<string, string>) => {
     guideAnswersRef.current = { ...guideAnswersRef.current, ...answers };
+    labDirtyRef.current = true;
+    // The answers live in a ref (they must not re-render the heavy Lab on every
+    // click), so nudge a counter to let the autosave effect below see the change.
+    setLabDraftTick((tick) => tick + 1);
   }, []);
 
+  // Restore the autosaved Lab draft. Skipped when reopening a saved record or a
+  // backend draft — those are an explicit "load this one" and must win.
+  useEffect(() => {
+    labHydratedRef.current = false;
+    labDirtyRef.current = false;
+    if (seedRecordId || draftId) return;
+    const saved = loadLabDraft(target.id);
+    if (saved) {
+      guideAnswersRef.current = saved.guideAnswers;
+      if (Object.keys(saved.recordAnswers).length > 0) {
+        patch({ recordAnswers: saved.recordAnswers });
+      }
+      setLabSavedAt(saved.savedAt);
+      setLabDraftTick((tick) => tick + 1);
+    } else {
+      guideAnswersRef.current = {};
+      setLabSavedAt(null);
+    }
+    labHydratedRef.current = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [target.id, seedRecordId, draftId]);
+
+  useEffect(() => {
+    if (!labHydratedRef.current || !labDirtyRef.current) return;
+    const timer = setTimeout(() => {
+      const at = saveLabDraft(target.id, guideAnswersRef.current, recordAnswers);
+      if (at !== null) setLabSavedAt(at);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [target.id, recordAnswers, labDraftTick]);
+
   const handleRecordAnswerChange = (questionId: string, value: unknown) => {
+    labDirtyRef.current = true;
     dispatch({
       type: 'update',
       updater: (s) => ({
@@ -1945,6 +2008,15 @@ export function TransitLab({
           {lang === 'ko'
             ? '권장 45~90분 · 결과물: 광도곡선 근거, NASA Exoplanet Archive 기준값 비교, 차이 원인 설명'
             : 'Suggested 45–90 minutes · Output: light-curve evidence, NASA Exoplanet Archive comparison, and an explanation of differences'}
+          {labSavedAt !== null && (
+            <em className="inquiry-autosave-status">
+              {lang === 'ko' ? '자동 저장됨 ' : 'Autosaved '}
+              {new Date(labSavedAt).toLocaleTimeString(lang === 'ko' ? 'ko-KR' : 'en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </em>
+          )}
         </p>
       </div>
       <div
@@ -2924,6 +2996,7 @@ export function TransitLab({
 
             <StepGuide
               step="select"
+              initialAnswers={guideAnswersRef.current}
               onAnswersChange={handleGuideAnswers}
               defaultOpen={!isCompactTransitLayout}
               storageKeySuffix={isCompactTransitLayout ? 'mobile' : 'desktop'}
@@ -3069,6 +3142,7 @@ export function TransitLab({
 
             <StepGuide
               step="run"
+              initialAnswers={guideAnswersRef.current}
               onAnswersChange={handleGuideAnswers}
               defaultOpen={!isCompactTransitLayout}
               storageKeySuffix={isCompactTransitLayout ? 'mobile' : 'desktop'}
@@ -3204,7 +3278,8 @@ export function TransitLab({
 
               <StepGuide
                 step="comparisonqc"
-                onAnswersChange={handleGuideAnswers}
+                initialAnswers={guideAnswersRef.current}
+              onAnswersChange={handleGuideAnswers}
                 defaultOpen={!isCompactTransitLayout}
                 storageKeySuffix={isCompactTransitLayout ? 'mobile' : 'desktop'}
               />
@@ -3430,7 +3505,8 @@ export function TransitLab({
 
               <StepGuide
                 step="lightcurve"
-                onAnswersChange={handleGuideAnswers}
+                initialAnswers={guideAnswersRef.current}
+              onAnswersChange={handleGuideAnswers}
                 defaultOpen={!isCompactTransitLayout}
                 storageKeySuffix={isCompactTransitLayout ? 'mobile' : 'desktop'}
               />
@@ -3509,7 +3585,8 @@ export function TransitLab({
 
               <StepGuide
                 step="transitfit"
-                onAnswersChange={handleGuideAnswers}
+                initialAnswers={guideAnswersRef.current}
+              onAnswersChange={handleGuideAnswers}
                 defaultOpen={!isCompactTransitLayout}
                 storageKeySuffix={isCompactTransitLayout ? 'mobile' : 'desktop'}
               />
@@ -3945,6 +4022,7 @@ export function TransitLab({
 
             <StepGuide
               step="record"
+              initialAnswers={guideAnswersRef.current}
               onAnswersChange={handleGuideAnswers}
               defaultOpen={!isCompactTransitLayout}
               storageKeySuffix={isCompactTransitLayout ? 'mobile' : 'desktop'}
