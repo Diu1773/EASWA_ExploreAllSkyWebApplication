@@ -9,6 +9,15 @@ services:
     healthCheckPath: /api/health
     autoDeployTrigger: commit
     envVars:
+      # Public origin of this service. Two jobs, and both broke while it was unset:
+      #  1. OAuth builds its callback as {BASE_URL}/api/auth/callback — without
+      #     this it pointed at localhost, so Google sign-in could never complete.
+      #  2. config.py reads a localhost BASE_URL as "this is a dev box" and hands
+      #     out dev defaults. On Render that silently meant a 96 MB cutout cache
+      #     (vs 16 MB) plus 2 preview / 4 frame-count workers (vs 1 each) on a
+      #     512 MB instance — the OOM guard was effectively off.
+      - key: EASWA_BASE_URL
+        value: https://easwa-webapp.onrender.com
       - key: EASWA_DEBUG
         value: "false"
       # Max cutout size. RAM is no longer the limit (lazy memmap + chunked reads),
@@ -35,6 +44,14 @@ services:
         generateValue: true
       - key: EASWA_RECORD_REQUIRE_LOGIN
         value: "false"
+      # Google sign-in. sync:false keeps the secret out of this public repo — set
+      # both in the Render dashboard. Unset → the login button 500s. The matching
+      # redirect URI ({EASWA_BASE_URL}/api/auth/callback) must also be registered
+      # in the Google Cloud console, or Google rejects the request itself.
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
       # Anonymous-submit sink (Apps Script Web App /exec URL). sync:false keeps the
       # value out of this public repo — set it in the Render dashboard. Render passes
       # it to the Docker build, where the Dockerfile ARG feeds it into the Vite build.
