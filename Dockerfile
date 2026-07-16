@@ -6,6 +6,18 @@ COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
 
 COPY frontend/ ./
+
+# Vite bakes VITE_* vars into the bundle at build time, so they must be present
+# HERE — a Render dashboard env var alone is runtime-only and would silently
+# produce a build with the anonymous-submit button stuck on "제출 서버 미설정".
+# Render translates service env vars into build args, so declaring the ARG is
+# what actually wires the dashboard value through. Not secrets: both values ship
+# to the browser in the bundle regardless.
+ARG VITE_RECORD_SINK_URL=""
+ARG VITE_APP_VERSION="dev"
+ENV VITE_RECORD_SINK_URL=$VITE_RECORD_SINK_URL \
+    VITE_APP_VERSION=$VITE_APP_VERSION
+
 RUN npm run build
 
 

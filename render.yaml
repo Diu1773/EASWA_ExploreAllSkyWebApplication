@@ -35,3 +35,12 @@ services:
         generateValue: true
       - key: EASWA_RECORD_REQUIRE_LOGIN
         value: "false"
+      # Anonymous-submit sink (Apps Script Web App /exec URL). sync:false keeps the
+      # value out of this public repo — set it in the Render dashboard. Render passes
+      # it to the Docker build, where the Dockerfile ARG feeds it into the Vite build.
+      # Unset → the Step 6 submit button shows "제출 서버 미설정" (disabled, not hidden).
+      # Changing it requires a REBUILD, not just a restart: Vite bakes it into the bundle.
+      - key: VITE_RECORD_SINK_URL
+        sync: false
+      - key: VITE_APP_VERSION
+        value: "render"
