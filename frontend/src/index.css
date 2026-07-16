@@ -800,6 +800,32 @@ body {
   color: var(--text-secondary);
 }
 
+/* Start over. Destructive, so it stays quiet until armed — never competing with
+   the step actions, and never reading as the thing to press next. */
+.inquiry-start-over {
+  align-self: flex-start;
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.inquiry-start-over:hover {
+  border-color: var(--border-light);
+  color: var(--text-secondary);
+}
+
+.inquiry-start-over.armed {
+  border-color: var(--danger);
+  color: var(--danger);
+  font-weight: 600;
+}
+
 /* Autosave receipt next to the step counter — quiet by default; its job is to
    reassure that leaving the page will not lose the notes, not to draw the eye. */
 .inquiry-autosave-status {
@@ -5641,6 +5667,11 @@ body {
 }
 
 .inquiry-layout-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
   margin-bottom: 16px;
   padding: 18px 20px;
   border: 1px solid var(--border);

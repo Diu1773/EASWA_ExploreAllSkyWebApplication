@@ -14,6 +14,7 @@ import { MetadataPanel } from './MetadataPanel';
 import { ReflectionPanel } from './ReflectionPanel';
 import { RecordSavePanel, type RecordSaveConfig } from './RecordSavePanel';
 import { AnonCollectionNotice } from './AnonCollectionNotice';
+import { StartOverButton } from './StartOverButton';
 import { StepPanel } from './StepPanel';
 import {
   inquiryDraftScope,
@@ -458,6 +459,8 @@ export function InquiryLayout<TContext = unknown>({
           <h1>{localize(module.title, lang)}</h1>
           <p>{localize(module.description, lang)}</p>
         </div>
+        {/* Hides itself when there is nothing saved for this target. */}
+        <StartOverButton moduleId={module.id} targetId={draftTargetId} savedAt={savedAt} />
       </header>
 
       {contextSlot && <div className="inquiry-context-slot">{contextSlot}</div>}

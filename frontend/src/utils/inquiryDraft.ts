@@ -145,3 +145,65 @@ export function saveLabDraft(
     return null;
   }
 }
+
+// ---------------------------------------------------------------------------
+// Start over
+// ---------------------------------------------------------------------------
+
+/**
+ * Wipe every trace of one learner's work on one target.
+ *
+ * Autosave is what makes a reload safe, but it also means a shared classroom PC
+ * hands the next person the previous one's notes, half-answered self-checks and
+ * fitted curve. There was no way to get a clean start short of clearing site
+ * data in the browser.
+ *
+ * Deliberately scoped to a target rather than "clear everything": the anon id
+ * survives, so a learner who starts over is still the same row in the sheet
+ * instead of silently forking into a second one.
+ *
+ * The Lab's analysis state lives in sessionStorage under a key built from the
+ * workflow scope (see utils/workflowSession), and drafts/records live in
+ * localStorage — so this sweeps both by prefix rather than guessing every id.
+ */
+/** Is there anything saved for this target? Checks every store clearTargetWork
+ *  touches — a leftover Lab draft or fitted curve counts even when the block's
+ *  notes are empty, which is exactly the shape a previous learner leaves behind
+ *  after doing the analysis but not the write-up. */
+export function hasTargetWork(moduleId: string, targetId: string | null | undefined): boolean {
+  if (!targetId) return false;
+  try {
+    return (
+      localStorage.getItem(keyFor(inquiryDraftScope(moduleId, targetId))) !== null ||
+      localStorage.getItem(labKeyFor(targetId)) !== null ||
+      localStorage.getItem(`easwa:transit-fit:${targetId}`) !== null ||
+      Object.keys(sessionStorage).some(
+        (key) => key.startsWith('workflow-session:') && key.includes(targetId),
+      )
+    );
+  } catch {
+    return false;
+  }
+}
+
+export function clearTargetWork(moduleId: string, targetId: string | null | undefined): void {
+  if (!targetId) return;
+  try {
+    localStorage.removeItem(keyFor(inquiryDraftScope(moduleId, targetId)));
+    localStorage.removeItem(labKeyFor(targetId));
+    localStorage.removeItem(`easwa:transit-fit:${targetId}`);
+
+    // Lab step-guide fold state ("easwa_guide_open_<step>_<suffix>") and the
+    // workflow snapshot are keyed by step/workflow, not by target — match by
+    // prefix and, for the session snapshot, by the target id inside the key.
+    Object.keys(localStorage)
+      .filter((key) => key.startsWith('easwa_guide_open_'))
+      .forEach((key) => localStorage.removeItem(key));
+
+    Object.keys(sessionStorage)
+      .filter((key) => key.startsWith('workflow-session:') && key.includes(targetId))
+      .forEach((key) => sessionStorage.removeItem(key));
+  } catch {
+    // Storage unavailable (private mode / quota) — nothing to clear anyway.
+  }
+}
