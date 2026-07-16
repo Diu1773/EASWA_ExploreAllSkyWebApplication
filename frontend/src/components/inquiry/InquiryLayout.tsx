@@ -131,6 +131,16 @@ export function InquiryLayout<TContext = unknown>({
     setSavedAt(draft?.savedAt ?? null);
   }, [draftScope]);
 
+  // Start each step at the top. Changing step swaps the panel content but not the
+  // scroll offset, so pressing "다음 단계" from the bottom of a long step landed
+  // the learner mid-way down the next one — often past its heading, looking like
+  // nothing happened. Not window.scrollTo: body is overflow:hidden and the real
+  // scroller is the app shell's <main>.
+  useEffect(() => {
+    const scroller = document.querySelector('.app-main');
+    scroller?.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [activeStepId]);
+
   useEffect(() => {
     if (!dirtyRef.current) return;
     const timer = setTimeout(() => {
