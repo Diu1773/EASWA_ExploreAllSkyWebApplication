@@ -227,7 +227,12 @@ export function usePersistedWorkflowStep<
   };
 
   const setStep = (requestedStep: TStep) => {
-    commitStep(requestedStep, 'push');
+    // 'replace', not 'push': these are sub-steps INSIDE one page (the Lab lives
+    // inside the block's Step 4). Pushing made browser-back rewind Lab steps one
+    // by one — invisible next to the unchanged block stepper, so back appeared
+    // dead — and rewinding past the first entry dropped ?step= and reset the Lab.
+    // Back should always leave the page; in-page movement belongs to the stepper.
+    commitStep(requestedStep, 'replace');
   };
 
   const replaceStep = (requestedStep: TStep) => {
