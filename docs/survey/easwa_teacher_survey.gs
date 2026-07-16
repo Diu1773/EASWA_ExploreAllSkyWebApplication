@@ -186,8 +186,14 @@ function createEASWAForm() {
   addScale('17. EASWA의 단계별 안내와 질문은 학교 천문탐구 수업 또는 예비교사 교육에서 활용하기 적절하다.');
   addScale('18. EASWA는 공공 천문자료 기반 천문탐구를 지원하는 교육용 웹 플랫폼으로 적절하다.');
 
-  // ===== 5. 어려움을 경험한/예상되는 단계 (표 4-10) =====
-  addPage('5. 어려움을 경험한 단계와 예상되는 단계');
+  // ===== 5. 어려움을 경험한/예상되는 단계 (표 4-10) — 경험 의존 영역 =====
+  // 진입 필터: 화면 이미지만 확인한 응답자는 이 영역을 건너뛰고 §6으로 분기(뒤에서 setChoices로 연결).
+  form.addPageBreakItem().setTitle('5. 어려움을 경험한 / 예상되는 단계');
+  var expGate = form.addMultipleChoiceItem()
+    .setTitle('EASWA를 웹에서 직접 사용해 보셨습니까?')
+    .setHelpText('아래 단계별 어려움 문항은 EASWA를 직접 사용한 경우에 응답합니다. 화면 이미지만 확인하신 경우에는 이 영역을 건너뛰고 다음(6. 보완 요구)으로 넘어갑니다.')
+    .setRequired(true);
+  form.addPageBreakItem().setTitle('어려움 단계 응답 (직접 사용한 경우)');
   // 19: 본인 어려움(구 19) + 학생 예상 어려움(구 19-1)을 다중선택 그리드 1문항으로 통합.
   //     읽을 항목 20개(체크박스 2연속) → 8행 한 표. 표4-10의 두 데이터(본인/학생) 모두 보존.
   //     체크박스 그리드는 setRequired(true) 시 "모든 행에 응답 강제"가 되어 부적절하므로 필수 미지정.
@@ -210,7 +216,7 @@ function createEASWAForm() {
       '학생이 어려워할 것'
     ]);
 
-  addPara('20. 위 두 문항에서 선택한 단계가 어렵다고 생각한 이유를 적어 주세요.');
+  addPara('20. 위에서 표시한 단계가 어렵다고 생각한 이유를 적어 주세요.');
 
   addPara(
     '20-1. EASWA에서 확인한 산출값(식 깊이, Rp/R* 등)과 NASA Exoplanet Archive 기준값 사이에 차이가 생길 수 있는 원인을 한 가지 이상 적어 주세요.',
@@ -219,7 +225,7 @@ function createEASWAForm() {
   );
 
   // ===== 6. 보완 요구 (표 4-10 · 7개) =====
-  addPage('6. 보완 요구');
+  var sec6Page = form.addPageBreakItem().setTitle('6. 보완 요구');
   form.addCheckboxItem()
     .setTitle('21. EASWA를 보완하기 위해 중요하다고 생각하는 요소를 모두 선택해 주세요.')
     .setChoiceValues([
@@ -250,6 +256,14 @@ function createEASWAForm() {
   // 22: 구 22(장점) + 23(시급 보완, 구 필수) + 24(활용 방식) 자유서술 3개를 1개로 통합, 선택 문항으로.
   //     세 문항 모두 논문 표 밖(보조 자유응답) → §4.5 연역 범주 코딩에 영향 없음. 필수 서술은 Q20-1만 유지.
   addPara('22. EASWA의 가장 큰 장점, 보완이 가장 시급한 한 가지, 그리고 학교 수업 또는 예비교사 교육에서 활용한다면 적절한 방식에 대해 자유롭게 적어 주세요. 기타 의견이 있다면 함께 적어 주세요.');
+
+  // §5 진입 분기: 직접 사용=계속(어려움 단계 응답), 이미지만=§6(보완 요구)로 건너뜀.
+  //   → 온라인 이미지-only 응답자가 경험 의존 문항(어려움 단계·차이 원인)에 억지 응답하지 않도록 함.
+  //   반응척도(§4)는 이미지 기반으로도 응답 가능하므로 분기 대상에서 제외(전원 응답).
+  expGate.setChoices([
+    expGate.createChoice('예, 웹에서 직접 사용해 보았습니다', FormApp.PageNavigationType.CONTINUE),
+    expGate.createChoice('아니오, 화면 이미지만 확인했습니다', sec6Page)
+  ]);
 
   Logger.log('편집 URL: ' + form.getEditUrl());
   Logger.log('응답 URL: ' + form.getPublishedUrl());
