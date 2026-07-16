@@ -1,5 +1,4 @@
 export { AnalysisControlPanel } from './AnalysisControlPanel';
-export { AnonSubmitPanel } from './AnonSubmitPanel';
 export { ApertureSandbox } from './ApertureSandbox';
 export { ComparisonPanel } from './ComparisonPanel';
 export { DataSourcePanel } from './DataSourcePanel';

@@ -265,8 +265,8 @@ export function TransitComparison({ fit, target }: TransitComparisonProps) {
 
       <div className="inquiry-callout">
         {lang === 'ko'
-          ? '기준 Rp/R*는 카탈로그 식 깊이에 Rp/R* = √(depth)를 적용한 비교용 추정값입니다 — 출판된 반지름비와 동일하게 보지 마세요. 측정값이 기준값과 다르다면 비교성 품질·별빛 오염(blending)·aperture·ROI·잡음·모델 가정을 근거로 차이를 설명하세요.'
-          : 'The reference Rp/R* is √(depth) from the catalog depth — a comparison estimate, not the published radius ratio. If your value differs, explain it via comparison-star quality, blending, aperture, ROI, noise, or model assumptions.'}
+          ? '여기 기준값은 NASA Exoplanet Archive가 주는 식 깊이에서 √(식 깊이)로 되짚어 계산한 것입니다. 논문이 직접 싣는 Rp/R*는 주연감광까지 함께 맞춰 얻은 값이라 이 되짚은 값과는 원래 조금 다릅니다. 그러니 두 값이 벌어졌다고 해서 측정이 틀린 것은 아닙니다. 차이가 어디서 왔는지 찾아보세요. 비교성 선택, 주변 별빛이 섞이는 정도, 구경과 ROI 설정이 흔한 원인입니다.'
+          : 'This reference comes from working backwards from the transit depth in the NASA Exoplanet Archive, as √(depth). Papers that report Rp/R* directly fit it together with limb darkening, so their value already differs a little from this back-calculation. A gap between the two does not mean your measurement is wrong. Look for where the difference came from: comparison-star choice, how much light from nearby stars is blended in, and your aperture and ROI settings are the usual causes.'}
       </div>
     </section>
   );

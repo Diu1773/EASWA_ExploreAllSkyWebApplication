@@ -816,6 +816,19 @@ body {
   color: var(--text-secondary);
 }
 
+/* Collection notice (Step 6). Quiet by design: it is a disclosure to read once,
+   not a control — but it must stay on screen, since nothing else tells the
+   learner their work is being collected. */
+.inquiry-anon-notice {
+  margin: 16px 0 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  line-height: 1.6;
+}
+
 /* Pre-submit receipt: spells out what the row will contain, so the submission
    is not a black box and an unfinished analysis is visible before sending. */
 .inquiry-submit-summary {

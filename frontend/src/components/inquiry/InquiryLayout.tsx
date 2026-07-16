@@ -13,11 +13,7 @@ import { DataSourcePanel } from './DataSourcePanel';
 import { MetadataPanel } from './MetadataPanel';
 import { ReflectionPanel } from './ReflectionPanel';
 import { RecordSavePanel, type RecordSaveConfig } from './RecordSavePanel';
-import {
-  AnonSubmitPanel,
-  type AnonSubmitConfig,
-  type SelfCheckSummary,
-} from './AnonSubmitPanel';
+import { AnonCollectionNotice } from './AnonCollectionNotice';
 import { StepPanel } from './StepPanel';
 import {
   inquiryDraftScope,
@@ -29,6 +25,8 @@ import {
   buildAnonRecordPayload,
   getRecordSinkUrl,
   syncAnonRecord,
+  type AnonSubmitConfig,
+  type SelfCheckSummary,
 } from '../../utils/recordSink';
 
 /** Debounce for the autosave write — long enough not to hit localStorage on
@@ -432,9 +430,7 @@ export function InquiryLayout<TContext = unknown>({
             missingRequiredLabels={missingRequiredLabels}
           />
         )}
-        {anonSubmit && (
-          <AnonSubmitPanel config={anonSubmit} notes={notes} selfCheck={selfCheckSummary} />
-        )}
+        {anonSubmit && <AnonCollectionNotice />}
       </>
     );
   };

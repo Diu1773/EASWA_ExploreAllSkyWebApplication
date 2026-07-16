@@ -4,10 +4,9 @@
 // Receiver: docs/survey/easwa_record_sink.gs
 
 const ANON_ID_KEY = 'easwa:anon-id';
-const SUBMITTED_KEY_PREFIX = 'easwa:anon-submitted:';
 
-/** Apps Script Web App URL. Baked in at build time; empty → feature disabled
- *  (button stays visible but disabled, per the "no hidden features" principle). */
+/** Apps Script Web App URL. Baked in at build time; empty → the sheet sync is
+ *  simply skipped and records stay in this browser only. */
 export function getRecordSinkUrl(): string | null {
   const url = import.meta.env.VITE_RECORD_SINK_URL as string | undefined;
   return url && url.trim() !== '' ? url.trim() : null;
@@ -31,30 +30,13 @@ export function getAnonId(): string {
   }
 }
 
-export function hasSubmittedAnonRecord(targetId: string): boolean {
-  try {
-    return localStorage.getItem(SUBMITTED_KEY_PREFIX + targetId) !== null;
-  } catch {
-    return false;
-  }
-}
-
-export function markAnonRecordSubmitted(targetId: string): void {
-  try {
-    localStorage.setItem(SUBMITTED_KEY_PREFIX + targetId, String(Date.now()));
-  } catch {
-    // non-fatal
-  }
-}
-
 export interface AnonRecordPayload {
   anon_id: string;
   target_id: string;
-  /** 'draft' for an autosave, 'submitted' once the learner presses the button.
-   *  The sheet upserts on (anon_id, target_id), so a row exists from the first
-   *  autosave and the button only flips its status — work is never lost because
-   *  someone closed the tab before pressing anything. */
-  status: 'draft' | 'submitted';
+  /** Always 'draft': there is no submit button any more — records upload as they
+   *  are written. Kept as a column so a future explicit "done" action has a place
+   *  to land without a sheet migration. */
+  status: 'draft';
   /** null until the Lab fit is bridged back — a draft row can precede the fit. */
   rp_rs: number | null;
   rp_rs_err: number | null;
@@ -78,9 +60,8 @@ export interface AnonRecordPayload {
 
 /**
  * Upsert the learner's row in the sheet, resolving only once the sheet confirms.
- * Used both for the periodic autosave (status 'draft') and for the explicit
- * submission (status 'submitted') — the script keys on (anon_id, target_id), so
- * repeated calls update one row instead of piling up new ones.
+ * Called on a debounce as the learner writes; the script keys on
+ * (anon_id, target_id), so repeated calls refresh one row instead of piling up.
  *
  * CORS note: `text/plain` keeps this a "simple request" so the browser skips the
  * preflight, which Apps Script would not answer. The deployed Web App does send
@@ -88,10 +69,9 @@ export interface AnonRecordPayload {
  * points at, so a plain cors request can read the reply (verified 2026-07-16
  * against the live deployment: status 200, body {"ok":true}).
  *
- * This used to be `mode: 'no-cors'`, which made the response opaque and forced
- * an OPTIMISTIC result — a submission that never reached the sheet still showed
- * "제출됨". Reading the real reply is the whole point: a learner who is told
- * their work was submitted when it was not has lost it silently.
+ * Reading the real reply matters even without a submit button: it is how the UI
+ * can honestly say "saved in this browser only" when the upload fails, instead
+ * of claiming an upload that never happened.
  */
 export async function syncAnonRecord(sinkUrl: string, payload: AnonRecordPayload): Promise<void> {
   const response = await fetch(sinkUrl, {
@@ -120,10 +100,36 @@ export async function syncAnonRecord(sinkUrl: string, payload: AnonRecordPayload
   }
 }
 
+/** Fit values the sheet row carries. Structurally compatible with
+ *  SavedTransitFit (workflows/transit/fitBridge) so callers pass it as-is. */
+export interface AnonSubmitFit {
+  rpRs: number;
+  rpRsErr: number;
+  period: number;
+  reducedChiSquared: number;
+}
+
+/** What a block needs to declare for its records to reach the sheet. */
+export interface AnonSubmitConfig {
+  targetId: string;
+  /** null until the Lab fit is bridged back — a draft row can precede it. */
+  fit: AnonSubmitFit | null;
+}
+
+/** "생각해보기" responses, already graded by InquiryLayout (which owns the
+ *  module config holding the correct answers). */
+export interface SelfCheckSummary {
+  responses: Array<{ step: string; id: string; answer: string | number; correct: boolean }>;
+  /** Number of self-check items the module defines, answered or not. */
+  total: number;
+  answered: number;
+  correct: number;
+}
+
 /** Everything the sheet row needs, minus the bits recordSink fills in itself. */
 export interface AnonRecordInput {
   targetId: string;
-  status: 'draft' | 'submitted';
+  status: 'draft';
   fit: {
     rpRs: number;
     rpRsErr: number;
