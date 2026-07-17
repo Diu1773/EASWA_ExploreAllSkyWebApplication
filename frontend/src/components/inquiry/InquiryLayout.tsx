@@ -101,15 +101,19 @@ export function InquiryLayout<TContext = unknown>({
   draftTargetId,
 }: InquiryLayoutProps<TContext>) {
   const lang = useLangStore((state) => state.lang);
-  // The active step rides in the URL (?step=, replace — no history spam).
+  // The active step rides in the URL (?blockStep=, replace — no history spam).
   // Without it, walking Step 4 → Lab and pressing the browser back button
   // remounted this layout at Step 0: the page came back, the position didn't.
   // A reload keeps the step for the same reason.
+  // NOT ?step= — that name belongs to the Lab's internal stepper
+  // (usePersistedWorkflowStep), which deletes it whenever the Lab sits on its
+  // default step. Sharing the name made the two owners overwrite each other.
+  const BLOCK_STEP_PARAM = 'blockStep';
   const [searchParams, setSearchParams] = useSearchParams();
   const resolveStep = (raw: string | null): InquiryStepId | null =>
     raw && module.steps.some((step) => step.id === raw) ? (raw as InquiryStepId) : null;
   const [activeStepId, setActiveStepId] = useState<InquiryStepId>(
-    () => resolveStep(searchParams.get('step')) ?? initialStepId ?? module.steps[0].id,
+    () => resolveStep(searchParams.get(BLOCK_STEP_PARAM)) ?? initialStepId ?? module.steps[0].id,
   );
   const [notes, setNotes] = useState<Record<string, string>>({});
   // Self-check answers live here, not in SelfCheckPanel: that panel unmounts on
@@ -131,7 +135,7 @@ export function InquiryLayout<TContext = unknown>({
   // (the Lab passes step4) still lands on where the learner actually was.
   useEffect(() => {
     setActiveStepId(
-      resolveStep(searchParams.get('step')) ?? initialStepId ?? module.steps[0].id,
+      resolveStep(searchParams.get(BLOCK_STEP_PARAM)) ?? initialStepId ?? module.steps[0].id,
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialStepId, module.id, module.steps, searchParams]);
@@ -139,9 +143,9 @@ export function InquiryLayout<TContext = unknown>({
   // Mirror the active step into the URL. replace, not push: per-step history
   // entries made the back button walk every step before leaving the page.
   useEffect(() => {
-    if (searchParams.get('step') === activeStepId) return;
+    if (searchParams.get(BLOCK_STEP_PARAM) === activeStepId) return;
     const next = new URLSearchParams(searchParams);
-    next.set('step', activeStepId);
+    next.set(BLOCK_STEP_PARAM, activeStepId);
     setSearchParams(next, { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeStepId, searchParams, setSearchParams]);

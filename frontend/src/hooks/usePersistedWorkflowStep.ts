@@ -50,6 +50,13 @@ export function usePersistedWorkflowStep<
   const [hasRestoredSnapshot, setHasRestoredSnapshot] = useState(false);
   const stepRef = useRef(defaultStep);
   const searchParamsRef = useRef(searchParams);
+  // react-router (v7) rebuilds setSearchParams on EVERY url change (it closes
+  // over searchParams). With the raw setter in the hydration effect's deps, any
+  // unrelated query-param write re-ran the whole hydration — re-dispatching
+  // 'restore' mid-analysis, which reset the reducer state and cancelled the
+  // in-flight cutout preview job. Route through a ref so hydration only keys on
+  // the workflow identity (storageKey/version/...).
+  const setSearchParamsRef = useRef(setSearchParams);
   const selfNavigationSearchRef = useRef<string | null>(null);
   const parseStepRef = useRef(parseStep);
   const clampStepRef = useRef(clampStep);
@@ -88,7 +95,7 @@ export function usePersistedWorkflowStep<
     }
 
     selfNavigationSearchRef.current = nextSearch;
-    setSearchParams(nextParams, { replace: historyMode === 'replace' });
+    setSearchParamsRef.current(nextParams, { replace: historyMode === 'replace' });
     return safeStep;
   };
 
@@ -115,6 +122,10 @@ export function usePersistedWorkflowStep<
   }, [searchParams]);
 
   useEffect(() => {
+    setSearchParamsRef.current = setSearchParams;
+  }, [setSearchParams]);
+
+  useEffect(() => {
     stepRef.current = step;
   }, [step]);
 
@@ -122,7 +133,7 @@ export function usePersistedWorkflowStep<
     selfNavigationSearchRef.current = null;
     setHydrated(false);
 
-    const urlStep = parseStepRef.current(searchParams.get(searchParam));
+    const urlStep = parseStepRef.current(searchParamsRef.current.get(searchParam));
     let restoredSnapshot: TSnapshot | null = null;
     let savedStep: TStep | null = null;
 
@@ -175,11 +186,11 @@ export function usePersistedWorkflowStep<
     const nextSearch = nextParams.toString();
     if (nextSearch !== currentSearch) {
       selfNavigationSearchRef.current = nextSearch;
-      setSearchParams(nextParams, { replace: true });
+      setSearchParamsRef.current(nextParams, { replace: true });
     }
 
     setHydrated(true);
-  }, [defaultStep, searchParam, setSearchParams, storageKey, version]);
+  }, [defaultStep, searchParam, storageKey, version]);
 
   useEffect(() => {
     if (!hydrated) return;

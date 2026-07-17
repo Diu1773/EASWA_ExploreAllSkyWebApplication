@@ -19,7 +19,11 @@ import { useWorkflowController } from '../../hooks/useWorkflowController';
 import type { WorkflowSessionSource } from '../../utils/workflowSession';
 import type { LearningMode } from '../../utils/explorerNavigation';
 import { loadLabDraft, saveLabDraft } from '../../utils/inquiryDraft';
-import { loadTransitFit, saveTransitFit } from '../../workflows/transit/fitBridge';
+import {
+  buildSavedTransitFit,
+  loadTransitFit,
+  saveTransitFit,
+} from '../../workflows/transit/fitBridge';
 import {
   createTransitWorkflowDefinition,
   type PersistedTransitLabState,
@@ -646,6 +650,17 @@ export function TransitLab({
     if (!saved || saved.validationStats === validationStats) return;
     saveTransitFit({ ...saved, validationStats });
   }, [validationStats, target.id]);
+
+  // Restored draft → refill the bridge. A logged-in learner resuming a backend
+  // draft gets fitResult back in Lab state, but the session-scoped bridge entry
+  // that unlocks the block's Steps 5–6 is gone with the old session — without
+  // this they saw their fit on screen yet stayed locked until they re-ran it.
+  // Only fills a missing entry, never overwrites (a live one may carry stats).
+  useEffect(() => {
+    if (!fitResult || fitResult.target_id !== target.id) return;
+    if (loadTransitFit(target.id)) return;
+    saveTransitFit(buildSavedTransitFit(fitResult));
+  }, [fitResult, target.id]);
 
   const workflowSessionSource: WorkflowSessionSource =
     draftId && draftId.trim() !== ''
