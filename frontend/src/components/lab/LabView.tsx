@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useParams, Link, useSearchParams } from 'react-router-dom';
+import { useParams, Link, Navigate, useSearchParams } from 'react-router-dom';
 import { runPhotometry, buildLightCurve } from '../../api/client';
 import { useAppStore } from '../../stores/useAppStore';
 import { useLabData } from '../../hooks/useLabData';
@@ -9,22 +9,8 @@ import { ThumbnailStrip } from './ThumbnailStrip';
 import { ParamsPanel } from './ParamsPanel';
 import { PhotometryResult } from './PhotometryResult';
 import { LightCurvePlot } from './LightCurvePlot';
-import { TransitLab } from './TransitLab';
 import { KmtnetLab } from './KmtnetLab';
 import { CmdExplorer } from './CmdExplorer';
-import { ApertureSandbox, InquiryLayout, SkyDataPanel } from '../inquiry';
-import { TransitComparison } from '../inquiry/TransitComparison';
-import { TransitResultSummary } from '../inquiry/TransitResultSummary';
-import {
-  loadTransitFit,
-  TRANSIT_FIT_SAVED_EVENT,
-  type SavedTransitFit,
-} from '../../workflows/transit/fitBridge';
-import { exoplanetTransitModule } from '../../explorationBlocks/configs';
-import {
-  exoplanetAdapter,
-  type ExoplanetAdapterContext,
-} from '../../explorationBlocks/adapters/exoplanetAdapter';
 import type {
   PhotometryMeasurement,
   LightCurveResponse,
@@ -33,7 +19,6 @@ import { buildDssPreviewUrl } from '../../utils/surveys';
 import { formatTargetType } from '../../utils/targetFormat';
 import {
   alignExplorerContext,
-  buildLabHref,
   buildExplorerContextSearchParams,
   buildTargetHref,
   getExplorerContext,
@@ -108,7 +93,7 @@ export function LabView() {
   } = useWorkflowDraftRoute({
     workflowId: isMicrolensingWorkflow ? 'kmtnet_lab' : 'transit_lab',
     subjectId: targetId,
-    enableDrafts: isTransitWorkflow || isMicrolensingWorkflow,
+    enableDrafts: isMicrolensingWorkflow,
     userPresent: Boolean(user),
     onError: setErrorMessage,
   });
@@ -116,26 +101,21 @@ export function LabView() {
   useEffect(() => {
     if (loadError) setErrorMessage(loadError);
   }, [loadError]);
-  // Sector defaulting lives inside TransitLab now (bundled-aware), shared with
-  // the module page that embeds the Lab in Step 4.
 
-  // Read the fit the TransitLab bridges back, and refresh the moment a fit is
-  // saved (same-tab custom event) so Steps 5–6 fill with the learner's result.
-  const [transitFit, setTransitFit] = useState<SavedTransitFit | null>(null);
-  useEffect(() => {
-    if (!targetId) {
-      setTransitFit(null);
-      return;
-    }
-    const read = () => setTransitFit(loadTransitFit(targetId));
-    read();
-    window.addEventListener(TRANSIT_FIT_SAVED_EVENT, read);
-    window.addEventListener('focus', read);
-    return () => {
-      window.removeEventListener(TRANSIT_FIT_SAVED_EVENT, read);
-      window.removeEventListener('focus', read);
-    };
-  }, [targetId]);
+  // The transit Lab lives inside the block's Step 4 now — this route survives
+  // only as a redirector so old bookmarks, browser history, and the /my
+  // "초안 계속하기" links keep working. Draft params ride along; blockStep
+  // lands the learner on the analysis step this page used to be.
+  if (isTransitWorkflow) {
+    const next = new URLSearchParams();
+    if (targetId) next.set('target', targetId);
+    const draftParam = searchParams.get('draft');
+    const seedParam = searchParams.get('seedRecord') ?? searchParams.get('record');
+    if (draftParam) next.set('draft', draftParam);
+    if (seedParam) next.set('seedRecord', seedParam);
+    next.set('blockStep', 'step4_run_visualize');
+    return <Navigate to={`/modules/exoplanet-transit?${next.toString()}`} replace />;
+  }
 
   const handleRunPhotometry = async () => {
     if (!targetId || selectedIds.length === 0) return;
@@ -248,139 +228,6 @@ export function LabView() {
           </div>
         </div>
       </div>
-    );
-  }
-
-  if (isTransitWorkflow) {
-    if (!draftRestoreReady) {
-      return <div className="loading">{lang === 'ko' ? '초안 복원 중...' : 'Restoring draft...'}</div>;
-    }
-    const transitContext: ExoplanetAdapterContext = {
-      target,
-      observations,
-      labHref: buildLabHref(
-        targetId ?? target.id,
-        { ...navigationContext, topicId: target.topic_id },
-        [['workflow', 'transit']],
-      ),
-    };
-    // Step 1 on this page. Without an explicit slot InquiryLayout falls back to a
-    // generic "다음 행동" card whose button is the adapter's primary action —
-    // which here resolves to labHref, i.e. the page you are already on. Clicking
-    // it did nothing. The target is already chosen (it is in the URL), so show
-    // that instead, with a way back to the map to pick a different one.
-    const labSelectionSlot = (
-      <section className="inquiry-info-panel inquiry-selection-card">
-        <span className="inquiry-panel-kicker">
-          {lang === 'ko' ? '선택한 탐구 대상' : 'Selected target'}
-        </span>
-        <h3>{target.name}</h3>
-        <p>
-          {lang === 'ko'
-            ? '이 대상의 관측자료로 분석을 진행하고 있습니다. 다른 대상을 고르려면 전천 지도로 돌아가세요.'
-            : 'You are analyzing this target’s observations. Go back to the sky map to choose a different one.'}
-        </p>
-        <Link to={exoplanetTransitModule.entry.href} className="btn-secondary inquiry-panel-action">
-          {lang === 'ko' ? '전천 지도에서 다른 대상 고르기' : 'Choose another target on the sky map'}
-        </Link>
-      </section>
-    );
-    return (
-      <InquiryLayout
-        module={exoplanetTransitModule}
-        adapter={exoplanetAdapter}
-        context={transitContext}
-        initialStepId="step4_run_visualize"
-        selectionSlot={labSelectionSlot}
-        contextSlot={
-          <div className="inquiry-target-context">
-            <div className="inquiry-target-context-copy">
-              {/* Back into the module tree (Step 0–1 slots live there), not the
-                  legacy /target detail page. Drafts are shared, nothing is lost. */}
-              <Link
-                to={`${exoplanetTransitModule.entry.href}?target=${targetId ?? target.id}`}
-                className="back-link"
-              >
-                &larr; {lang === 'ko' ? '탐구 화면으로' : 'Back to Inquiry'}
-              </Link>
-              <h2>{lang === 'ko' ? '식현상 Lab' : 'Transit Lab'}: {target.name}</h2>
-              <div className="target-meta">
-                <span className="badge">{formatTargetType(target.type, t)}</span>
-                <span>{formatConstellation(target.constellation, lang)}</span>
-                {target.period_days && <span>P = {target.period_days} d</span>}
-              </div>
-            </div>
-            <img
-              src={buildDssPreviewUrl(target.ra, target.dec, { width: 360, height: 220, fovDeg: 0.22 })}
-              alt={`${target.name} ${lang === 'ko' ? '관측 미리보기' : 'survey preview'}`}
-              className="lab-header-preview"
-            />
-          </div>
-        }
-        metadataSlot={
-          <SkyDataPanel
-            targetName={target.name}
-            ra={target.ra}
-            dec={target.dec}
-            pixelScaleArcsec={21}
-            chips={[
-              {
-                label: { ko: 'TESS Sector', en: 'TESS sectors' },
-                value:
-                  observations.length > 0
-                    ? observations.map((obs) => obs.sector).filter(Boolean).join(' · ')
-                    : '—',
-              },
-              {
-                label: { ko: '케이던스 (FFI)', en: 'Cadence (FFI)' },
-                // FFI cadence follows the mission phase, not the stored metadata:
-                // sectors 1-26 = 30 min, 27-55 = 10 min, 56+ = 200 s.
-                value: (() => {
-                  const cadences = [...new Set(observations.map((obs) => {
-                    const s = obs.sector ?? 0;
-                    return s >= 56 ? '200초' : s >= 27 ? '10분' : '30분';
-                  }))];
-                  return cadences.length ? `${cadences.join('·')}${cadences.length > 1 ? ' (섹터별)' : ''}` : '—';
-                })(),
-              },
-              {
-                label: { ko: '총 프레임', en: 'Total frames' },
-                value: observations.some((obs) => obs.frame_count)
-                  ? observations
-                      .reduce((sum, obs) => sum + (obs.frame_count ?? 0), 0)
-                      .toLocaleString()
-                  : '—',
-              },
-              { label: { ko: '픽셀 스케일', en: 'Pixel scale' }, value: '21″/px' },
-            ]}
-          />
-        }
-        conditionsSlot={<ApertureSandbox />}
-        analysisSlot={
-          <TransitLab
-            target={target}
-            observations={observations}
-            draftId={parsedDraftId}
-            seedRecordId={parsedSeedRecordId}
-            learningMode={navigationContext.learningMode ?? 'guided'}
-          />
-        }
-        comparisonSlot={
-          transitFit ? <TransitComparison fit={transitFit} target={target} /> : undefined
-        }
-        resultSummarySlot={
-          transitFit
-            ? <TransitResultSummary fit={transitFit} targetName={target.name} target={target} />
-            : undefined
-        }
-        /* Same lock as ExoplanetModuleView: Steps 5–6 open once a fit is saved.
-           Without this the Lab tree let learners walk into an empty comparison. */
-        maxUnlockedStepIndex={transitFit ? undefined : 4}
-        anonSubmit={{ targetId: targetId ?? target.id, fit: transitFit }}
-        /* Same scope as ExoplanetModuleView so notes typed in the module page
-           survive the target-detail → Lab hop (this is a separate React tree). */
-        draftTargetId={targetId ?? target.id}
-      />
     );
   }
 

@@ -202,6 +202,33 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
           label: { ko: '문헌 공전 주기', en: 'Catalog period' },
           value: target.period_days ? `${target.period_days} d` : '—',
         },
+        {
+          label: { ko: 'TESS Sector', en: 'TESS sectors' },
+          value:
+            observations.length > 0
+              ? observations.map((obs) => obs.sector).filter(Boolean).join(' · ')
+              : '—',
+        },
+        {
+          label: { ko: '케이던스 (FFI)', en: 'Cadence (FFI)' },
+          // FFI cadence follows the mission phase, not the stored metadata:
+          // sectors 1-26 = 30 min, 27-55 = 10 min, 56+ = 200 s.
+          value: (() => {
+            const cadences = [...new Set(observations.map((obs) => {
+              const s = obs.sector ?? 0;
+              return s >= 56 ? '200초' : s >= 27 ? '10분' : '30분';
+            }))];
+            return cadences.length ? `${cadences.join('·')}${cadences.length > 1 ? ' (섹터별)' : ''}` : '—';
+          })(),
+        },
+        {
+          label: { ko: '총 프레임', en: 'Total frames' },
+          value: observations.some((obs) => obs.frame_count)
+            ? observations
+                .reduce((sum, obs) => sum + (obs.frame_count ?? 0), 0)
+                .toLocaleString()
+            : '—',
+        },
         { label: { ko: '픽셀 스케일', en: 'Pixel scale' }, value: '21″/px' },
       ]}
     />
