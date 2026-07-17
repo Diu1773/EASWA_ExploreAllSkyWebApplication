@@ -868,10 +868,14 @@ def run_transit_photometry(
 
     diagnostic_payloads: list[dict[str, Any]] = []
     comparison_series: list[dict[str, Any]] = []
+    # First pass: each comparison star's own normalized curve + its weight for
+    # the FINAL ensemble (target ÷ ensemble). The per-star QC diagnostic is built
+    # in a second pass below, because judging a comparison needs the OTHERS.
+    comparison_records: list[dict[str, Any]] = []
     total_comparisons = max(len(comparison_apertures), 1)
     for index, comparison_aperture in enumerate(comparison_apertures, start=1):
         emit(
-            0.72 + 0.14 * ((index - 1) / total_comparisons),
+            0.72 + 0.10 * ((index - 1) / total_comparisons),
             f"Measuring comparison star C{index} flux.",
         )
         comparison_flux = comparison_net_fluxes[index - 1]
@@ -889,32 +893,26 @@ def run_transit_photometry(
         if int(pair_mask.sum()) < 3:
             continue
 
+        # Ensemble weight = target ÷ comparison scatter: how useful this star is
+        # for measuring the target. Drives the combined reference below. (The QC
+        # diagnostic uses a different, target-free metric — see the second pass.)
         pair_flux = normalized_target[pair_mask] / normalized_comparison[pair_mask]
-        pair_flux /= np.nanmedian(pair_flux)
+        pair_flux = pair_flux / np.nanmedian(pair_flux)
         pair_rms = float(np.nanstd(pair_flux))
         pair_mad = _robust_mad(pair_flux)
         raw_weight = 1.0 / max(pair_rms, pair_mad * 1.4826, 0.0005) ** 2
 
-        diagnostic_payloads.append(
+        comparison_records.append(
             {
                 "label": f"C{index}",
                 "position": comparison_aperture.position,
                 "aperture_radius": comparison_aperture.aperture_radius,
                 "inner_annulus": comparison_aperture.inner_annulus,
                 "outer_annulus": comparison_aperture.outer_annulus,
-                "valid_frame_count": int(pair_mask.sum()),
                 "median_flux": round(comparison_median, 2),
-                "differential_rms": round(pair_rms, 6),
-                "differential_mad": round(pair_mad, 6),
+                "normalized": normalized_comparison,
+                "mask": comparison_mask,
                 "raw_weight": raw_weight,
-                "light_curve": _build_light_curve_response(
-                    req.target_id,
-                    target.get("period_days"),
-                    times_filtered[pair_mask],
-                    pair_flux,
-                    y_label="Normalized Flux",
-                    max_points=_MAX_COMPARISON_DIAGNOSTIC_POINTS,
-                ),
             }
         )
         comparison_series.append(
@@ -922,6 +920,81 @@ def run_transit_photometry(
                 "normalized": normalized_comparison,
                 "raw_flux": comparison_flux,
                 "weight": raw_weight,
+            }
+        )
+
+    # Second pass: the QC diagnostic curve for each comparison star.
+    #
+    # Dividing the TARGET by a comparison (the obvious choice) drops the target's
+    # transit dip into every comparison's curve — so all of them look equally bad
+    # at the transit and the RMS is inflated by a signal that has nothing to do
+    # with the comparison's own stability (user caught this 2026-07-18: WASP-6 b's
+    # transit showed up in every candidate). Instead divide each comparison by
+    # the ENSEMBLE OF THE OTHERS: the target drops out entirely and the curve
+    # shows only whether THIS star wobbles relative to its peers — a star that
+    # varies on its own stands out, which is exactly the learner's call. Not a
+    # perfect check (the "others" are assumed steady — the classic check-star
+    # circularity), which is why several are used together and the UI says so.
+    for i, record in enumerate(comparison_records):
+        emit(
+            0.82 + 0.06 * ((i + 1) / max(len(comparison_records), 1)),
+            f"Checking comparison star {record['label']} against the others.",
+        )
+        others = [other for j, other in enumerate(comparison_records) if j != i]
+        diag_flux: np.ndarray | None = None
+        diag_times: np.ndarray | None = None
+        diag_valid = 0
+        against_peers = False
+
+        if others:
+            with np.errstate(invalid="ignore"):
+                others_stack = np.vstack([other["normalized"] for other in others])
+                others_ref = np.nanmean(others_stack, axis=0)
+            check_mask = record["mask"] & np.isfinite(others_ref) & (others_ref > 0)
+            if int(check_mask.sum()) >= 3:
+                flux = record["normalized"][check_mask] / others_ref[check_mask]
+                flux = flux / np.nanmedian(flux)
+                diag_flux = flux
+                diag_times = times_filtered[check_mask]
+                diag_valid = int(check_mask.sum())
+                against_peers = True
+
+        if diag_flux is None:
+            # Only one usable comparison (or too little overlap): no independent
+            # peer to check against, so fall back to target ÷ this star. The
+            # transit stays visible; checked_against_peers flags that the UI
+            # cannot claim a peer cross-check.
+            fallback_mask = target_mask & record["mask"]
+            flux = normalized_target[fallback_mask] / record["normalized"][fallback_mask]
+            flux = flux / np.nanmedian(flux)
+            diag_flux = flux
+            diag_times = times_filtered[fallback_mask]
+            diag_valid = int(fallback_mask.sum())
+
+        diag_rms = float(np.nanstd(diag_flux))
+        diag_mad = _robust_mad(diag_flux)
+
+        diagnostic_payloads.append(
+            {
+                "label": record["label"],
+                "position": record["position"],
+                "aperture_radius": record["aperture_radius"],
+                "inner_annulus": record["inner_annulus"],
+                "outer_annulus": record["outer_annulus"],
+                "valid_frame_count": diag_valid,
+                "median_flux": record["median_flux"],
+                "differential_rms": round(diag_rms, 6),
+                "differential_mad": round(diag_mad, 6),
+                "raw_weight": record["raw_weight"],
+                "checked_against_peers": against_peers,
+                "light_curve": _build_light_curve_response(
+                    req.target_id,
+                    target.get("period_days"),
+                    diag_times,
+                    diag_flux,
+                    y_label="Normalized Flux",
+                    max_points=_MAX_COMPARISON_DIAGNOSTIC_POINTS,
+                ),
             }
         )
 
@@ -1002,6 +1075,7 @@ def run_transit_photometry(
                 item["raw_weight"] / normalized_total_weight if normalized_total_weight > 0 else 0.0,
                 4,
             ),
+            checked_against_peers=item["checked_against_peers"],
             light_curve=item["light_curve"],
         )
         for item in diagnostic_payloads

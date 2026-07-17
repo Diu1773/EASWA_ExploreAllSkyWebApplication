@@ -182,6 +182,88 @@ def test_run_transit_photometry_uses_request_context_without_archive_lookup(monk
     ) == (5.5, 3.0, 4.5, 6.5)
 
 
+def test_comparison_diagnostic_excludes_target_transit(monkeypatch):
+    """QC diagnostic = comparison ÷ the OTHER comparisons, so the target's
+    transit must NOT appear in it. The old code divided the target BY each
+    comparison, leaking the target's dip into every comparison's curve and
+    inflating its RMS (user report 2026-07-18)."""
+    monkeypatch.setattr(
+        transit_service,
+        "_require_target",
+        lambda *a, **k: (_ for _ in ()).throw(AssertionError("no archive lookup")),
+    )
+    monkeypatch.setattr(
+        transit_service,
+        "_load_cutout_dataset",
+        lambda *args, **kwargs: transit_service.CutoutDataset(
+            target_id="wasp_52_b",
+            observation_id="wasp_52_b_sector_0042",
+            sector=42,
+            camera=2,
+            ccd=3,
+            size_px=35,
+            cutout_url="",
+            times=np.asarray([1.0, 2.0, 3.0, 4.0, 5.0], dtype=np.float64),
+            flux_cube=np.ones((5, 20, 20), dtype=np.float32),
+            target_position=PixelCoordinate(x=10.5, y=10.5),
+            quality_flags=np.zeros(5, dtype=np.int64),
+        ),
+    )
+
+    def fake_measure_apertures(dataset, apertures, indices):
+        # Target dips 30% at frame 2 (a transit); the two comparisons are steady.
+        return [
+            np.asarray([10.0, 10.0, 7.0, 10.0, 10.0], dtype=np.float64)  # target
+            if slot == 0
+            else np.asarray([5.05, 4.95, 5.0, 5.05, 4.95], dtype=np.float64)
+            if slot == 1
+            else np.asarray([5.0, 5.0, 5.0, 5.0, 5.0], dtype=np.float64)
+            for slot, _ in enumerate(apertures)
+        ]
+
+    monkeypatch.setattr(transit_service, "_measure_apertures_chunked", fake_measure_apertures)
+
+    def comp(x: float) -> TransitApertureConfig:
+        return TransitApertureConfig(
+            position=PixelCoordinate(x=x, y=5.5),
+            aperture_radius=3.0,
+            inner_annulus=4.5,
+            outer_annulus=6.5,
+        )
+
+    response = transit_service.run_transit_photometry(
+        TransitPhotometryRequest(
+            target_id="wasp_52_b",
+            observation_id="wasp_52_b_sector_0042",
+            cutout_size_px=35,
+            target_context=TransitTargetContext(ra=348.5, dec=8.76, period_days=1.75),
+            observation_context=TransitObservationContext(sector=42, camera=2, ccd=3),
+            target_position=PixelCoordinate(x=3.5, y=3.5),
+            comparison_positions=[PixelCoordinate(x=5.5, y=5.5), PixelCoordinate(x=7.5, y=5.5)],
+            aperture_radius=2.5,
+            inner_annulus=4.0,
+            outer_annulus=6.0,
+            target_aperture=TransitApertureConfig(
+                position=PixelCoordinate(x=3.5, y=3.5),
+                aperture_radius=2.0,
+                inner_annulus=3.5,
+                outer_annulus=5.5,
+            ),
+            comparison_apertures=[comp(5.5), comp(7.5)],
+        )
+    )
+
+    assert response.comparison_count == 2
+    for diagnostic in response.comparison_diagnostics:
+        # Two comparisons → each is checked against the other (target-free).
+        assert diagnostic.checked_against_peers is True
+        fluxes = [point.magnitude for point in diagnostic.light_curve.points]
+        # The target's 30% dip (→ ~0.7) must not leak in. comparison ÷ comparison
+        # stays within ~1%; if the old target ÷ comparison logic were used, one
+        # frame would drop to ~0.7.
+        assert min(fluxes) > 0.9, f"target transit leaked into {diagnostic.label}: {fluxes}"
+
+
 def test_run_transit_photometry_reports_real_progress(monkeypatch):
     def fake_load_cutout_dataset(*args, progress_callback=None, **kwargs):
         if progress_callback is not None:

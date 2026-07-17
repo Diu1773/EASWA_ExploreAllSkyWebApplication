@@ -2965,11 +2965,13 @@ export function TransitLab({
                 comparisonDiagnostics.length > 0 && selectedComparisonDiagnosticData ? (
                   <>
                     {/* What to look for — the whole judgement is "is the curve
-                        flat?", so say that before the plot (design principle 4). */}
+                        flat?", so say that before the plot (design principle 4).
+                        The curve is this star ÷ the others, so the target's
+                        transit is gone and only this star's own wobble shows. */}
                     <div className="transit-qc-guide">
                       {lang === 'ko'
-                        ? '좋은 비교성은 스스로 밝기가 변하지 않는 별입니다. 목표별을 그 별로 나눈 아래 곡선이 평평하면 안정적, 출렁이면 그 별에 문제가 있다는 뜻이니 제외하세요.'
-                        : 'A good comparison star does not vary on its own. If the curve below (target ÷ this star) is flat, it is steady; if it wobbles, that star is the problem — exclude it.'}
+                        ? '좋은 비교성은 스스로 밝기가 변하지 않는 별입니다. 아래 곡선은 이 별을 나머지 비교성들과 비교한 것 — 평평하면 다 같이 안정적, 이 별만 출렁이면 스스로 변광하거나 오염된 것이니 제외하세요. 다만 하나만 보고 확신하긴 어려워, 여러 별을 함께 써서 보완합니다.'
+                        : "A good comparison star does not vary on its own. The curve below is this star ÷ the other comparisons — flat means they all agree, a wobble unique to this star means it varies or is contaminated, so exclude it. One star alone is never certain, which is why several are used together."}
                     </div>
 
                     {qcSelectionDirty && (
@@ -3035,8 +3037,20 @@ export function TransitLab({
 
                       <LightCurvePlot
                         data={selectedComparisonDiagnosticData.light_curve}
-                        targetName={`${target.name} ÷ ${selectedComparisonDiagnosticData.label}`}
+                        targetName={
+                          selectedComparisonDiagnosticData.checked_against_peers === false
+                            ? `${target.name} ÷ ${selectedComparisonDiagnosticData.label}`
+                            : `${selectedComparisonDiagnosticData.label} ÷ ${lang === 'ko' ? '나머지 비교성' : 'other comparisons'}`
+                        }
                       />
+
+                      {selectedComparisonDiagnosticData.checked_against_peers === false && (
+                        <p className="transit-qc-nocheck">
+                          {lang === 'ko'
+                            ? '⚠ 비교성이 하나뿐이라 다른 별과 상호 검증할 수 없습니다. 이 곡선에는 목표별의 식현상이 섞여 있을 수 있어요.'
+                            : '⚠ Only one comparison, so it cannot be cross-checked against a peer. This curve may include the target’s transit.'}
+                        </p>
+                      )}
 
                       {(() => {
                         const tier = qcRmsTier(selectedComparisonDiagnosticData.differential_rms);

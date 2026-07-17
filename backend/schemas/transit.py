@@ -100,6 +100,11 @@ class TransitComparisonDiagnostic(BaseModel):
     differential_rms: float
     differential_mad: float
     ensemble_weight: float
+    # True when the diagnostic curve is this star ÷ the other comparisons (the
+    # target-free QC). False when there was no independent peer to check against
+    # and it fell back to target ÷ this star — the UI then says it can't be
+    # cross-checked. Defaults True so older payloads keep working.
+    checked_against_peers: bool = True
     light_curve: LightCurveResponse
 
 

@@ -107,6 +107,10 @@ export interface TransitComparisonDiagnostic {
   differential_rms: number;
   differential_mad: number;
   ensemble_weight: number;
+  /** True: diagnostic curve is this star ÷ the other comparisons (target-free
+   *  QC). False: no independent peer, fell back to target ÷ this star — the UI
+   *  then notes it can't be cross-checked. Optional for older payloads. */
+  checked_against_peers?: boolean;
   light_curve: LightCurveResponse;
 }
 

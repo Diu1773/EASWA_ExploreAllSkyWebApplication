@@ -2828,6 +2828,18 @@ body {
   accent-color: var(--accent);
 }
 
+/* Shown only when a star could not be peer-checked (single comparison). */
+.transit-qc-nocheck {
+  margin: 10px 0 0;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(224, 169, 46, 0.1);
+  border: 1px solid rgba(224, 169, 46, 0.3);
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
 .transit-comparison-diagnostics {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
