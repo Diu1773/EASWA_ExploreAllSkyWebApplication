@@ -321,7 +321,50 @@ function AladinViewer(
         console.error('Failed to initialize Aladin Lite', error);
       });
 
-    return () => { cancelled = true; };
+    // Tear the viewer down on unmount.
+    //
+    // Without this the WebGL context leaked on every mount: the block's Step 0
+    // (3D scene) and Step 1 (this map) mount and unmount as the learner steps
+    // through, and each home → block round trip made another. Chrome caps live
+    // contexts (~16) — past that it refuses new ones, so the map came back as
+    // garbage (stray grid labels, no sky) and eventually took the renderer down
+    // with STATUS_ACCESS_VIOLATION. Reported from production 2026-07-17; the
+    // console showed "WebGL context could not be created" ×6 then "Failed to
+    // initialize Aladin Lite: WebGL2 not supported". A reload appeared to fix it
+    // only because a fresh document starts with zero contexts.
+    return () => {
+      cancelled = true;
+      const viewer = aladinRef.current;
+      const container = containerRef.current;
+      aladinRef.current = null;
+      catalogRef.current = null;
+      aladinApiRef.current = null;
+
+      // Aladin's own teardown when this build has one (it stops its render loop
+      // and detaches listeners); the context release below is the safety net.
+      try {
+        viewer?.destroy?.();
+      } catch (error) {
+        console.warn('Aladin destroy failed', error);
+      }
+
+      try {
+        container?.querySelectorAll('canvas').forEach((canvas) => {
+          // Ask for the context type Aladin actually created — getContext with a
+          // different type returns null and would silently skip the release.
+          const gl =
+            (canvas.getContext('webgl2') as WebGL2RenderingContext | null) ??
+            (canvas.getContext('webgl') as WebGLRenderingContext | null);
+          gl?.getExtension('WEBGL_lose_context')?.loseContext();
+        });
+        if (container) {
+          delete (container as HTMLDivElement & { __aladin?: unknown }).__aladin;
+          container.innerHTML = '';
+        }
+      } catch (error) {
+        console.warn('Aladin context release failed', error);
+      }
+    };
   }, []);
   // Update markers when targets change — and once Aladin finishes initializing,
   // since the targets are usually already here by then.

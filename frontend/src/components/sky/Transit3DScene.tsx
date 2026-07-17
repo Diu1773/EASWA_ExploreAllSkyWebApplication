@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, type RootState } from '@react-three/fiber';
 import { Stars } from '@react-three/drei';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three';
@@ -293,6 +293,7 @@ export default function Transit3DScene() {
   const lang = useLangStore((s) => s.lang);
   const [phase, setPhase] = useState(0);
   const [playing, setPlaying] = useState(true);
+  const glRef = useRef<THREE.WebGLRenderer | null>(null);
 
   // Animation loop — only runs while playing
   useEffect(() => {
@@ -309,6 +310,25 @@ export default function Transit3DScene() {
     return () => cancelAnimationFrame(raf);
   }, [playing]);
 
+  // Release the WebGL context on unmount. This scene mounts on Step 0 and
+  // unmounts as the learner steps forward or returns home; R3F disposes GPU
+  // resources but the browser only reclaims the context itself when we force it,
+  // so without this each home→block round trip leaked one. Chrome caps live
+  // contexts (~16) — past that new ones fail and the map/scene render as garbage
+  // before the tab crashes with STATUS_ACCESS_VIOLATION (reported 2026-07-17).
+  useEffect(() => {
+    return () => {
+      const gl = glRef.current;
+      glRef.current = null;
+      try {
+        gl?.dispose?.();
+        gl?.forceContextLoss?.();
+      } catch (error) {
+        console.warn('Transit3D renderer teardown failed', error);
+      }
+    };
+  }, []);
+
   const seconds = phase * PERIOD;
 
   return (
@@ -319,6 +339,9 @@ export default function Transit3DScene() {
           camera={{ position: [0, 0, 12], zoom: 60, near: 0.1, far: 100 }}
           dpr={[1, 1.75]}
           gl={{ antialias: true, powerPreference: 'high-performance' }}
+          onCreated={(state: RootState) => {
+            glRef.current = state.gl;
+          }}
         >
           <color attach="background" args={['#02030a']} />
           <Stars radius={80} depth={50} count={2200} factor={1.8} saturation={0} fade speed={0.25} />

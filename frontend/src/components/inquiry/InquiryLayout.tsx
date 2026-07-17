@@ -510,9 +510,6 @@ export function InquiryLayout<TContext = unknown>({
           <Link to="/" className="back-link">
             &larr; {lang === 'ko' ? '홈' : 'Home'}
           </Link>
-          <span className="inquiry-layout-kicker">
-            {lang === 'ko' ? '모듈형 탐구블럭' : 'Modular Inquiry Block'}
-          </span>
           <h1>{localize(module.title, lang)}</h1>
           <p>{localize(module.description, lang)}</p>
         </div>
