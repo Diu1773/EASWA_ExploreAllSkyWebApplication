@@ -1,7 +1,9 @@
 // Bridges a completed transit fit from the fullscreen Lab to the guided block.
-// The Lab writes a compact result to localStorage on a successful fit; the
+// The Lab writes a compact result to sessionStorage on a successful fit; the
 // exoplanet block reads it (keyed by target id) to drive the Step 5 comparison
 // (measured fit value vs NASA Exoplanet Archive) and to gate Steps 5-6.
+// Session-scoped like the drafts (utils/inquiryDraft.ts): anonymous work must
+// not outlive the browser on a shared classroom PC.
 
 export interface SavedTransitFitCurve {
   /** Orbital phase relative to the fitted T0, sorted ascending (downsampled). */
@@ -36,9 +38,9 @@ export const TRANSIT_FIT_SAVED_EVENT = 'easwa:transit-fit-saved';
 export function saveTransitFit(fit: SavedTransitFit): void {
   if (!fit.targetId) return;
   try {
-    localStorage.setItem(KEY_PREFIX + fit.targetId, JSON.stringify(fit));
+    sessionStorage.setItem(KEY_PREFIX + fit.targetId, JSON.stringify(fit));
   } catch {
-    // localStorage may be unavailable (private mode / quota) — non-fatal.
+    // Storage may be unavailable (private mode / quota) — non-fatal.
   }
   try {
     window.dispatchEvent(new CustomEvent(TRANSIT_FIT_SAVED_EVENT, { detail: fit.targetId }));
@@ -53,9 +55,9 @@ export function saveTransitFit(fit: SavedTransitFit): void {
 export function clearTransitFit(targetId: string): void {
   if (!targetId) return;
   try {
-    localStorage.removeItem(KEY_PREFIX + targetId);
+    sessionStorage.removeItem(KEY_PREFIX + targetId);
   } catch {
-    // localStorage unavailable — non-fatal.
+    // Storage unavailable — non-fatal.
   }
   try {
     window.dispatchEvent(new CustomEvent(TRANSIT_FIT_SAVED_EVENT, { detail: targetId }));
@@ -67,7 +69,7 @@ export function clearTransitFit(targetId: string): void {
 export function loadTransitFit(targetId: string): SavedTransitFit | null {
   if (!targetId) return null;
   try {
-    const raw = localStorage.getItem(KEY_PREFIX + targetId);
+    const raw = sessionStorage.getItem(KEY_PREFIX + targetId);
     return raw ? (JSON.parse(raw) as SavedTransitFit) : null;
   } catch {
     return null;

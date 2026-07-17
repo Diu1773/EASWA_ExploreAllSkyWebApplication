@@ -12,20 +12,23 @@ export function getRecordSinkUrl(): string | null {
   return url && url.trim() !== '' ? url.trim() : null;
 }
 
-/** Anonymous id: generated once per browser and reused for every submission,
- *  so repeated submissions from the same device can be grouped without login. */
+/** Anonymous id: one per browser session, reused within it so every sync from
+ *  the same sitting upserts the same sheet row. Deliberately NOT per-browser
+ *  (localStorage): on a shared classroom PC a permanent id made learner B's
+ *  upserts overwrite learner A's row for the same target. One sitting = one
+ *  learner = one row; a new session mints a new id and forks a new row. */
 export function getAnonId(): string {
   try {
-    const existing = localStorage.getItem(ANON_ID_KEY);
+    const existing = sessionStorage.getItem(ANON_ID_KEY);
     if (existing) return existing;
     const fresh =
       typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
         ? crypto.randomUUID()
         : `anon-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
-    localStorage.setItem(ANON_ID_KEY, fresh);
+    sessionStorage.setItem(ANON_ID_KEY, fresh);
     return fresh;
   } catch {
-    // localStorage unavailable (private mode / quota) — one-off id.
+    // Storage unavailable (private mode / quota) — one-off id.
     return `anon-${Date.now().toString(36)}`;
   }
 }

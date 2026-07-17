@@ -11,12 +11,11 @@ interface StartOverButtonProps {
 }
 
 /**
- * Wipes this target's autosaved work and reloads.
+ * Wipes this target's autosaved work (and the session's anon id) and reloads.
  *
- * Why it exists: autosave restores the previous session, which is right for one
- * learner but wrong for a shared classroom PC — the next person inherits someone
- * else's notes, self-check answers and fitted curve, and there was no way out
- * short of clearing site data in browser settings.
+ * Work is session-scoped now, so closing the browser already gives the next
+ * learner a clean start. This button covers the same-tab cases: handing over
+ * the PC without closing it, or redoing a target from scratch.
  *
  * Two-step confirm rather than window.confirm: this throws away real work, and a
  * native dialog is easy to dismiss on reflex. The second press is a different
@@ -65,8 +64,8 @@ export function StartOverButton({ moduleId, targetId, savedAt }: StartOverButton
       onClick={handleClick}
       title={
         lang === 'ko'
-          ? '이 대상에 대해 이 브라우저에 저장된 기록·생각해보기·분석 결과를 모두 지웁니다.'
-          : 'Delete every note, self-check answer and analysis result saved in this browser for this target.'
+          ? '이 대상에 대해 저장된 기록·생각해보기·분석 결과를 모두 지우고, 다음 사람의 새 기록으로 시작합니다.'
+          : 'Delete every note, self-check answer and analysis result for this target, and start a fresh record for the next person.'
       }
     >
       {armed

@@ -79,7 +79,7 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
     };
   }, [targetId]);
 
-  // Read the fit result the Lab bridges back (localStorage), refreshing when
+  // Read the fit result the Lab bridges back (sessionStorage), refreshing when
   // the user returns from the Lab so Step 5 unlocks and fills in.
   const [fit, setFit] = useState<SavedTransitFit | null>(null);
   useEffect(() => {

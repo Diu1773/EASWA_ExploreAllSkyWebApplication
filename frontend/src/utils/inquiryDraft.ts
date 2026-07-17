@@ -1,16 +1,25 @@
 // Auto-saved learner input for the guided inquiry block (notes + self-checks).
 //
-// Why localStorage rather than the backend: the block is used without login, and
+// Why the browser rather than the backend: the block is used without login, and
 // backend drafts are per-user (routers/drafts.py requires get_current_user). Even
 // for logged-in users the Render free plan mounts no persistent disk, so the
-// SQLite file is wiped on every deploy/restart. The browser is therefore the only
-// place an anonymous learner's work survives a reload. Research collection is a
-// separate path: the Step 6 anonymous submission to the Google Sheets sink.
+// SQLite file is wiped on every deploy/restart. Research collection is a separate
+// path: the anonymous sync to the Google Sheets sink.
+//
+// Why sessionStorage rather than localStorage: this is anonymous work, and
+// localStorage made it behave like an account — it outlived the browser, so on a
+// shared classroom PC the next learner inherited the previous one's notes, and
+// note fields that had since been REMOVED from the UI kept resurrecting from old
+// saves and riding along into the sheet payload (2026-07-17: a real row arrived
+// carrying six "D" test notes from fields that no longer exist). Session scope
+// keeps the reload/crash protection within one sitting and guarantees a clean
+// start the next time the browser opens. (사용자 지시: "익명인데 왜 로컬스토리지에
+// 저장되는거야 캐시마냥" — 익명 작업은 세션 한정으로.)
 //
 // This also repairs a silent data loss: the block at /modules/... and the block
-// at /lab/... are different React trees, so walking Step 4 → target detail → Lab
-// used to unmount the layout and drop everything typed in Steps 0–3. Both trees
-// now hydrate from the same key.
+// at /lab/... are different React trees, so walking Step 4 → Lab used to unmount
+// the layout and drop everything typed in Steps 0–3. Both trees hydrate from the
+// same key (same tab → same sessionStorage).
 
 const KEY_PREFIX = 'easwa:inquiry-draft:';
 
@@ -40,7 +49,7 @@ function keyFor(scope: string): string {
 export function loadInquiryDraft(scope: string | null): InquiryDraft | null {
   if (!scope) return null;
   try {
-    const raw = localStorage.getItem(keyFor(scope));
+    const raw = sessionStorage.getItem(keyFor(scope));
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<InquiryDraft>;
     if (parsed.v !== SCHEMA_VERSION) return null;
@@ -65,7 +74,7 @@ export function saveInquiryDraft(
   if (!scope) return null;
   const savedAt = Date.now();
   try {
-    localStorage.setItem(
+    sessionStorage.setItem(
       keyFor(scope),
       JSON.stringify({ v: SCHEMA_VERSION, notes, selfChecks, savedAt } satisfies InquiryDraft),
     );
@@ -78,7 +87,7 @@ export function saveInquiryDraft(
 export function clearInquiryDraft(scope: string | null): void {
   if (!scope) return;
   try {
-    localStorage.removeItem(keyFor(scope));
+    sessionStorage.removeItem(keyFor(scope));
   } catch {
     // non-fatal
   }
@@ -88,11 +97,10 @@ export function clearInquiryDraft(scope: string | null): void {
 // Lab (정밀 분석) draft
 //
 // The Lab keeps its own inputs, separate from the block above it: the StepGuide
-// "생각해보기" answers (O/X, multiple choice, short text) and the Step 6 record
-// template answers. Neither survived a reload — the guide answers sat in a
-// component useState that unmounts on every Lab step change, and recordAnswers
-// only persisted through the login-gated backend draft. Same reasoning as the
-// block draft above: the browser is the only free, no-login, restart-proof store.
+// "생각해보기" answers (O/X, multiple choice, short text). They did not survive
+// a reload — the answers sat in a component useState that unmounts on every Lab
+// step change. Same scope reasoning as the block draft above: reload-safe within
+// the session, gone when the browser closes.
 // ---------------------------------------------------------------------------
 
 const LAB_KEY_PREFIX = 'easwa:lab-draft:';
@@ -113,7 +121,7 @@ function labKeyFor(targetId: string): string {
 export function loadLabDraft(targetId: string | null | undefined): LabDraft | null {
   if (!targetId) return null;
   try {
-    const raw = localStorage.getItem(labKeyFor(targetId));
+    const raw = sessionStorage.getItem(labKeyFor(targetId));
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<LabDraft>;
     if (parsed.v !== SCHEMA_VERSION) return null;
@@ -136,7 +144,7 @@ export function saveLabDraft(
   if (!targetId) return null;
   const savedAt = Date.now();
   try {
-    localStorage.setItem(
+    sessionStorage.setItem(
       labKeyFor(targetId),
       JSON.stringify({ v: SCHEMA_VERSION, guideAnswers, recordAnswers, savedAt } satisfies LabDraft),
     );
@@ -153,18 +161,9 @@ export function saveLabDraft(
 /**
  * Wipe every trace of one learner's work on one target.
  *
- * Autosave is what makes a reload safe, but it also means a shared classroom PC
- * hands the next person the previous one's notes, half-answered self-checks and
- * fitted curve. There was no way to get a clean start short of clearing site
- * data in the browser.
- *
- * Deliberately scoped to a target rather than "clear everything": the anon id
- * survives, so a learner who starts over is still the same row in the sheet
- * instead of silently forking into a second one.
- *
- * The Lab's analysis state lives in sessionStorage under a key built from the
- * workflow scope (see utils/workflowSession), and drafts/records live in
- * localStorage — so this sweeps both by prefix rather than guessing every id.
+ * Closing the browser now does this on its own (everything is session-scoped),
+ * so this button covers the remaining case: handing the PC to the next learner
+ * without closing the tab, or one learner deciding to redo from scratch.
  */
 /** Is there anything saved for this target? Checks every store clearTargetWork
  *  touches — a leftover Lab draft or fitted curve counts even when the block's
@@ -174,9 +173,9 @@ export function hasTargetWork(moduleId: string, targetId: string | null | undefi
   if (!targetId) return false;
   try {
     return (
-      localStorage.getItem(keyFor(inquiryDraftScope(moduleId, targetId))) !== null ||
-      localStorage.getItem(labKeyFor(targetId)) !== null ||
-      localStorage.getItem(`easwa:transit-fit:${targetId}`) !== null ||
+      sessionStorage.getItem(keyFor(inquiryDraftScope(moduleId, targetId))) !== null ||
+      sessionStorage.getItem(labKeyFor(targetId)) !== null ||
+      sessionStorage.getItem(`easwa:transit-fit:${targetId}`) !== null ||
       Object.keys(sessionStorage).some(
         (key) => key.startsWith('workflow-session:') && key.includes(targetId),
       )
@@ -189,9 +188,9 @@ export function hasTargetWork(moduleId: string, targetId: string | null | undefi
 export function clearTargetWork(moduleId: string, targetId: string | null | undefined): void {
   if (!targetId) return;
   try {
-    localStorage.removeItem(keyFor(inquiryDraftScope(moduleId, targetId)));
-    localStorage.removeItem(labKeyFor(targetId));
-    localStorage.removeItem(`easwa:transit-fit:${targetId}`);
+    sessionStorage.removeItem(keyFor(inquiryDraftScope(moduleId, targetId)));
+    sessionStorage.removeItem(labKeyFor(targetId));
+    sessionStorage.removeItem(`easwa:transit-fit:${targetId}`);
 
     // Lab step-guide fold state ("easwa_guide_open_<step>_<suffix>") and the
     // workflow snapshot are keyed by step/workflow, not by target — match by
@@ -203,7 +202,36 @@ export function clearTargetWork(moduleId: string, targetId: string | null | unde
     Object.keys(sessionStorage)
       .filter((key) => key.startsWith('workflow-session:') && key.includes(targetId))
       .forEach((key) => sessionStorage.removeItem(key));
+
+    // Start over = a new learner as far as the sheet is concerned. Keeping the
+    // anon id here used to make "same person redoing" one row, but on a shared
+    // PC it meant the NEXT learner upserted into the PREVIOUS learner's row and
+    // destroyed it. A forked draft row is noise; an overwritten row is data loss.
+    sessionStorage.removeItem('easwa:anon-id');
   } catch {
     // Storage unavailable (private mode / quota) — nothing to clear anyway.
+  }
+}
+
+/**
+ * One-time boot sweep: learner work used to live in localStorage, so browsers
+ * that visited before the session-scope change still carry old drafts, fits and
+ * the permanent anon id — including notes for fields that no longer exist in the
+ * UI (the "D"-spam keys that resurfaced into the sheet on 2026-07-17). Nothing
+ * reads these keys any more; delete them so they cannot leak again.
+ */
+export function sweepLegacyLocalWork(): void {
+  try {
+    Object.keys(localStorage)
+      .filter(
+        (key) =>
+          key.startsWith(KEY_PREFIX) ||
+          key.startsWith(LAB_KEY_PREFIX) ||
+          key.startsWith('easwa:transit-fit:') ||
+          key === 'easwa:anon-id',
+      )
+      .forEach((key) => localStorage.removeItem(key));
+  } catch {
+    // Storage unavailable — nothing to sweep.
   }
 }
