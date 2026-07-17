@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
 
 export interface PersistedWorkflowEnvelope<TStep extends string, TSnapshot> {
   version: number;
@@ -15,7 +14,6 @@ export interface UsePersistedWorkflowStepOptions<
   storageKey: string;
   version: number;
   defaultStep: TStep;
-  searchParam?: string;
   currentAvailability: TAvailability;
   emptyAvailability: TAvailability;
   parseStep: (value: string | null) => TStep | null;
@@ -26,6 +24,22 @@ export interface UsePersistedWorkflowStepOptions<
   getSnapshotAvailability: (snapshot: TSnapshot | null) => TAvailability;
 }
 
+/**
+ * Persists a workflow's step + snapshot to sessionStorage — NOT the URL.
+ *
+ * The Lab lives inside the block's Step 4, and the block (InquiryLayout) already
+ * owns the URL with ?blockStep=. When this hook also wrote a ?step= param, two
+ * components drove the same query string through separate useSearchParams
+ * instances: on a back/forward each tried to restore its own param and reacted
+ * to the other's write, ping-ponging into a setState loop (React #185 crash,
+ * reported 2026-07-18). It also meant browser-back rewound Lab sub-steps instead
+ * of leaving the page.
+ *
+ * The fix is ownership: the block owns history (which STEP you're on), and the
+ * Lab's internal step is view state — kept in sessionStorage so a reload
+ * restores it, but out of the URL entirely. Stepper clicks move it; the back
+ * button belongs to the block.
+ */
 export function usePersistedWorkflowStep<
   TStep extends string,
   TSnapshot,
@@ -34,7 +48,6 @@ export function usePersistedWorkflowStep<
   storageKey,
   version,
   defaultStep,
-  searchParam = 'step',
   currentAvailability,
   emptyAvailability,
   parseStep,
@@ -44,20 +57,10 @@ export function usePersistedWorkflowStep<
   applyRestoredSnapshot,
   getSnapshotAvailability,
 }: UsePersistedWorkflowStepOptions<TStep, TSnapshot, TAvailability>) {
-  const [searchParams, setSearchParams] = useSearchParams();
   const [step, setStepState] = useState<TStep>(defaultStep);
   const [hydrated, setHydrated] = useState(false);
   const [hasRestoredSnapshot, setHasRestoredSnapshot] = useState(false);
   const stepRef = useRef(defaultStep);
-  const searchParamsRef = useRef(searchParams);
-  // react-router (v7) rebuilds setSearchParams on EVERY url change (it closes
-  // over searchParams). With the raw setter in the hydration effect's deps, any
-  // unrelated query-param write re-ran the whole hydration — re-dispatching
-  // 'restore' mid-analysis, which reset the reducer state and cancelled the
-  // in-flight cutout preview job. Route through a ref so hydration only keys on
-  // the workflow identity (storageKey/version/...).
-  const setSearchParamsRef = useRef(setSearchParams);
-  const selfNavigationSearchRef = useRef<string | null>(null);
   const parseStepRef = useRef(parseStep);
   const clampStepRef = useRef(clampStep);
   const currentAvailabilityRef = useRef(currentAvailability);
@@ -66,36 +69,12 @@ export function usePersistedWorkflowStep<
   const applyRestoredSnapshotRef = useRef(applyRestoredSnapshot);
   const getSnapshotAvailabilityRef = useRef(getSnapshotAvailability);
 
-  const buildSearchParamsForStep = (nextStep: TStep, base: URLSearchParams) => {
-    const next = new URLSearchParams(base);
-    if (nextStep === defaultStep) {
-      next.delete(searchParam);
-    } else {
-      next.set(searchParam, nextStep);
-    }
-    return next;
-  };
-
-  const commitStep = (
-    requestedStep: TStep,
-    historyMode: 'push' | 'replace'
-  ) => {
+  const commitStep = (requestedStep: TStep): TStep => {
     const safeStep = clampStepRef.current(requestedStep, currentAvailabilityRef.current);
     if (stepRef.current !== safeStep) {
       stepRef.current = safeStep;
       setStepState(safeStep);
     }
-
-    const nextParams = buildSearchParamsForStep(safeStep, searchParamsRef.current);
-    const currentSearch = searchParamsRef.current.toString();
-    const nextSearch = nextParams.toString();
-    if (nextSearch === currentSearch) {
-      selfNavigationSearchRef.current = null;
-      return safeStep;
-    }
-
-    selfNavigationSearchRef.current = nextSearch;
-    setSearchParamsRef.current(nextParams, { replace: historyMode === 'replace' });
     return safeStep;
   };
 
@@ -118,22 +97,14 @@ export function usePersistedWorkflowStep<
   ]);
 
   useEffect(() => {
-    searchParamsRef.current = searchParams;
-  }, [searchParams]);
-
-  useEffect(() => {
-    setSearchParamsRef.current = setSearchParams;
-  }, [setSearchParams]);
-
-  useEffect(() => {
     stepRef.current = step;
   }, [step]);
 
+  // Restore step + snapshot from sessionStorage (survives reload, gone when the
+  // browser closes — matches the anonymous-work policy). No URL read.
   useEffect(() => {
-    selfNavigationSearchRef.current = null;
     setHydrated(false);
 
-    const urlStep = parseStepRef.current(searchParamsRef.current.get(searchParam));
     let restoredSnapshot: TSnapshot | null = null;
     let savedStep: TStep | null = null;
 
@@ -144,15 +115,10 @@ export function usePersistedWorkflowStep<
           | PersistedWorkflowEnvelope<TStep, unknown>
           | Record<string, unknown>;
 
-        if (
-          parsed &&
-          typeof parsed === "object" &&
-          "version" in parsed &&
-          "snapshot" in parsed
-        ) {
+        if (parsed && typeof parsed === 'object' && 'version' in parsed && 'snapshot' in parsed) {
           const envelope = parsed as PersistedWorkflowEnvelope<TStep, unknown>;
           savedStep = parseStepRef.current(
-            typeof envelope.step === 'string' ? envelope.step : null
+            typeof envelope.step === 'string' ? envelope.step : null,
           );
           restoredSnapshot =
             envelope.version === version
@@ -160,7 +126,7 @@ export function usePersistedWorkflowStep<
               : restoreSnapshotRef.current(envelope.snapshot ?? parsed);
         } else {
           savedStep = parseStepRef.current(
-            typeof parsed?.step === 'string' ? (parsed.step as string) : null
+            typeof parsed?.step === 'string' ? (parsed.step as string) : null,
           );
           restoredSnapshot = restoreSnapshotRef.current(parsed);
         }
@@ -170,57 +136,29 @@ export function usePersistedWorkflowStep<
     }
 
     const restoredStep = clampStepRef.current(
-      urlStep ?? savedStep ?? defaultStep,
+      savedStep ?? defaultStep,
       restoredSnapshot
         ? getSnapshotAvailabilityRef.current(restoredSnapshot)
-        : emptyAvailabilityRef.current
+        : emptyAvailabilityRef.current,
     );
 
     setHasRestoredSnapshot(restoredSnapshot !== null);
     applyRestoredSnapshotRef.current(restoredSnapshot, restoredStep);
     stepRef.current = restoredStep;
     setStepState(restoredStep);
-
-    const nextParams = buildSearchParamsForStep(restoredStep, searchParamsRef.current);
-    const currentSearch = searchParamsRef.current.toString();
-    const nextSearch = nextParams.toString();
-    if (nextSearch !== currentSearch) {
-      selfNavigationSearchRef.current = nextSearch;
-      setSearchParamsRef.current(nextParams, { replace: true });
-    }
-
     setHydrated(true);
-  }, [defaultStep, searchParam, storageKey, version]);
+  }, [defaultStep, storageKey, version]);
 
+  // Keep the step within what the current analysis state allows (e.g. a fit was
+  // cleared, closing later steps).
   useEffect(() => {
     if (!hydrated) return;
     const safeStep = clampStepRef.current(stepRef.current, currentAvailability);
     if (safeStep !== stepRef.current) {
-      commitStep(safeStep, 'replace');
-    }
-  }, [currentAvailability, hydrated]);
-
-  useEffect(() => {
-    if (!hydrated) return;
-    const currentSearch = searchParams.toString();
-    if (
-      selfNavigationSearchRef.current !== null &&
-      currentSearch === selfNavigationSearchRef.current
-    ) {
-      selfNavigationSearchRef.current = null;
-      return;
-    }
-
-    const urlStep = parseStepRef.current(searchParams.get(searchParam));
-    const safeStep = clampStepRef.current(
-      urlStep ?? defaultStep,
-      currentAvailabilityRef.current
-    );
-    if (safeStep !== stepRef.current) {
       stepRef.current = safeStep;
       setStepState(safeStep);
     }
-  }, [defaultStep, hydrated, searchParam, searchParams]);
+  }, [currentAvailability, hydrated]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -238,16 +176,11 @@ export function usePersistedWorkflowStep<
   };
 
   const setStep = (requestedStep: TStep) => {
-    // 'replace', not 'push': these are sub-steps INSIDE one page (the Lab lives
-    // inside the block's Step 4). Pushing made browser-back rewind Lab steps one
-    // by one — invisible next to the unchanged block stepper, so back appeared
-    // dead — and rewinding past the first entry dropped ?step= and reset the Lab.
-    // Back should always leave the page; in-page movement belongs to the stepper.
-    commitStep(requestedStep, 'replace');
+    commitStep(requestedStep);
   };
 
   const replaceStep = (requestedStep: TStep) => {
-    commitStep(requestedStep, 'replace');
+    commitStep(requestedStep);
   };
 
   return {

@@ -111,11 +111,34 @@ export function InquiryLayout<TContext = unknown>({
   // default step. Sharing the name made the two owners overwrite each other.
   const BLOCK_STEP_PARAM = 'blockStep';
   const [searchParams, setSearchParams] = useSearchParams();
+  // react-router (v7) rebuilds setSearchParams on every URL change; route it
+  // through a ref so callbacks below don't need it as a dependency.
+  const setSearchParamsRef = useRef(setSearchParams);
+  useEffect(() => {
+    setSearchParamsRef.current = setSearchParams;
+  }, [setSearchParams]);
+
   const resolveStep = (raw: string | null): InquiryStepId | null =>
     raw && module.steps.some((step) => step.id === raw) ? (raw as InquiryStepId) : null;
-  const [activeStepId, setActiveStepId] = useState<InquiryStepId>(
-    () => resolveStep(searchParams.get(BLOCK_STEP_PARAM)) ?? initialStepId ?? module.steps[0].id,
-  );
+
+  // The active step is DERIVED from the URL, not held in state. Two effects used
+  // to sync a useState value and the URL in both directions, and a back/forward
+  // that momentarily desynced them made each effect overwrite the other — a
+  // setState loop (React #185, reported 2026-07-18). With the URL as the single
+  // source of truth the loop cannot exist: the URL changes, the render reads it,
+  // done.
+  const activeStepId: InquiryStepId =
+    resolveStep(searchParams.get(BLOCK_STEP_PARAM)) ?? initialStepId ?? module.steps[0].id;
+  const setActiveStepId = (id: InquiryStepId) => {
+    setSearchParamsRef.current(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.set(BLOCK_STEP_PARAM, id);
+        return next;
+      },
+      { replace: true },
+    );
+  };
   const [notes, setNotes] = useState<Record<string, string>>({});
   // Self-check answers live here, not in SelfCheckPanel: that panel unmounts on
   // every step change, and the answers have to survive to the Step 6 submission.
@@ -131,25 +154,8 @@ export function InquiryLayout<TContext = unknown>({
   // mount would overwrite a real draft with {}.
   const dirtyRef = useRef(false);
 
-  // Re-resolve on module switch and on external URL changes (back/forward).
-  // The URL wins over initialStepId so returning into a tree that passes one
-  // (the Lab passes step4) still lands on where the learner actually was.
-  useEffect(() => {
-    setActiveStepId(
-      resolveStep(searchParams.get(BLOCK_STEP_PARAM)) ?? initialStepId ?? module.steps[0].id,
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialStepId, module.id, module.steps, searchParams]);
-
-  // Mirror the active step into the URL. replace, not push: per-step history
-  // entries made the back button walk every step before leaving the page.
-  useEffect(() => {
-    if (searchParams.get(BLOCK_STEP_PARAM) === activeStepId) return;
-    const next = new URLSearchParams(searchParams);
-    next.set(BLOCK_STEP_PARAM, activeStepId);
-    setSearchParams(next, { replace: true });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeStepId, searchParams, setSearchParams]);
+  // (The two step↔URL sync effects that lived here are gone — the step is now
+  //  derived from the URL directly, so there is nothing to keep in sync.)
 
   // Hydrate from the autosaved draft whenever the task (module + target) changes.
   useEffect(() => {
@@ -191,16 +197,32 @@ export function InquiryLayout<TContext = unknown>({
   const activeStep = module.steps.find((step) => step.id === activeStepId) ?? module.steps[0];
   const stepIndex = module.steps.findIndex((step) => step.id === activeStep.id);
   const maxUnlocked = maxUnlockedStepIndex ?? module.steps.length - 1;
+  const selectionStepIndex = module.steps.findIndex((step) => step.kind === 'selection');
 
-  // A URL can point past the gate (stale bookmark, hand-edited ?step=): demote
-  // to the last unlocked step. Runs as an effect, not at init, because the fit
-  // that unlocks Steps 5–6 is read in a mount effect — clamping eagerly would
-  // demote a legitimately unlocked learner during that first frame.
+  // A URL can point past the gate (stale bookmark, hand-edited ?blockStep=):
+  // demote to the last unlocked step. Runs as an effect, not at init, because
+  // the fit that unlocks Steps 5–6 is read in a mount effect — clamping eagerly
+  // would demote a legitimately unlocked learner during that first frame.
   useEffect(() => {
     if (stepIndex > maxUnlocked) {
       setActiveStepId(module.steps[Math.max(maxUnlocked, 0)].id);
     }
   }, [stepIndex, maxUnlocked, module.steps]);
+
+  // No target, but sitting on a step past selection — the shape you land in when
+  // back/forward drops ?target= from a deep step's URL (reported 2026-07-18:
+  // reload showed Step 4 asking "먼저 Step 1에서 대상을 선택하세요"). Send the
+  // learner back to the selection step so the state is coherent.
+  const selectionReady = selectionConfirm ? selectionConfirm.ready : true;
+  useEffect(() => {
+    if (
+      !selectionReady &&
+      selectionStepIndex >= 0 &&
+      stepIndex > selectionStepIndex
+    ) {
+      setActiveStepId(module.steps[selectionStepIndex].id);
+    }
+  }, [selectionReady, selectionStepIndex, stepIndex, module.steps]);
   const goToStep = (delta: number) => {
     const next = module.steps[stepIndex + delta];
     if (next) setActiveStepId(next.id);
