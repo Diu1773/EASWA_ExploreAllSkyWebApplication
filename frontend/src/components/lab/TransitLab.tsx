@@ -146,17 +146,17 @@ const STEP_GUIDES: Record<TransitStep, GuideQuestion[]> = {
     },
     {
       type: 'choice', id: 'qc_q2',
-      text: { ko: '비교성 품질 지표(RMS)가 높다는 것은 무엇을 의미하는가?', en: 'What does a high RMS quality metric for a comparison star indicate?' },
+      text: { ko: '비교성 하나가 완벽히 안정적인지 확신하기 어려울 때, 실제 측광에서는 어떻게 할까?', en: 'When you cannot be sure a single comparison star is perfectly stable, what does real photometry do?' },
       options: [
-        { ko: '측정이 정밀하다', en: 'Measurements are precise' },
-        { ko: '밝기 변화가 불규칙하다', en: 'Brightness variations are irregular' },
-        { ko: '목표 별에 가깝다', en: 'It is close to the target star' },
-        { ko: '대기가 안정적이다', en: 'The atmosphere is stable' },
+        { ko: '가장 밝은 별 하나만 사용한다', en: 'Use only the single brightest star' },
+        { ko: '여러 안정된 별을 함께 써서 개별 오차를 평균한다', en: 'Use several steady stars together so individual errors average out' },
+        { ko: '목표 별 자신을 기준으로 삼는다', en: 'Use the target star itself as the reference' },
+        { ko: '비교성을 아예 쓰지 않는다', en: 'Do not use any comparison star' },
       ],
-      correct: '밝기 변화가 불규칙하다',
-      explanation: { ko: 'RMS(산포도)가 높다는 것은 해당 비교성의 밝기 측정값이 일정하지 않다는 뜻으로, 신뢰할 수 없는 기준임을 의미합니다.', en: 'High RMS means the comparison star\'s brightness measurements are inconsistent — it is an unreliable reference.' },
+      correct: '여러 안정된 별을 함께 써서 개별 오차를 평균한다',
+      explanation: { ko: '한 별의 우연한 오차나 미세한 변광은 여러 별을 함께 쓰면 평균되어 묻힙니다. 그래서 완벽한 하나를 고르기보다 여러 안정된 비교성을 함께(앙상블) 씁니다.', en: 'A single star\'s random error or slight variability averages out when several are combined — so instead of finding one perfect star, several steady comparisons are used together.' },
     },
-    { type: 'open', id: 'qc_q3', text: { ko: '제외한 비교성이 있다면, 제외 이유를 설명해보자.', en: 'If you excluded any comparison stars, explain your reasoning.' } },
+    { type: 'open', id: 'qc_q3', text: { ko: '혼자 유독 출렁이는 비교성이 있어 제외했다면, 무엇을 보고 그렇게 판단했는지 설명해보자.', en: 'If you excluded a comparison star that wobbled unlike the others, explain what you saw that led to that call.' } },
   ],
   lightcurve: [
     {
