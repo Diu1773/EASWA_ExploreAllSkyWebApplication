@@ -2,26 +2,14 @@
   "id": "cluster_record",
   "workflow": "cluster_cmd",
   "title": "Open Cluster CMD Analysis Record",
-  "description": "Save your color-magnitude diagram reading: the distance you fitted from the main sequence, what the turn-off suggested about age, and how it compares with the Gaia parallax distance.",
-  "version": 1,
+  "description": "Save your color-magnitude diagram reading: how the fitted distance compares with the Gaia parallax distance, and what the main sequence and turn-off told you.",
+  "version": 2,
   "questions": [
-    {
-      "id": "summary_title",
-      "label": "Record Title",
-      "type": "text",
-      "required": true,
-      "placeholder": "Example: Praesepe distance from main-sequence fitting"
-    },
-    {
-      "id": "fitted_distance_pc",
-      "label": "Distance you fitted (pc)",
-      "type": "number",
-      "help_text": "From sliding the reference main sequence to overlap the cluster's main sequence."
-    },
     {
       "id": "distance_vs_parallax",
       "label": "How does your fitted distance compare with the Gaia parallax distance?",
-      "type": "select",
+      "type": "radio",
+      "required": true,
       "options": [
         { "value": "close", "label": "Close (within ~10%)" },
         { "value": "somewhat", "label": "Somewhat different" },
@@ -45,6 +33,12 @@
       "type": "textarea",
       "required": true,
       "placeholder": "What did the main sequence and turn-off tell you about distance and age? How confident are you, and why?"
+    },
+    {
+      "id": "next_step",
+      "label": "If you continued this investigation, what would you do next?",
+      "type": "textarea",
+      "placeholder": "Example: check the extinction correction, compare ages with another cluster, or change the membership cut."
     }
   ]
 }

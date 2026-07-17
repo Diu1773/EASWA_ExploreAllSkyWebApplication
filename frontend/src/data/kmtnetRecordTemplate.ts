@@ -1,21 +1,19 @@
 import type { RecordTemplate } from '../types/record';
 
+// Offline fallback for backend/survey_templates/kmtnet_record.json — keep the
+// two in lockstep (KmtnetLab fetches the live template and only falls back to
+// this when the fetch fails). v2 trims the form to what a learner actually
+// interprets: title comes from the record config (event name), the numeric
+// confidence score and the coverage select were cognitive load without
+// analytical value (coverage gaps are covered by issues_observed).
 export const defaultKmtnetRecordTemplate: RecordTemplate = {
   id: 'kmtnet_record',
   workflow: 'kmtnet_lab',
   title: 'KMTNet Microlensing Analysis Record',
   description:
-    'Save a short interpretation of the microlensing event, the site coverage you inspected, and how well the Paczynski fit described the data.',
-  version: 1,
+    'Save a short interpretation of the microlensing event and how well the Paczynski fit described the data.',
+  version: 2,
   questions: [
-    {
-      id: 'summary_title',
-      label: 'Record Title',
-      type: 'text',
-      required: true,
-      placeholder: 'Example: KMT-2022-BLG-0440 single-lens interpretation',
-      options: [],
-    },
     {
       id: 'event_classification',
       label: 'How would you classify this event?',
@@ -31,34 +29,13 @@ export const defaultKmtnetRecordTemplate: RecordTemplate = {
     {
       id: 'fit_quality',
       label: 'How well did the Paczynski fit match the curve?',
-      type: 'select',
+      type: 'radio',
       required: true,
       options: [
         { value: 'high', label: 'High agreement' },
         { value: 'medium', label: 'Reasonable with caveats' },
         { value: 'low', label: 'Poor agreement' },
       ],
-    },
-    {
-      id: 'coverage_assessment',
-      label: 'How useful was the site coverage?',
-      type: 'select',
-      required: true,
-      options: [
-        { value: 'single_site_ok', label: 'Single site already informative' },
-        { value: 'network_needed', label: '3-site merge was important' },
-        { value: 'still_incomplete', label: 'Coverage still felt incomplete' },
-      ],
-    },
-    {
-      id: 'confidence_score',
-      label: 'Confidence Score (1-5)',
-      type: 'number',
-      required: true,
-      min_value: 1,
-      max_value: 5,
-      help_text: 'A quick self-rating for how confident you are in this microlensing interpretation.',
-      options: [],
     },
     {
       id: 'issues_observed',

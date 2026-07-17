@@ -395,9 +395,66 @@ export const clusterCmdModule: ExplorationModuleConfig = {
         makePrompt('cmd_cmp_distance', '관측 주계열을 표준 주계열(절대등급)에 맞췄을 때의 등급 차이(거리계수 m-M)로 거리를 구하고(r = 10^((m-M+5)/5)), 문헌 거리와 비교하라.', 'Fit the observed main sequence to the standard main sequence (absolute magnitude); from the magnitude offset (distance modulus m-M) compute the distance (r = 10^((m-M+5)/5)) and compare with the literature value.'),
       ],
     },
+    // Field ids match backend/survey_templates/cluster_record.json (v2) 1:1 —
+    // Step 6 IS the record form and the save panel submits these answers. The
+    // fitted distance is NOT retyped by the learner: it rides along in the
+    // record context (ms_fit) straight from the Step 4 fit.
     step6_reflect: {
       questions: [
         makePrompt('cmd_reflect_claim', '이번 CMD로 주장할 수 있는 것과 주장할 수 없는 것을 각각 하나씩 적어라.', 'Write one thing this CMD lets you claim, and one thing it does not.'),
+      ],
+      recordFields: [
+        {
+          id: 'distance_vs_parallax',
+          required: true,
+          input: 'radio',
+          question: {
+            ko: '주계열 맞춤으로 구한 거리와 Gaia 시차 거리는 얼마나 가까운가?',
+            en: 'How does your fitted distance compare with the Gaia parallax distance?',
+          },
+          options: [
+            { value: 'close', label: { ko: '가깝다 (~10% 이내)', en: 'Close (within ~10%)' } },
+            { value: 'somewhat', label: { ko: '다소 다르다', en: 'Somewhat different' } },
+            { value: 'far', label: { ko: '크게 다르다', en: 'Quite different' } },
+          ],
+        },
+        {
+          id: 'difference_cause',
+          input: 'radio',
+          question: {
+            ko: '두 거리가 다르다면 가장 큰 원인은 무엇이라고 생각하는가?',
+            en: 'If they differ, what is the most likely cause?',
+          },
+          options: [
+            { value: 'extinction', label: { ko: '소광·적색화 보정', en: 'Extinction / reddening' } },
+            { value: 'membership', label: { ko: '구성원 오염', en: 'Member contamination' } },
+            { value: 'ms_assumption', label: { ko: '표준 주계열 가정', en: 'Standard-main-sequence assumption' } },
+            { value: 'photometry', label: { ko: '측광 산포', en: 'Photometric scatter' } },
+          ],
+        },
+        {
+          id: 'analysis_note',
+          required: true,
+          question: {
+            ko: '주계열과 전향점이 이 성단의 거리·나이에 대해 말해주는 것을 근거와 함께 정리하세요.',
+            en: 'What did the main sequence and turn-off tell you about distance and age? Give your evidence.',
+          },
+          helperText: {
+            ko: '교과서의 이상화된 CMD와 실제 자료 CMD가 어떻게 달랐는지, 구성원 선별 기준을 바꾸면 결과가 얼마나 민감했는지도 한 줄씩 적어보세요.',
+            en: 'Also note how the real-data CMD differed from the idealized textbook figure, and how sensitive the result was to the membership cut.',
+          },
+        },
+        {
+          id: 'next_step',
+          question: {
+            ko: '이 탐구를 이어간다면 무엇을 하겠는가?',
+            en: 'If you continued this investigation, what would you do next?',
+          },
+          helperText: {
+            ko: '예: 소광 보정 확인, 다른 성단과 나이 비교, 구성원 선별 기준 변경',
+            en: 'e.g., check the extinction correction, compare ages with another cluster, change the membership cut',
+          },
+        },
       ],
     },
   }),
@@ -457,11 +514,11 @@ export const clusterCmdModule: ExplorationModuleConfig = {
       en: 'Do not treat CMD shape differences as age differences before checking calibration and membership selection.',
     },
   },
-  reflectionQuestions: [
-    makePrompt('cmd_reflect_cause', '산출한 거리·나이가 문헌값과 다르다면 가장 큰 원인은 무엇이라 생각하는가? (소광 보정 / 구성원 오염 / 측광 오차 / 표준주계열·등시선 가정)', 'If your derived distance or age differs from the literature value, what do you think is the largest cause - extinction correction, member contamination, photometric error, or the standard-main-sequence/isochrone assumption?'),
-    makePrompt('cmd_reflect_sensitivity', '구성원 선별 기준을 바꿨을 때 결과가 얼마나 민감했는가? 이것이 실제 자료 분석에 대해 알려주는 점은 무엇인가?', 'How sensitive was the result when you changed the membership criteria, and what does that reveal about analyzing real data?'),
-    makePrompt('cmd_reflect_textbook', '교과서의 이상화된 CMD 그림과 실제 자료로 그린 CMD는 어떻게 달랐는가?', 'How did the CMD from real data differ from the idealized CMD figure in the textbook?'),
-  ],
+  // Emptied when Step 6 got typed record fields (same call as the transit
+  // module): the cause question became the difference_cause field, and the
+  // sensitivity/textbook prompts moved into analysis_note's helper text —
+  // keeping them here rendered a second stack of note boxes on top of the form.
+  reflectionQuestions: [],
   teacherNotes: [
     { ko: '같은 워크플로로 여러 성단(예: M35와 NGC2158)을 비교하며 전향점·나이 차이를 토의할 수 있다.', en: 'Use the same workflow to compare clusters (e.g., M35 vs NGC2158) and discuss turn-off and age differences.' },
   ],
@@ -551,6 +608,80 @@ export const kmtnetModule: ExplorationModuleConfig = {
         makePrompt('kmt_anomaly_signal', '광도곡선에서 매끄러운 증광 위에 행성 아노말리(짧은 이상신호)는 어디에 나타나는가?', 'Where on the smooth magnification does a planetary anomaly (brief deviation) appear?'),
       ],
     },
+    // Field ids match backend/survey_templates/kmtnet_record.json (v2) 1:1 —
+    // Step 6 IS the record form; fit numbers (t0·u0·tE·χ²) ride along in the
+    // record context automatically, so the learner only interprets.
+    step6_reflect: {
+      recordFields: [
+        {
+          id: 'event_classification',
+          required: true,
+          input: 'radio',
+          question: {
+            ko: '이 이벤트를 어떻게 분류하겠는가?',
+            en: 'How would you classify this event?',
+          },
+          options: [
+            { value: 'single_lens', label: { ko: '단일 렌즈형', en: 'Single-lens like' } },
+            { value: 'high_mag', label: { ko: '고증폭 이벤트', en: 'High-magnification' } },
+            { value: 'planetary_hint', label: { ko: '행성 아노말리 가능성', en: 'Possible planetary anomaly' } },
+            { value: 'unclear', label: { ko: '불분명 / 추가 검토 필요', en: 'Unclear / needs more review' } },
+          ],
+        },
+        {
+          id: 'fit_quality',
+          required: true,
+          input: 'radio',
+          question: {
+            ko: 'Paczyński 적합은 곡선을 얼마나 잘 설명했는가?',
+            en: 'How well did the Paczynski fit match the curve?',
+          },
+          options: [
+            { value: 'high', label: { ko: '잘 맞았다', en: 'High agreement' } },
+            { value: 'medium', label: { ko: '대체로 맞지만 아쉬운 구간이 있다', en: 'Reasonable with caveats' } },
+            { value: 'low', label: { ko: '잘 맞지 않았다', en: 'Poor agreement' } },
+          ],
+        },
+        {
+          id: 'issues_observed',
+          input: 'checkbox',
+          question: {
+            ko: '분석 과정에서 확인한 문제를 선택하세요.',
+            en: 'What issues did you notice?',
+          },
+          options: [
+            { value: 'coverage_gap', label: { ko: '관측소 간 관측 공백', en: 'Coverage gap between sites' } },
+            { value: 'noisy_points', label: { ko: '광도곡선 잡음이 큼', en: 'Noisy light-curve points' } },
+            { value: 'fit_mismatch', label: { ko: '적합과 자료가 어긋남', en: 'Fit and data disagree' } },
+            { value: 'possible_anomaly', label: { ko: '아노말리/잔차 구조 가능성', en: 'Possible anomaly / residual structure' } },
+            { value: 'none', label: { ko: '뚜렷한 문제 없음', en: 'No major issues' } },
+          ],
+        },
+        {
+          id: 'analysis_note',
+          required: true,
+          question: {
+            ko: '이벤트 형태·적합 결과·발표값과의 차이를 근거와 함께 해석하세요.',
+            en: 'Interpret the event shape, the fit result, and the difference from published values.',
+          },
+          helperText: {
+            ko: '아노말리라고 판단했다면 그 근거는 무엇인지, 세 관측소를 합쳤을 때 해석이 어떻게 달라졌는지도 적어보세요.',
+            en: 'If you suspect an anomaly, state the evidence; also note how combining the three sites changed your reading.',
+          },
+        },
+        {
+          id: 'next_step',
+          question: {
+            ko: '이 탐구를 이어간다면 무엇을 하겠는가?',
+            en: 'If you continued this investigation, what would you do next?',
+          },
+          helperText: {
+            ko: '예: 차분영상 확인, 관측소별 재비교, 비단일렌즈 모델 검토',
+            en: 'e.g., inspect difference images, compare sites again, test a non-single-lens model',
+          },
+        },
+      ],
+    },
   }),
   metadataFields: [
     { id: 'sites', label: { ko: '관측소', en: 'Sites' }, value: 'CTIO, SAAO, SSO' },
@@ -609,10 +740,10 @@ export const kmtnetModule: ExplorationModuleConfig = {
       en: 'Before calling an anomaly a planet, cross-check with other sites and the model fit.',
     },
   },
-  reflectionQuestions: [
-    makePrompt('kmt_reflect_anomaly', '관측한 광도곡선에서 행성 아노말리의 근거는 무엇이며, 단일렌즈 곡선과 어떻게 다른가?', 'What is the evidence for a planetary anomaly in the light curve, and how does it differ from a single-lens curve?'),
-    makePrompt('kmt_reflect_network', '세 관측소를 합쳤을 때 짧은 아노말리 해석이 어떻게 달라졌는가?', 'How did combining three sites change the interpretation of a brief anomaly?'),
-  ],
+  // Emptied when Step 6 got typed record fields (same call as the transit
+  // module): both prompts (anomaly evidence, three-site combining) now live in
+  // analysis_note's helper text instead of duplicate note boxes.
+  reflectionQuestions: [],
   teacherNotes: [
     { ko: 'KMTNet 실제 이벤트 광도곡선 연결 전에는 샘플 이벤트(단일렌즈/행성)로 곡선 읽기를 먼저 연습한다.', en: 'Before connecting live KMTNet event light curves, practice reading sample events (single-lens vs planetary).' },
   ],
