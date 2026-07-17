@@ -97,8 +97,15 @@ export const exoplanetTransitModule: ExplorationModuleConfig = {
           correct: 'X',
           explanation: { ko: '너무 키우면 주변 별·배경이 섞여 오히려 잡음이 커집니다 — 적정 크기가 중요합니다.', en: 'Too large an aperture lets in nearby stars and background, raising noise; the right size matters.' },
         },
+      ],
+    },
+    step4_run_visualize: {
+      selfChecks: [
+        // Lives here, not in Step 3: the fit window (ROI) is something the
+        // learner first meets while running the fit in this step — in Step 3
+        // (aperture practice) the question landed before its concept.
         {
-          id: 'tr_cond_sc2',
+          id: 'tr_run_sc1',
           type: 'choice',
           question: { ko: 'fit 구간(ROI)을 식 전후로 너무 좁게 잡으면 어떻게 될까?', en: 'What happens if you make the fit window (ROI) too narrow around the transit?' },
           options: [

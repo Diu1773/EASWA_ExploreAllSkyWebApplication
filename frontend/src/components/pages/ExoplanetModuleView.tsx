@@ -1,17 +1,19 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { fetchTarget } from '../../api/client';
-import type { Target } from '../../types/target';
+import { lazy, Suspense, useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { fetchTarget, fetchObservations } from '../../api/client';
+import type { Observation, Target } from '../../types/target';
 import { useLangStore } from '../../i18n';
 import { useAppStore } from '../../stores/useAppStore';
+import { useAuthStore } from '../../stores/useAuthStore';
+import { useWorkflowDraftRoute } from '../../hooks/useWorkflowDraftRoute';
 import { moduleAdapters } from '../../explorationBlocks/adapters';
 import type { ExplorationModuleConfig } from '../../explorationBlocks/types';
-import { buildLabHref, type ExplorerRouteContext } from '../../utils/explorerNavigation';
 import { formatConstellation } from '../../utils/targetFormat';
 import { ApertureSandbox, InquiryLayout, SkyDataPanel } from '../inquiry';
 import { TransitComparison } from '../inquiry/TransitComparison';
 import { TransitResultSummary } from '../inquiry/TransitResultSummary';
 import { SkyExplorer } from '../sky/SkyExplorer';
+import { TransitLab } from '../lab/TransitLab';
 import {
   clearTransitFit,
   loadTransitFit,
@@ -26,13 +28,6 @@ const Transit3DScene = lazy(() => import('../sky/Transit3DScene'));
 // teacher-training demo.
 const RECOMMENDED_TARGET_ID = 'wasp_6_b';
 
-const ANALYSIS_CONTEXT: ExplorerRouteContext = {
-  moduleId: 'tess',
-  topicId: 'exoplanet_transit',
-  siteId: null,
-  learningMode: 'guided',
-};
-
 interface ExoplanetModuleViewProps {
   module: ExplorationModuleConfig;
 }
@@ -41,8 +36,8 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
   const lang = useLangStore((state) => state.lang);
   const [searchParams, setSearchParams] = useSearchParams();
   const targetId = searchParams.get('target') ?? '';
-  const navigate = useNavigate();
   const setTopic = useAppStore((s) => s.setTopic);
+  const user = useAuthStore((s) => s.user);
 
   const selectTargetById = (id: string) => {
     const next = new URLSearchParams(searchParams);
@@ -55,6 +50,7 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
   };
 
   const [target, setTarget] = useState<Target | null>(null);
+  const [observations, setObservations] = useState<Observation[]>([]);
 
   // Drive the embedded sky map (Step 1) to show exoplanet-transit targets.
   useEffect(() => {
@@ -64,20 +60,38 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
   useEffect(() => {
     if (!targetId) {
       setTarget(null);
+      setObservations([]);
       return;
     }
     let active = true;
-    fetchTarget(targetId)
-      .then((res) => {
-        if (active) setTarget(res.target);
+    Promise.all([fetchTarget(targetId), fetchObservations(targetId)])
+      .then(([res, obs]) => {
+        if (!active) return;
+        setTarget(res.target);
+        setObservations(obs);
       })
       .catch(() => {
-        if (active) setTarget(null);
+        if (!active) return;
+        setTarget(null);
+        setObservations([]);
       });
     return () => {
       active = false;
     };
   }, [targetId]);
+
+  // Backend draft plumbing for logged-in learners — same wiring the /lab route
+  // uses, so resuming a draft from /my lands back here with state intact.
+  const {
+    draftId,
+    seedRecordId,
+    draftRestoreReady,
+  } = useWorkflowDraftRoute({
+    workflowId: 'transit_lab',
+    subjectId: targetId || null,
+    enableDrafts: Boolean(targetId),
+    userPresent: Boolean(user),
+  });
 
   // Read the fit result the Lab bridges back (sessionStorage), refreshing when
   // the user returns from the Lab so Step 5 unlocks and fills in.
@@ -93,15 +107,6 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
     };
   }, [targetId]);
 
-  // Straight into the Lab. The old route went through the target-detail page
-  // (/target/:id) only so the learner could tick sectors there — a legacy stop
-  // whose "Back to Explorer" link then dropped them onto the standalone sky
-  // page, outside the block. The Lab now defaults to every sector of the
-  // target, so the detail page adds nothing to the guided flow.
-  const analysisHref = useMemo(
-    () => buildLabHref(targetId, ANALYSIS_CONTEXT, [['workflow', 'transit']]),
-    [targetId],
-  );
 
   const contextSlot = target ? (
     <div className="inquiry-target-context">
@@ -150,21 +155,32 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
             ? '전천 지도에서 별을 클릭해 탐구 대상을 선택하세요.'
             : 'Click a star on the sky map to choose your target.'}
       </p>
-      <SkyExplorer embedded onSelectTarget={handleSelectTarget} />
+      <SkyExplorer embedded onSelectTarget={handleSelectTarget} focusTarget={target} />
     </div>
   );
 
+  // The Lab runs INSIDE Step 4 — no page hop. The old flow navigated to
+  // /lab/:id, which flashed a full-page loading screen and put the learner in a
+  // second copy of the block whose Step 1 was a stand-in card instead of the
+  // real sky map. Same embed pattern as the KMTNet block's inline analysis.
   const analysisSlot = target ? (
-    <div className="inquiry-lab-handoff">
-      <p>
-        {lang === 'ko'
-          ? `${target.name}의 차등측광과 식현상 모델 적합은 정밀 분석(Lab)에서 실행합니다.`
-          : `Run differential photometry and transit fitting for ${target.name} in the Lab.`}
-      </p>
-      <button type="button" className="btn-primary" onClick={() => navigate(analysisHref)}>
-        {lang === 'ko' ? '관측자료 분석 →' : 'Analyze observations →'}
-      </button>
-    </div>
+    !draftRestoreReady ? (
+      <div className="inquiry-lab-handoff">
+        <p>{lang === 'ko' ? '초안 복원 중...' : 'Restoring draft...'}</p>
+      </div>
+    ) : observations.length > 0 ? (
+      <TransitLab
+        target={target}
+        observations={observations}
+        draftId={draftId}
+        seedRecordId={seedRecordId}
+        learningMode="guided"
+      />
+    ) : (
+      <div className="inquiry-lab-handoff">
+        <p>{lang === 'ko' ? '관측 목록을 불러오는 중...' : 'Loading observations...'}</p>
+      </div>
+    )
   ) : (
     <div className="inquiry-lab-handoff">
       <p>{lang === 'ko' ? '먼저 Step 1에서 대상을 선택하세요.' : 'Select a target in Step 1 first.'}</p>
@@ -220,23 +236,40 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
     <div className="inquiry-lab-handoff">
       <p>
         {lang === 'ko'
-          ? '아직 정밀 분석 결과가 없습니다. Step 4에서 Lab 분석(차등측광·transit fit)을 완료하면 측정값이 여기서 NASA 아카이브값과 자동 비교됩니다.'
-          : 'No analysis result yet. Finish the Lab analysis in Step 4; your measured value will then be compared with the NASA archive here.'}
+          ? '아직 분석 결과가 없습니다. Step 4에서 차등측광과 식현상 모델 적합까지 마치면 측정값이 여기서 NASA 아카이브값과 자동 비교됩니다.'
+          : 'No analysis result yet. Finish the photometry and transit fit in Step 4; your measured value will then be compared with the NASA archive here.'}
       </p>
-      <button type="button" className="btn-primary" onClick={() => navigate(analysisHref)}>
-        {lang === 'ko' ? '관측자료 분석 →' : 'Analyze observations →'}
-      </button>
     </div>
   );
 
   const resultSummarySlot = fit ? (
-    <TransitResultSummary fit={fit} targetName={target?.name} />
+    <TransitResultSummary fit={fit} targetName={target?.name} target={target} />
   ) : undefined;
 
-  // No login-gated "내 기록에 저장" panel: notes autosave to this browser as they
-  // are typed, and the one deliberate action at the end is the anonymous
-  // submission. A second save button — which also demanded required fields
-  // before it would light up — was friction on top of an already-saved record.
+  // Login-gated save to 내 기록(/my). Anonymous collection (the sheet) runs on
+  // its own; this is the learner-facing copy a signed-in teacher expects to
+  // find in the records page. Field ids in Step 6 match transit_record (v3)
+  // 1:1, so the block's answers submit as-is.
+  const recordSave = targetId
+    ? {
+        workflow: 'transit_lab',
+        templateId: 'transit_record',
+        targetId,
+        title: target?.name ?? targetId,
+        context: {
+          source: 'exoplanet-block',
+          fit: fit
+            ? {
+                rp_rs: fit.rpRs,
+                rp_rs_err: fit.rpRsErr,
+                depth_pct: fit.rpRs * fit.rpRs * 100,
+                period_days: fit.period,
+                chi2_red: fit.reducedChiSquared,
+              }
+            : null,
+        },
+      }
+    : undefined;
 
   // Anonymous (no-login) submission stays visible even before a fit exists —
   // the panel itself explains why the button is disabled.
@@ -260,6 +293,7 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
       comparisonSlot={comparisonSlot}
       resultSummarySlot={resultSummarySlot}
       maxUnlockedStepIndex={fit ? undefined : 4}
+      recordSave={recordSave}
       anonSubmit={anonSubmit}
       draftTargetId={targetId}
     />

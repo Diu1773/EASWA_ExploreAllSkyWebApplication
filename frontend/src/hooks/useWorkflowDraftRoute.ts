@@ -82,10 +82,17 @@ export function useWorkflowDraftRoute({
         }
       } catch (error) {
         if (cancelled) return;
-        console.error('Failed to restore workflow draft', error);
-        onError?.(
-          error instanceof Error ? error.message : 'Failed to restore saved draft.'
-        );
+        // A brand-new draft id has nothing on the server yet — the normalizer
+        // mints one on first visit, so this 404 is the normal cold-start path,
+        // not a failure to surface.
+        const isNewDraft =
+          error instanceof Error && /not found/i.test(error.message);
+        if (!isNewDraft) {
+          console.error('Failed to restore workflow draft', error);
+          onError?.(
+            error instanceof Error ? error.message : 'Failed to restore saved draft.'
+          );
+        }
       } finally {
         if (!cancelled) {
           setDraftRestoreReady(true);

@@ -105,6 +105,13 @@ export function clearInquiryDraft(scope: string | null): void {
 
 const LAB_KEY_PREFIX = 'easwa:lab-draft:';
 
+/** Fired after a Lab draft write so the block layout on the same page can react:
+ *  bump its "저장됨" indicator, re-evaluate the start-over button, and schedule a
+ *  sheet sync. Without it, a learner who ONLY answered the Lab's 생각해보기
+ *  never triggered the sheet upsert — lab_guide_json only rode along when some
+ *  block note happened to change too. */
+export const LAB_DRAFT_SAVED_EVENT = 'easwa:lab-draft-saved';
+
 export interface LabDraft {
   v: number;
   /** StepGuide answers, keyed by question id. */
@@ -148,6 +155,11 @@ export function saveLabDraft(
       labKeyFor(targetId),
       JSON.stringify({ v: SCHEMA_VERSION, guideAnswers, recordAnswers, savedAt } satisfies LabDraft),
     );
+    try {
+      window.dispatchEvent(new CustomEvent(LAB_DRAFT_SAVED_EVENT, { detail: targetId }));
+    } catch {
+      // no window (tests) — non-fatal
+    }
     return savedAt;
   } catch {
     return null;

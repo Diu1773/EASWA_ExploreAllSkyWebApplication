@@ -116,20 +116,8 @@ export function LabView() {
   useEffect(() => {
     if (loadError) setErrorMessage(loadError);
   }, [loadError]);
-
-  // Block Step 4 now links here directly, skipping the target-detail page where
-  // sectors used to be ticked. On arrival the store may hold no selection — or
-  // ids belonging to a previously visited target — and either way the sidebar
-  // dead-ends on an empty sector list. Default to every sector of this target;
-  // only the active one is actually downloaded, and the learner can switch it
-  // in the sidebar.
-  const selectAllObservations = useAppStore((s) => s.selectAllObservations);
-  useEffect(() => {
-    if (!isTransitWorkflow || observations.length === 0) return;
-    const hasSelectionForTarget = observations.some((obs) => selectedIds.includes(obs.id));
-    if (hasSelectionForTarget) return;
-    selectAllObservations(observations.map((obs) => obs.id));
-  }, [isTransitWorkflow, observations, selectedIds, selectAllObservations]);
+  // Sector defaulting lives inside TransitLab now (bundled-aware), shared with
+  // the module page that embeds the Lab in Step 4.
 
   // Read the fit the TransitLab bridges back, and refresh the moment a fit is
   // saved (same-tab custom event) so Steps 5–6 fill with the learner's result.
@@ -381,7 +369,9 @@ export function LabView() {
           transitFit ? <TransitComparison fit={transitFit} target={target} /> : undefined
         }
         resultSummarySlot={
-          transitFit ? <TransitResultSummary fit={transitFit} targetName={target.name} /> : undefined
+          transitFit
+            ? <TransitResultSummary fit={transitFit} targetName={target.name} target={target} />
+            : undefined
         }
         /* Same lock as ExoplanetModuleView: Steps 5–6 open once a fit is saved.
            Without this the Lab tree let learners walk into an empty comparison. */

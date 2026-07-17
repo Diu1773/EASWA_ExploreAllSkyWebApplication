@@ -17,6 +17,7 @@ import { AnonCollectionNotice } from './AnonCollectionNotice';
 import { StartOverButton } from './StartOverButton';
 import { StepPanel } from './StepPanel';
 import {
+  LAB_DRAFT_SAVED_EVENT,
   inquiryDraftScope,
   loadInquiryDraft,
   loadLabDraft,
@@ -241,6 +242,23 @@ export function InquiryLayout<TContext = unknown>({
     };
   }, [module.steps, selfCheckAnswers]);
 
+  // A Lab draft save (생각해보기 O/X, 서술) counts as learner work too: bump the
+  // footer's "저장됨" time, let the start-over button re-evaluate, and make the
+  // sheet sync below re-run — otherwise a learner who only answered inside the
+  // Lab never reached the sheet and saw no autosave signal at all.
+  const [labDraftPulse, setLabDraftPulse] = useState(0);
+  useEffect(() => {
+    const onLabDraftSaved = (event: Event) => {
+      const savedTargetId = (event as CustomEvent<string>).detail;
+      if (draftTargetId && savedTargetId !== draftTargetId) return;
+      dirtyRef.current = true;
+      setSavedAt(Date.now());
+      setLabDraftPulse((n) => n + 1);
+    };
+    window.addEventListener(LAB_DRAFT_SAVED_EVENT, onLabDraftSaved);
+    return () => window.removeEventListener(LAB_DRAFT_SAVED_EVENT, onLabDraftSaved);
+  }, [draftTargetId]);
+
   // Push a draft row to the sheet once the learner stops typing. Without this a
   // record only reached the sheet if someone remembered to press submit at the
   // very end — anyone who closed the tab first left nothing behind. The script
@@ -274,7 +292,7 @@ export function InquiryLayout<TContext = unknown>({
         .catch(() => setSheetSyncState('failed'));
     }, SHEET_SYNC_DELAY_MS);
     return () => clearTimeout(timer);
-  }, [anonTargetId, anonFit, notes, selfCheckSummary]);
+  }, [anonTargetId, anonFit, notes, selfCheckSummary, labDraftPulse]);
 
   // Notes are keyed `${stepId}:${fieldId}`, but the backend record template
   // expects bare question ids — configs keep field ids identical to template

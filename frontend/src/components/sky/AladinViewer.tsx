@@ -127,14 +127,29 @@ function AladinViewer(
 
       if (!isAlreadyCentered) {
         if (typeof viewer.animateToRaDec === 'function') {
-          await new Promise<void>((resolve) => {
-            viewer.animateToRaDec(
-              target.ra,
-              target.dec,
-              SLEW_ANIMATION_SECONDS,
-              resolve
+          // Watchdog: this build of Aladin sometimes never fires the completion
+          // callback (observed live — the promise pended forever, so callers'
+          // retries/catches stayed silent and the map just didn't move). If the
+          // animation hasn't reported back shortly after its nominal duration,
+          // jump directly.
+          const animated = await new Promise<boolean>((resolve) => {
+            const watchdog = setTimeout(
+              () => resolve(false),
+              (SLEW_ANIMATION_SECONDS + 1) * 1000
             );
+            try {
+              viewer.animateToRaDec(target.ra, target.dec, SLEW_ANIMATION_SECONDS, () => {
+                clearTimeout(watchdog);
+                resolve(true);
+              });
+            } catch {
+              clearTimeout(watchdog);
+              resolve(false);
+            }
           });
+          if (!animated && typeof viewer.gotoRaDec === 'function') {
+            viewer.gotoRaDec(target.ra, target.dec);
+          }
         } else if (typeof viewer.gotoRaDec === 'function') {
           viewer.gotoRaDec(target.ra, target.dec);
         } else if (typeof viewer.gotoPosition === 'function') {
@@ -153,8 +168,22 @@ function AladinViewer(
       const startFov = getViewerFov(viewer);
       await new Promise<void>((resolve) => {
         const start = performance.now();
+        let settled = false;
+        const finish = () => {
+          if (settled) return;
+          settled = true;
+          resolve();
+        };
+        // Same watchdog as the slew above: rAF freezes entirely in background
+        // or occluded tabs, which left the view centered but stuck at the wide
+        // FoV. If the tween hasn't finished on time, jump to the final zoom.
+        const watchdog = setTimeout(() => {
+          setCurrentFov(ZOOM_FOV);
+          finish();
+        }, (ZOOM_ANIMATION_SECONDS + 1) * 1000);
 
         const tick = (now: number) => {
+          if (settled) return;
           const progress = Math.min(
             (now - start) / (ZOOM_ANIMATION_SECONDS * 1000),
             1
@@ -170,7 +199,8 @@ function AladinViewer(
             window.requestAnimationFrame(tick);
           } else {
             setCurrentFov(ZOOM_FOV);
-            resolve();
+            clearTimeout(watchdog);
+            finish();
           }
         };
 
@@ -231,6 +261,11 @@ function AladinViewer(
           showFrame: false,
           showCooGrid: true,
         });
+        // QA handle: the WebGL view can't be pixel-probed and screenshots of a
+        // continuously rendering canvas time out, so automated checks read the
+        // center/FoV through this instead (e.g. slew verification).
+        (containerRef.current as HTMLDivElement & { __aladin?: unknown }).__aladin =
+          aladinRef.current;
 
         catalogRef.current = A.catalog({
           name: 'Targets',

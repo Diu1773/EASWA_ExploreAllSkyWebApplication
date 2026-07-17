@@ -514,6 +514,26 @@ export function TransitLab({
     (changes: Partial<TransitLabState>) => dispatch({ type: 'patch', changes }),
     [],
   );
+
+  // Default sector selection — the target-detail page where sectors used to be
+  // ticked is out of the guided flow, so the Lab must arrive ready. Same rule
+  // as ObservationTable: when the target ships bundled cutouts, ONLY those are
+  // usable (non-bundled sectors mean a live MAST download — too slow/heavy for
+  // a classroom demo); otherwise every sector is fair game. Also replaces a
+  // selection left over from another target or from before this rule.
+  const hasBundledSectors = observations.some((obs) => obs.bundled);
+  useEffect(() => {
+    if (observations.length === 0) return;
+    const pickable = hasBundledSectors
+      ? observations.filter((obs) => obs.bundled)
+      : observations;
+    const hasPickableSelection = pickable.some((obs) => selectedIds.includes(obs.id));
+    const hasLockedSelection =
+      hasBundledSectors &&
+      observations.some((obs) => !obs.bundled && selectedIds.includes(obs.id));
+    if (hasPickableSelection && !hasLockedSelection) return;
+    selectAllObservations(pickable.map((obs) => obs.id));
+  }, [observations, hasBundledSectors, selectedIds, selectAllObservations]);
   // Destructure for convenient access throughout the component
   const {
     activeObservationId,
@@ -1689,12 +1709,15 @@ export function TransitLab({
         </button>
 
         <div className="transit-sidebar-scroll">
-        {/* Sector list — always visible */}
+        {/* Sector list — every sector of the target, disabled (not hidden) when
+            it is not usable here: with a bundled cutout present, the rest would
+            mean a live MAST download the demo cannot afford. */}
         <div className="thumbnail-strip">
-          <h4>{lang === 'ko' ? '선택한 Sector' : 'Selected Sectors'} ({selectedObservations.length})</h4>
+          <h4>TESS Sector ({observations.length})</h4>
           <div className="transit-sector-list">
-            {selectedObservations.map((observation) => {
+            {observations.map((observation) => {
               const isActive = observation.id === activeObservationId;
+              const locked = hasBundledSectors && !observation.bundled;
               const frameCount =
                 isActive && preview
                   ? preview.frame_count
@@ -1703,18 +1726,33 @@ export function TransitLab({
                 <button
                   key={observation.id}
                   className={`transit-sector-button ${isActive ? 'active' : ''}`}
-                  onClick={() => patch({ activeObservationId: observation.id })}
+                  disabled={locked}
+                  title={
+                    locked
+                      ? lang === 'ko'
+                        ? '번들 미포함 Sector — 실시간 MAST 다운로드가 필요해 데모에서는 비활성화되어 있습니다.'
+                        : 'Not bundled — needs a live MAST download, disabled in the demo.'
+                      : undefined
+                  }
+                  onClick={() => {
+                    if (locked) return;
+                    patch({ activeObservationId: observation.id });
+                  }}
                 >
                   <strong>{observation.display_label ?? `Sector ${observation.sector}`}</strong>
                   <span>
-                    {observation.display_subtitle ?? 'TESS cutout'}
-                    {frameCount !== null && ` · ${frameCount.toLocaleString()} ${lang === 'ko' ? '프레임' : 'frames'}`}
+                    {locked
+                      ? lang === 'ko' ? '번들 아님 · 비활성' : 'Not bundled · disabled'
+                      : <>
+                          {observation.display_subtitle ?? 'TESS cutout'}
+                          {frameCount !== null && ` · ${frameCount.toLocaleString()} ${lang === 'ko' ? '프레임' : 'frames'}`}
+                        </>}
                   </span>
                 </button>
               );
             })}
           </div>
-          {selectedObservations.length === 0 && (
+          {observations.length === 0 && (
             <p className="hint">
               {lang === 'ko'
                 ? '이 대상에 사용할 수 있는 TESS 관측이 없습니다. Step 1에서 다른 대상을 선택하세요.'
