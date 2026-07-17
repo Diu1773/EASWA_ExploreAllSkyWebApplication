@@ -1176,6 +1176,31 @@ export function TransitLab({
   const qcExcludedCount = comparisonDiagnostics.length - qcIncludedDiagnostics.length;
   const qcCanApply =
     Boolean(result) && qcIncludedDiagnostics.length > 0 && qcSelectionDirty && !running;
+
+  // Comparison-QC carousel + quality tier. The learner judges "is this a good
+  // comparison?" from ONE thing — how flat the differential curve is — so the
+  // RMS is ranked WITHIN this run into steady/typical/noisy (an absolute
+  // threshold means nothing to a learner) and the plot, not the numbers, leads.
+  const qcRmsSorted = [...comparisonDiagnostics]
+    .map((diagnostic) => diagnostic.differential_rms)
+    .sort((left, right) => left - right);
+  const qcRmsTier = (rms: number): 'steady' | 'typical' | 'noisy' => {
+    if (qcRmsSorted.length <= 1) return 'steady';
+    const worseThan = qcRmsSorted.filter((value) => value < rms).length;
+    const rank = worseThan / (qcRmsSorted.length - 1); // 0 = flattest, 1 = noisiest
+    return rank <= 0.34 ? 'steady' : rank <= 0.67 ? 'typical' : 'noisy';
+  };
+  const qcActiveIndex = comparisonDiagnostics.findIndex(
+    (diagnostic) => diagnostic.label === selectedComparisonDiagnosticData?.label,
+  );
+  const gotoComparison = (delta: number) => {
+    if (comparisonDiagnostics.length === 0) return;
+    const base = qcActiveIndex < 0 ? 0 : qcActiveIndex;
+    const next =
+      (base + delta + comparisonDiagnostics.length) % comparisonDiagnostics.length;
+    patch({ selectedComparisonDiagnostic: comparisonDiagnostics[next].label });
+  };
+
   const targetComparisonCollisionPosition = effectiveTargetPosition;
   const recommendedComparisonStars = (preview?.tic_stars ?? [])
     .filter((star) => star.recommended)
@@ -2937,141 +2962,121 @@ export function TransitLab({
               )}
 
               {result ? (
-                <>
-                  <MobileFoldSection
-                    compact={isCompactTransitLayout}
-                    title={lang === 'ko' ? '품질 점검 개요' : 'QC overview'}
-                  >
-                    <div className="transit-summary-grid">
-                      <div className="transit-summary-card">
-                        <span className="transit-summary-label">{lang === 'ko' ? '후보' : 'Candidates'}</span>
-                        <strong>{comparisonDiagnostics.length}</strong>
-                      </div>
-                      <div className="transit-summary-card">
-                        <span className="transit-summary-label">{lang === 'ko' ? '포함' : 'Included'}</span>
-                        <strong>{qcIncludedDiagnostics.length}</strong>
-                      </div>
-                      <div className="transit-summary-card">
-                        <span className="transit-summary-label">{lang === 'ko' ? '제외' : 'Excluded'}</span>
-                        <strong>{qcExcludedCount}</strong>
-                      </div>
-                      <div className="transit-summary-card">
-                        <span className="transit-summary-label">{lang === 'ko' ? '현재 Ensemble' : 'Current Ensemble'}</span>
-                        <strong>{result.comparison_count}</strong>
-                      </div>
-                    </div>
-                  </MobileFoldSection>
-
-                  {qcSelectionDirty && (
-                    <div className="transit-callout" style={{ marginBottom: 16 }}>
+                comparisonDiagnostics.length > 0 && selectedComparisonDiagnosticData ? (
+                  <>
+                    {/* What to look for — the whole judgement is "is the curve
+                        flat?", so say that before the plot (design principle 4). */}
+                    <div className="transit-qc-guide">
                       {lang === 'ko'
-                        ? '비교성 선택이 변경되었습니다. ROI 선택으로 넘어가기 전에 적용하고 차등 광도곡선을 다시 계산하세요.'
-                        : 'QC selection changed. Apply QC & Re-run to rebuild the differential light curve before moving on to ROI selection.'}
+                        ? '좋은 비교성은 스스로 밝기가 변하지 않는 별입니다. 목표별을 그 별로 나눈 아래 곡선이 평평하면 안정적, 출렁이면 그 별에 문제가 있다는 뜻이니 제외하세요.'
+                        : 'A good comparison star does not vary on its own. If the curve below (target ÷ this star) is flat, it is steady; if it wobbles, that star is the problem — exclude it.'}
                     </div>
-                  )}
 
-                  {comparisonDiagnostics.length > 0 ? (
-                    <>
-                      <div className="transit-comparison-diagnostics">
+                    {qcSelectionDirty && (
+                      <div className="transit-callout" style={{ marginBottom: 16 }}>
+                        {lang === 'ko'
+                          ? '비교성 선택이 바뀌었습니다. 아래 ‘적용’을 눌러 선택한 별들로 광도곡선을 다시 계산하세요.'
+                          : 'Comparison selection changed. Press Apply below to rebuild the light curve with the selected stars.'}
+                      </div>
+                    )}
+
+                    <div className="transit-qc-carousel">
+                      <div className="transit-qc-carousel-nav">
+                        <button
+                          type="button"
+                          className="transit-qc-arrow"
+                          onClick={() => gotoComparison(-1)}
+                          disabled={comparisonDiagnostics.length <= 1}
+                          aria-label={lang === 'ko' ? '이전 비교성' : 'Previous comparison'}
+                        >
+                          ◀
+                        </button>
+                        <div className="transit-qc-carousel-title">
+                          <strong>{selectedComparisonDiagnosticData.label}</strong>
+                          <span>
+                            {qcActiveIndex + 1} / {comparisonDiagnostics.length}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          className="transit-qc-arrow"
+                          onClick={() => gotoComparison(1)}
+                          disabled={comparisonDiagnostics.length <= 1}
+                          aria-label={lang === 'ko' ? '다음 비교성' : 'Next comparison'}
+                        >
+                          ▶
+                        </button>
+                      </div>
+
+                      {/* Dots: which stars are IN USE (filled) and which one is
+                          on screen (ring). Clicking jumps — recovers the "see
+                          all at once" strength the card list had. */}
+                      <div className="transit-qc-dots">
                         {comparisonDiagnostics.map((diagnostic) => {
-                          const isActive =
-                            diagnostic.label === selectedComparisonDiagnosticData?.label;
-                          const isIncluded = qcIncludedComparisonLabels.includes(diagnostic.label);
+                          const included = qcIncludedComparisonLabels.includes(diagnostic.label);
+                          const current = diagnostic.label === selectedComparisonDiagnosticData.label;
                           return (
-                            <div
+                            <button
                               key={diagnostic.label}
-                              className={`transit-comparison-diagnostic-card ${
-                                isActive ? 'active' : ''
-                              }`}
-                            >
-                              <div className="transit-comparison-diagnostic-head">
-                                <strong>{diagnostic.label}</strong>
-                                <span>{(diagnostic.ensemble_weight * 100).toFixed(1)}%</span>
-                              </div>
-                              <div className="transit-comparison-diagnostic-grid">
-                                <span>{lang === 'ko' ? '프레임' : 'Frames'}</span>
-                                <span>{diagnostic.valid_frame_count.toLocaleString()}</span>
-                                <span>RMS</span>
-                                <span>{diagnostic.differential_rms.toFixed(4)}</span>
-                                <span>MAD</span>
-                                <span>{diagnostic.differential_mad.toFixed(4)}</span>
-                                <span>{lang === 'ko' ? 'Flux 중앙값' : 'Median Flux'}</span>
-                                <span>{diagnostic.median_flux.toLocaleString()}</span>
-                              </div>
-                              <div className="transit-toggle-row" style={{ marginTop: 10 }}>
-                                <button
-                                  type="button"
-                                  className={`btn-sm ${isActive ? 'active' : ''}`}
-                                  onClick={() => patch({ selectedComparisonDiagnostic: diagnostic.label })}
-                                >
-                                  {lang === 'ko' ? '확인' : 'Inspect'}
-                                </button>
-                                <button
-                                  type="button"
-                                  className={`btn-sm ${isIncluded ? 'active' : ''}`}
-                                  onClick={() => handleToggleQcComparison(diagnostic.label)}
-                                >
-                                  {isIncluded
-                                    ? lang === 'ko' ? '포함' : 'Included'
-                                    : lang === 'ko' ? '제외' : 'Excluded'}
-                                </button>
-                              </div>
-                            </div>
+                              type="button"
+                              className={`transit-qc-dot${included ? ' included' : ''}${current ? ' current' : ''}`}
+                              onClick={() => patch({ selectedComparisonDiagnostic: diagnostic.label })}
+                              title={`${diagnostic.label}${included ? (lang === 'ko' ? ' · 사용중' : ' · in use') : ''}`}
+                              aria-label={diagnostic.label}
+                            />
                           );
                         })}
                       </div>
+                      <p className="transit-qc-count">
+                        {lang === 'ko'
+                          ? `사용 ${qcIncludedDiagnostics.length}개 · 선택한 별들을 함께 기준으로 사용합니다`
+                          : `${qcIncludedDiagnostics.length} in use · the selected stars form the reference together`}
+                      </p>
 
-                      {selectedComparisonDiagnosticData && (
-                        <>
-                          <MobileFoldSection
-                            compact={isCompactTransitLayout}
-                            title={`${lang === 'ko' ? '선택한 쌍' : 'Selected pair'}: ${selectedComparisonDiagnosticData.label}`}
-                          >
-                            <div className="transit-summary-grid">
-                              <div className="transit-summary-card">
-                                <span className="transit-summary-label">{lang === 'ko' ? '선택한 쌍' : 'Selected Pair'}</span>
-                                <strong>T / {selectedComparisonDiagnosticData.label}</strong>
-                              </div>
-                              <div className="transit-summary-card">
-                                <span className="transit-summary-label">{lang === 'ko' ? '상태' : 'Status'}</span>
-                                <strong>
-                                  {qcIncludedComparisonLabels.includes(
-                                    selectedComparisonDiagnosticData.label
-                                  )
-                                     ? lang === 'ko' ? '포함' : 'Included'
-                                     : lang === 'ko' ? '제외' : 'Excluded'}
-                                </strong>
-                              </div>
-                              <div className="transit-summary-card">
-                                <span className="transit-summary-label">Pair RMS</span>
-                                <strong>
-                                  {selectedComparisonDiagnosticData.differential_rms.toFixed(4)}
-                                </strong>
-                              </div>
-                              <div className="transit-summary-card">
-                                <span className="transit-summary-label">Pair MAD</span>
-                                <strong>
-                                  {selectedComparisonDiagnosticData.differential_mad.toFixed(4)}
-                                </strong>
-                              </div>
+                      <LightCurvePlot
+                        data={selectedComparisonDiagnosticData.light_curve}
+                        targetName={`${target.name} ÷ ${selectedComparisonDiagnosticData.label}`}
+                      />
+
+                      {(() => {
+                        const tier = qcRmsTier(selectedComparisonDiagnosticData.differential_rms);
+                        const meta = {
+                          steady: { dot: '🟢', label: { ko: '안정적', en: 'Steady' }, hint: { ko: '곡선이 평평합니다 → 좋은 기준별. 사용을 권장합니다.', en: 'The curve is flat → a good reference. Recommended.' } },
+                          typical: { dot: '🟡', label: { ko: '보통', en: 'Typical' }, hint: { ko: '대체로 평평합니다 → 사용해도 괜찮습니다.', en: 'Mostly flat → fine to use.' } },
+                          noisy: { dot: '🔴', label: { ko: '불안정', en: 'Noisy' }, hint: { ko: '곡선이 출렁입니다 → 이 별이 스스로 변광하거나 오염됐을 수 있습니다. 제외를 고려하세요.', en: 'The curve wobbles → this star may vary or be blended. Consider excluding it.' } },
+                        }[tier];
+                        return (
+                          <div className={`transit-qc-quality ${tier}`}>
+                            <div className="transit-qc-quality-row">
+                              <span className="transit-qc-quality-badge">
+                                {meta.dot} {meta.label[lang]}
+                              </span>
+                              <span className="transit-qc-quality-metric">
+                                {lang === 'ko' ? '흔들림' : 'Scatter'} {selectedComparisonDiagnosticData.differential_rms.toFixed(4)}
+                              </span>
                             </div>
-                          </MobileFoldSection>
+                            <p className="transit-qc-quality-hint">{meta.hint[lang]}</p>
+                          </div>
+                        );
+                      })()}
 
-                          <LightCurvePlot
-                            data={selectedComparisonDiagnosticData.light_curve}
-                            targetName={`${target.name} vs ${selectedComparisonDiagnosticData.label}`}
-                          />
-                        </>
-                      )}
-                    </>
-                  ) : (
-                    <div className="transit-empty-state">
-                       {lang === 'ko'
-                         ? '이번 측광 결과에는 비교성 진단 자료가 없습니다.'
-                         : 'Comparison diagnostics are not available for this photometry run.'}
+                      <label className="transit-qc-use">
+                        <input
+                          type="checkbox"
+                          checked={qcIncludedComparisonLabels.includes(selectedComparisonDiagnosticData.label)}
+                          onChange={() => handleToggleQcComparison(selectedComparisonDiagnosticData.label)}
+                        />
+                        <span>{lang === 'ko' ? '이 비교성 사용' : 'Use this comparison'}</span>
+                      </label>
                     </div>
-                  )}
-                </>
+                  </>
+                ) : (
+                  <div className="transit-empty-state">
+                    {lang === 'ko'
+                      ? '이번 측광 결과에는 비교성 진단 자료가 없습니다.'
+                      : 'Comparison diagnostics are not available for this photometry run.'}
+                  </div>
+                )
               ) : !running ? (
                 <div className="transit-empty-state">
                    {lang === 'ko'
@@ -3087,7 +3092,7 @@ export function TransitLab({
                   onClick={handleSelectAllQcComparisons}
                   disabled={comparisonDiagnostics.length === 0 || running}
                 >
-                   {lang === 'ko' ? '전체 선택' : 'Select All'}
+                   {lang === 'ko' ? '전체 사용' : 'Use All'}
                 </button>
                 <button
                   type="button"
@@ -3097,7 +3102,9 @@ export function TransitLab({
                   }}
                   disabled={!qcCanApply}
                 >
-                   {lang === 'ko' ? '품질 선택 적용 후 재실행' : 'Apply QC & Re-run'}
+                   {lang === 'ko'
+                     ? `선택한 ${qcIncludedDiagnostics.length}개 별로 기준 만들기`
+                     : `Build reference from ${qcIncludedDiagnostics.length} stars`}
                 </button>
               </div>
             </div>

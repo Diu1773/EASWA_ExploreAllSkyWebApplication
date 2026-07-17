@@ -2639,6 +2639,195 @@ body {
   flex: 1;
 }
 
+/* ── 비교성 품질 캐러셀 (Comparison QC) ────────────────────────
+   비교성마다 카드를 나열하던 것을 한 번에 하나씩 보는 캐러셀로. 판단은
+   "차등 곡선이 평평한가" 하나라 LC plot을 주인공으로 두고, 지표는 보조. */
+.transit-qc-guide {
+  padding: 12px 14px;
+  margin: 12px 0 16px;
+  border-radius: var(--radius-md);
+  background: var(--accent-dim);
+  border: 1px solid rgba(232, 114, 42, 0.22);
+  color: var(--text-secondary);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.transit-qc-carousel {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  padding: 16px;
+  margin-top: 12px;
+}
+
+.transit-qc-carousel-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.transit-qc-arrow {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border-light);
+  background: var(--bg-tertiary);
+  color: var(--text-heading);
+  font-size: 15px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.transit-qc-arrow:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.transit-qc-arrow:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.transit-qc-carousel-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.transit-qc-carousel-title strong {
+  font-size: 17px;
+  color: var(--text-heading);
+}
+
+.transit-qc-carousel-title span {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.transit-qc-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+/* Empty ring = candidate, filled = in use, ring halo = on screen now.
+   Whole selection state is visible without paging through the carousel. */
+.transit-qc-dot {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-light);
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.12s, border-color 0.15s, background 0.15s;
+}
+
+.transit-qc-dot.included {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.transit-qc-dot.current {
+  box-shadow: 0 0 0 3px var(--bg-card), 0 0 0 4.5px var(--accent);
+  transform: scale(1.12);
+}
+
+.transit-qc-dot:hover {
+  transform: scale(1.2);
+}
+
+.transit-qc-count {
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin: 0 0 12px;
+}
+
+.transit-qc-quality {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-tertiary);
+}
+
+/* Quality signal via a soft background tint (not a decorative left bar) plus
+   the 🟢🟡🔴 dot in the badge — steady/typical/noisy relative to this run. */
+.transit-qc-quality.steady {
+  background: rgba(63, 185, 111, 0.08);
+  border-color: rgba(63, 185, 111, 0.3);
+}
+
+.transit-qc-quality.typical {
+  background: rgba(224, 169, 46, 0.08);
+  border-color: rgba(224, 169, 46, 0.3);
+}
+
+.transit-qc-quality.noisy {
+  background: rgba(217, 83, 79, 0.09);
+  border-color: rgba(217, 83, 79, 0.32);
+}
+
+.transit-qc-quality-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.transit-qc-quality-badge {
+  font-weight: 700;
+  font-size: 14.5px;
+  color: var(--text-heading);
+}
+
+.transit-qc-quality-metric {
+  font-size: 12.5px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+.transit-qc-quality-hint {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.transit-qc-use {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 11px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  background: var(--bg-tertiary);
+  cursor: pointer;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--text-heading);
+  user-select: none;
+}
+
+.transit-qc-use input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
 .transit-comparison-diagnostics {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
