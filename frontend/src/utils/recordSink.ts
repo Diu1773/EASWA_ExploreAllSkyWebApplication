@@ -147,6 +147,47 @@ export interface AnonRecordInput {
   labGuideAnswers: Record<string, string>;
 }
 
+/**
+ * How the sheet tells real classroom data from local test rows.
+ *
+ * Primary source is the build-time VITE_APP_VERSION (set to `render` on the
+ * deployed service). But that variable lives on the Render dashboard, is baked
+ * in at build, and fails SILENTLY when forgotten: the row still uploads, just
+ * tagged `dev`, so it blends into local test noise and the researcher's
+ * `app_version == 'render'` filter drops the whole class (happened 2026-07-17,
+ * recurred 2026-07-18 — the live bundle shipped `dev`).
+ *
+ * So when the build tag is missing we do NOT fall back to a bare `dev`: we read
+ * the runtime host. A non-localhost host is a real deployment, and tagging it
+ * `deployed:<host>` keeps it visibly distinct from `dev` — a forgotten variable
+ * can never again make live traffic indistinguishable from a test.
+ */
+export function resolveAppVersion(): string {
+  const built = (import.meta.env.VITE_APP_VERSION as string | undefined)?.trim();
+  if (built) return built;
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    const isLocal =
+      host === 'localhost' || host === '127.0.0.1' || host === '' || host.endsWith('.local');
+    return isLocal ? 'dev' : `deployed:${host}`;
+  }
+  return 'dev';
+}
+
+/**
+ * Whether the anonymous row is worth pushing to the sheet.
+ *
+ * A learner counts as having done something if they edited a note/self-check
+ * (dirty) OR the Lab produced a fit — the rp/rs measurement is the headline
+ * research value, so a learner who ran the analysis but wrote nothing must still
+ * reach the sheet. Neither → nothing to send, so the empty row stays skipped.
+ * (Extracted as a pure predicate so this rule is unit-tested — the old code
+ *  gated on `dirty` alone and silently dropped fit-only learners.)
+ */
+export function anonRecordWorthSyncing(dirty: boolean, hasFit: boolean): boolean {
+  return dirty || hasFit;
+}
+
 /** Single place that shapes the row, so an autosave and a submission can never
  *  disagree about what a record looks like. */
 export function buildAnonRecordPayload(input: AnonRecordInput): AnonRecordPayload {
@@ -169,7 +210,7 @@ export function buildAnonRecordPayload(input: AnonRecordInput): AnonRecordPayloa
     lab_guide_answered: Object.values(input.labGuideAnswers).filter(
       (answer) => typeof answer === 'string' && answer.trim() !== '',
     ).length,
-    app_version: (import.meta.env.VITE_APP_VERSION as string | undefined) ?? 'dev',
+    app_version: resolveAppVersion(),
     user_agent: navigator.userAgent.slice(0, 160),
   };
 }

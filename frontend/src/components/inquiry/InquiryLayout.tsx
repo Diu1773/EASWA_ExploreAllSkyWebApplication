@@ -24,6 +24,7 @@ import {
   saveInquiryDraft,
 } from '../../utils/inquiryDraft';
 import {
+  anonRecordWorthSyncing,
   buildAnonRecordPayload,
   getRecordSinkUrl,
   syncAnonRecord,
@@ -129,14 +130,20 @@ export function InquiryLayout<TContext = unknown>({
   // done.
   const activeStepId: InquiryStepId =
     resolveStep(searchParams.get(BLOCK_STEP_PARAM)) ?? initialStepId ?? module.steps[0].id;
-  const setActiveStepId = (id: InquiryStepId) => {
+  // User-initiated step moves PUSH a history entry so the browser back button
+  // walks the inquiry (Step 5 → 4 → …) instead of dumping the learner out of the
+  // app in one press (reported 2026-07-18: back jumped straight to the browser
+  // start page, because every step move used replace and nothing accumulated).
+  // System corrections (the clamps below, draft-id normalisation) pass replace,
+  // so they never trap the back button by re-pushing the entry just left.
+  const setActiveStepId = (id: InquiryStepId, options?: { replace?: boolean }) => {
     setSearchParamsRef.current(
       (prev) => {
         const next = new URLSearchParams(prev);
         next.set(BLOCK_STEP_PARAM, id);
         return next;
       },
-      { replace: true },
+      { replace: options?.replace ?? false },
     );
   };
   const [notes, setNotes] = useState<Record<string, string>>({});
@@ -205,7 +212,7 @@ export function InquiryLayout<TContext = unknown>({
   // would demote a legitimately unlocked learner during that first frame.
   useEffect(() => {
     if (stepIndex > maxUnlocked) {
-      setActiveStepId(module.steps[Math.max(maxUnlocked, 0)].id);
+      setActiveStepId(module.steps[Math.max(maxUnlocked, 0)].id, { replace: true });
     }
   }, [stepIndex, maxUnlocked, module.steps]);
 
@@ -220,7 +227,7 @@ export function InquiryLayout<TContext = unknown>({
       selectionStepIndex >= 0 &&
       stepIndex > selectionStepIndex
     ) {
-      setActiveStepId(module.steps[selectionStepIndex].id);
+      setActiveStepId(module.steps[selectionStepIndex].id, { replace: true });
     }
   }, [selectionReady, selectionStepIndex, stepIndex, module.steps]);
   const goToStep = (delta: number) => {
@@ -289,7 +296,12 @@ export function InquiryLayout<TContext = unknown>({
   const anonTargetId = anonSubmit?.targetId ?? null;
   const anonFit = anonSubmit?.fit ?? null;
   useEffect(() => {
-    if (!anonTargetId || !dirtyRef.current) return;
+    // A fit is meaningful research on its own — the rp/rs measurement is the
+    // headline value. Sync when the learner has edited OR a fit exists, so a
+    // learner who runs the analysis but writes nothing still lands their
+    // measurement in the sheet (without a fit AND no edits there is nothing to
+    // send, so the empty-row case stays skipped).
+    if (!anonTargetId || !anonRecordWorthSyncing(dirtyRef.current, anonFit != null)) return;
     const sinkUrl = getRecordSinkUrl();
     if (!sinkUrl) return;
     const timer = setTimeout(() => {
