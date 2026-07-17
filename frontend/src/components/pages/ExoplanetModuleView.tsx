@@ -39,7 +39,14 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
   const setTopic = useAppStore((s) => s.setTopic);
   const user = useAuthStore((s) => s.user);
 
+  // Bumped on every pick so the map re-aims even when the target id is
+  // unchanged — a learner who panned away and presses the recommended button
+  // again expects the sky to come back.
+  const [focusNonce, setFocusNonce] = useState(0);
+
   const selectTargetById = (id: string) => {
+    setFocusNonce((n) => n + 1);
+    if (id === targetId) return; // same target: re-aim the map, no history entry
     const next = new URLSearchParams(searchParams);
     next.set('target', id);
     setSearchParams(next, { replace: false });
@@ -57,23 +64,41 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
     setTopic('exoplanet_transit');
   }, [setTopic]);
 
+  // Two separate fetches, deliberately NOT Promise.all: the target row answers
+  // fast, while the sector list goes through MAST and can take seconds on a
+  // cold instance. Coupled, everything that only needs the target — the
+  // "이 대상으로 확인" button, the context header, the map slew — sat blocked
+  // behind the slow call (production report 2026-07-17).
   useEffect(() => {
     if (!targetId) {
       setTarget(null);
+      return;
+    }
+    let active = true;
+    fetchTarget(targetId)
+      .then((res) => {
+        if (active) setTarget(res.target);
+      })
+      .catch(() => {
+        if (active) setTarget(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, [targetId]);
+
+  useEffect(() => {
+    if (!targetId) {
       setObservations([]);
       return;
     }
     let active = true;
-    Promise.all([fetchTarget(targetId), fetchObservations(targetId)])
-      .then(([res, obs]) => {
-        if (!active) return;
-        setTarget(res.target);
-        setObservations(obs);
+    fetchObservations(targetId)
+      .then((obs) => {
+        if (active) setObservations(obs);
       })
       .catch(() => {
-        if (!active) return;
-        setTarget(null);
-        setObservations([]);
+        if (active) setObservations([]);
       });
     return () => {
       active = false;
@@ -138,11 +163,22 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
           className={`inquiry-recommended-pick${targetId === RECOMMENDED_TARGET_ID ? ' is-active' : ''}`}
           onClick={() => selectTargetById(RECOMMENDED_TARGET_ID)}
         >
-          <strong>WASP-6 b</strong>
+          <strong>
+            WASP-6 b
+            {targetId === RECOMMENDED_TARGET_ID && (
+              <span className="inquiry-recommended-selected">
+                {lang === 'ko' ? '✓ 선택됨' : '✓ Selected'}
+              </span>
+            )}
+          </strong>
           <span>
-            {lang === 'ko'
-              ? '번들된 TESS sector 2 — 다운로드 없이 바로 분석'
-              : 'Bundled TESS sector 2 — analyze instantly, no download'}
+            {targetId === RECOMMENDED_TARGET_ID
+              ? lang === 'ko'
+                ? '다시 누르면 지도가 이 대상으로 되돌아갑니다'
+                : 'Press again to re-aim the map at this target'
+              : lang === 'ko'
+                ? '번들된 TESS sector 2 — 다운로드 없이 바로 분석'
+                : 'Bundled TESS sector 2 — analyze instantly, no download'}
           </span>
         </button>
       </div>
@@ -155,7 +191,13 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
             ? '전천 지도에서 별을 클릭해 탐구 대상을 선택하세요.'
             : 'Click a star on the sky map to choose your target.'}
       </p>
-      <SkyExplorer embedded onSelectTarget={handleSelectTarget} focusTarget={target} />
+      <SkyExplorer
+        embedded
+        onSelectTarget={handleSelectTarget}
+        focusTargetId={targetId || null}
+        focusTargetHint={target}
+        focusNonce={focusNonce}
+      />
     </div>
   );
 

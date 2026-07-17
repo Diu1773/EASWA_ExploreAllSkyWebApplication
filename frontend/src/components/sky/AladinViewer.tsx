@@ -15,6 +15,8 @@ interface AladinViewerProps {
   /** Target chosen outside the map (recommended pick, ?target= deep link). The
    *  slew fires the instant Aladin is up — see the effect near the bottom. */
   focusTarget?: Target | null;
+  /** Re-aims at the same focusTarget when bumped (repeat button press). */
+  focusNonce?: number;
 }
 
 export interface AladinViewerHandle {
@@ -91,7 +93,7 @@ function getViewerFov(viewer: any): number {
 
 export const AladinViewer = forwardRef<AladinViewerHandle, AladinViewerProps>(
 function AladinViewer(
-  { targets, onTargetClick, focusTarget }: AladinViewerProps,
+  { targets, onTargetClick, focusTarget, focusNonce = 0 }: AladinViewerProps,
   ref
 ) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -232,7 +234,8 @@ function AladinViewer(
   // SkyExplorer and polled `viewerRef` every 500ms, giving up after 6s. On a
   // cold Render instance (HiPS survey properties come from CDS) init regularly
   // outlasted that window, so the map just sat at the default view until the
-  // learner clicked again. Deterministic beats polling.
+  // learner clicked again. Deterministic beats polling. focusNonce re-runs the
+  // slew for a repeat press on the same target (learner panned away).
   const focusTargetId = focusTarget?.id ?? null;
   useEffect(() => {
     if (!aladinReady || !focusTarget) return;
@@ -240,7 +243,7 @@ function AladinViewer(
       console.warn('Sky focus slew failed', focusTarget.id, error);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [aladinReady, focusTargetId, slewTo]);
+  }, [aladinReady, focusTargetId, focusNonce, slewTo]);
 
   // Shorten coordinate grid labels: "HH MM SS.mmm" → "HH MM SS"
   useEffect(() => {

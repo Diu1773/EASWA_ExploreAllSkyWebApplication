@@ -11,15 +11,25 @@ import { useT } from '../../i18n';
 interface SkyExplorerProps {
   embedded?: boolean;
   onSelectTarget?: (target: Target) => void;
-  /** Target chosen outside the map (recommended-pick button, ?target= deep
-   *  link). The map slews to it — clicking ON the map already self-frames, but
-   *  those paths bypass the map and used to leave it pointing elsewhere.
-   *  Resolved by the caller, which fetches by id: the map's own catalog is a
-   *  filtered top-N and cannot be relied on to contain an arbitrary target. */
-  focusTarget?: Target | null;
+  /** Id of the target chosen outside the map (recommended-pick button,
+   *  ?target= deep link). Resolved against the catalog this component already
+   *  loads for the markers, so the slew fires as soon as the sources are up —
+   *  bundled targets are pinned into that catalog server-side. */
+  focusTargetId?: string | null;
+  /** Caller-fetched copy for targets the filtered catalog may not contain
+   *  (arrives a little later; used only when the catalog lookup misses). */
+  focusTargetHint?: Target | null;
+  /** Bump to re-aim at the same target (learner panned away, pressed again). */
+  focusNonce?: number;
 }
 
-export function SkyExplorer({ embedded = false, onSelectTarget, focusTarget }: SkyExplorerProps) {
+export function SkyExplorer({
+  embedded = false,
+  onSelectTarget,
+  focusTargetId,
+  focusTargetHint,
+  focusNonce = 0,
+}: SkyExplorerProps) {
   const { targets, allTargets, loading, selectedTopic } = useSkyTargets();
   const t = useT();
   const [nameSearch, setNameSearch] = useState('');
@@ -56,6 +66,13 @@ export function SkyExplorer({ embedded = false, onSelectTarget, focusTarget }: S
   }, [selectedTopic]);
 
   // AladinViewer owns the slew, keyed on its own readiness — no polling here.
+  // Catalog first (available with the markers), caller's fetched copy as the
+  // fallback for targets the filtered top-N does not carry.
+  const focusTarget = focusTargetId
+    ? (allTargets.find((item) => item.id === focusTargetId) ??
+       targets.find((item) => item.id === focusTargetId) ??
+       (focusTargetHint && focusTargetHint.id === focusTargetId ? focusTargetHint : null))
+    : null;
 
   const handleTargetClick = (target: Target) => {
     setPopupTarget(target);
@@ -117,6 +134,7 @@ export function SkyExplorer({ embedded = false, onSelectTarget, focusTarget }: S
           targets={filteredTargets}
           onTargetClick={handleTargetClick}
           focusTarget={focusTarget}
+          focusNonce={focusNonce}
         />
 
         {/* Search overlay — full-catalog name/constellation search */}
