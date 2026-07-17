@@ -88,7 +88,11 @@ export function ClusterModuleView({ module }: ClusterModuleViewProps) {
             ? '전천 지도에서 성단을 클릭해 선택하세요.'
             : 'Click a cluster on the sky map to select it.'}
       </p>
-      <SkyExplorer embedded onSelectTarget={handleSelectCluster} />
+      <SkyExplorer
+        embedded
+        onSelectTarget={handleSelectCluster}
+        focusTargetId={selectedId || null}
+      />
     </div>
   );
 
@@ -198,6 +202,11 @@ export function ClusterModuleView({ module }: ClusterModuleViewProps) {
       introSlot={<ClusterIntro />}
       contextSlot={contextSlot}
       selectionSlot={selectionSlot}
+      selectionConfirm={{
+        ready: Boolean(selectedId),
+        label: { ko: '이 성단으로 확인', en: 'Confirm this cluster' },
+        hint: { ko: '먼저 지도에서 성단을 선택하세요.', en: 'Select a cluster on the map first.' },
+      }}
       analysisSlot={analysisSlot}
       comparisonSlot={comparisonSlot}
       recordSave={recordSave}

@@ -381,6 +381,14 @@ export function KmtnetModuleView({ module }: KmtnetModuleViewProps) {
       introSlot={introSlot}
       contextSlot={contextSlot}
       selectionSlot={selectionSlot}
+      selectionConfirm={{
+        ready: Boolean(selectedEvent),
+        label: { ko: '이 이벤트로 확인', en: 'Confirm this event' },
+        hint: {
+          ko: '먼저 전천에서 미시중력렌즈 이벤트를 선택하세요.',
+          en: 'Select a microlensing event on the sky view first.',
+        },
+      }}
       analysisSlot={analysisSlot}
       comparisonSlot={comparisonSlot}
       recordSave={recordSave}
