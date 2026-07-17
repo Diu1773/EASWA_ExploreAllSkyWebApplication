@@ -1,18 +1,31 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'react';
 import A from 'aladin-lite';
 import type { Target } from '../../types/target';
 
 interface AladinViewerProps {
   targets: Target[];
   onTargetClick: (target: Target) => void;
+  /** Target chosen outside the map (recommended pick, ?target= deep link). The
+   *  slew fires the instant Aladin is up — see the effect near the bottom. */
+  focusTarget?: Target | null;
 }
 
 export interface AladinViewerHandle {
   gotoTarget: (target: Target) => Promise<'slewed' | 'already-there'>;
 }
 
-const SLEW_ANIMATION_SECONDS = 1.4;
-const ZOOM_ANIMATION_SECONDS = 1.1;
+// Slew then zoom run back to back, so these add up to the wait before the
+// learner can act. Trimmed from 1.4/1.1 (2.5s total) — long enough to read as
+// "the sky is moving there", short enough not to feel unresponsive.
+const SLEW_ANIMATION_SECONDS = 0.8;
+const ZOOM_ANIMATION_SECONDS = 0.7;
 const ZOOM_FOV = 6;
 const CENTER_EPSILON_DEG = 0.08;
 const FOV_EPSILON_DEG = 0.05;
@@ -78,7 +91,7 @@ function getViewerFov(viewer: any): number {
 
 export const AladinViewer = forwardRef<AladinViewerHandle, AladinViewerProps>(
 function AladinViewer(
-  { targets, onTargetClick }: AladinViewerProps,
+  { targets, onTargetClick, focusTarget }: AladinViewerProps,
   ref
 ) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -94,8 +107,8 @@ function AladinViewer(
   // sky with no clickable targets at all.
   const [aladinReady, setAladinReady] = useState(false);
 
-  useImperativeHandle(ref, () => ({
-    gotoTarget: async (target: Target) => {
+  const slewTo = useCallback(
+    async (target: Target): Promise<'slewed' | 'already-there'> => {
       const viewer = aladinRef.current;
       if (!viewer) {
         throw new Error('Sky viewer is not ready yet.');
@@ -209,7 +222,25 @@ function AladinViewer(
 
       return 'slewed';
     },
-  }), []);
+    [],
+  );
+
+  useImperativeHandle(ref, () => ({ gotoTarget: slewTo }), [slewTo]);
+
+  // Slew to a target chosen outside the map. Keyed on aladinReady, so it fires
+  // the moment Aladin finishes initializing — the previous version lived in
+  // SkyExplorer and polled `viewerRef` every 500ms, giving up after 6s. On a
+  // cold Render instance (HiPS survey properties come from CDS) init regularly
+  // outlasted that window, so the map just sat at the default view until the
+  // learner clicked again. Deterministic beats polling.
+  const focusTargetId = focusTarget?.id ?? null;
+  useEffect(() => {
+    if (!aladinReady || !focusTarget) return;
+    slewTo(focusTarget).catch((error: unknown) => {
+      console.warn('Sky focus slew failed', focusTarget.id, error);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aladinReady, focusTargetId, slewTo]);
 
   // Shorten coordinate grid labels: "HH MM SS.mmm" → "HH MM SS"
   useEffect(() => {

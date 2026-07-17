@@ -11,9 +11,11 @@ import { useT } from '../../i18n';
 interface SkyExplorerProps {
   embedded?: boolean;
   onSelectTarget?: (target: Target) => void;
-  /** Externally selected target (recommended-pick button, ?target= deep link).
-   *  The map slews to it — clicking ON the map already self-frames, but those
-   *  paths bypass the map entirely and used to leave it pointing elsewhere. */
+  /** Target chosen outside the map (recommended-pick button, ?target= deep
+   *  link). The map slews to it — clicking ON the map already self-frames, but
+   *  those paths bypass the map and used to leave it pointing elsewhere.
+   *  Resolved by the caller, which fetches by id: the map's own catalog is a
+   *  filtered top-N and cannot be relied on to contain an arbitrary target. */
   focusTarget?: Target | null;
 }
 
@@ -53,41 +55,7 @@ export function SkyExplorer({ embedded = false, onSelectTarget, focusTarget }: S
     setNameSearch('');
   }, [selectedTopic]);
 
-  // Slew to an externally chosen target. Aladin initializes asynchronously and
-  // gotoTarget throws until it is up, so retry briefly instead of giving up on
-  // the first mount (the recommended-pick click usually lands before A.init).
-  const focusTargetId = focusTarget?.id ?? null;
-  useEffect(() => {
-    if (!focusTarget) return;
-    let cancelled = false;
-    let attempts = 0;
-    const tryGoto = () => {
-      if (cancelled) return;
-      attempts += 1;
-      const viewer = viewerRef.current;
-      if (viewer) {
-        viewer.gotoTarget(focusTarget).catch((error: unknown) => {
-          if (cancelled) return;
-          if (attempts < 12) {
-            setTimeout(tryGoto, 500);
-          } else {
-            // Give-up is worth a trace: a silently dead slew looks like "the
-            // map ignores my selection" and is painful to diagnose after.
-            console.warn('SkyExplorer focus slew gave up', focusTarget.id, error);
-          }
-        });
-      } else if (attempts < 12) {
-        setTimeout(tryGoto, 500);
-      } else {
-        console.warn('SkyExplorer focus slew: viewer never became ready', focusTarget.id);
-      }
-    };
-    tryGoto();
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [focusTargetId]);
+  // AladinViewer owns the slew, keyed on its own readiness — no polling here.
 
   const handleTargetClick = (target: Target) => {
     setPopupTarget(target);
@@ -148,6 +116,7 @@ export function SkyExplorer({ embedded = false, onSelectTarget, focusTarget }: S
           ref={viewerRef}
           targets={filteredTargets}
           onTargetClick={handleTargetClick}
+          focusTarget={focusTarget}
         />
 
         {/* Search overlay — full-catalog name/constellation search */}

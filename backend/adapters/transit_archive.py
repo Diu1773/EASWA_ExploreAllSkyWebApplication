@@ -36,6 +36,24 @@ def _is_bundled(target_id: str, observation_id: str, sector: int) -> bool:
         return False
 
 
+def _bundled_target_ids() -> list[str]:
+    """Targets that ship with a practice cutout, read off the filenames.
+
+    Derived from disk rather than a constant so bundling another target's cutout
+    puts it on the sky map with no code change.
+    """
+    try:
+        return sorted(
+            {
+                path.name.split("__", 1)[0]
+                for path in _BUNDLED_CUTOUT_DIR.glob(f"*__{_BUNDLED_CUTOUT_SIZE_PX}px.fits")
+                if path.is_file() and path.stat().st_size > 0
+            }
+        )
+    except OSError:
+        return []
+
+
 _TESSCUT_SECTOR_URL = "https://mast.stsci.edu/tesscut/api/v0.1/sector"
 _TESSCUT_ASTROCUT_URL = "https://mast.stsci.edu/tesscut/api/v0.1/astrocut"
 _DEFAULT_CUTOUT_SIZE_PX = 35
@@ -76,7 +94,22 @@ class TransitArchive:
             return []
 
         self._targets_by_id.update({target["id"]: target for target in live_targets})
-        return live_targets
+
+        # A bundled target is the only one that analyzes instantly, and the UI
+        # offers it as the recommended pick — but the live catalog is a filtered
+        # top-N, and WASP-6 b fell outside the default 20, so the sky map had no
+        # marker for the very target the demo depends on. Pin bundled targets to
+        # the front; they are fetched by id, so no filter can drop them.
+        listed_ids = {target["id"] for target in live_targets}
+        pinned: list[dict[str, Any]] = []
+        for bundled_id in _bundled_target_ids():
+            if bundled_id in listed_ids:
+                continue
+            bundled_target = self.get_target(bundled_id)
+            if bundled_target:
+                pinned.append(bundled_target)
+
+        return pinned + live_targets if pinned else live_targets
 
     def get_target(self, target_id: str) -> dict[str, Any] | None:
         target = self._targets_by_id.get(target_id)
