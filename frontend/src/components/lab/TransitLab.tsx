@@ -1520,7 +1520,12 @@ export function TransitLab({
             result?.light_curve.target_id ?? target.id,
             fitReferencePeriod,
             phaseFoldReferenceT0,
-            requestedFitWindowPhase
+            // null, not requestedFitWindowPhase: this is the DISPLAY curve, and
+            // clipping to the fit window (±0.12 phase) dropped ~75% of the ROI
+            // points the moment "위상 접기" was pressed — it looked like the data
+            // vanished. The whole ROI folds into view; the fit still applies its
+            // own window server-side (requestedFitWindowPhase → useTransitFit).
+            null
           )
         : roiLightCurve;
   const fitDisplayReferencePeriod = activeFitPreviewResult?.period ?? fitReferencePeriod;
