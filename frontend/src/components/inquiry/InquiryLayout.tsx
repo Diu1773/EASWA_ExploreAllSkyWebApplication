@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useLangStore } from '../../i18n';
 import { localize } from '../../explorationBlocks/localize';
 import type {
@@ -101,8 +101,15 @@ export function InquiryLayout<TContext = unknown>({
   draftTargetId,
 }: InquiryLayoutProps<TContext>) {
   const lang = useLangStore((state) => state.lang);
+  // The active step rides in the URL (?step=, replace — no history spam).
+  // Without it, walking Step 4 → Lab and pressing the browser back button
+  // remounted this layout at Step 0: the page came back, the position didn't.
+  // A reload keeps the step for the same reason.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const resolveStep = (raw: string | null): InquiryStepId | null =>
+    raw && module.steps.some((step) => step.id === raw) ? (raw as InquiryStepId) : null;
   const [activeStepId, setActiveStepId] = useState<InquiryStepId>(
-    initialStepId ?? module.steps[0].id,
+    () => resolveStep(searchParams.get('step')) ?? initialStepId ?? module.steps[0].id,
   );
   const [notes, setNotes] = useState<Record<string, string>>({});
   // Self-check answers live here, not in SelfCheckPanel: that panel unmounts on
@@ -119,9 +126,25 @@ export function InquiryLayout<TContext = unknown>({
   // mount would overwrite a real draft with {}.
   const dirtyRef = useRef(false);
 
+  // Re-resolve on module switch and on external URL changes (back/forward).
+  // The URL wins over initialStepId so returning into a tree that passes one
+  // (the Lab passes step4) still lands on where the learner actually was.
   useEffect(() => {
-    setActiveStepId(initialStepId ?? module.steps[0].id);
-  }, [initialStepId, module.id, module.steps]);
+    setActiveStepId(
+      resolveStep(searchParams.get('step')) ?? initialStepId ?? module.steps[0].id,
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialStepId, module.id, module.steps, searchParams]);
+
+  // Mirror the active step into the URL. replace, not push: per-step history
+  // entries made the back button walk every step before leaving the page.
+  useEffect(() => {
+    if (searchParams.get('step') === activeStepId) return;
+    const next = new URLSearchParams(searchParams);
+    next.set('step', activeStepId);
+    setSearchParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeStepId, searchParams, setSearchParams]);
 
   // Hydrate from the autosaved draft whenever the task (module + target) changes.
   useEffect(() => {
@@ -163,6 +186,16 @@ export function InquiryLayout<TContext = unknown>({
   const activeStep = module.steps.find((step) => step.id === activeStepId) ?? module.steps[0];
   const stepIndex = module.steps.findIndex((step) => step.id === activeStep.id);
   const maxUnlocked = maxUnlockedStepIndex ?? module.steps.length - 1;
+
+  // A URL can point past the gate (stale bookmark, hand-edited ?step=): demote
+  // to the last unlocked step. Runs as an effect, not at init, because the fit
+  // that unlocks Steps 5–6 is read in a mount effect — clamping eagerly would
+  // demote a legitimately unlocked learner during that first frame.
+  useEffect(() => {
+    if (stepIndex > maxUnlocked) {
+      setActiveStepId(module.steps[Math.max(maxUnlocked, 0)].id);
+    }
+  }, [stepIndex, maxUnlocked, module.steps]);
   const goToStep = (delta: number) => {
     const next = module.steps[stepIndex + delta];
     if (next) setActiveStepId(next.id);
