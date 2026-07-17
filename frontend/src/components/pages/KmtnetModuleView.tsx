@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import PlotlyModule from 'plotly.js-dist-min';
 import { fetchTargets, fetchMicrolensingLightcurve, fitMicrolensingModel } from '../../api/client';
@@ -12,8 +12,9 @@ import { moduleAdapters } from '../../explorationBlocks/adapters';
 import type { ExplorationModuleConfig } from '../../explorationBlocks/types';
 import { InquiryLayout } from '../inquiry';
 import microlensingNasaImg from '../../assets/microlensing-nasa-svs.jpg';
+import { lazyWithRetry } from '../../utils/lazyWithRetry';
 
-const KmtnetSkyMap = lazy(() =>
+const KmtnetSkyMap = lazyWithRetry('KmtnetSkyMap', () =>
   import('../sky/KmtnetSkyMap').then((m) => ({ default: m.KmtnetSkyMap })),
 );
 const plotly = (PlotlyModule as any).default ?? (PlotlyModule as any);

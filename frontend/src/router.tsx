@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { AppShell } from './components/layout/AppShell';
+import { RouteErrorScreen } from './components/layout/RouteErrorScreen';
 import { TargetDetail } from './components/detail/TargetDetail';
 import { LabView } from './components/lab/LabView';
 import { MyAnalyses } from './components/pages/MyAnalyses';
@@ -17,6 +18,9 @@ import { ModulePage } from './components/pages/ModulePage';
 export const router = createBrowserRouter([
   {
     element: <AppShell />,
+    // Deploy-stale chunks and render errors land here instead of react-router's
+    // English "Hey developer" screen; stale chunks self-heal with one reload.
+    errorElement: <RouteErrorScreen />,
     children: [
       { path: '/', element: <HomePage /> },
       { path: '/modules/:moduleId', element: <ModulePage /> },

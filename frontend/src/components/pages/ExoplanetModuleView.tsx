@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { fetchTarget, fetchObservations } from '../../api/client';
 import type { Observation, Target } from '../../types/target';
@@ -9,6 +9,7 @@ import { useWorkflowDraftRoute } from '../../hooks/useWorkflowDraftRoute';
 import { moduleAdapters } from '../../explorationBlocks/adapters';
 import type { ExplorationModuleConfig } from '../../explorationBlocks/types';
 import { formatConstellation } from '../../utils/targetFormat';
+import { lazyWithRetry } from '../../utils/lazyWithRetry';
 import { ApertureSandbox, InquiryLayout, SkyDataPanel } from '../inquiry';
 import { TransitComparison } from '../inquiry/TransitComparison';
 import { TransitResultSummary } from '../inquiry/TransitResultSummary';
@@ -21,7 +22,7 @@ import {
   type SavedTransitFit,
 } from '../../workflows/transit/fitBridge';
 
-const Transit3DScene = lazy(() => import('../sky/Transit3DScene'));
+const Transit3DScene = lazyWithRetry('Transit3DScene', () => import('../sky/Transit3DScene'));
 
 // The only fully bundled analysis target (TESS sector 2, 50px cutout baked into
 // the image) — clicking it loads instantly with no MAST download, ideal for the
