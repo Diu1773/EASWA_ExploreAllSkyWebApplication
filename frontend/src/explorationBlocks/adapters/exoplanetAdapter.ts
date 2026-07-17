@@ -13,7 +13,6 @@ import {
   literalField,
   qualityFieldsFromConfig,
 } from './shared';
-import { buildExplorerHref } from '../../utils/explorerNavigation';
 
 export interface ExoplanetAdapterContext {
   target?: Target | null;
@@ -113,12 +112,3 @@ export const exoplanetAdapter: ExplorationModuleAdapter<ExoplanetAdapterContext>
     };
   },
 };
-
-export function buildExoplanetEntryHref(): string {
-  return buildExplorerHref({
-    moduleId: 'tess',
-    topicId: 'exoplanet_transit',
-    siteId: null,
-    learningMode: 'guided',
-  });
-}

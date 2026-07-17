@@ -14,8 +14,6 @@ export const HOME_HERO_BG =
 export const TESS_MODULE_IMAGE = tessNasaPreview;
 export const CLUSTER_MODULE_IMAGE = clusterModuleImg;
 export const KMT_MODULE_IMAGE = kmtnetBanner;
-export const TESS_BANNER_IMAGE =
-  'https://cdn.esahubble.org/archives/images/screen/heic0612b.jpg';
 export const KMT_BANNER_IMAGE = kmtnetMicrolensingNasa;
 
 export const KMT_SITE_IMAGES: Record<'ctio' | 'saao' | 'sso', string> = {

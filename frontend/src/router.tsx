@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { AppShell } from './components/layout/AppShell';
 import { TargetDetail } from './components/detail/TargetDetail';
 import { LabView } from './components/lab/LabView';
@@ -8,7 +8,6 @@ import { SharedRecord } from './components/pages/SharedRecord';
 import { Settings } from './components/pages/Settings';
 import { AdminDashboard } from './components/pages/AdminDashboard';
 import { HomePage } from './components/pages/HomePage';
-import { TessIntroPage } from './components/pages/TessIntroPage';
 import { KmtnetIntroPage } from './components/pages/KmtnetIntroPage';
 import { ObservatorySelectPage } from './components/pages/ObservatorySelectPage';
 import { KmtnetExplorerPage } from './components/pages/KmtnetExplorerPage';
@@ -21,7 +20,6 @@ export const router = createBrowserRouter([
     children: [
       { path: '/', element: <HomePage /> },
       { path: '/modules/:moduleId', element: <ModulePage /> },
-      { path: '/tess', element: <TessIntroPage /> },
       { path: '/kmtnet', element: <KmtnetIntroPage /> },
       { path: '/kmtnet/sites', element: <ObservatorySelectPage /> },
       { path: '/kmtnet/explorer', element: <KmtnetExplorerPage /> },
@@ -33,6 +31,9 @@ export const router = createBrowserRouter([
       { path: '/shared/:token', element: <SharedRecord /> },
       { path: '/settings', element: <Settings /> },
       { path: '/admin', element: <AdminDashboard /> },
+      // Anything unrouted — a retired page such as /tess, a stale bookmark, a
+      // typo — went to react-router's built-in "Hey developer 👋" error screen.
+      { path: '*', element: <Navigate to="/" replace /> },
     ],
   },
 ]);

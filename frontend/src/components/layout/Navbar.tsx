@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../stores/useAuthStore';
-import { buildExplorerHref } from '../../utils/explorerNavigation';
 import { useT, useLangStore } from '../../i18n';
 
 interface NavLinkItem {
@@ -35,20 +34,6 @@ function LogoIcon() {
 
 export function Navbar() {
   const location = useLocation();
-  const moduleParam = new URLSearchParams(location.search).get('module');
-  const isKmtnetContext =
-    location.pathname.startsWith('/kmtnet') ||
-    moduleParam === 'kmtnet';
-  const isExplorerContext =
-    (location.pathname === '/explorer' ||
-      location.pathname.startsWith('/target') ||
-      location.pathname.startsWith('/lab')) &&
-    !isKmtnetContext;
-  const defaultExplorerHref = buildExplorerHref({
-    moduleId: 'tess',
-    topicId: 'exoplanet_transit',
-    siteId: null,
-  });
   const t = useT();
   const lang = useLangStore((s) => s.lang);
   const toggleLang = useLangStore((s) => s.toggleLang);
@@ -59,9 +44,12 @@ export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const navRef = useRef<HTMLElement>(null);
 
+  // Home only. The "Explorer" entry used to point at the standalone sky page
+  // (/explorer), which sits outside the inquiry block — a learner who clicked it
+  // mid-analysis landed on the legacy map with no way back into their steps.
+  // Home carries the module cards, which is the intended way in.
   const navLinks: NavLinkItem[] = [
     { to: '/', label: t('nav.home'), active: location.pathname === '/' },
-    { to: defaultExplorerHref, label: t('nav.explorer'), active: isExplorerContext },
   ];
 
   // Close menus when clicking outside

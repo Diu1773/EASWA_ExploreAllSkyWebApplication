@@ -37,7 +37,6 @@ const HERO = {
     en: 'Right in the browser, no coding — confirm exoplanet transits with light curves from the NASA TESS satellite, and track microlensing events through the KMTNet observatory network. A science inquiry experience where students and citizens view and interpret data themselves.',
   },
   ctaStart: { ko: '탐구 바로 시작 →', en: 'Start exploring →' },
-  ctaTess: { ko: 'TESS 소개 보기', en: 'About TESS' },
   modulesLabel: { ko: '탐구 모듈 선택', en: 'Choose an inquiry module' },
 } as const;
 
