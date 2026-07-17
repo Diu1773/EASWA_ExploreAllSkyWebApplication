@@ -199,7 +199,9 @@ export function RecordDetail() {
   return (
     <div className="record-detail-page">
       <div className="record-detail-header">
-        <div>
+        {/* Column: the inline back-link and the kicker span otherwise share a
+            line — "← 내 분석 기록기록 #14". Same shape as the block header. */}
+        <div className="inquiry-layout-header-copy">
           <Link to="/my" className="back-link">
             &larr; {lang === 'ko' ? '내 분석 기록' : 'Back to My Analyses'}
           </Link>

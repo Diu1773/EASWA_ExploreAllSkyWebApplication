@@ -504,7 +504,9 @@ export function InquiryLayout<TContext = unknown>({
   return (
     <div className="inquiry-layout">
       <header className="inquiry-layout-header">
-        <div>
+        {/* Column, not a bare div: back-link (inline <a>) and kicker
+            (inline-flex) used to run together on one line — "← 홈모듈형 탐구블럭". */}
+        <div className="inquiry-layout-header-copy">
           <Link to="/" className="back-link">
             &larr; {lang === 'ko' ? '홈' : 'Home'}
           </Link>

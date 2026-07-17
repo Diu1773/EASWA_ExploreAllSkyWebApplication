@@ -228,6 +228,11 @@ body {
   height: 28px;
   border-radius: 50%;
   border: 1px solid var(--border);
+  /* block + cover: as an inline image it sat on the text baseline, so the
+     button's ring enclosed the image PLUS the descender gap and read as an
+     off-centre oval. cover also keeps non-square Google avatars from stretching. */
+  display: block;
+  object-fit: cover;
 }
 
 .navbar-user-name {
@@ -264,6 +269,10 @@ body {
   padding: 0;
   cursor: pointer;
   transition: border-color 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
 }
 
 .navbar-avatar-button:hover {
@@ -318,6 +327,8 @@ body {
   border-radius: 50%;
   border: 1px solid var(--border);
   flex-shrink: 0;
+  display: block;
+  object-fit: cover;
 }
 
 .user-menu-info {
@@ -4712,7 +4723,7 @@ body {
 }
 
 .record-detail-header h2 {
-  margin: 6px 0 10px;
+  margin: 2px 0 0;
   color: var(--text-heading);
 }
 
@@ -5738,8 +5749,18 @@ body {
   background: rgba(18, 22, 30, 0.94);
 }
 
+/* Stacks the back-link, kicker, title and description with real breathing room
+   — they used to collide ("← 홈모듈형 탐구블럭") because the link is inline. */
+.inquiry-layout-header-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+
 .inquiry-layout-header h1 {
-  margin: 8px 0 8px;
+  margin: 2px 0 0;
   color: var(--text-heading);
   font-size: clamp(1.8rem, 3vw, 2.8rem);
   line-height: 1.08;

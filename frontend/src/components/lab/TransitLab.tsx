@@ -602,9 +602,10 @@ export function TransitLab({
   const guideSeededRef = useRef(false);
   if (!guideSeededRef.current) {
     guideSeededRef.current = true;
-    if (!seedRecordId && !draftId) {
-      guideAnswersRef.current = loadLabDraft(target.id)?.guideAnswers ?? {};
-    }
+    // Unconditional: the StepGuide answers are NOT part of the backend draft or
+    // a saved record's snapshot, so the browser draft is their only store no
+    // matter how this Lab was opened.
+    guideAnswersRef.current = loadLabDraft(target.id)?.guideAnswers ?? {};
   }
   const loadedRecordIdRef = useRef<number | null>(null);
   const restoringSessionPreviewRef = useRef(false);
@@ -1340,24 +1341,25 @@ export function TransitLab({
     setLabDraftTick((tick) => tick + 1);
   }, []);
 
-  // Restore the autosaved Lab draft. Skipped when reopening a saved record or a
-  // backend draft — those are an explicit "load this one" and must win.
+  // Restore the autosaved Lab draft.
+  //
+  // The guide answers are restored (and kept autosaving) in every case: a
+  // backend draft or saved record owns the ANALYSIS snapshot, but neither
+  // carries the StepGuide 생각해보기 answers, so the browser draft is their only
+  // home. Returning early here used to leave labHydratedRef false forever, which
+  // silently disabled the autosave below for every signed-in learner — their
+  // guide answers reached neither storage nor the sheet (lab_guide_json: {} in
+  // the 2026-07-17 pilot rows). Only recordAnswers defer to the explicit load.
   useEffect(() => {
     labHydratedRef.current = false;
     labDirtyRef.current = false;
-    if (seedRecordId || draftId) return;
     const saved = loadLabDraft(target.id);
-    if (saved) {
-      guideAnswersRef.current = saved.guideAnswers;
-      if (Object.keys(saved.recordAnswers).length > 0) {
-        patch({ recordAnswers: saved.recordAnswers });
-      }
-      setLabSavedAt(saved.savedAt);
-      setLabDraftTick((tick) => tick + 1);
-    } else {
-      guideAnswersRef.current = {};
-      setLabSavedAt(null);
+    guideAnswersRef.current = saved?.guideAnswers ?? {};
+    if (!seedRecordId && !draftId && saved && Object.keys(saved.recordAnswers).length > 0) {
+      patch({ recordAnswers: saved.recordAnswers });
     }
+    setLabSavedAt(saved?.savedAt ?? null);
+    setLabDraftTick((tick) => tick + 1);
     labHydratedRef.current = true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [target.id, seedRecordId, draftId]);
