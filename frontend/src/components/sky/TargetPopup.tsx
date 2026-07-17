@@ -22,6 +22,10 @@ interface TargetPopupProps {
   onGoto: () => void;
   onClose: () => void;
   embedded?: boolean;
+  /** Currently selected target id (embedded picker). When it matches this
+   *  target, the popup shows a "selected" badge — it replaces the old separate
+   *  "이 대상으로 확인" button; picking on the map IS the confirmation. */
+  selectedTargetId?: string | null;
 }
 
 export function TargetPopup({
@@ -33,6 +37,7 @@ export function TargetPopup({
   onGoto,
   onClose,
   embedded = false,
+  selectedTargetId = null,
 }: TargetPopupProps) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -44,9 +49,10 @@ export function TargetPopup({
   const sourceLabel = formatTargetSource(target.data_source, t);
   const isCluster = target.topic_id === 'open_cluster_cmd';
   const isExoplanet = target.topic_id === 'exoplanet_transit';
+  const isSelected = embedded && selectedTargetId === target.id;
 
   return (
-    <div className="target-popup">
+    <div className={`target-popup${isSelected ? ' is-selected' : ''}`}>
       <div className="target-popup-header">
         <h3>{target.name}</h3>
         <button className="close-btn" onClick={onClose} aria-label={t('popup.close')}>
@@ -75,6 +81,28 @@ export function TargetPopup({
         )}
         <p className="target-desc">{buildTargetDescription(target, lang)}</p>
       </div>
+      {embedded && (
+        <div className="target-popup-embedded-status">
+          {isSelected ? (
+            <>
+              <span className="target-popup-selected-badge">
+                ✓ {lang === 'ko' ? '이 대상으로 선택됨' : 'Selected'}
+              </span>
+              <p className="target-popup-hint">
+                {lang === 'ko'
+                  ? '아래 “다음 단계”로 진행하거나, 다른 별을 클릭해 대상을 바꿀 수 있습니다.'
+                  : 'Continue with “Next” below, or click another star to change your target.'}
+              </p>
+            </>
+          ) : (
+            <p className="target-popup-hint">
+              {lang === 'ko'
+                ? '이 별을 탐구 대상으로 선택하려면 클릭하세요.'
+                : 'Click this star to select it as your target.'}
+            </p>
+          )}
+        </div>
+      )}
       {!embedded && (
         <div className="target-popup-actions">
           <button

@@ -196,6 +196,7 @@ export function SkyExplorer({
         {popupTarget && (
           <TargetPopup
             embedded={embedded}
+            selectedTargetId={focusTargetId}
             gotoHint={gotoMessage}
             gotoHintTone={gotoMessageTone}
             gotoInProgress={gotoInProgress}

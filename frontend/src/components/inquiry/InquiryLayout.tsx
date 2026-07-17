@@ -338,12 +338,21 @@ export function InquiryLayout<TContext = unknown>({
       const raw = notes[`${step.id}:${field.id}`];
       return raw !== undefined && raw.trim() !== '' && raw !== '[]';
     });
-  const gateBlocked = !isStepAnswered(activeStep);
+
+  // The selection step now gates "다음 단계" directly on having a target — no
+  // separate "이 대상으로 확인" button. Picking a target on the map (which pops
+  // its info panel showing it as selected) is the confirmation.
+  const selectionUnmet =
+    activeStep.kind === 'selection' && Boolean(selectionConfirm) && !selectionConfirm?.ready;
+  const gateBlocked = !isStepAnswered(activeStep) || selectionUnmet;
 
   // Why "다음 단계" is unavailable, or null when it is. Never hide the button:
   // a missing control reads as a broken page (the learner finished the Lab fit
   // and had no way forward), whereas a disabled one with a reason teaches.
-  const nextBlockedReason: string | null = gateBlocked
+  const nextBlockedReason: string | null = selectionUnmet
+    ? selectionConfirm?.hint[lang] ??
+      (lang === 'ko' ? '먼저 지도에서 대상을 선택하세요.' : 'Select a target on the map first.')
+    : !isStepAnswered(activeStep)
     ? lang === 'ko'
       ? '다음 단계로 가려면 이 단계의 ✍️ 탐구 기록을 한 가지 이상 작성하세요.'
       : 'Write at least one ✍️ inquiry note in this step to continue.'
@@ -391,29 +400,12 @@ export function InquiryLayout<TContext = unknown>({
     }
 
     if (activeStep.kind === 'selection') {
-      const confirmBlock = selectionConfirm ? (
-        <div className="inquiry-selection-confirm">
-          {selectionConfirm.ready ? (
-            <button
-              type="button"
-              className="btn-primary"
-              disabled={stepIndex >= maxUnlocked}
-              onClick={() => goToStep(1)}
-            >
-              {selectionConfirm.label[lang]}
-            </button>
-          ) : (
-            <p className="inquiry-selection-confirm-hint">{selectionConfirm.hint[lang]}</p>
-          )}
-        </div>
-      ) : null;
+      // No "이 대상으로 확인" button: selecting a target on the map (which shows
+      // it as selected in the popup) is the confirmation, and the footer's
+      // "다음 단계" stays disabled with a reason until one is picked
+      // (selectionUnmet → nextBlockedReason above).
       if (selectionSlot) {
-        return (
-          <>
-            {selectionSlot}
-            {confirmBlock}
-          </>
-        );
+        return <>{selectionSlot}</>;
       }
       return (
         <section className="inquiry-info-panel inquiry-selection-card">
