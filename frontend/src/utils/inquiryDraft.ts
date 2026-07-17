@@ -226,6 +226,39 @@ export function clearTargetWork(moduleId: string, targetId: string | null | unde
 }
 
 /**
+ * Wipe every learner's in-progress work in this tab, for every target.
+ *
+ * Used on sign-out: closing the browser already clears session-scoped work, but
+ * logging out and staying in the tab did not — so the next person at a shared
+ * classroom PC still saw the previous learner's self-check answers and fitted
+ * curve (사용자 보고 2026-07-17: "비로그인 상태가 됐는데, 왜 아직도 결과물이 남아있지?").
+ *
+ * Nothing deliberate is lost: /my records stay on the server, a signed-in
+ * learner's analysis lives on in their backend draft, and the anonymous sheet
+ * row is already sent. The anon id rotates so the next person is a new row.
+ */
+export function clearAllLearnerWork(): void {
+  try {
+    Object.keys(sessionStorage)
+      .filter(
+        (key) =>
+          key.startsWith(KEY_PREFIX) ||
+          key.startsWith(LAB_KEY_PREFIX) ||
+          key.startsWith('easwa:transit-fit:') ||
+          key.startsWith('workflow-session:') ||
+          key === 'easwa:anon-id',
+      )
+      .forEach((key) => sessionStorage.removeItem(key));
+
+    Object.keys(localStorage)
+      .filter((key) => key.startsWith('easwa_guide_open_'))
+      .forEach((key) => localStorage.removeItem(key));
+  } catch {
+    // Storage unavailable — nothing to clear.
+  }
+}
+
+/**
  * One-time boot sweep: learner work used to live in localStorage, so browsers
  * that visited before the session-scope change still carry old drafts, fits and
  * the permanent anon id — including notes for fields that no longer exist in the
