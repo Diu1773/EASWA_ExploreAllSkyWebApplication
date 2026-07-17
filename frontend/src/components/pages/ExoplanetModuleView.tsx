@@ -6,7 +6,7 @@ import { useLangStore } from '../../i18n';
 import { useAppStore } from '../../stores/useAppStore';
 import { moduleAdapters } from '../../explorationBlocks/adapters';
 import type { ExplorationModuleConfig } from '../../explorationBlocks/types';
-import { buildTargetHref, type ExplorerRouteContext } from '../../utils/explorerNavigation';
+import { buildLabHref, type ExplorerRouteContext } from '../../utils/explorerNavigation';
 import { formatConstellation } from '../../utils/targetFormat';
 import { ApertureSandbox, InquiryLayout, SkyDataPanel } from '../inquiry';
 import { TransitComparison } from '../inquiry/TransitComparison';
@@ -93,7 +93,15 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
     };
   }, [targetId]);
 
-  const analysisHref = useMemo(() => buildTargetHref(targetId, ANALYSIS_CONTEXT), [targetId]);
+  // Straight into the Lab. The old route went through the target-detail page
+  // (/target/:id) only so the learner could tick sectors there — a legacy stop
+  // whose "Back to Explorer" link then dropped them onto the standalone sky
+  // page, outside the block. The Lab now defaults to every sector of the
+  // target, so the detail page adds nothing to the guided flow.
+  const analysisHref = useMemo(
+    () => buildLabHref(targetId, ANALYSIS_CONTEXT, [['workflow', 'transit']]),
+    [targetId],
+  );
 
   const contextSlot = target ? (
     <div className="inquiry-target-context">

@@ -64,14 +64,22 @@ export function TargetDetail() {
   }
 
   const sourceLabel = formatTargetSource(target.data_source, t);
-  const explorerHref = buildExplorerHref(navigationContext);
-  const explorerLabel = getExplorerBackLabel(navigationContext);
+  // Transit targets have a module block now; sending them "Back to Explorer"
+  // dropped learners onto the standalone legacy sky page. This page itself is
+  // only reached from record views (/my, /records) these days.
+  const isTransitTarget = target.topic_id === 'exoplanet_transit';
+  const backHref = isTransitTarget
+    ? `/modules/exoplanet-transit?target=${target.id}`
+    : buildExplorerHref(navigationContext);
+  const backLabel = isTransitTarget
+    ? lang === 'ko' ? '탐구 화면으로' : 'Back to Inquiry'
+    : getExplorerBackLabel(navigationContext);
 
   return (
     <div className="target-detail">
       <div className="detail-header">
-        <Link to={explorerHref} className="back-link">
-          &larr; {explorerLabel}
+        <Link to={backHref} className="back-link">
+          &larr; {backLabel}
         </Link>
         <div className="detail-overview">
           <div className="detail-summary">

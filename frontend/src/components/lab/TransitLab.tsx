@@ -1702,8 +1702,8 @@ export function TransitLab({
           {selectedObservations.length === 0 && (
             <p className="hint">
               {lang === 'ko'
-                ? '대상 상세 페이지에서 하나 이상의 TESS Sector를 선택하세요.'
-                : 'Select one or more TESS sectors on the target detail page.'}
+                ? '이 대상에 사용할 수 있는 TESS 관측이 없습니다. Step 1에서 다른 대상을 선택하세요.'
+                : 'No TESS observations are available for this target. Pick another target in Step 1.'}
             </p>
           )}
         </div>

@@ -117,6 +117,20 @@ export function LabView() {
     if (loadError) setErrorMessage(loadError);
   }, [loadError]);
 
+  // Block Step 4 now links here directly, skipping the target-detail page where
+  // sectors used to be ticked. On arrival the store may hold no selection — or
+  // ids belonging to a previously visited target — and either way the sidebar
+  // dead-ends on an empty sector list. Default to every sector of this target;
+  // only the active one is actually downloaded, and the learner can switch it
+  // in the sidebar.
+  const selectAllObservations = useAppStore((s) => s.selectAllObservations);
+  useEffect(() => {
+    if (!isTransitWorkflow || observations.length === 0) return;
+    const hasSelectionForTarget = observations.some((obs) => selectedIds.includes(obs.id));
+    if (hasSelectionForTarget) return;
+    selectAllObservations(observations.map((obs) => obs.id));
+  }, [isTransitWorkflow, observations, selectedIds, selectAllObservations]);
+
   // Read the fit the TransitLab bridges back, and refresh the moment a fit is
   // saved (same-tab custom event) so Steps 5–6 fill with the learner's result.
   const [transitFit, setTransitFit] = useState<SavedTransitFit | null>(null);
@@ -293,8 +307,13 @@ export function LabView() {
         contextSlot={
           <div className="inquiry-target-context">
             <div className="inquiry-target-context-copy">
-              <Link to={targetHref} className="back-link">
-                &larr; {lang === 'ko' ? '대상으로' : 'Back to Target'}
+              {/* Back into the module tree (Step 0–1 slots live there), not the
+                  legacy /target detail page. Drafts are shared, nothing is lost. */}
+              <Link
+                to={`${exoplanetTransitModule.entry.href}?target=${targetId ?? target.id}`}
+                className="back-link"
+              >
+                &larr; {lang === 'ko' ? '탐구 화면으로' : 'Back to Inquiry'}
               </Link>
               <h2>{lang === 'ko' ? '식현상 Lab' : 'Transit Lab'}: {target.name}</h2>
               <div className="target-meta">
@@ -364,6 +383,9 @@ export function LabView() {
         resultSummarySlot={
           transitFit ? <TransitResultSummary fit={transitFit} targetName={target.name} /> : undefined
         }
+        /* Same lock as ExoplanetModuleView: Steps 5–6 open once a fit is saved.
+           Without this the Lab tree let learners walk into an empty comparison. */
+        maxUnlockedStepIndex={transitFit ? undefined : 4}
         anonSubmit={{ targetId: targetId ?? target.id, fit: transitFit }}
         /* Same scope as ExoplanetModuleView so notes typed in the module page
            survive the target-detail → Lab hop (this is a separate React tree). */
