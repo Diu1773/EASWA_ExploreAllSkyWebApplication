@@ -2411,6 +2411,22 @@ body {
   box-shadow: var(--shadow-sm);
 }
 
+/* Non-bundled sectors stay visible so the learner sees the full sector list,
+   but desaturated and dimmed so they read as "present but not selectable here"
+   rather than an active choice. No hover lift, no pointer. */
+.transit-sector-button:disabled {
+  filter: grayscale(0.85);
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.transit-sector-button:disabled:hover {
+  border-color: var(--border);
+  background: var(--bg-card);
+  transform: none;
+  box-shadow: none;
+}
+
 .thumbnail-card {
   display: flex;
   flex-direction: column;
@@ -3731,6 +3747,19 @@ body {
 .transit-field-size-select:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Bundled targets: size is fixed at 50px, shown as a static chip. */
+.transit-field-size-fixed {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 13px;
 }
 
 .transit-field-size-button {

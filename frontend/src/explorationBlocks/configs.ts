@@ -99,25 +99,10 @@ export const exoplanetTransitModule: ExplorationModuleConfig = {
         },
       ],
     },
-    step4_run_visualize: {
-      selfChecks: [
-        // Lives here, not in Step 3: the fit window (ROI) is something the
-        // learner first meets while running the fit in this step — in Step 3
-        // (aperture practice) the question landed before its concept.
-        {
-          id: 'tr_run_sc1',
-          type: 'choice',
-          question: { ko: 'fit 구간(ROI)을 식 전후로 너무 좁게 잡으면 어떻게 될까?', en: 'What happens if you make the fit window (ROI) too narrow around the transit?' },
-          options: [
-            { ko: '기준선(baseline) 추정이 나빠져 식 깊이가 왜곡된다', en: 'The baseline is poorly estimated and the depth is distorted' },
-            { ko: '계산이 빨라져 더 정확해진다', en: 'It computes faster and becomes more accurate' },
-            { ko: '결과에 아무 영향이 없다', en: 'It has no effect on the result' },
-          ],
-          correctIndex: 0,
-          explanation: { ko: '식 밖의 기준선을 받칠 구간이 부족하면 깊이가 편향됩니다.', en: 'Without enough out-of-transit baseline, the fitted depth becomes biased.' },
-        },
-      ],
-    },
+    // Step 4 embeds the Lab, and the Lab's own StepGuide already asks about the
+    // fit (fit_q1~3 in TransitLab). A block-level ROI self-check here rendered a
+    // second 생각해보기 on the same screen — the duplicate the user flagged. The
+    // block adds none of its own; the Lab owns the questions in this step.
     // Field ids match backend/survey_templates/transit_record.json question ids
     // 1:1 — the block's Step 6 IS the record form now (the Lab's record step was
     // removed), and the save panel submits these answers to that template.

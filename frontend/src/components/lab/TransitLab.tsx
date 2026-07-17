@@ -830,6 +830,9 @@ export function TransitLab({
     targetPositionOffset ?? preview?.target_position ?? result?.target_position ?? null;
   const activeObservation =
     selectedObservations.find((obs) => obs.id === activeObservationId) ?? null;
+  // Bundled sectors ship a 50px cutout in the image; the field-size picker is
+  // fixed to 50 for them so no other size can trigger a live MAST download.
+  const activeIsBundled = Boolean(activeObservation?.bundled);
   const comparisonDiagnostics = result?.comparison_diagnostics ?? [];
 
   // ── Custom hooks ─────────────────────────────────────────────────────
@@ -2612,30 +2615,49 @@ export function TransitLab({
                 <strong>{lang === 'ko' ? '시야 크기' : 'Field Size'}</strong>
                 {!preview && (
                   <p className="hint" style={{ marginTop: 4, fontSize: 13.5 }}>
-                    {lang === 'ko'
-                      ? '시야 크기를 선택하고 불러오기를 눌러 TESS 관측 영상을 확인하세요.'
-                      : 'Choose a field size and load the TESS observation.'}
+                    {activeIsBundled
+                      ? lang === 'ko'
+                        ? '불러오기를 눌러 번들 TESS 관측 영상을 확인하세요.'
+                        : 'Press Load to view the bundled TESS observation.'
+                      : lang === 'ko'
+                        ? '시야 크기를 선택하고 불러오기를 눌러 TESS 관측 영상을 확인하세요.'
+                        : 'Choose a field size and load the TESS observation.'}
                   </p>
                 )}
               </div>
               <div className="transit-field-size-options">
-                <select
-                  className="transit-field-size-select"
-                  value={pendingCutoutSizePx}
-                  disabled={previewLoading || framePreviewLoading}
-                  onChange={(e) => patch({ pendingCutoutSizePx: Number(e.target.value) })}
-                >
-                  {CUTOUT_SIZE_OPTIONS.map((size) => (
-                    <option key={size} value={size}>
-                      {size}px — {((size * 21) / 60).toFixed(1)}'
-                    </option>
-                  ))}
-                </select>
+                {activeIsBundled ? (
+                  // Bundled cutouts ship baked at 50px; any other size would
+                  // trigger a live MAST download the demo avoids. So the size is
+                  // fixed, shown as a static chip instead of a picker.
+                  <span className="transit-field-size-fixed">
+                    50px {lang === 'ko' ? '고정 · 번들 (즉시 로드)' : 'fixed · bundled (instant)'}
+                  </span>
+                ) : (
+                  <select
+                    className="transit-field-size-select"
+                    value={pendingCutoutSizePx}
+                    disabled={previewLoading || framePreviewLoading}
+                    onChange={(e) => patch({ pendingCutoutSizePx: Number(e.target.value) })}
+                  >
+                    {CUTOUT_SIZE_OPTIONS.map((size) => (
+                      <option key={size} value={size}>
+                        {size}px — {((size * 21) / 60).toFixed(1)}'
+                      </option>
+                    ))}
+                  </select>
+                )}
                 <button
                   type="button"
                   className={preview ? 'btn-sm' : 'btn-primary'}
                   disabled={previewLoading || framePreviewLoading}
-                  onClick={() => patch({ cutoutSizePx: pendingCutoutSizePx })}
+                  onClick={() =>
+                    patch(
+                      activeIsBundled
+                        ? { cutoutSizePx: 50, pendingCutoutSizePx: 50 }
+                        : { cutoutSizePx: pendingCutoutSizePx },
+                    )
+                  }
                 >
                   {previewLoading
                     ? lang === 'ko' ? '불러오는 중…' : 'Loading…'
