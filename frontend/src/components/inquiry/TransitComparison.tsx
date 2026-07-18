@@ -11,18 +11,54 @@ interface TransitComparisonProps {
 
 const fmt = (value: number, digits = 4) => (Number.isFinite(value) ? value.toFixed(digits) : '—');
 
-/** A horizontal measured-vs-reference bar pair, normalized to the larger of the two. */
-function CompareBars({ measured, reference }: { measured: number; reference: number }) {
-  const max = Math.max(measured, reference, 1e-9);
-  const mPct = Math.max(4, (measured / max) * 100);
-  const rPct = Math.max(4, (reference / max) * 100);
+/**
+ * 측정값 − 기준값. 절대차와 상대차를 함께 준다.
+ *
+ * 절대차만 주면 "0.303%p 차이"가 큰 건지 작은 건지 학습자가 판단할 수 없고,
+ * 상대차만 주면 기준값이 작을 때 과장된다. 둘 다 보여주고 판단은 학습자가 한다.
+ * unit이 '%p'인 이유: 두 백분율(식 깊이)의 차는 퍼센트가 아니라 퍼센트포인트다.
+ */
+function diffOf(measured: number, reference: number | null | undefined, digits: number) {
+  if (reference == null || !Number.isFinite(reference) || !Number.isFinite(measured)) return null;
+  const d = measured - reference;
+  const sign = d >= 0 ? '+' : '-';
+  const abs = `${sign}${fmt(Math.abs(d), digits)}`;
+  const rel = reference !== 0 ? `${sign}${Math.abs((d / reference) * 100).toFixed(1)}%` : null;
+  return { abs, rel };
+}
+
+/** 한 줄 = 항목 · 내 측정 · 문헌값 · 차이. */
+function CompareRow({
+  label, measured, reference, diff, diffUnit, lang,
+}: {
+  label: string;
+  measured: string;
+  reference: string;
+  diff: { abs: string; rel: string | null } | null;
+  diffUnit: string;
+  lang: 'ko' | 'en';
+}) {
   return (
-    <div className="transit-compare-bars" aria-hidden="true">
-      <div className="transit-compare-bar-track">
-        <div className="transit-compare-bar measured" style={{ width: `${mPct}%` }} />
+    <div className="transit-compare-row">
+      <div className="transit-compare-label">{label}</div>
+      <div className="transit-compare-cell">
+        <span className="cap">{lang === 'ko' ? '내 측정' : 'Measured'}</span>
+        <b>{measured}</b>
       </div>
-      <div className="transit-compare-bar-track">
-        <div className="transit-compare-bar reference" style={{ width: `${rPct}%` }} />
+      <div className="transit-compare-cell">
+        <span className="cap">{lang === 'ko' ? '문헌값' : 'Reference'}</span>
+        <span className="ref">{reference}</span>
+      </div>
+      <div className="transit-compare-cell diff">
+        <span className="cap">{lang === 'ko' ? '차이' : 'Difference'}</span>
+        {diff ? (
+          <span>
+            <b>{diff.abs}{diffUnit}</b>
+            {diff.rel && <span className="rel"> ({diff.rel})</span>}
+          </span>
+        ) : (
+          <span className="ref">—</span>
+        )}
       </div>
     </div>
   );
@@ -226,30 +262,35 @@ export function TransitComparison({ fit, target }: TransitComparisonProps) {
         <span><i className="dot reference" /> {lang === 'ko' ? '카탈로그 기준값' : 'Catalog reference'}</span>
       </div>
 
+      {/* 값을 위아래로 나열만 하던 표. "얼마나 차이가 나는가"가 이 단계의 핵심
+          질문인데 그 수치가 어디에도 없어서, 학습자가 두 숫자를 눈으로 빼야 했다.
+          이제 차이를 한 열로 따로 세운다. 막대는 뺐다 — 위 곡선 겹침 그림이
+          이미 그 역할을 하고, 같은 정보를 두 번 그리면 화면만 무거워진다. */}
       <div className="transit-compare-grid">
-        <div className={`transit-compare-row${hasCurve ? ' no-bars' : ''}`}>
-          <div className="transit-compare-label">{lang === 'ko' ? '식 깊이' : 'Depth'}</div>
-          {!hasCurve && <CompareBars measured={measuredDepth} reference={refDepth ?? 0} />}
-          <div className="transit-compare-values">
-            <b>{fmt(measuredDepth, 3)}%</b>
-            <span>{refDepth != null ? `${fmt(refDepth, 3)}%` : '—'}</span>
-          </div>
-        </div>
-        <div className={`transit-compare-row${hasCurve ? ' no-bars' : ''}`}>
-          <div className="transit-compare-label">Rp/R*</div>
-          {!hasCurve && <CompareBars measured={fit.rpRs} reference={archiveRpRs ?? 0} />}
-          <div className="transit-compare-values">
-            <b>{fmt(fit.rpRs)}</b>
-            <span>{archiveRpRs != null ? fmt(archiveRpRs) : '—'}</span>
-          </div>
-        </div>
-        <div className="transit-compare-row no-bars">
-          <div className="transit-compare-label">{lang === 'ko' ? '공전 주기' : 'Period'}</div>
-          <div className="transit-compare-values period">
-            <b>{fmt(fit.period, 5)} d</b>
-            <span>{refPeriod != null ? `${fmt(refPeriod, 5)} d` : '—'}</span>
-          </div>
-        </div>
+        <CompareRow
+          label={lang === 'ko' ? '식 깊이' : 'Depth'}
+          measured={`${fmt(measuredDepth, 3)}%`}
+          reference={refDepth != null ? `${fmt(refDepth, 3)}%` : '—'}
+          diff={diffOf(measuredDepth, refDepth, 3)}
+          diffUnit="%p"
+          lang={lang}
+        />
+        <CompareRow
+          label="Rp/R*"
+          measured={fmt(fit.rpRs)}
+          reference={archiveRpRs != null ? fmt(archiveRpRs) : '—'}
+          diff={diffOf(fit.rpRs, archiveRpRs, 4)}
+          diffUnit=""
+          lang={lang}
+        />
+        <CompareRow
+          label={lang === 'ko' ? '공전 주기' : 'Period'}
+          measured={`${fmt(fit.period, 5)} d`}
+          reference={refPeriod != null ? `${fmt(refPeriod, 5)} d` : '—'}
+          diff={diffOf(fit.period, refPeriod, 5)}
+          diffUnit=" d"
+          lang={lang}
+        />
       </div>
 
       <div className="transit-compare-quality">

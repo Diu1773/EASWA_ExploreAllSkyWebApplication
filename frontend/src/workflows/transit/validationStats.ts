@@ -204,27 +204,27 @@ export function computeTransitValidationStats({
   pushFlagIf(
     flags,
     reducedChiSquared !== null && reducedChiSquared > 2,
-    'Reduced chi-squared is above 2; inspect model assumptions and flux errors.'
+    '환산 카이제곱이 2를 넘습니다. 모델 가정과 밝기 오차를 다시 확인해 보세요.'
   );
   pushFlagIf(
     flags,
     normalizedRms !== null && normalizedRms > 2,
-    'Normalized residual RMS is above 2; quoted errors may be underestimated.'
+    '잔차가 오차 막대보다 큽니다. 표시된 오차가 실제보다 작게 잡혔을 수 있습니다.'
   );
   pushFlagIf(
     flags,
     clippedTotal > 0 && fitResult.preprocessing.clipped_points / clippedTotal > 0.1,
-    'More than 10% of fitted points were clipped.'
+    '적합에 쓰인 점 중 10% 넘게 제외됐습니다. ROI를 너무 좁게 잡지 않았는지 보세요.'
   );
   pushFlagIf(
     flags,
     comparisonDiagnostics.length < 2,
-    'Only one comparison source is available; ensemble stability cannot be checked.'
+    '비교성이 하나뿐이라 서로 대조할 수 없습니다. Step 4에서 비교성을 더 골라 보세요.'
   );
   pushFlagIf(
     flags,
     maxRms !== null && comparisonRms.length > 1 && maxRms > 2 * (median(comparisonRms) ?? maxRms),
-    'At least one comparison source has much higher RMS than the ensemble median.'
+    '비교성 중 하나가 나머지보다 훨씬 많이 흔들립니다. Step 4 품질 점검에서 그 별을 빼고 다시 해보세요.'
   );
 
   return {

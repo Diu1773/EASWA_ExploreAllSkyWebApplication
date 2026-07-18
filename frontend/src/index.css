@@ -4075,9 +4075,19 @@ body {
   line-height: 1.6;
 }
 
+/* <details>로 바뀌었다. 접힌 상태에선 summary 한 줄만 남아야 하므로 grid가 아니라
+   block — grid면 접혀 있어도 gap이 남아 빈 줄이 생긴다. */
+.transit-validation-summary {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  cursor: pointer; list-style: revert; font-size: 14.5px; font-weight: 600;
+  color: var(--text-heading);
+}
+.transit-validation-summary:hover { color: var(--accent); }
+.transit-validation-summary .transit-validation-model {
+  font-family: var(--font-mono, monospace); font-size: 12.5px; font-weight: 400; color: var(--text-muted);
+}
+.transit-validation-panel[open] > *:not(summary) { margin-top: 14px; }
 .transit-validation-panel {
-  display: grid;
-  gap: 14px;
   margin-top: 16px;
   padding: 16px;
   border: 1px solid rgba(232, 114, 42, 0.24);
@@ -11044,8 +11054,16 @@ body {
 .transit-compare-legend .dot.measured { background: var(--accent); }
 .transit-compare-legend .dot.reference { background: var(--text-muted); }
 .transit-compare-grid { display: flex; flex-direction: column; gap: 12px; }
-.transit-compare-row { display: grid; grid-template-columns: 88px 1fr 128px; align-items: center; gap: 12px; }
-.transit-compare-row.no-bars { grid-template-columns: 88px 1fr; }
+/* 항목 · 내 측정 · 문헌값 · 차이. 값이 좌측에 몰리고 오른쪽이 비던 2열 배치를
+   교체했다(막대는 제거 — 위 곡선 겹침 그림이 이미 그 역할을 한다). */
+.transit-compare-row { display: grid; grid-template-columns: 96px 1fr 1fr 1.3fr; align-items: baseline; gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--border); }
+.transit-compare-row:last-child { border-bottom: 0; }
+.transit-compare-cell { display: flex; flex-direction: column; gap: 2px; font-family: var(--font-mono, monospace); font-size: 15px; }
+.transit-compare-cell .cap { font-family: var(--font-ui); font-size: 12px; color: var(--text-muted); letter-spacing: 0.02em; }
+.transit-compare-cell b { color: var(--text-heading); }
+.transit-compare-cell .ref { color: var(--text-secondary); }
+.transit-compare-cell.diff b { color: var(--accent); }
+.transit-compare-cell.diff .rel { color: var(--text-secondary); font-size: 13.5px; }
 .transit-compare-label { font-size: 15px; color: var(--text-secondary); }
 .transit-compare-bars { display: flex; flex-direction: column; gap: 5px; }
 .transit-compare-bar-track { background: var(--bg-secondary); border-radius: 3px; height: 10px; overflow: hidden; }
@@ -11182,7 +11200,9 @@ body {
 
 /* ---------- Step 5 HOPS-style fit overlay (TransitComparison) ---------- */
 .transit-hops { margin: 4px 0 14px; }
-.transit-hops svg { width: 100%; max-width: 760px; height: auto; display: block; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-md); }
+/* max-width 760px을 걷어냄: 패널이 ~1120px인데 플롯이 760에서 멈춰 오른쪽 360px가
+   통째로 비어 있었다. 1100 상한은 초대형 화면에서 곡선이 과하게 늘어지지 않게 하는 선. */
+.transit-hops svg { width: 100%; max-width: 1100px; height: auto; display: block; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-md); }
 .hops-frame { fill: none; stroke: var(--border-light); stroke-width: 1; }
 .hops-tick { stroke: var(--border-light); stroke-width: 1; }
 .hops-text { fill: var(--text-muted); font-size: 12.5px; }
