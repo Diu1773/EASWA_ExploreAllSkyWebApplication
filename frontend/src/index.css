@@ -2770,8 +2770,9 @@ body {
   background: var(--bg-tertiary);
 }
 
-/* Quality signal via a soft background tint (not a decorative left bar) plus
-   the 🟢🟡🔴 dot in the badge — steady/typical/noisy relative to this run. */
+/* Quality signal via a soft background tint alone — no decorative left bar and
+   no badge dot; the badge is plain text. steady/typical/noisy relative to this
+   run. */
 .transit-qc-quality.steady {
   background: rgba(63, 185, 111, 0.08);
   border-color: rgba(63, 185, 111, 0.3);
