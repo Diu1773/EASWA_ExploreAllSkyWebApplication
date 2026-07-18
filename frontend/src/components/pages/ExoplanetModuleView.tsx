@@ -353,7 +353,14 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
       introSlot={introSlot}
       selectionSlot={selectionSlot}
       selectionConfirm={{
-        ready: Boolean(target),
+        // Gate on the SELECTED id (in the URL), not the loaded target object.
+        // The object arrives from an async fetch, so gating on it made a resume
+        // that lands on Step 4 (?target=…&blockStep=step4) read as "no target"
+        // for the first frames — the selection clamp then bounced the learner to
+        // Step 1, which remounted the sky map (reported 2026-07-18: "초안 계속하기
+        // 눌렀는데 갑자기 step1로 오더니 전천 깨짐"). A target id in the URL already
+        // means one is selected; the object only fills the context header.
+        ready: Boolean(targetId),
         label: { ko: '이 대상으로 확인 →', en: 'Confirm this target →' },
         hint: { ko: '먼저 지도에서 대상을 선택하세요.', en: 'Select a target on the map first.' },
       }}

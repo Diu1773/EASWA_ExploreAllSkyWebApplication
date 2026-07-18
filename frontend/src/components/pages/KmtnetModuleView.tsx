@@ -382,7 +382,11 @@ export function KmtnetModuleView({ module }: KmtnetModuleViewProps) {
       contextSlot={contextSlot}
       selectionSlot={selectionSlot}
       selectionConfirm={{
-        ready: Boolean(selectedEvent),
+        // Gate on the selected id (URL), not the loaded event object — same
+        // resume-clamp race as the exoplanet block: selectedEvent is found in an
+        // async events list, so a deep link past selection briefly reads empty
+        // and bounced the learner back to Step 1.
+        ready: Boolean(selectedId),
         label: { ko: '이 이벤트로 확인', en: 'Confirm this event' },
         hint: {
           ko: '먼저 전천에서 미시중력렌즈 이벤트를 선택하세요.',
