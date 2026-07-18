@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from collections import OrderedDict
 from queue import Empty, Queue
 from threading import Thread
 from typing import Any, Callable, Generator
@@ -805,13 +806,14 @@ def _solve_fit(
         if fit_limb_darkening and not _quadratic_ld_is_physical(u1, u2):
             return np.full(phase.size + prior_residuals.size, 1e6, dtype=float)
         model = _evaluate_model(
-            phase - phase_offset,
+            phase,
             rp_rs,
             a_rs,
             inclination,
             u1,
             u2,
             exposure_phase,
+            phase_offset,
         )
         data_residuals = (flux - model) / np.maximum(error, 1e-6)
         return np.concatenate([data_residuals, prior_residuals])
@@ -1303,13 +1305,14 @@ def _run_mcmc(
             return -np.inf
         inclination = _impact_parameter_to_inclination_deg(a_rs, impact_b)
         model = _evaluate_model(
-            phase - phase_offset,
+            phase,
             rp_rs,
             a_rs,
             inclination,
             u1,
             u2,
             exposure_phase,
+            phase_offset,
         )
         return -0.5 * np.sum(((flux - model) / np.maximum(error, 1e-6)) ** 2)
 
@@ -1364,10 +1367,43 @@ def _evaluate_model(
     u1: float,
     u2: float,
     exposure_phase: float = 0.001,
+    t0: float = 0.0,
 ) -> np.ndarray:
     if _HAS_BATMAN:
-        return _evaluate_batman(phase, rp_rs, a_rs, inclination, u1, u2, exposure_phase)
-    return _evaluate_simple(phase, rp_rs, a_rs, inclination)
+        return _evaluate_batman(
+            phase, rp_rs, a_rs, inclination, u1, u2, exposure_phase, t0
+        )
+    return _evaluate_simple(phase - t0, rp_rs, a_rs, inclination)
+
+
+# batman.TransitModel.__init__ iteratively searches for an integration step that
+# meets its error tolerance — far more expensive than the light_curve() call it
+# sets up. Rebuilding it per residual made a 39-point fit take 14–35 s on
+# production (up to 5 starts x max_nfev=300 ≈ 1,500 rebuilds), which is what
+# pushed the whole class past the 90 s queue timeout. The model depends only on
+# the sample times, the supersampling and the exposure time — never on the
+# fitted parameters — so it is built once per (times, exp_time) and then reused
+# with updated params, the usage batman documents for fitting.
+_BATMAN_MODEL_CACHE: "OrderedDict[tuple[bytes, float], Any]" = OrderedDict()
+_BATMAN_MODEL_CACHE_MAX = 8
+
+
+def _batman_model_for(times: np.ndarray, exp_time: float, params: Any) -> Any:
+    key = (times.tobytes(), round(float(exp_time), 12))
+    cached = _BATMAN_MODEL_CACHE.get(key)
+    if cached is not None:
+        _BATMAN_MODEL_CACHE.move_to_end(key)
+        return cached
+    model = batman.TransitModel(
+        params,
+        times,
+        supersample_factor=_BATMAN_SUPERSAMPLE_FACTOR,
+        exp_time=exp_time,
+    )
+    _BATMAN_MODEL_CACHE[key] = model
+    while len(_BATMAN_MODEL_CACHE) > _BATMAN_MODEL_CACHE_MAX:
+        _BATMAN_MODEL_CACHE.popitem(last=False)
+    return model
 
 
 def _evaluate_batman(
@@ -1378,9 +1414,12 @@ def _evaluate_batman(
     u1: float,
     u2: float,
     exposure_phase: float,
+    t0: float = 0.0,
 ) -> np.ndarray:
     params = batman.TransitParams()
-    params.t0 = 0.0
+    # Shifting the epoch instead of the sample times keeps the time array (and
+    # therefore the cached model) constant while the fit walks the offset.
+    params.t0 = float(t0)
     params.per = 1.0
     params.rp = float(np.clip(rp_rs, 0.001, 0.5))
     params.a = float(np.clip(a_rs, 1.5, 50.0))
@@ -1390,12 +1429,8 @@ def _evaluate_batman(
     params.u = [float(u1), float(u2)]
     params.limb_dark = "quadratic"
     exp_time = float(np.clip(exposure_phase, _MIN_EXPOSURE_PHASE, _MAX_EXPOSURE_PHASE))
-    return batman.TransitModel(
-        params,
-        np.asarray(phase, dtype=np.float64),
-        supersample_factor=_BATMAN_SUPERSAMPLE_FACTOR,
-        exp_time=exp_time,
-    ).light_curve(params)
+    times = np.ascontiguousarray(phase, dtype=np.float64)
+    return _batman_model_for(times, exp_time, params).light_curve(params)
 
 
 def _evaluate_simple(
