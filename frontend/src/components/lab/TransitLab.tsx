@@ -112,28 +112,36 @@ const STEP_GUIDES: Record<TransitStep, GuideQuestion[]> = {
         { ko: '가장 밝은 별', en: 'The brightest star available' },
       ],
       correct: '목표 별과 비슷한 밝기',
-      explanation: { ko: '밝기가 비슷한 별을 비교성으로 쓰면 대기·기기 효과가 동일하게 적용되어 차등 측광이 정확해집니다.', en: 'Using a star of similar brightness ensures atmospheric and instrumental effects apply equally to both stars, making differential photometry accurate.' },
+      // "대기 효과"라고 쓰면 안 된다: 이 모듈의 자료는 TESS = 우주망원경이라
+      // 대기가 없다. 같은 Lab의 뒤쪽 해설(TESS는 대기 영향 없음)과 정면으로
+      // 모순됐던 문장 — 공통오차의 실제 출처(기기·관측 조건)로 고침.
+      explanation: { ko: '밝기가 비슷한 별을 비교성으로 쓰면 기기·관측 조건의 변화가 두 별에 같은 방식으로 걸려, 나눌 때 잘 상쇄됩니다.', en: 'With a comparison of similar brightness, instrumental and observing-condition changes affect both stars the same way, so they cancel when you divide.' },
     },
     { type: 'open', id: 'select_q3', text: { ko: '관측 이미지에서 목표 별과 비교성을 어떻게 구별할 수 있을까?', en: 'How can you distinguish the target star from comparison stars in the observation image?' } },
   ],
+  // 이 스텝은 차등측광을 '실행'하는 자리인데, 원래 문항 3개는 비교성 개수·앙상블
+  // ·구경 이야기라 정작 "왜 나누는가"를 묻는 게 하나도 없었다. 게다가 비교성 품질은
+  // 뒤의 comparisonqc 스텝이 전담하게 되면서 앞의 두 문항이 qc_q1·qc_q2와 중복됐고,
+  // '앙상블'은 UI에서 걷어낸 용어인데 문항에만 남아 있었다. 그래서 두 문항을 차등측광
+  // 그 자체를 묻는 것으로 교체한다(구경 문항 run_q3는 이 스텝 고유라 유지).
   run: [
     {
       type: 'ox', id: 'run_q1',
-      text: { ko: '비교성이 많을수록 광도 측정의 정밀도가 항상 높아진다.', en: 'The more comparison stars used, the higher the photometric precision will always be.' },
+      text: { ko: '목표별의 밝기만 정확히 재면 비교성 없이도 식현상을 볼 수 있다.', en: 'If you measure the target star\'s brightness precisely enough, you can see the transit without any comparison star.' },
       correct: 'X',
-      explanation: { ko: '품질이 낮은 비교성(변광성, RMS 높음)을 포함하면 오히려 정밀도가 떨어집니다. 좋은 비교성을 선별하는 것이 핵심입니다.', en: 'Including poor-quality comparison stars (variables, high RMS) actually reduces precision. Selecting good comparison stars is the key.' },
+      explanation: { ko: '망원경과 검출기의 변화가 목표별 밝기에 그대로 섞여 들어와, 밝기가 줄어든 게 행성 때문인지 장비 때문인지 구별할 수 없습니다. 같은 변화를 겪은 비교성으로 나눠야 공통 성분이 지워집니다.', en: 'Telescope and detector changes ride along in the target\'s brightness, so a dip could be the planet or the equipment — you cannot tell them apart. Dividing by a comparison that went through the same changes cancels the shared part.' },
     },
     {
       type: 'choice', id: 'run_q2',
-      text: { ko: '앙상블 측광(ensemble photometry)이 단일 비교성 방식보다 유리한 이유는?', en: 'Why is ensemble photometry advantageous over using a single comparison star?' },
+      text: { ko: '목표별 밝기를 비교성 밝기로 나누면 무엇이 지워질까?', en: 'What gets cancelled when you divide the target\'s brightness by the comparison\'s?' },
       options: [
-        { ko: '계산이 빠르다', en: 'Computation is faster' },
-        { ko: '개별 비교성의 오차가 평균화된다', en: 'Individual comparison star errors are averaged out' },
-        { ko: '더 많은 별을 탐색할 수 있다', en: 'More stars can be searched' },
-        { ko: '대기 효과를 완전히 제거한다', en: 'Atmospheric effects are completely eliminated' },
+        { ko: '두 별이 똑같이 겪은 변화 (망원경 흔들림·온도 변화 등)', en: 'Changes both stars went through alike (telescope jitter, temperature drift, …)' },
+        { ko: '행성이 별을 가려 생긴 밝기 감소', en: 'The dip caused by the planet blocking the star' },
+        { ko: '비교성 자체의 밝기 변화', en: 'The comparison star\'s own brightness changes' },
+        { ko: '별까지의 거리 차이', en: 'The difference in distance to each star' },
       ],
-      correct: '개별 비교성의 오차가 평균화된다',
-      explanation: { ko: '여러 비교성의 평균을 사용하면 특정 별의 우발적 변화가 희석되어 기준 플럭스가 안정됩니다.', en: 'Using the average of multiple comparison stars dilutes accidental variations of any single star, stabilizing the reference flux.' },
+      correct: '두 별이 똑같이 겪은 변화 (망원경 흔들림·온도 변화 등)',
+      explanation: { ko: '두 별이 공통으로 겪은 변화는 나눗셈에서 상쇄되고, 목표별에만 있는 변화(식 신호)는 남습니다. 그래서 식이 드러납니다. 단 비교성 자신이 변하는 별이면 이 전제가 깨지므로, 다음 단계에서 비교성 품질을 점검합니다.', en: 'What both stars shared cancels in the division, while what belongs only to the target — the transit — survives. That assumption breaks if the comparison itself varies, which is why the next step checks comparison quality.' },
     },
     { type: 'open', id: 'run_q3', text: { ko: '구경(aperture) 크기가 측정값에 어떤 영향을 미칠까?', en: 'How does aperture size affect the measured values?' } },
   ],
@@ -154,7 +162,7 @@ const STEP_GUIDES: Record<TransitStep, GuideQuestion[]> = {
         { ko: '비교성을 아예 쓰지 않는다', en: 'Do not use any comparison star' },
       ],
       correct: '여러 안정된 별을 함께 써서 개별 오차를 평균한다',
-      explanation: { ko: '한 별의 우연한 오차나 미세한 변광은 여러 별을 함께 쓰면 평균되어 묻힙니다. 그래서 완벽한 하나를 고르기보다 여러 안정된 비교성을 함께(앙상블) 씁니다.', en: 'A single star\'s random error or slight variability averages out when several are combined — so instead of finding one perfect star, several steady comparisons are used together.' },
+      explanation: { ko: '한 별의 우연한 오차나 미세한 변광은 여러 별을 함께 쓰면 평균되어 묻힙니다. 그래서 완벽한 하나를 고르기보다 여러 안정된 비교성을 함께 씁니다.', en: 'A single star\'s random error or slight variability averages out when several are combined — so instead of finding one perfect star, several steady comparisons are used together.' },
     },
     { type: 'open', id: 'qc_q3', text: { ko: '혼자 유독 출렁이는 비교성이 있어 제외했다면, 무엇을 보고 그렇게 판단했는지 설명해보자.', en: 'If you excluded a comparison star that wobbled unlike the others, explain what you saw that led to that call.' } },
   ],
@@ -2073,7 +2081,7 @@ export function TransitLab({
               <h4>{lang === 'ko' ? '비교성 품질 점검' : 'Comparison QC'}</h4>
               <p className="hint" style={{ marginTop: 10 }}>
                 {lang === 'ko'
-                  ? '후보 비교성을 점검하고 품질이 떨어지는 별은 제외한 뒤 측광을 다시 실행하세요. 최종 차등 광도곡선은 선택된 비교성 ensemble로 다시 계산됩니다.'
+                  ? '후보 비교성을 점검하고 품질이 떨어지는 별은 제외한 뒤 측광을 다시 실행하세요. 최종 차등 광도곡선은 남겨둔 비교성들로 다시 계산됩니다.'
                   : 'Inspect the comparison candidates, exclude poor-quality stars, and rerun photometry. The final differential light curve is rebuilt from the retained comparison ensemble.'}
               </p>
               <div className="transit-config-summary" style={{ marginTop: 12 }}>
@@ -2128,7 +2136,7 @@ export function TransitLab({
             </div>
             {result && (
               <div className="transit-controls-card">
-                <h4>{lang === 'ko' ? '현재 비교성 Ensemble' : 'Current Ensemble'}</h4>
+                <h4>{lang === 'ko' ? '현재 사용 중인 비교성' : 'Comparisons in Use'}</h4>
                 <div className="transit-config-summary">
                   <div className="transit-config-row">
                     <span>{lang === 'ko' ? '프레임' : 'Frames'}</span>
@@ -2782,11 +2790,19 @@ export function TransitLab({
             <div className="transit-panel-header">
               <div>
                 <h3>{lang === 'ko' ? '2. 차등측광 실행' : '2. Run Differential Photometry'}</h3>
+                {/* 왜 나누는지를 먼저, 무엇을 계산하는지를 그 다음에. 원래는 절차
+                    ("나누어 만듭니다") 한 줄뿐이라, 학습자가 차등측광을 왜 하는지
+                    알 길이 이 Lab 어디에도 없었다. */}
                 <p className="hint">
-                   {lang === 'ko'
-                     ? '각 cadence에서 구경 측광을 수행하고, 목표별 Flux를 합성 비교성 Flux로 나누어 차등 광도곡선을 만듭니다.'
-                     : 'Aperture photometry is performed on every cadence. The target flux is divided by the combined comparison flux to produce a differential light curve.'}{' '}
-                   (F<sub>target</sub> / F<sub>comp</sub>)
+                  {lang === 'ko'
+                    ? '망원경이 미세하게 흔들리거나 온도가 변하면 사진 속 모든 별의 밝기가 함께 출렁입니다. 목표별만 재면 이 출렁임과 행성이 가린 신호를 구별할 수 없습니다. 같은 사진에 찍힌 비교성도 똑같이 출렁이므로, 목표별을 비교성으로 나누면 공통 출렁임이 지워지고 목표별 고유의 변화만 남습니다.'
+                    : 'When the telescope jitters or its temperature drifts, every star in the frame wobbles together. Measure the target alone and you cannot tell that wobble from the planet\'s signal. The comparison stars in the same frame wobble the same way, so dividing the target by them erases the shared wobble and leaves only what belongs to the target.'}
+                </p>
+                <p className="hint">
+                  {lang === 'ko'
+                    ? 'TESS는 우주망원경이라 대기 흔들림은 없지만, 위성의 미세한 흔들림·온도 드리프트·산란광이 같은 역할을 합니다. 각 cadence마다 구경 측광을 수행해 아래 값을 계산합니다.'
+                    : 'TESS is a space telescope, so there is no atmospheric seeing — but spacecraft jitter, thermal drift and scattered light play the same role. Aperture photometry runs on every cadence to compute:'}{' '}
+                  (F<sub>target</sub> / F<sub>comp</sub>)
                 </p>
               </div>
               {activeObservation && (
@@ -2927,7 +2943,7 @@ export function TransitLab({
                   <h3>{lang === 'ko' ? `3. 비교별 품질 점검 — ${target.name}` : `3. Comparison QC — ${target.name}`}</h3>
                   <p className="hint">
                     {lang === 'ko'
-                      ? '각 목표별/비교성 쌍을 점검하고 품질이 떨어지는 별은 제외한 뒤 ensemble 측광을 다시 계산하세요.'
+                      ? '각 목표별/비교성 쌍을 점검하고 품질이 떨어지는 별은 제외한 뒤 측광을 다시 계산하세요.'
                       : 'Inspect each target/comparison pair, exclude poor-quality stars, and rebuild the ensemble photometry.'}
                   </p>
                 </div>
@@ -2956,7 +2972,7 @@ export function TransitLab({
                     />
                   </div>
                   <p className="transit-progress-label">
-                    {runProgressEvent?.message ?? (lang === 'ko' ? '비교성 ensemble 재구성 중...' : 'Rebuilding the comparison ensemble...')}
+                    {runProgressEvent?.message ?? (lang === 'ko' ? '비교성 다시 묶는 중...' : 'Rebuilding the comparison ensemble...')}
                   </p>
                 </div>
               )}
