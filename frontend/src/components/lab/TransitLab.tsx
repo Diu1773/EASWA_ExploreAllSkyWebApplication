@@ -2640,14 +2640,6 @@ export function TransitLab({
               )}
             </div>
 
-            <StepGuide
-              step="select"
-              initialAnswers={guideAnswersRef.current}
-              onAnswersChange={handleGuideAnswers}
-              defaultOpen={!isCompactTransitLayout}
-              storageKeySuffix={isCompactTransitLayout ? 'mobile' : 'desktop'}
-            />
-
             <div className={`transit-field-size-card ${!preview ? 'transit-field-size-card--empty' : ''}`}>
               <div>
                 <strong>{lang === 'ko' ? '시야 크기' : 'Field Size'}</strong>
@@ -2770,6 +2762,19 @@ export function TransitLab({
                   : lang === 'ko' ? '사이드바에서 TESS Sector를 선택해 cutout 영상을 불러오세요.' : 'Select a TESS sector from the sidebar to load a cutout image.'}
               </div>
             )}
+
+            {/* 생각해보기는 작업 '뒤'에 온다. 패널 위에 두면 데스크톱 기본 펼침
+                상태에서 893px를 차지해, 정작 눌러야 할 '불러오기'가 1920×1080
+                에서도 첫 화면 밖으로 밀렸다(실측). 게다가 "관측 이미지에서 목표
+                별과 비교성을 어떻게 구별할까?"를 이미지를 불러오기도 전에 묻고
+                있었다 — 아직 보지 못한 것을 묻는 질문이라 빈칸으로 남기 쉽다. */}
+            <StepGuide
+              step="select"
+              initialAnswers={guideAnswersRef.current}
+              onAnswersChange={handleGuideAnswers}
+              defaultOpen={!isCompactTransitLayout}
+              storageKeySuffix={isCompactTransitLayout ? 'mobile' : 'desktop'}
+            />
 
             <div className="transit-step-nav">
               <button type="button" className="btn-sm" onClick={handleReset} disabled={!preview}>
