@@ -42,7 +42,9 @@ export function TransitResultSummary({ fit, targetName, target }: TransitResultS
   return (
     <section className="inquiry-info-panel transit-result-summary">
       <span className="inquiry-panel-kicker">
-        {lang === 'ko' ? '내가 분석한 결과' : 'Your analysis result'}
+        {/* '내가 분석한' 같은 1인칭 수식은 빼고 담백하게. 누구 결과인지는 화면
+            맥락(Step 6, 바로 아래 "Step 4에서 … 얻은 값")으로 이미 분명하다. */}
+        {lang === 'ko' ? '분석 결과' : 'Analysis result'}
         {/* 대상명은 kicker의 uppercase에서 빼야 한다: 외계행성 이름의 끝 글자는
             소문자여야 하고(WASP-6 b), 대문자 B는 항성 동반성을 뜻해 의미가 달라진다. */}
         {targetName ? <span className="kicker-verbatim"> · {targetName}</span> : null}
