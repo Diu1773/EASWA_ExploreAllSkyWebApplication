@@ -97,6 +97,18 @@ export function useTransitFit({
   }, [result, foldPeriod, target.period_days, bjdWindowStart, bjdWindowEnd]);
 
   const lastFitProgressAtRef = useRef(0);
+  const runAbortRef = useRef<AbortController | null>(null);
+
+  // Abort an in-flight fit when the Lab unmounts (the learner steps back out of
+  // Step 4). Without this the fetch kept streaming after unmount, so the backend
+  // held its FIT_STREAM_GATE slot for the whole ~70 s MCMC run — stepping back
+  // and re-running stacked abandoned fits, and the new run queued behind the
+  // learner's own ghosts ("대기 N번째", reported 2026-07-18).
+  useEffect(() => {
+    return () => {
+      runAbortRef.current?.abort();
+    };
+  }, []);
 
   const handleFitTransit = async () => {
     if (!result) return;
@@ -161,6 +173,13 @@ export function useTransitFit({
         `init mode=${fitDataSource} period=${fitPeriod.toFixed(6)} t0=${fitT0.toFixed(6)} points=${roiPoints.length}`,
       ],
     });
+
+    // Cancel any previous in-flight fit before starting a new one, so re-running
+    // never stacks a second request onto the concurrency gate behind the first.
+    runAbortRef.current?.abort();
+    const controller = new AbortController();
+    runAbortRef.current = controller;
+
     try {
       const response = await fitTransitModelStreaming(
         {
@@ -197,7 +216,8 @@ export function useTransitFit({
               ],
             });
           }
-        }
+        },
+        controller.signal
       );
       const normalizedResponse = normalizeTransitFitResponse(response);
       if (!normalizedResponse) {
@@ -224,6 +244,11 @@ export function useTransitFit({
       // Bridge the result to the guided block (Step 5 comparison + gating).
       saveTransitFit(buildSavedTransitFit(normalizedResponse));
     } catch (error) {
+      // Superseded by a newer run, or the learner left Step 4 — the fetch was
+      // aborted on purpose, so free the slot quietly without a scary error.
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        return;
+      }
       console.error('Transit fitting failed', error);
       dispatch({
         type: 'append-fit-debug-log',
@@ -233,7 +258,12 @@ export function useTransitFit({
         errorMessage: error instanceof Error ? error.message : 'Transit model fitting failed.',
       });
     } finally {
-      patch({ fitting: false, fitProgress: null });
+      // Only the run that still owns the ref clears the UI — a superseded run
+      // reaching its finally must not flip `fitting` off under the new run.
+      if (runAbortRef.current === controller) {
+        runAbortRef.current = null;
+        patch({ fitting: false, fitProgress: null });
+      }
     }
   };
 
