@@ -924,14 +924,19 @@ body {
 /* Collection notice (Step 6). Quiet by design: it is a disclosure to read once,
    not a control — but it must stay on screen, since nothing else tells the
    learner their work is being collected. */
+/* 연구참여 고지다 — 이 앱에서 수집을 알리는 유일한 문구이고 원고 §3의 안내와
+   짝을 이룬다. --text-muted(#6b7585)는 카드 배경(#1a2030) 위에서 대비 3.49:1로
+   WCAG AA 본문 기준 4.5:1에 미달했다(12.5px라 '큰 글씨' 예외도 못 받는다).
+   --text-secondary로 올리면 6.37:1. 눈에 띄게 하되 경고처럼 보이진 않도록
+   테두리·여백은 그대로 뒀다. */
 .inquiry-anon-notice {
   margin: 16px 0 0;
-  padding: 10px 12px;
+  padding: 11px 13px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  color: var(--text-muted);
-  font-size: 0.78rem;
-  line-height: 1.6;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  line-height: 1.65;
 }
 
 /* Pre-submit receipt: spells out what the row will contain, so the submission
