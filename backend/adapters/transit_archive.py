@@ -65,6 +65,39 @@ _DEFAULT_MAX_HOST_VMAG = 13.0
 logger = logging.getLogger(__name__)
 
 
+def _passes_catalog_filters(
+    target: dict[str, Any],
+    *,
+    min_depth_pct: float,
+    max_period_days: float,
+    max_host_vmag: float,
+) -> bool:
+    """Does this target satisfy the same thresholds the live TAP query applies?
+
+    Pinning a bundled target must not smuggle it past the learner's own filter.
+    Asking for "depth >= 10%" and getting back a 2.41% planet misreports the
+    data — the pin exists to survive the top-N *limit*, not to ignore the
+    criteria (regression caught by tests/test_transit_archive.py).
+    """
+    depth = target.get("transit_depth_pct")
+    period = target.get("period_days")
+    if depth is None or float(depth) < min_depth_pct:
+        return False
+    if period is None or float(period) > max_period_days:
+        return False
+
+    # Host brightness survives only as the formatted "11.92 V host" label, so
+    # parse it back. On any surprise in that format, keep the target rather than
+    # drop it — a pin that stays is far less harmful than one wrongly removed.
+    raw_magnitude = str(target.get("magnitude_range") or "").split(" ")[0]
+    try:
+        if float(raw_magnitude) > max_host_vmag:
+            return False
+    except ValueError:
+        pass
+    return True
+
+
 class TransitArchive:
     """Transit target registry with lightweight TESS sector lookup."""
 
@@ -82,12 +115,19 @@ class TransitArchive:
         if topic_id and topic_id != "exoplanet_transit":
             return []
 
+        # Clamp once and reuse: the pin filter below has to apply the SAME
+        # thresholds the live query did, or a pinned target could slip past a
+        # bound the learner actually set.
+        depth_floor = max(0.1, float(min_depth_pct))
+        period_ceiling = max(0.2, float(max_period_days))
+        vmag_ceiling = max(6.0, float(max_host_vmag))
+
         try:
             live_targets = _live_target_catalog(
                 max(1, min(100, int(limit))),
-                max(0.1, float(min_depth_pct)),
-                max(0.2, float(max_period_days)),
-                max(6.0, float(max_host_vmag)),
+                depth_floor,
+                period_ceiling,
+                vmag_ceiling,
             )
         except (OSError, URLError, json.JSONDecodeError) as error:
             logger.warning("Transit target live query failed: %s", error)
@@ -99,14 +139,23 @@ class TransitArchive:
         # offers it as the recommended pick — but the live catalog is a filtered
         # top-N, and WASP-6 b fell outside the default 20, so the sky map had no
         # marker for the very target the demo depends on. Pin bundled targets to
-        # the front; they are fetched by id, so no filter can drop them.
+        # the front so the LIMIT cannot drop them.
+        #
+        # They must still clear the learner's own filter thresholds: an earlier
+        # version fetched them by id and skipped the criteria entirely, so a
+        # "depth >= 10%" request came back holding a 2.41% planet.
         listed_ids = {target["id"] for target in live_targets}
         pinned: list[dict[str, Any]] = []
         for bundled_id in _bundled_target_ids():
             if bundled_id in listed_ids:
                 continue
             bundled_target = self.get_target(bundled_id)
-            if bundled_target:
+            if bundled_target and _passes_catalog_filters(
+                bundled_target,
+                min_depth_pct=depth_floor,
+                max_period_days=period_ceiling,
+                max_host_vmag=vmag_ceiling,
+            ):
                 pinned.append(bundled_target)
 
         return pinned + live_targets if pinned else live_targets
