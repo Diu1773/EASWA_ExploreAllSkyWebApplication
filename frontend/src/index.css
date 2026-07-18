@@ -5928,6 +5928,12 @@ body {
   text-transform: uppercase;
 }
 
+/* kicker 안에서 그대로 둬야 하는 조각. 천체명이 대표적이다 — 외계행성 이름의
+   끝 글자는 소문자여야 하고(WASP-6 b), 대문자 B는 항성 동반성을 뜻한다. */
+.inquiry-panel-kicker .kicker-verbatim {
+  text-transform: none;
+}
+
 .inquiry-module-card h2 {
   margin: 0;
   color: var(--text-heading);
