@@ -135,16 +135,39 @@ if FRONTEND_DIST.exists():
     # Serve static assets (JS, CSS, images)
     app.mount("/assets", StaticFiles(directory=str(FRONTEND_DIST / "assets")), name="assets")
 
+    _FRONTEND_ROOT = FRONTEND_DIST.resolve()
+
     @app.get("/{path:path}")
     async def serve_spa(request: Request, path: str):
-        # Serve actual file if it exists, otherwise index.html (SPA)
-        file_path = FRONTEND_DIST / path
-        if path and file_path.is_file():
-            return FileResponse(file_path)
-        return FileResponse(
-            FRONTEND_DIST / "index.html",
-            headers={"Cache-Control": "no-store, max-age=0"},
-        )
+        # Serve the real file when it exists, otherwise index.html (SPA routing).
+        #
+        # The lookup MUST stay inside the build directory. This handler used to
+        # pass `FRONTEND_DIST / path` straight to FileResponse, and `{path:path}`
+        # accepts slashes, so `..` segments — raw or percent-encoded — walked out
+        # of it and served any file the process could read. Verified 2026-07-18:
+        # `GET /../../backend/.env` returned 200 with the Google OAuth client
+        # secret and EASWA_SESSION_SECRET in the body, which is enough to forge a
+        # session cookie for any account, admin included. StaticFiles does this
+        # containment for us on /assets; this hand-rolled route did not.
+        def _index() -> FileResponse:
+            return FileResponse(
+                _FRONTEND_ROOT / "index.html",
+                headers={"Cache-Control": "no-store, max-age=0"},
+            )
+
+        if not path:
+            return _index()
+
+        try:
+            # resolve() also collapses symlinks, so containment holds through them.
+            candidate = (_FRONTEND_ROOT / path).resolve()
+            candidate.relative_to(_FRONTEND_ROOT)
+        except (ValueError, OSError):
+            return _index()
+
+        if candidate.is_file():
+            return FileResponse(candidate)
+        return _index()
 else:
     @app.get("/")
     def no_frontend():

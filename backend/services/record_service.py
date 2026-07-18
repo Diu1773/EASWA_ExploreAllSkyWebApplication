@@ -41,7 +41,17 @@ _MAX_RESTORED_COMPARISON_SOURCES = 10
 
 
 def get_template(template_id: str) -> RecordTemplateResponse:
-    template_path = _TEMPLATE_DIR / f"{template_id}.json"
+    # template_id arrives straight from the URL, so keep the lookup inside the
+    # template directory. Today FastAPI's single-segment path param already
+    # rejects the slashes an escape needs (verified: an encoded-slash attempt
+    # falls through to the SPA route), but that is routing luck, not a guarantee
+    # — this is the same shape that made the SPA handler readable-anything.
+    template_root = _TEMPLATE_DIR.resolve()
+    template_path = (template_root / f"{template_id}.json").resolve()
+    try:
+        template_path.relative_to(template_root)
+    except ValueError:
+        raise ValueError("Survey template not found.")
     if not template_path.exists():
         raise ValueError("Survey template not found.")
     with template_path.open("r", encoding="utf-8") as handle:
