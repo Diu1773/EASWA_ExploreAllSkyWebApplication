@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { anonRecordWorthSyncing, resolveAppVersion } from './recordSink';
+import {
+  anonRecordWorthSyncing,
+  buildAnonRecordPayload,
+  resolveAppVersion,
+  type AnonRecordInput,
+} from './recordSink';
 
 // F1 — the "real class vs local test" tag must never silently collapse to a bare
 // `dev` on a deployed host (the 2026-07-17 incident, recurred 2026-07-18: the
@@ -60,5 +65,55 @@ describe('anonRecordWorthSyncing', () => {
 
   it('syncs when both are present', () => {
     expect(anonRecordWorthSyncing(true, true)).toBe(true);
+  });
+});
+
+// F3 — the sheet is the ANONYMOUS sink. `logged_in` tells the researcher whether
+// a row came from a signed-in learner (whose deliberate saves also live in /my)
+// without ever naming them, so the row stays anonymous. Anyone later tempted to
+// "just also send the email" has to delete a failing test to do it.
+describe('buildAnonRecordPayload — logged_in', () => {
+  const input = (loggedIn: boolean): AnonRecordInput => ({
+    targetId: 'wasp_6_b',
+    status: 'draft',
+    fit: null,
+    notes: {},
+    selfCheckResponses: [],
+    selfCheckAnswered: 0,
+    selfCheckTotal: 4,
+    selfCheckCorrect: 0,
+    labGuideAnswers: {},
+    loggedIn,
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  const stubBrowser = () => {
+    const store = new Map<string, string>();
+    vi.stubGlobal('sessionStorage', {
+      getItem: (key: string) => store.get(key) ?? null,
+      setItem: (key: string, value: string) => void store.set(key, value),
+    });
+    vi.stubGlobal('navigator', { userAgent: 'vitest' });
+    vi.stubGlobal('window', { location: { hostname: 'localhost' } });
+  };
+
+  it('carries the signed-in state as a real boolean, both ways', () => {
+    stubBrowser();
+    expect(buildAnonRecordPayload(input(true)).logged_in).toBe(true);
+    expect(buildAnonRecordPayload(input(false)).logged_in).toBe(false);
+  });
+
+  it('never carries anything that identifies the learner', () => {
+    stubBrowser();
+    const payload = buildAnonRecordPayload(input(true));
+    const identityish = /email|mail|name|user_id|userid|picture|avatar|sub|profile/i;
+    const leaked = Object.keys(payload).filter(
+      // user_agent is an environment string, not an identity — exempt by name.
+      (key) => key !== 'user_agent' && identityish.test(key),
+    );
+    expect(leaked).toEqual([]);
   });
 });

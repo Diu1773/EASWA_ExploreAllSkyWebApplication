@@ -31,6 +31,7 @@ import {
   type AnonSubmitConfig,
   type SelfCheckSummary,
 } from '../../utils/recordSink';
+import { useAuthStore } from '../../stores/useAuthStore';
 
 /** Debounce for the autosave write — long enough not to hit localStorage on
  *  every keystroke, short enough that a reload right after typing keeps it. */
@@ -295,6 +296,11 @@ export function InquiryLayout<TContext = unknown>({
   // than appending. Local autosave still runs at 600ms; this is the slow lane.
   const anonTargetId = anonSubmit?.targetId ?? null;
   const anonFit = anonSubmit?.fit ?? null;
+  // Signed-in state rides along as a plain boolean (no identity — see
+  // AnonRecordPayload.logged_in). Kept in the effect deps so a learner who signs
+  // in mid-sitting re-upserts their row with the flag corrected, instead of
+  // leaving it stuck at whatever it was when they first typed.
+  const loggedIn = useAuthStore((state) => state.user !== null);
   useEffect(() => {
     // A fit is meaningful research on its own — the rp/rs measurement is the
     // headline value. Sync when the learner has edited OR a fit exists, so a
@@ -318,6 +324,7 @@ export function InquiryLayout<TContext = unknown>({
           selfCheckTotal: selfCheckSummary.total,
           selfCheckCorrect: selfCheckSummary.correct,
           labGuideAnswers: loadLabDraft(anonTargetId)?.guideAnswers ?? {},
+          loggedIn,
         }),
       )
         .then(() => setSheetSyncState('synced'))
@@ -326,7 +333,7 @@ export function InquiryLayout<TContext = unknown>({
         .catch(() => setSheetSyncState('failed'));
     }, SHEET_SYNC_DELAY_MS);
     return () => clearTimeout(timer);
-  }, [anonTargetId, anonFit, notes, selfCheckSummary, labDraftPulse]);
+  }, [anonTargetId, anonFit, notes, selfCheckSummary, labDraftPulse, loggedIn]);
 
   // Notes are keyed `${stepId}:${fieldId}`, but the backend record template
   // expects bare question ids — configs keep field ids identical to template

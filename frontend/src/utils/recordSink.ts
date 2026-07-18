@@ -59,6 +59,17 @@ export interface AnonRecordPayload {
   lab_guide_answered: number;
   app_version: string;
   user_agent: string;
+  /**
+   * Whether a Google account was signed in when the row was written.
+   *
+   * A BOOLEAN ONLY — never the email, name or user id. The sheet is the
+   * anonymous sink and stays anonymous; this just lets the researcher tell
+   * "logged-in learner whose deliberate saves also live in /my" apart from
+   * "anonymous sitting that exists nowhere else", which changes how a row
+   * should be read (a logged-in learner's blank notes may simply mean they
+   * kept working in their account).
+   */
+  logged_in: boolean;
 }
 
 /**
@@ -145,6 +156,9 @@ export interface AnonRecordInput {
   selfCheckTotal: number;
   selfCheckCorrect: number;
   labGuideAnswers: Record<string, string>;
+  /** Signed-in state at write time. Passed in rather than read from the auth
+   *  store here so this module stays a pure shaper (and unit-testable). */
+  loggedIn: boolean;
 }
 
 /**
@@ -212,5 +226,6 @@ export function buildAnonRecordPayload(input: AnonRecordInput): AnonRecordPayloa
     ).length,
     app_version: resolveAppVersion(),
     user_agent: navigator.userAgent.slice(0, 160),
+    logged_in: input.loggedIn,
   };
 }

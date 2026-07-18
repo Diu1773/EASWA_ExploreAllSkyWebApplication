@@ -24,15 +24,17 @@
  *
  * ⚠️ 이 파일을 고친 뒤에는 "배포 관리 → 편집(연필) → 버전: 새 버전 → 배포"로
  * 재배포해야 반영된다. "새 배포"를 누르면 URL이 바뀌어 앱과 끊어진다.
- * ⚠️ HEADERS는 시트가 비어 있을 때만 기록된다. 열 구성이 바뀌었으므로 기존
- * 시트를 계속 쓰려면 1행을 지우거나 새 시트로 시작할 것.
+ * ⚠️ HEADERS는 시트가 비어 있을 때만 기록된다. 이미 데이터가 있는 시트에 열을
+ * 추가했다면 헤더 셀은 손으로 채워야 한다 — 데이터를 지울 필요는 없다.
+ * (2026-07-18 logged_in 추가분: T1 셀에 `logged_in` 입력. 새 열은 반드시 맨
+ *  끝에만 붙일 것 — buildRow_가 위치 기반이라 중간 삽입은 기존 행을 밀어버린다.)
  */
 
 var HEADERS = [
   'created_at', // 이 학습자·대상 조합이 처음 도착한 시각 (갱신돼도 유지)
   'updated_at', // 마지막 자동저장 수신 시각 — 클라이언트 시계는 신뢰하지 않음
   'status', // 현재는 항상 draft (제출 버튼 없이 전부 자동저장). 향후 '완료' 표시용 예약 열
-  'anon_id', // 브라우저 localStorage에 1회 생성·저장되는 익명 UUID
+  'anon_id', // 브라우저 sessionStorage에 1회 생성되는 익명 UUID (한 세션 = 한 학습자 = 한 행)
   'target_id', // 예: wasp_6_b
   'rp_rs', // 적합된 행성/항성 반지름비
   'rp_rs_err', // rp_rs 1σ 오차
@@ -48,6 +50,12 @@ var HEADERS = [
   'lab_guide_answered', // Lab 생각해보기 응답 수
   'app_version',
   'user_agent', // 축약된 UA (환경 파악용)
+  // 아래는 나중에 추가된 열이라 항상 맨 끝에 붙는다 (중간 삽입 금지 — buildRow_가
+  // 위치 기반이라 기존 행의 열이 통째로 밀린다).
+  'logged_in', // 기록 시점에 구글 로그인 상태였는지 (TRUE/FALSE). 빈칸 = 이 열이
+  //              생기기 전의 옛 행. ⚠️ 신원 정보는 절대 담기지 않는다 — 시트는
+  //              익명 저장소이고, 이 열은 "로그인 학습자(별도로 /my에도 저장됨)"와
+  //              "이 시트에만 존재하는 익명 세션"을 구분하기 위한 불리언일 뿐이다.
 ];
 
 function doPost(e) {
@@ -141,6 +149,7 @@ function buildRow_(data) {
     toNumberOrBlank_(data.lab_guide_answered),
     truncate_(data.app_version, 40),
     truncate_(data.user_agent, 160),
+    toBoolOrBlank_(data.logged_in),
   ];
 }
 
@@ -153,6 +162,13 @@ function jsonResponse_(obj) {
 function toNumberOrBlank_(value) {
   var n = Number(value);
   return value === null || value === undefined || value === '' || isNaN(n) ? '' : n;
+}
+
+/** 진짜 불리언으로 기록해야 시트에서 TRUE/FALSE 필터가 걸린다.
+ *  값이 아예 없으면(이 열이 생기기 전의 구버전 클라이언트) FALSE 대신 빈칸 —
+ *  "로그인 안 함"과 "알 수 없음"은 다르고, 섞이면 집계가 조용히 틀어진다. */
+function toBoolOrBlank_(value) {
+  return value === true || value === false ? value : '';
 }
 
 function truncate_(value, maxLen) {
