@@ -11138,6 +11138,10 @@ body {
   border-radius: var(--radius-md); padding: 8px 12px;
 }
 .inquiry-aperture-note { margin: 0; font-size: 13.5px; color: var(--text-muted); line-height: 1.6; }
+/* 읽기 폭 상한. 이 둘은 패널 전폭(1280에서 1096px, 1900에서는 더)으로 늘어나
+   212자짜리 문단이 한 줄에 길게 깔렸다 — 눈이 다음 줄 첫 글자를 놓치는 폭이다. */
+.inquiry-aperture-hint,
+.inquiry-aperture-note { max-width: 860px; }
 @media (max-width: 560px) {
   .inquiry-aperture-stage { width: 100% !important; height: auto !important; aspect-ratio: 1; }
 }
