@@ -121,7 +121,15 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
 
   // Read the fit result the Lab bridges back (sessionStorage), refreshing when
   // the user returns from the Lab so Step 5 unlocks and fills in.
-  const [fit, setFit] = useState<SavedTransitFit | null>(null);
+  //
+  // Seeded synchronously, NOT from the mount effect: `maxUnlockedStepIndex`
+  // below is `fit ? undefined : 4`, and InquiryLayout's clamp effect is a CHILD
+  // effect — it runs before this parent's effect. Starting at null meant the
+  // first pass saw "Step 5 is locked" and demoted a learner who owns a valid fit
+  // back to Step 4, rewriting the URL with replace(). Reloading or bookmarking
+  // Step 5/6 threw you out of your own results (found by the QA sweep, which
+  // kept capturing Step 4 three times over).
+  const [fit, setFit] = useState<SavedTransitFit | null>(() => loadTransitFit(targetId));
   useEffect(() => {
     const read = () => setFit(loadTransitFit(targetId));
     read();
