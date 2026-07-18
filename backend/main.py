@@ -2,12 +2,14 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from pathlib import Path
 
 from config import (
     CORS_ORIGINS,
     DEBUG,
+    MAX_FIT_REQUEST_BODY_BYTES,
+    MAX_REQUEST_BODY_BYTES,
     SESSION_COOKIE_SAMESITE,
     SESSION_COOKIE_SECURE,
     SESSION_SECRET,
@@ -16,6 +18,49 @@ from routers import topics, targets, observations, photometry, lightcurve, trans
 from services.transit_fit_service import get_runtime_dependency_status
 
 app = FastAPI(title="EASWA API", version="0.1.0")
+
+
+# Registered before CORS/Session on purpose: add_middleware makes the LAST one
+# added the outermost, so declaring this first leaves CORS wrapping it and the
+# 413 still carries CORS headers (readable cross-origin in local dev).
+@app.middleware("http")
+async def limit_request_body_size(request: Request, call_next):
+    """Reject oversized request bodies from Content-Length, before parsing.
+
+    A multi-hundred-MB JSON body exhausts the 512 MB instance while it is being
+    expanded into Python objects — long before Pydantic validation (or any
+    downsampling we might add) ever sees it, so the cap has to be applied at the
+    header. /transit/fit* carries only ROI points and is the heaviest endpoint,
+    so it takes the tighter limit.
+
+    Known gap: a chunked upload sends no Content-Length and slips past. Browsers
+    and curl always send it, and the global stream gate still bounds how many
+    heavy requests run at once, so this is the cheap 90% guard rather than a
+    byte-counting wrapper around the receive channel.
+    """
+    raw_length = request.headers.get("content-length")
+    if raw_length:
+        limit = (
+            MAX_FIT_REQUEST_BODY_BYTES
+            if "/transit/fit" in request.url.path
+            else MAX_REQUEST_BODY_BYTES
+        )
+        try:
+            declared = int(raw_length)
+        except ValueError:
+            declared = -1
+        if declared > limit:
+            return JSONResponse(
+                status_code=413,
+                content={
+                    "detail": (
+                        f"요청 본문이 너무 큽니다 ({declared / 1048576:.1f} MB). "
+                        f"상한은 {limit // 1048576} MB입니다."
+                    )
+                },
+            )
+    return await call_next(request)
+
 
 app.add_middleware(
     CORSMiddleware,

@@ -104,6 +104,22 @@ CORS_ORIGINS = _parse_csv(
     ],
 )
 
+# --- Request body size guard -------------------------------------------------
+# A huge JSON body exhausts memory while it is being PARSED, before any of our
+# code runs: Pydantic validation (and any downsampling we later add) only sees
+# the payload after it has been expanded into Python objects. So the cap has to
+# come off the Content-Length header, before the body is read. See main.py.
+#
+# Sized so real traffic never trips it. The largest legitimate body is a draft
+# autosave — its envelope embeds the whole photometry response, every
+# light-curve point included (a 200 s-cadence TESS sector is ~12k points).
+MAX_REQUEST_BODY_BYTES = _parse_int("EASWA_MAX_REQUEST_BODY_BYTES", 32 * 1024 * 1024)
+
+# The fit stream is the CPU/memory-heaviest endpoint and carries only the ROI
+# points (a full 200 s-cadence sector is ~12k points ≈ 1.2 MB), so it takes a
+# tighter cap than the general one — still ~6x headroom over any real request.
+MAX_FIT_REQUEST_BODY_BYTES = _parse_int("EASWA_MAX_FIT_REQUEST_BODY_BYTES", 8 * 1024 * 1024)
+
 TRANSIT_RATE_LIMIT_WINDOW_SECONDS = _parse_int("EASWA_TRANSIT_RATE_LIMIT_WINDOW_SECONDS", 60)
 TRANSIT_PREVIEW_INLINE_LIMIT = _parse_int("EASWA_TRANSIT_PREVIEW_INLINE_LIMIT", 90)
 TRANSIT_PREVIEW_JOB_LIMIT = _parse_int("EASWA_TRANSIT_PREVIEW_JOB_LIMIT", 8)
