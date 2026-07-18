@@ -11,6 +11,18 @@ import { useAuthStore } from '../../stores/useAuthStore';
 import type { RecordListItem, WorkflowDraftItem } from '../../types/record';
 import { useLangStore } from '../../i18n';
 
+// The draft-resume link must carry the workflow so /lab can redirect to the
+// module on its FIRST render. Without it, /lab has to wait for the target to
+// load before it can infer the workflow from topic_id — so it briefly renders
+// the standalone lab and only then fires <Navigate>. That late redirect races
+// LabView's canonical-params setSearchParams effect and churns history: a back
+// press from the resumed step landed back on the analysis step instead of
+// returning to 기록함 (reported 2026-07-18). Draft ids → /lab ?workflow= values.
+const DRAFT_RESUME_WORKFLOW: Record<string, string> = {
+  transit_lab: 'transit',
+  kmtnet_lab: 'microlensing',
+};
+
 type PendingDeleteTarget =
   | { kind: 'record'; item: RecordListItem }
   | { kind: 'draft'; item: WorkflowDraftItem }
@@ -227,6 +239,10 @@ export function MyAnalyses() {
                 <div className="analysis-record-actions">
                   <Link
                     to={`/lab/${draft.target_id}?draft=${encodeURIComponent(draft.draft_id)}${
+                      DRAFT_RESUME_WORKFLOW[draft.workflow]
+                        ? `&workflow=${DRAFT_RESUME_WORKFLOW[draft.workflow]}`
+                        : ''
+                    }${
                       draft.seed_record_id !== null && draft.seed_record_id !== undefined
                         ? `&seedRecord=${draft.seed_record_id}`
                         : ''
