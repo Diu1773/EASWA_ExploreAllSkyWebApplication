@@ -769,6 +769,15 @@ body {
   color: #f87171;
 }
 
+/* The correct answer the learner did NOT choose: a dashed outline, no fill —
+   a "the answer was this" hint that never reads as a second selection. */
+.inquiry-selfcheck-btn.answer-hint {
+  border-color: rgba(34, 197, 94, 0.55);
+  border-style: dashed;
+  background-color: transparent;
+  color: var(--text-secondary);
+}
+
 .inquiry-selfcheck-feedback {
   margin: 2px 0 0;
   font-size: 0.84rem;

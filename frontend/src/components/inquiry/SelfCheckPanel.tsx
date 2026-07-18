@@ -41,13 +41,19 @@ export function SelfCheckPanel({ items, scope, answers, onAnswer }: SelfCheckPan
               <div className="inquiry-selfcheck-options">
                 {(['O', 'X'] as const).map((opt) => {
                   const chosen = answer === opt;
-                  const markCorrect = answered && item.correct === opt;
-                  const markWrong = answered && chosen && item.correct !== opt;
+                  const isAnswer = item.correct === opt;
+                  // Only the button the learner PRESSED gets a filled background
+                  // (green when right, red when wrong). The correct answer they
+                  // did NOT press gets a dashed hint outline — otherwise both O
+                  // and X ended up filled and looked like two selections.
+                  const showCorrect = answered && chosen && isAnswer;
+                  const showWrong = answered && chosen && !isAnswer;
+                  const showHint = answered && !chosen && isAnswer;
                   return (
                     <button
                       key={opt}
                       type="button"
-                      className={`inquiry-selfcheck-btn${chosen ? ' chosen' : ''}${markCorrect ? ' correct' : ''}${markWrong ? ' wrong' : ''}`}
+                      className={`inquiry-selfcheck-btn${chosen ? ' chosen' : ''}${showCorrect ? ' correct' : ''}${showWrong ? ' wrong' : ''}${showHint ? ' answer-hint' : ''}`}
                       onClick={() => onAnswer(key, opt)}
                     >
                       {opt}
@@ -59,13 +65,15 @@ export function SelfCheckPanel({ items, scope, answers, onAnswer }: SelfCheckPan
               <div className="inquiry-selfcheck-options choice">
                 {item.options.map((opt, idx) => {
                   const chosen = answer === idx;
-                  const markCorrect = answered && item.correctIndex === idx;
-                  const markWrong = answered && chosen && item.correctIndex !== idx;
+                  const isAnswer = item.correctIndex === idx;
+                  const showCorrect = answered && chosen && isAnswer;
+                  const showWrong = answered && chosen && !isAnswer;
+                  const showHint = answered && !chosen && isAnswer;
                   return (
                     <button
                       key={idx}
                       type="button"
-                      className={`inquiry-selfcheck-btn${chosen ? ' chosen' : ''}${markCorrect ? ' correct' : ''}${markWrong ? ' wrong' : ''}`}
+                      className={`inquiry-selfcheck-btn${chosen ? ' chosen' : ''}${showCorrect ? ' correct' : ''}${showWrong ? ' wrong' : ''}${showHint ? ' answer-hint' : ''}`}
                       onClick={() => onAnswer(key, idx)}
                     >
                       {localize(opt, lang)}
