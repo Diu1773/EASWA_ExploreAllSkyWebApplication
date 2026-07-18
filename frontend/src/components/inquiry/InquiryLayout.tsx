@@ -690,7 +690,11 @@ export function InquiryLayout<TContext = unknown>({
                     ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
                 }
               >
-                {lang === 'ko' ? '탐구 마무리 — 기록 작성하기 ↑' : 'Wrap Up — Write Your Notes ↑'}
+                {/* 하는 일은 위 기록칸으로 스크롤하는 것뿐이다. 원래 '탐구 마무리'라고
+                    적혀 있었는데 마지막 단계의 '다음 단계' 자리라 완료·제출 버튼으로
+                    읽혔다 — 이 앱엔 제출이 없고(자동저장) 이 버튼도 아무것도 끝내지
+                    않는다. 라벨을 실제 동작에 맞춘다. */}
+                {lang === 'ko' ? '기록 작성하러 가기 ↑' : 'Go to Your Notes ↑'}
               </button>
             )}
           </div>
