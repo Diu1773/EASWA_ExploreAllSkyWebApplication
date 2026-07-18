@@ -43,6 +43,19 @@ const AUTOSAVE_DELAY_MS = 600;
  *  The local autosave already covers a crash a second after the last keystroke. */
 const SHEET_SYNC_DELAY_MS = 4000;
 
+/** Random extra wait on top of the debounce. A whole class finishing a step
+ *  together would otherwise fire at the same instant and pile onto the sink's
+ *  single script lock; spreading the starts is what keeps the burst from
+ *  forming. Measured 2026-07-18: 20 simultaneous writes took 19.0 s to drain
+ *  against the script's 20 s wait — about 1 s of headroom. */
+const SHEET_SYNC_JITTER_MS = 2500;
+
+/** One retry after a failed upload. The sink answers "busy, retry" when its
+ *  lock wait runs out, and without this the row simply stopped updating until
+ *  the learner happened to edit again — a silent loss of research data behind a
+ *  "saved in this browser only" label. */
+const SHEET_SYNC_RETRY_MS = 6000;
+
 type SheetSyncState = 'idle' | 'syncing' | 'synced' | 'failed';
 
 const STEP_SHORT_LABELS: Record<string, Record<string, string>> = {
@@ -310,7 +323,9 @@ export function InquiryLayout<TContext = unknown>({
     if (!anonTargetId || !anonRecordWorthSyncing(dirtyRef.current, anonFit != null)) return;
     const sinkUrl = getRecordSinkUrl();
     if (!sinkUrl) return;
-    const timer = setTimeout(() => {
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const send = (attempt: number) => {
       setSheetSyncState('syncing');
       syncAnonRecord(
         sinkUrl,
@@ -328,11 +343,33 @@ export function InquiryLayout<TContext = unknown>({
         }),
       )
         .then(() => setSheetSyncState('synced'))
-        // Non-fatal: the notes are already safe in this browser and the next
-        // edit retries. A network error mid-typing is not the learner's problem.
-        .catch(() => setSheetSyncState('failed'));
-    }, SHEET_SYNC_DELAY_MS);
-    return () => clearTimeout(timer);
+        .catch(() => {
+          // The sink serialises every write behind one script lock, so a class
+          // saving at the same moment can push the tail past its 20 s wait and
+          // get "busy, retry" back. Leaving it for the learner's next edit was a
+          // silent loss — they see "saved in this browser only" and the row never
+          // catches up. One retry covers the burst without becoming a storm.
+          if (attempt === 0) {
+            retryTimer = setTimeout(() => send(1), SHEET_SYNC_RETRY_MS);
+            return;
+          }
+          setSheetSyncState('failed');
+        });
+    };
+
+    // Jitter, because a fixed delay makes a burst worse: everyone who finishes a
+    // step together fires at the same instant and queues behind the same lock.
+    // Measured 2026-07-18 — 20 simultaneous writes drained in 19.0 s against the
+    // script's 20 s wait, about 1 s of headroom. Spreading the start times is
+    // what actually keeps the burst from forming.
+    const timer = setTimeout(
+      () => send(0),
+      SHEET_SYNC_DELAY_MS + Math.random() * SHEET_SYNC_JITTER_MS,
+    );
+    return () => {
+      clearTimeout(timer);
+      if (retryTimer) clearTimeout(retryTimer);
+    };
   }, [anonTargetId, anonFit, notes, selfCheckSummary, labDraftPulse, loggedIn]);
 
   // Notes are keyed `${stepId}:${fieldId}`, but the backend record template
