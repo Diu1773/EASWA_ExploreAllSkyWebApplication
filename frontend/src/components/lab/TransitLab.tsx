@@ -2970,8 +2970,8 @@ export function TransitLab({
                         transit is gone and only this star's own wobble shows. */}
                     <div className="transit-qc-guide">
                       {lang === 'ko'
-                        ? '좋은 비교성은 스스로 밝기가 변하지 않는 별입니다. 아래 곡선은 이 별을 나머지 비교성들과 비교한 것 — 평평하면 다 같이 안정적, 이 별만 출렁이면 스스로 변광하거나 오염된 것이니 제외하세요. 다만 하나만 보고 확신하긴 어려워, 여러 별을 함께 써서 보완합니다.'
-                        : "A good comparison star does not vary on its own. The curve below is this star ÷ the other comparisons — flat means they all agree, a wobble unique to this star means it varies or is contaminated, so exclude it. One star alone is never certain, which is why several are used together."}
+                        ? '좋은 비교성은 스스로 밝기가 안 변하는 별이에요. 아래 곡선(이 별 ÷ 다른 비교성들)이 평평하면 안정적, 혼자 출렁이면 이 별에 문제가 있는 거예요. 하나로 단정하긴 어려우니 여러 개를 함께 씁니다.'
+                        : "A good comparison star doesn't vary on its own. If the curve below (this star ÷ the other comparisons) is flat, it's steady; if it wobbles alone, this star is the problem. One star is never certain, so several are used together."}
                     </div>
 
                     {qcSelectionDirty && (
@@ -3055,15 +3055,15 @@ export function TransitLab({
                       {(() => {
                         const tier = qcRmsTier(selectedComparisonDiagnosticData.differential_rms);
                         const meta = {
-                          steady: { dot: '🟢', label: { ko: '안정적', en: 'Steady' }, hint: { ko: '곡선이 평평합니다 → 좋은 기준별. 사용을 권장합니다.', en: 'The curve is flat → a good reference. Recommended.' } },
-                          typical: { dot: '🟡', label: { ko: '보통', en: 'Typical' }, hint: { ko: '대체로 평평합니다 → 사용해도 괜찮습니다.', en: 'Mostly flat → fine to use.' } },
-                          noisy: { dot: '🔴', label: { ko: '불안정', en: 'Noisy' }, hint: { ko: '곡선이 출렁입니다 → 이 별이 스스로 변광하거나 오염됐을 수 있습니다. 제외를 고려하세요.', en: 'The curve wobbles → this star may vary or be blended. Consider excluding it.' } },
+                          steady: { label: { ko: '안정적', en: 'Steady' }, hint: { ko: '다른 별들과 나란히 평평해요. 좋은 기준별입니다.', en: 'Flat, in step with the others. A good reference.' } },
+                          typical: { label: { ko: '보통', en: 'Typical' }, hint: { ko: '대체로 평평해요. 함께 써도 됩니다.', en: 'Mostly flat. Fine to use together.' } },
+                          noisy: { label: { ko: '불안정', en: 'Noisy' }, hint: { ko: '혼자 출렁여요. 이 별은 빼는 게 좋겠습니다.', en: 'Wobbles on its own. Better to drop this one.' } },
                         }[tier];
                         return (
                           <div className={`transit-qc-quality ${tier}`}>
                             <div className="transit-qc-quality-row">
                               <span className="transit-qc-quality-badge">
-                                {meta.dot} {meta.label[lang]}
+                                {meta.label[lang]}
                               </span>
                               <span className="transit-qc-quality-metric">
                                 {lang === 'ko' ? '흔들림' : 'Scatter'} {selectedComparisonDiagnosticData.differential_rms.toFixed(4)}
