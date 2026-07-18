@@ -73,6 +73,28 @@ runtime. Two consequences:
   Tagged onto every row. This is how real classroom data is told apart from
   local test rows in the sheet — leave it unset and everything reads `dev`.
 
+## Classroom concurrency (set these before a live class)
+
+Measured on the free instance with the bundled WASP-6 b flow — see
+`docs/LOAD_TEST_2026-07.md` §9.6. Both are dashboard-only; `render.yaml` lists
+them for reference but is not read by the live service.
+
+- `EASWA_STREAM_QUEUE_WAIT_SECONDS=300`
+  How long a queued analysis waits for a slot. The default 90 s is shorter than
+  the queue itself: fits run 3 at a time, so at 10 learners one and at 20
+  learners eleven were rejected with "차례가 오지 않았습니다". At 300 s all 20
+  finished (the last after ~4.4 min).
+
+- `EASWA_TRANSIT_PHOTOMETRY_LIMIT=40`
+  Photometry requests per IP per minute. A training room is behind one NAT
+  address, so the whole class counts as a single client and the default 6/min
+  starts returning 429 at the seventh learner. The global concurrency cap
+  (`PHOTOMETRY_MAX_CONCURRENCY=8`) is what actually protects the instance, so
+  relaxing the per-IP count is safe.
+
+Also: warm the instance right before class. A cold first request took 23.4 s
+versus 0.5–2.6 s warm — bigger than any load effect at this class size.
+
 ## Optional environment variables
 
 - `EASWA_TRANSIT_CUTOUT_MAX_DOWNLOAD_BYTES=629145600`

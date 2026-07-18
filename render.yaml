@@ -61,3 +61,14 @@ services:
         sync: false
       - key: VITE_APP_VERSION
         value: "render"
+      # --- 동시 사용 실측 기반 (docs/LOAD_TEST_2026-07.md 9.6) ---
+      # 큐 대기 상한. 기본 90초면 적합이 동시 3개씩만 돌아 10명에서 1명,
+      # 20명에서 11명이 "차례가 오지 않았습니다"로 실패한다. 300초로 두면
+      # 20명 전원 성공(마지막 사람 약 4.4분 대기).
+      - key: EASWA_STREAM_QUEUE_WAIT_SECONDS
+        value: "300"
+      # 측광 IP별 분당 상한. 연수장은 NAT라 전원이 공인 IP 하나를 공유하므로
+      # 기본 6회/분이면 7번째 학습자부터 429를 맞는다. 전역 동시상한(8)이
+      # 실제 부하를 막고 있으므로 이 값 완화는 안전하다.
+      - key: EASWA_TRANSIT_PHOTOMETRY_LIMIT
+        value: "40"
