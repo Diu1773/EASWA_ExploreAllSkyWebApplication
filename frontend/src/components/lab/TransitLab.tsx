@@ -1605,7 +1605,7 @@ export function TransitLab({
       : null;
 
   // ── Transit fit hook (needs derived values above) ────────────────────
-  const { handleFitTransit } = useTransitFit({
+  const { handleFitTransit, handleStopFit } = useTransitFit({
     result,
     target,
     activeObservation,
@@ -3559,6 +3559,15 @@ export function TransitLab({
                       className="transit-progress-fill"
                       style={{ width: `${Math.round((fitProgress?.pct ?? 0) * 100)}%` }}
                     />
+                  </div>
+                  {/* Photometry has always had a Stop; the fit had none, so a
+                      learner queued behind other analyses could only wait or
+                      leave the page. Stopping also frees the server slot, which
+                      moves the next learner's turn forward. */}
+                  <div className="transit-run-actions">
+                    <button type="button" className="btn-danger btn-sm" onClick={handleStopFit}>
+                      {lang === 'ko' ? '중지' : 'Stop'}
+                    </button>
                   </div>
                   <p className="transit-progress-label">
                     {!fitProgress || fitProgress.stage === 'init'

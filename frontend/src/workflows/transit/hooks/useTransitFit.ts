@@ -61,7 +61,10 @@ export function useTransitFit({
   requestedFitWindowPhase,
   patch,
   dispatch,
-}: UseTransitFitParams): { handleFitTransit: () => Promise<void> } {
+}: UseTransitFitParams): {
+  handleFitTransit: () => Promise<void>;
+  handleStopFit: () => void;
+} {
   // Auto-enable phase fold when result arrives and target has a known period
   useEffect(() => {
     if (result && target.period_days) {
@@ -267,5 +270,15 @@ export function useTransitFit({
     }
   };
 
-  return { handleFitTransit };
+  // Photometry has had a Stop since it shipped; the fit did not, so a learner
+  // sitting in the queue ("대기 N번째") had no way out but to wait or leave the
+  // page. Aborting closes the stream, which makes the backend release its
+  // FIT_STREAM_GATE slot right away — so giving up actively moves the next
+  // learner's turn forward instead of just hiding the progress bar.
+  const handleStopFit = () => {
+    runAbortRef.current?.abort();
+    patch({ fitting: false, fitProgress: null });
+  };
+
+  return { handleFitTransit, handleStopFit };
 }
