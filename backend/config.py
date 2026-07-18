@@ -120,6 +120,23 @@ MAX_REQUEST_BODY_BYTES = _parse_int("EASWA_MAX_REQUEST_BODY_BYTES", 32 * 1024 * 
 # tighter cap than the general one — still ~6x headroom over any real request.
 MAX_FIT_REQUEST_BODY_BYTES = _parse_int("EASWA_MAX_FIT_REQUEST_BODY_BYTES", 8 * 1024 * 1024)
 
+
+def body_limit_for_path(path: str) -> int:
+    """Largest request body allowed on this path.
+
+    Both fit endpoints carry nothing but light-curve points and are the
+    CPU-heaviest routes, so they take the tighter cap. /kmtnet/fit especially:
+    it runs a Levenberg-Marquardt curve_fit and, unlike the transit stream, has
+    no rate limit and no concurrency gate in front of it, so this size cap is
+    the only bound it has.
+
+    A pure function so the routing rule is unit-tested — the middleware that
+    uses it lives in an ASGI closure that a test cannot reach cheaply.
+    """
+    if "/transit/fit" in path or "/kmtnet/fit" in path:
+        return MAX_FIT_REQUEST_BODY_BYTES
+    return MAX_REQUEST_BODY_BYTES
+
 TRANSIT_RATE_LIMIT_WINDOW_SECONDS = _parse_int("EASWA_TRANSIT_RATE_LIMIT_WINDOW_SECONDS", 60)
 TRANSIT_PREVIEW_INLINE_LIMIT = _parse_int("EASWA_TRANSIT_PREVIEW_INLINE_LIMIT", 90)
 TRANSIT_PREVIEW_JOB_LIMIT = _parse_int("EASWA_TRANSIT_PREVIEW_JOB_LIMIT", 8)

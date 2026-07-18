@@ -8,11 +8,10 @@ from pathlib import Path
 from config import (
     CORS_ORIGINS,
     DEBUG,
-    MAX_FIT_REQUEST_BODY_BYTES,
-    MAX_REQUEST_BODY_BYTES,
     SESSION_COOKIE_SAMESITE,
     SESSION_COOKIE_SECURE,
     SESSION_SECRET,
+    body_limit_for_path,
 )
 from routers import topics, targets, observations, photometry, lightcurve, transit, auth, records, drafts, kmtnet, cluster
 from services.transit_fit_service import get_runtime_dependency_status
@@ -40,11 +39,7 @@ async def limit_request_body_size(request: Request, call_next):
     """
     raw_length = request.headers.get("content-length")
     if raw_length:
-        limit = (
-            MAX_FIT_REQUEST_BODY_BYTES
-            if "/transit/fit" in request.url.path
-            else MAX_REQUEST_BODY_BYTES
-        )
+        limit = body_limit_for_path(request.url.path)
         try:
             declared = int(raw_length)
         except ValueError:
