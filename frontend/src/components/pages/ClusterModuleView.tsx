@@ -173,27 +173,6 @@ export function ClusterModuleView({ module }: ClusterModuleViewProps) {
     </div>
   );
 
-  const recordSave = data
-    ? {
-        workflow: 'cluster_cmd',
-        templateId: 'cluster_record',
-        targetId: selectedId,
-        title: lang === 'ko' ? data.cluster.name_ko : data.cluster.name,
-        context: {
-          source: 'cluster-block',
-          cluster: { id: data.cluster.id, name: data.cluster.name, member_count: data.member_count },
-          ms_fit: fitInfo
-            ? {
-                distance_pc: fitInfo.distancePc,
-                distance_modulus: fitInfo.distanceModulus,
-                reddening: fitInfo.reddening,
-                parallax_distance_pc: fitInfo.priorDistancePc,
-              }
-            : null,
-        },
-      }
-    : undefined;
-
   return (
     <InquiryLayout
       module={module}
@@ -209,7 +188,6 @@ export function ClusterModuleView({ module }: ClusterModuleViewProps) {
       }}
       analysisSlot={analysisSlot}
       comparisonSlot={comparisonSlot}
-      recordSave={recordSave}
       draftTargetId={selectedId}
     />
   );

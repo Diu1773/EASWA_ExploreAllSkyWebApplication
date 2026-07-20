@@ -324,31 +324,6 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
     <TransitResultSummary fit={fit} targetName={target?.name} target={target} />
   ) : undefined;
 
-  // Login-gated save to 내 기록(/my). Anonymous collection (the sheet) runs on
-  // its own; this is the learner-facing copy a signed-in teacher expects to
-  // find in the records page. Field ids in Step 6 match transit_record (v3)
-  // 1:1, so the block's answers submit as-is.
-  const recordSave = targetId
-    ? {
-        workflow: 'transit_lab',
-        templateId: 'transit_record',
-        targetId,
-        title: target?.name ?? targetId,
-        context: {
-          source: 'exoplanet-block',
-          fit: fit
-            ? {
-                rp_rs: fit.rpRs,
-                rp_rs_err: fit.rpRsErr,
-                depth_pct: fit.rpRs * fit.rpRs * 100,
-                period_days: fit.period,
-                chi2_red: fit.reducedChiSquared,
-              }
-            : null,
-        },
-      }
-    : undefined;
-
   // Anonymous (no-login) submission stays visible even before a fit exists —
   // the panel itself explains why the button is disabled.
   const anonSubmit = targetId ? { targetId, fit } : undefined;
@@ -378,7 +353,6 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
       comparisonSlot={comparisonSlot}
       resultSummarySlot={resultSummarySlot}
       maxUnlockedStepIndex={fit ? undefined : 4}
-      recordSave={recordSave}
       anonSubmit={anonSubmit}
       draftTargetId={targetId}
     />

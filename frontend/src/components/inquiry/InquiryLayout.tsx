@@ -12,7 +12,6 @@ import { ComparisonPanel } from './ComparisonPanel';
 import { DataSourcePanel } from './DataSourcePanel';
 import { MetadataPanel } from './MetadataPanel';
 import { ReflectionPanel } from './ReflectionPanel';
-import { RecordSavePanel, type RecordSaveConfig } from './RecordSavePanel';
 import { AnonCollectionNotice } from './AnonCollectionNotice';
 import { StartOverButton } from './StartOverButton';
 import { StepPanel } from './StepPanel';
@@ -88,7 +87,6 @@ interface InquiryLayoutProps<TContext = unknown> {
     label: { ko: string; en: string };
     hint: { ko: string; en: string };
   };
-  recordSave?: RecordSaveConfig;
   /** No-login anonymous submission to the Google Sheets sink (Step 6). */
   anonSubmit?: AnonSubmitConfig;
   /** Selected target id. Scopes the autosaved draft, so the same target opened
@@ -112,7 +110,6 @@ export function InquiryLayout<TContext = unknown>({
   resultSummarySlot,
   maxUnlockedStepIndex,
   selectionConfirm,
-  recordSave,
   anonSubmit,
   draftTargetId,
 }: InquiryLayoutProps<TContext>) {
@@ -372,41 +369,6 @@ export function InquiryLayout<TContext = unknown>({
     };
   }, [anonTargetId, anonFit, notes, selfCheckSummary, labDraftPulse, loggedIn]);
 
-  // Notes are keyed `${stepId}:${fieldId}`, but the backend record template
-  // expects bare question ids — configs keep field ids identical to template
-  // ids, so stripping the step prefix IS the mapping. Checkbox answers are
-  // JSON-string arrays in notes (see StepPanel) and unpack to real arrays here.
-  const templateAnswers = useMemo(() => {
-    const out: Record<string, unknown> = {};
-    module.steps.forEach((step) => {
-      step.recordFields.forEach((field) => {
-        const raw = notes[`${step.id}:${field.id}`];
-        if (raw === undefined || raw.trim() === '') return;
-        if (field.input === 'checkbox') {
-          try {
-            const parsed = JSON.parse(raw);
-            if (Array.isArray(parsed) && parsed.length > 0) out[field.id] = parsed;
-          } catch {
-            // corrupt checkbox note — skip rather than send garbage
-          }
-        } else {
-          out[field.id] = raw;
-        }
-      });
-    });
-    return out;
-  }, [module.steps, notes]);
-
-  const missingRequiredLabels = useMemo(
-    () =>
-      module.steps.flatMap((step) =>
-        step.recordFields
-          .filter((field) => field.required && templateAnswers[field.id] === undefined)
-          .map((field) => localize(field.question, lang)),
-      ),
-    [module.steps, templateAnswers, lang],
-  );
-
   // Progression gate: a step that asks for notes wants at least ONE of them
   // before moving on — enough to keep the record habit without demanding every
   // box (a full-completion gate would stall a classroom on the first snag).
@@ -557,13 +519,6 @@ export function InquiryLayout<TContext = unknown>({
             prompts={result.interpretationPrompts}
             notes={notes}
             onNoteChange={handleNoteChange}
-          />
-        )}
-        {recordSave && (
-          <RecordSavePanel
-            config={recordSave}
-            answers={templateAnswers}
-            missingRequiredLabels={missingRequiredLabels}
           />
         )}
         {anonSubmit && <AnonCollectionNotice />}

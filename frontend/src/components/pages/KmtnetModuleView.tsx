@@ -358,22 +358,6 @@ export function KmtnetModuleView({ module }: KmtnetModuleViewProps) {
     </div>
   );
 
-  const recordSave = fit
-    ? {
-        workflow: 'kmtnet_lab',
-        templateId: 'kmtnet_record',
-        targetId: selectedId,
-        title: selectedEvent?.name ?? selectedId,
-        context: {
-          source: 'kmtnet-block',
-          event: { id: selectedId, name: selectedEvent?.name, type: selectedEvent?.type },
-          sites: lc?.included_sites ?? [],
-          fit: { t0: fit.t0, u0: fit.u0, tE: fit.tE, chi2_dof: fit.chi2_dof },
-          published: { t0: lc?.ref_t0, u0: lc?.ref_u0, tE: lc?.ref_te },
-        },
-      }
-    : undefined;
-
   return (
     <InquiryLayout
       module={module}
@@ -395,7 +379,6 @@ export function KmtnetModuleView({ module }: KmtnetModuleViewProps) {
       }}
       analysisSlot={analysisSlot}
       comparisonSlot={comparisonSlot}
-      recordSave={recordSave}
       maxUnlockedStepIndex={fit ? undefined : 4}
       draftTargetId={selectedId}
     />
