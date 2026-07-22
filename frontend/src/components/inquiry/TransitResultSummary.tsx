@@ -71,16 +71,14 @@ export function TransitResultSummary({ fit, targetName, target }: TransitResultS
             </span>
           )}
         </div>
+        {/* 공전 주기는 측정값이 아니다 — 앱은 NASA 아카이브 주기를 위상 접기 입력으로
+            쓸 뿐이다. 다른 카드처럼 '기준 X (+0.0%)'로 비교하면 계산해서 맞힌 것처럼
+            읽혀 거짓이 된다. '아카이브 값'으로 명시하고 비교 부기는 뺀다. */}
         <div className="transit-result-metric">
           <span className="metric-label">{lang === 'ko' ? '공전 주기' : 'Period'}</span>
-          <span className="metric-value">{fmt(fit.period, 4)}</span>
-          <span className="metric-sub">{lang === 'ko' ? '일' : 'd'}</span>
-          {refPeriod !== null && (
-            <span className="metric-sub">
-              {refLabel} {fmt(refPeriod, 4)}
-              {pctDelta(fit.period, refPeriod) ? ` (${pctDelta(fit.period, refPeriod)})` : ''}
-            </span>
-          )}
+          <span className="metric-value">{fmt(refPeriod ?? fit.period, 4)}</span>
+          <span className="metric-sub">{lang === 'ko' ? '일 · NASA 아카이브 값' : 'd · NASA Archive value'}</span>
+          <span className="metric-sub">{lang === 'ko' ? '측정값 아님 (위상 접기에 사용)' : 'not measured (used to phase-fold)'}</span>
         </div>
         <div className="transit-result-metric">
           <span className="metric-label">χ²_red</span>

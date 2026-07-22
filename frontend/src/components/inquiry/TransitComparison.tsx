@@ -283,15 +283,49 @@ export function TransitComparison({ fit, target }: TransitComparisonProps) {
           diffUnit=""
           lang={lang}
         />
-        <CompareRow
-          label={lang === 'ko' ? '공전 주기' : 'Period'}
-          measured={`${fmt(fit.period, 5)} d`}
-          reference={refPeriod != null ? `${fmt(refPeriod, 5)} d` : '—'}
-          diff={diffOf(fit.period, refPeriod, 5)}
-          diffUnit=" d"
-          lang={lang}
-        />
       </div>
+
+      {/* Rp/R*가 어디서 나오는지: 식 깊이의 제곱근이다. Step 0의 '깊이 ∝ (Rp/R★)²'
+          공식이 여기서 실제 숫자로 닫힌다. fit이 실제로 산출하는 값이라 이 유도는
+          정확하다(measuredDepth = fit.rpRs² × 100 이므로 √(깊이)로 역산하면 rpRs). */}
+      <p className="transit-compare-derivation">
+        {lang === 'ko' ? (
+          <>
+            <b>Rp/R*는 식 깊이에서 나옵니다.</b> 행성이 별을 가린 <em>넓이</em> 비율이
+            식 깊이이고, 반지름 비는 그 제곱근입니다:{' '}
+            <code>Rp/R* = √(식 깊이) = √{(measuredDepth / 100).toFixed(5)} = {fmt(fit.rpRs)}</code>
+          </>
+        ) : (
+          <>
+            <b>Rp/R* comes from the transit depth.</b> Depth is the fraction of the star&apos;s{' '}
+            <em>area</em> the planet blocks, so the radius ratio is its square root:{' '}
+            <code>Rp/R* = √(depth) = √{(measuredDepth / 100).toFixed(5)} = {fmt(fit.rpRs)}</code>
+          </>
+        )}
+      </p>
+
+      {/* 공전 주기는 '비교'가 아니다: 앱은 주기를 계산하지 않고 NASA 아카이브 값을
+          그대로 위상 접기·적합 입력으로 쓴다. 이걸 '내 측정 3.361 / 문헌 3.361 /
+          차이 +0.0%'로 보여주면, 계산해서 정답을 맞힌 것처럼 읽혀 거짓이 된다.
+          단일 관측(식 1회)으로는 주기를 못 구한다 — 왜인지까지 함께 알린다. */}
+      {refPeriod != null && (
+        <div className="transit-period-source">
+          <div className="transit-period-source-head">
+            <span className="transit-period-source-label">
+              {lang === 'ko' ? '공전 주기' : 'Orbital period'}
+            </span>
+            <b>{fmt(refPeriod, 5)} d</b>
+            <span className="transit-period-source-tag">
+              {lang === 'ko' ? 'NASA 아카이브 값' : 'NASA Archive value'}
+            </span>
+          </div>
+          <p className="transit-period-source-note">
+            {lang === 'ko'
+              ? '주기는 측정한 값이 아니라 NASA Exoplanet Archive에서 가져온 값입니다. 이 분석은 이 주기로 광도곡선을 위상 접기 했습니다. 단일 관측에는 식이 한 번뿐이라 주기를 직접 구할 수 없고 — 주기는 식과 식 사이 간격에서 나옵니다 — 여러 번의 식을 관측해야 측정할 수 있습니다.'
+              : 'The period is not a measured value — it is taken from the NASA Exoplanet Archive and used to phase-fold this light curve. A single observation shows only one transit, so the period cannot be derived from it: period comes from the spacing between transits, which needs several observed transits.'}
+          </p>
+        </div>
+      )}
 
       <div className="transit-compare-quality">
         {lang === 'ko' ? '적합 품질' : 'Fit quality'} · χ²_red <b>{fmt(fit.reducedChiSquared, 2)}</b>

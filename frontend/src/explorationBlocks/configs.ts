@@ -146,8 +146,10 @@ export const exoplanetTransitModule: ExplorationModuleConfig = {
             en: 'How does your measured result compare with the NASA reference value, and what causes the difference?',
           },
           helperText: {
-            ko: 'Rp/R*·식 깊이·공전 주기를 비교하고, 비교성 품질·별빛 오염·구경 크기·ROI·잡음·모델 가정을 근거로 설명하세요.',
-            en: 'Compare Rp/R*, depth, and period; explain using comparison-star quality, blending, aperture, ROI, noise, and model assumptions.',
+            // 공전 주기는 비교 대상에서 뺐다: 앱이 계산하지 않고 아카이브 값을 그대로
+            // 쓰므로 '주기를 비교하라'는 건 모순이다. Rp/R*·식 깊이만 비교 대상.
+            ko: 'Rp/R*와 식 깊이를 기준값과 비교하고, 비교성 품질·별빛 오염·구경 크기·ROI·잡음·모델 가정을 근거로 설명하세요.',
+            en: 'Compare Rp/R* and depth with the reference; explain using comparison-star quality, blending, aperture, ROI, noise, and model assumptions.',
           },
         },
         {
