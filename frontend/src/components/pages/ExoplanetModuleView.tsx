@@ -13,6 +13,7 @@ import { lazyWithRetry } from '../../utils/lazyWithRetry';
 import { ApertureSandbox, InquiryLayout, SkyDataPanel } from '../inquiry';
 import { TransitComparison } from '../inquiry/TransitComparison';
 import { TransitResultSummary } from '../inquiry/TransitResultSummary';
+import { TransitPipelineDiagram } from '../inquiry/TransitPipelineDiagram';
 import { SkyExplorer } from '../sky/SkyExplorer';
 import { TransitLab } from '../lab/TransitLab';
 import {
@@ -160,6 +161,8 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
       <Transit3DScene />
     </Suspense>
   );
+
+  const conceptFlowSlot = <TransitPipelineDiagram />;
 
   const selectionSlot = (
     <div className="inquiry-sky-embed">
@@ -334,6 +337,7 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
       adapter={moduleAdapters[module.id]}
       contextSlot={contextSlot}
       introSlot={introSlot}
+      conceptFlowSlot={conceptFlowSlot}
       selectionSlot={selectionSlot}
       selectionConfirm={{
         // Gate on the SELECTED id (in the URL), not the loaded target object.

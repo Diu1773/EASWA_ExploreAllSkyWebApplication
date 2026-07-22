@@ -75,6 +75,9 @@ interface InquiryLayoutProps<TContext = unknown> {
   contextSlot?: ReactNode;
   analysisSlot?: ReactNode;
   introSlot?: ReactNode;
+  /** Module-specific concept/pipeline diagram, shown in Step 0 between the intro
+   *  media and the goals — teaches WHY the pipeline exists before the learner runs it. */
+  conceptFlowSlot?: ReactNode;
   selectionSlot?: ReactNode;
   metadataSlot?: ReactNode;
   conditionsSlot?: ReactNode;
@@ -103,6 +106,7 @@ export function InquiryLayout<TContext = unknown>({
   contextSlot,
   analysisSlot,
   introSlot,
+  conceptFlowSlot,
   selectionSlot,
   metadataSlot,
   conditionsSlot,
@@ -411,6 +415,7 @@ export function InquiryLayout<TContext = unknown>({
       return (
         <>
           {introSlot && <div className="inquiry-intro-media">{introSlot}</div>}
+          {conceptFlowSlot}
           <div className="inquiry-two-column">
           <section className="inquiry-info-panel">
             <span className="inquiry-panel-kicker">{lang === 'ko' ? '이 탐구에서 할 일' : 'What You’ll Do'}</span>
