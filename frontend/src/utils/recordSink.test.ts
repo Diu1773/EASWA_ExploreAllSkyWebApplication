@@ -116,4 +116,23 @@ describe('buildAnonRecordPayload — logged_in', () => {
     );
     expect(leaked).toEqual([]);
   });
+
+  // F4 — site feedback (app quality) rides on its own columns and stays separate
+  // from the learning record; defaults to 0/'' so an untouched panel is silent.
+  it('carries optional site feedback, defaulting to empty', () => {
+    stubBrowser();
+    const blank = buildAnonRecordPayload(input(true));
+    expect(blank.site_rating).toBe(0);
+    expect(blank.site_feedback).toBe('');
+
+    const withFeedback = buildAnonRecordPayload({ ...input(false), siteRating: 4, siteFeedback: '좋아요' });
+    expect(withFeedback.site_rating).toBe(4);
+    expect(withFeedback.site_feedback).toBe('좋아요');
+  });
+
+  it('caps site feedback length so a giant paste cannot bloat the row', () => {
+    stubBrowser();
+    const payload = buildAnonRecordPayload({ ...input(false), siteFeedback: 'x'.repeat(5000) });
+    expect(payload.site_feedback.length).toBe(2000);
+  });
 });

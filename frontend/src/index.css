@@ -1068,6 +1068,70 @@ body {
   .transit-glossary-list > div { grid-template-columns: 1fr; gap: 2px; }
 }
 
+/* ===== Step 6 사이트 피드백 (선택·접이식) ===== */
+.site-feedback {
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+}
+.site-feedback > summary {
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  list-style: revert;
+}
+.site-feedback > summary:hover { color: var(--accent); }
+.site-feedback-note {
+  margin: 10px 0 8px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+.site-feedback-stars {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+.site-feedback-star {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 1;
+  padding: 2px;
+  color: var(--border-light);
+  transition: color 0.12s;
+}
+.site-feedback-star:hover,
+.site-feedback-star.on { color: var(--accent); }
+.site-feedback-rating-num {
+  margin-left: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono, monospace);
+}
+.site-feedback-text {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: var(--font-ui);
+  line-height: 1.5;
+}
+.site-feedback-text:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
 /* Collection notice (Step 6). Quiet by design: it is a disclosure to read once,
    not a control — but it must stay on screen, since nothing else tells the
    learner their work is being collected. */

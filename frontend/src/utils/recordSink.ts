@@ -70,6 +70,14 @@ export interface AnonRecordPayload {
    * kept working in their account).
    */
   logged_in: boolean;
+  /**
+   * 이 웹앱 자체에 대한 피드백 (학습 데이터와 별개). 공공 배포 시 온라인으로
+   * 개선점을 받기 위한 채널. 학습 기록(steps_note_json 등)과 컬럼을 나눠, 연구
+   * 분석 때 탐구 응답과 제품 피드백이 섞이지 않게 한다.
+   * site_rating: 1~5(선택 안 하면 0), site_feedback: 자유 서술(빈 문자열 가능).
+   */
+  site_rating: number;
+  site_feedback: string;
 }
 
 /**
@@ -159,6 +167,9 @@ export interface AnonRecordInput {
   /** Signed-in state at write time. Passed in rather than read from the auth
    *  store here so this module stays a pure shaper (and unit-testable). */
   loggedIn: boolean;
+  /** Optional site feedback (app quality, not learning data). Default 0 / ''. */
+  siteRating?: number;
+  siteFeedback?: string;
 }
 
 /**
@@ -227,5 +238,7 @@ export function buildAnonRecordPayload(input: AnonRecordInput): AnonRecordPayloa
     app_version: resolveAppVersion(),
     user_agent: navigator.userAgent.slice(0, 160),
     logged_in: input.loggedIn,
+    site_rating: typeof input.siteRating === 'number' ? input.siteRating : 0,
+    site_feedback: (input.siteFeedback ?? '').slice(0, 2000),
   };
 }

@@ -56,6 +56,10 @@ var HEADERS = [
   //              생기기 전의 옛 행. ⚠️ 신원 정보는 절대 담기지 않는다 — 시트는
   //              익명 저장소이고, 이 열은 "로그인 학습자(별도로 /my에도 저장됨)"와
   //              "이 시트에만 존재하는 익명 세션"을 구분하기 위한 불리언일 뿐이다.
+  // 아래 2열은 2026-07-20 추가 — 이 웹앱 자체에 대한 피드백(학습 데이터와 별개).
+  // 공공 배포 시 온라인으로 개선점을 받는 채널. 반드시 맨 끝에.
+  'site_rating', // 도구 만족도 1~5 (0 또는 빈칸 = 미응답)
+  'site_feedback', // 도구 개선 자유 서술 (선택)
 ];
 
 function doPost(e) {
@@ -150,6 +154,8 @@ function buildRow_(data) {
     truncate_(data.app_version, 40),
     truncate_(data.user_agent, 160),
     toBoolOrBlank_(data.logged_in),
+    toNumberOrBlank_(data.site_rating),
+    truncate_(data.site_feedback, 2000),
   ];
 }
 

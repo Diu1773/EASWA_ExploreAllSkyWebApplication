@@ -13,6 +13,7 @@ import { DataSourcePanel } from './DataSourcePanel';
 import { MetadataPanel } from './MetadataPanel';
 import { ReflectionPanel } from './ReflectionPanel';
 import { AnonCollectionNotice } from './AnonCollectionNotice';
+import { SiteFeedbackPanel } from './SiteFeedbackPanel';
 import { StartOverButton } from './StartOverButton';
 import { StepPanel } from './StepPanel';
 import {
@@ -167,6 +168,10 @@ export function InquiryLayout<TContext = unknown>({
   const [selfCheckAnswers, setSelfCheckAnswers] = useState<Record<string, string | number>>({});
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [sheetSyncState, setSheetSyncState] = useState<SheetSyncState>('idle');
+  // Site feedback (app quality, not learning data) — rides along on the same
+  // anonymous row but in its own columns. Optional; 0/'' when untouched.
+  const [siteRating, setSiteRating] = useState(0);
+  const [siteFeedback, setSiteFeedback] = useState('');
   const draftScope = useMemo(
     () => inquiryDraftScope(module.id, draftTargetId),
     [module.id, draftTargetId],
@@ -341,6 +346,8 @@ export function InquiryLayout<TContext = unknown>({
           selfCheckCorrect: selfCheckSummary.correct,
           labGuideAnswers: loadLabDraft(anonTargetId)?.guideAnswers ?? {},
           loggedIn,
+          siteRating,
+          siteFeedback,
         }),
       )
         .then(() => setSheetSyncState('synced'))
@@ -371,7 +378,12 @@ export function InquiryLayout<TContext = unknown>({
       clearTimeout(timer);
       if (retryTimer) clearTimeout(retryTimer);
     };
-  }, [anonTargetId, anonFit, notes, selfCheckSummary, labDraftPulse, loggedIn]);
+  }, [anonTargetId, anonFit, notes, selfCheckSummary, labDraftPulse, loggedIn, siteRating, siteFeedback]);
+
+  // Site feedback edits count as work so the row syncs even if the learner only
+  // left feedback and wrote no inquiry notes.
+  const handleSiteRating = (rating: number) => { dirtyRef.current = true; setSavedAt(Date.now()); setSiteRating(rating); };
+  const handleSiteFeedback = (text: string) => { dirtyRef.current = true; setSavedAt(Date.now()); setSiteFeedback(text); };
 
   // Progression gate: a step that asks for notes wants at least ONE of them
   // before moving on — enough to keep the record habit without demanding every
@@ -527,6 +539,14 @@ export function InquiryLayout<TContext = unknown>({
           />
         )}
         {anonSubmit && <AnonCollectionNotice />}
+        {anonSubmit && (
+          <SiteFeedbackPanel
+            rating={siteRating}
+            feedback={siteFeedback}
+            onRating={handleSiteRating}
+            onFeedback={handleSiteFeedback}
+          />
+        )}
       </>
     );
   };
