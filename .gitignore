@@ -23,6 +23,11 @@ frontend/dist/
 .DS_Store
 Thumbs.db
 
+# Generated / scratch
+docs/survey/_preview_*.html   # 설문 미리보기 생성물 (소스 .gs에서 재생성)
+/d.txt
+/dep.txt
+
 # Env
 .env
 .env.*
