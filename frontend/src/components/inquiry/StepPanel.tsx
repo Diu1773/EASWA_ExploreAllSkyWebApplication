@@ -11,6 +11,10 @@ interface StepPanelProps {
   onNoteChange: (fieldId: string, value: string) => void;
   selfCheckAnswers: Record<string, string | number>;
   onSelfCheckAnswer: (key: string, value: string | number) => void;
+  /** Rendered AFTER the record fields (탐구 기록). Used for the Step 6 site
+   *  feedback so it comes below the inquiry notes — the notes are the point of
+   *  this step, tool feedback is an afterthought. */
+  afterRecordSlot?: ReactNode;
 }
 
 export function StepPanel({
@@ -20,6 +24,7 @@ export function StepPanel({
   onNoteChange,
   selfCheckAnswers,
   onSelfCheckAnswer,
+  afterRecordSlot,
 }: StepPanelProps) {
   const lang = useLangStore((state) => state.lang);
 
@@ -150,6 +155,8 @@ export function StepPanel({
           })}
         </section>
       )}
+
+      {afterRecordSlot}
     </section>
   );
 }

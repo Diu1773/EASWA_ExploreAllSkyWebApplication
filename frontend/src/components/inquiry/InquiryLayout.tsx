@@ -539,17 +539,22 @@ export function InquiryLayout<TContext = unknown>({
           />
         )}
         {anonSubmit && <AnonCollectionNotice />}
-        {anonSubmit && (
-          <SiteFeedbackPanel
-            rating={siteRating}
-            feedback={siteFeedback}
-            onRating={handleSiteRating}
-            onFeedback={handleSiteFeedback}
-          />
-        )}
       </>
     );
   };
+
+  // Site feedback lives AFTER the record fields (via StepPanel's afterRecordSlot),
+  // not inside renderStepBody which lands above them. The inquiry notes are the
+  // point of Step 6; the tool-feedback panel is an optional afterthought below.
+  const siteFeedbackSlot =
+    anonSubmit && activeStep.kind === 'reflection' ? (
+      <SiteFeedbackPanel
+        rating={siteRating}
+        feedback={siteFeedback}
+        onRating={handleSiteRating}
+        onFeedback={handleSiteFeedback}
+      />
+    ) : null;
 
   return (
     <div className="inquiry-layout">
@@ -611,6 +616,7 @@ export function InquiryLayout<TContext = unknown>({
             onNoteChange={handleNoteChange}
             selfCheckAnswers={selfCheckAnswers}
             onSelfCheckAnswer={handleSelfCheckAnswer}
+            afterRecordSlot={siteFeedbackSlot}
           >
             {renderStepBody()}
           </StepPanel>
