@@ -24,7 +24,9 @@ frontend/dist/
 Thumbs.db
 
 # Generated / scratch
-docs/survey/_preview_*.html   # 설문 미리보기 생성물 (소스 .gs에서 재생성)
+# 설문 미리보기 생성물 (소스 .gs에서 재생성). 인라인 주석 금지 — gitignore는
+# 패턴 뒤 주석을 패턴의 일부로 먹어 매칭이 깨진다.
+docs/survey/_preview_*.html
 /d.txt
 /dep.txt
 
