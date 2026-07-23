@@ -1,0 +1,50 @@
+# 연수 당일 체크리스트 (2026-07-22~24 교사연수)
+
+세션 곳곳에 흩어져 있던 "당일 해야 할 것"을 한 장으로 모음. 위에서 아래로 그대로 따라가면 된다.
+
+## 세션 시작 10분 전
+
+- [ ] **Render 깨우기** — https://easwa-webapp.onrender.com/ 한 번 열기.
+      무료 티어는 유휴 시 잠들어 첫 접속이 ~50초 걸린다. 미리 열면 참가자는 바로 들어온다.
+- [ ] 진행 PC에서 **무거운 프로그램(게임 등) 종료** — 로컬 시연 시 RAM 부족으로 서버가 죽은 이력 있음.
+      (참가자는 각자 브라우저라 무관. 진행 PC에서 로컬 5895를 띄울 때만 해당)
+- [ ] 시연 대상은 **WASP-6 b** (번들 cutout — 불러오기 즉시, MAST 다운로드 없음).
+
+## 참가자에게 줄 링크
+
+| 용도 | URL |
+|---|---|
+| **앱** | https://easwa-webapp.onrender.com/ |
+| **설문 (신규 폼)** | https://docs.google.com/forms/d/e/1FAIpQLSf9gHFeMo2uOByBrdn7iYEEpx2QREh173mHMNOkzvZgv7XCiw/viewform |
+| 설문 편집 | https://docs.google.com/forms/d/12JYH58_Ibr6JNGK3PACv_-Nv173BhTRMXy9PxdsMT3k/edit |
+
+- QR: `docs/survey/qr_form.png` = **신규 폼으로 재생성됨(2026-07-24)**. `qr_easwa_webapp.png` = 앱(변동 없음).
+- ⚠️ **이전에 인쇄한 QR이 있다면 폐기** — 7/11판 QR은 옛 폼(문항 정제 전)으로 연결된다.
+- ⚠️ 옛 폼(`…1FAIpQLSeiB2u…`)으로 응답이 들어오면 신규 폼과 문항이 달라 섞어 쓸 수 없다.
+  옛 폼은 '응답 받지 않음'으로 닫아두는 것을 권장.
+
+## 데이터 시트 (익명제출EASWA)
+
+- [ ] **테스트 행 정리** — `app_version`이 `dev` / `local-dev` / `probe` / `LOADTEST`인 행과
+      `anon_id`가 `PROBE-DELETE-ME…` / `LOADTEST-DELETE-ME`인 행 삭제. **남길 것 = `render`.**
+- [ ] **헤더 2칸 입력** — U1에 `site_rating`, V1에 `site_feedback`
+      (T1 `logged_in`은 입력 완료 확인됨. HEADERS는 빈 시트에만 자동 기록되므로 손으로).
+- [ ] **sink 재배포 1회** — 시트의 Apps Script에서 최신 `easwa_record_sink.gs` 붙여넣고
+      **"배포 관리 → 연필(편집) → 버전: 새 버전 → 배포"**.
+      ⚠️ "새 배포"를 누르면 URL이 바뀌어 앱과 끊어진다 (이미 두 번 발생).
+      앱이 쓰는 정본 URL = `AKfycbyAVuJpZZ7f…` (Render 환경변수와 일치).
+      재배포 전이라도 앱은 정상 동작 — site_rating/site_feedback 값만 조용히 버려질 뿐이다.
+
+## 수업 중 알아두면 좋은 것
+
+- 동시 20명 자동저장은 검증됨(19.0초 소화). 늦게 저장되면 "자동 저장 중…" 표시 후 재시도 1회.
+- 적합이 "대기 N번째"로 걸리면 **중지 버튼**으로 즉시 슬롯 반환 가능.
+- 배포 직후 참가자 화면에서 청크 오류가 나면 **자동 새로고침 1회**로 복구된다 (수동 새로고침 안내로도 충분).
+- 학습자 작업은 브라우저 **세션 단위**(탭 닫으면 새 학습자). 공용 PC에서 자리를 넘길 땐
+  "기록 지우고 새로 시작" 버튼 → anon-id가 회전되어 앞사람 행을 덮어쓰지 않는다.
+
+## 연수 후
+
+- [ ] 시트에서 `app_version = render` 행만 필터해 분석 (logged_in 빈칸 = 열 추가 전 행).
+- [ ] `selfcheck_total`이 7/17 이전 행은 4, 이후는 3 — 날짜 넘어 정답률 직비교 금지.
+- [ ] 설문 응답은 **신규 폼** 시트에서. 3-1(활용 동기)은 필수 아님 → 응답 수 자체가 요구 크기의 근거.

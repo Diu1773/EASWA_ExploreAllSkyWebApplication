@@ -144,3 +144,14 @@
 - [ ] 폼 응답 URL로 `make_qr.py` 실행 → `qr_form.png`
 - [ ] (선택) §3.6에 배포 문장 + IRB 문구 반영
 - [ ] 응답 수집 후 → §4.5 표 4-7~4-11 숫자 채우기 (구조는 완비)
+
+## 2026-07-24 — 신규 폼 배포 + 전체 방법론 재검토
+
+- **신규 폼 생성 완료** (createEASWAForm 실행): 3-1(실제 관측자료 활용 동기, 체크박스·선택) 포함본.
+  - 응답: https://docs.google.com/forms/d/e/1FAIpQLSf9gHFeMo2uOByBrdn7iYEEpx2QREh173mHMNOkzvZgv7XCiw/viewform
+  - 편집: https://docs.google.com/forms/d/12JYH58_Ibr6JNGK3PACv_-Nv173BhTRMXy9PxdsMT3k/edit
+  - 실폼에서 3-1 위치(문항 3 직후)·필수 아님(* 없음)·후속 번호 유지 육안 확인.
+- qr_form.png를 신규 폼으로 재생성 (옛 QR은 7/11판 폼으로 연결되고 있었음 — 인쇄물 주의).
+- 전체 설문 방법론 재검토(survey-pilot-test, 대학원생 페르소나): 3-1 추가가 역문항(12·15)·표 매핑,
+  v2 정제(유도문항·이중질문·중복 제거)를 흔들지 않음을 확인. 잔여 이슈는 3-1 선택지 a·b 인접
+  개념(경미) 하나 — b 문구 교체안("정해진 답이 없는 탐구라서")은 사용자 결정 대기, 현행 유지 중.
