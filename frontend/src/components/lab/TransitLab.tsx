@@ -2644,7 +2644,7 @@ export function TransitLab({
               <div>
                 <strong>{lang === 'ko' ? '시야 크기' : 'Field Size'}</strong>
                 {!preview && (
-                  <p className="hint" style={{ marginTop: 4, fontSize: 13.5 }}>
+                  <p className="hint" style={{ marginTop: 4, fontSize: 14.5 }}>
                     {activeIsBundled
                       ? lang === 'ko'
                         ? '불러오기를 눌러 번들 TESS 관측 영상을 확인하세요.'
@@ -3481,7 +3481,7 @@ export function TransitLab({
                         color: '#d6e2ff',
                         borderRadius: 8,
                         overflowX: 'auto',
-                        fontSize: 13.5,
+                        fontSize: 14.5,
                         lineHeight: 1.5,
                       }}
                     >

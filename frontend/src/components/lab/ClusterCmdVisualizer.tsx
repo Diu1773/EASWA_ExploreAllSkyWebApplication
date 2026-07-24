@@ -230,7 +230,7 @@ export function ClusterCmdVisualizer({ data, onFitChange }: ClusterCmdVisualizer
         </button>
       </div>
 
-      <p style={{ fontSize: 13.5, color: '#94a3b8', margin: '8px 0 0' }}>
+      <p style={{ fontSize: 14.5, color: '#94a3b8', margin: '8px 0 0' }}>
         {data.member_count.toLocaleString()}{' '}
         {lang === 'ko' ? '개 구성원 · ' : 'members · '}
         {data.data_source}
