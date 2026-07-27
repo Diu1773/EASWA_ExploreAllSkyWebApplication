@@ -47,6 +47,8 @@
 동일성 증거 3중: ① `2956d24` 이후 `frontend/`·`backend/`·`Dockerfile`·`requirements.txt`
 변경 0건 ② 라이브 자산 해시 `index-TIRgC99R.css` 일치 ③ 위 로그 시각.
 
+## 사용자 의견
+
 ## 다음 3개
 
 1. 미푸쉬 3커밋 푸쉬
