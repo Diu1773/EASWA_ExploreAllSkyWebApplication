@@ -570,6 +570,24 @@ export const kmtnetModule: ExplorationModuleConfig = {
     { ko: '혼잡한 별밭에서 차분측광으로 밝기 변화를 측정하는 이유를 설명한다.', en: 'Explain why difference-image photometry is used to measure brightness changes in crowded fields.' },
   ],
   steps: createCommonInquirySteps({
+    // 이 override 가 없어서 공통 문구('이 탐구에서 관측 자료로 설명하려는 현상은
+    // 무엇인가?')가 홈 카드의 대표 탐구 질문 자리에 그대로 노출되고 있었다.
+    // 다른 두 모듈은 고유 질문을 갖고 있다. 질문은 KMTNet 이 실제로 하는 일
+    // (경도 120° 간격 세 관측소의 24시간 연속 감시 + 혼잡 별밭 차분측광)에서 나온다.
+    step0_intro: {
+      questions: [
+        makePrompt(
+          'kmt_intro_network',
+          '몇 시간 만에 지나가는 행성 신호를, 경도가 다른 세 관측소를 이어 붙이면 어디까지 잡아낼 수 있을까?',
+          'A planetary signal can pass within hours. How much of it can we catch by joining light curves from three observatories spread across longitudes?',
+        ),
+        makePrompt(
+          'kmt_intro_crowded',
+          '은하 벌지처럼 별이 빽빽한 곳에서 한 별의 밝기 변화만 따로 재려면 무엇이 필요할까?',
+          'In a field as crowded as the Galactic bulge, what does it take to measure the brightness change of one star alone?',
+        ),
+      ],
+    },
     step1_select: {
       questions: [
         makePrompt('kmt_event_reason', '어떤 미시중력렌즈 이벤트(광도곡선)를 먼저 살펴볼 것인가?', 'Which microlensing event (light curve) will you inspect first?'),
