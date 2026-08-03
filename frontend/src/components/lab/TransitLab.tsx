@@ -3479,7 +3479,7 @@ export function TransitLab({
                         padding: 12,
                         background: '#111',
                         color: '#d6e2ff',
-                        borderRadius: 8,
+                        borderRadius: 0,
                         overflowX: 'auto',
                         fontSize: 14.5,
                         lineHeight: 1.5,
