@@ -572,19 +572,20 @@ export const kmtnetModule: ExplorationModuleConfig = {
   steps: createCommonInquirySteps({
     // 이 override 가 없어서 공통 문구('이 탐구에서 관측 자료로 설명하려는 현상은
     // 무엇인가?')가 홈 카드의 대표 탐구 질문 자리에 그대로 노출되고 있었다.
-    // 다른 두 모듈은 고유 질문을 갖고 있다. 질문은 KMTNet 이 실제로 하는 일
-    // (경도 120° 간격 세 관측소의 24시간 연속 감시 + 혼잡 별밭 차분측광)에서 나온다.
+    // 다른 두 모듈과 같은 꼴로 세운다 — [관측된 자료]만으로 [천체의 물리량]을 어디까지
+    // 알 수 있을까. 여기서 자료는 증광 곡선이고, 얻으려는 값은 보이지 않는 렌즈 천체의
+    // 질량·거리, 그리고 곡선 위 이상신호가 행성인지 여부다(Lab 에서 u₀·tE 를 적합한다).
     step0_intro: {
       questions: [
         makePrompt(
-          'kmt_intro_network',
-          '몇 시간 만에 지나가는 행성 신호를, 경도가 다른 세 관측소를 이어 붙이면 어디까지 잡아낼 수 있을까?',
-          'A planetary signal can pass within hours. How much of it can we catch by joining light curves from three observatories spread across longitudes?',
+          'kmt_intro_lens',
+          '별이 잠깐 밝아졌다 어두워진 곡선 하나만으로, 보이지 않는 렌즈 천체의 질량과 거리를 어디까지 알 수 있을까?',
+          'From a single curve of a star brightening and fading, how far can we determine the mass and distance of an unseen lens object?',
         ),
         makePrompt(
-          'kmt_intro_crowded',
-          '은하 벌지처럼 별이 빽빽한 곳에서 한 별의 밝기 변화만 따로 재려면 무엇이 필요할까?',
-          'In a field as crowded as the Galactic bulge, what does it take to measure the brightness change of one star alone?',
+          'kmt_intro_anomaly',
+          '매끄러운 증광 곡선 위의 짧은 이상신호를 행성의 증거로 인정하려면 무엇을 확인해야 할까?',
+          'What has to be checked before a brief anomaly on a smooth magnification curve counts as evidence of a planet?',
         ),
       ],
     },
