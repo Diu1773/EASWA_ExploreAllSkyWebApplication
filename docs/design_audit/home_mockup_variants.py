@@ -214,6 +214,114 @@ S = """
 }
 """
 
+# ── Q 레이어 — 대표 탐구 질문 블록 ─────────────────────────────────────────
+# 소유자 지적(2026-08-03): 시안 B 가 넣은 "주황 세로 바"는 그 자체가 AI 가 만드는
+# 전형적인 장식이다. 실제로 이 세션에서 만든 감사 문서들도 같은 패턴(.lede, .note)을
+# 쓰고 있었다. 세로 바를 다른 장식으로 바꾸는 게 아니라 없앤다.
+Q1 = """
+/* 장식 0 — 라벨과 질문만. 위계는 색과 굵기가 만든다. */
+.inquiry-question-box {
+  border: 0 !important; border-left: 0 !important; background: none !important;
+  padding: 0 !important; gap: 5px !important;
+}
+"""
+
+Q2 = """
+/* 라벨도 뺀다 — 물음표가 이미 질문임을 말한다. 위에 실선 한 줄로만 끊는다. */
+.inquiry-question-box {
+  border: 0 !important; border-left: 0 !important;
+  border-top: 1px solid var(--border) !important;
+  background: none !important; padding: 13px 0 0 !important; gap: 0 !important;
+}
+.inquiry-question-box > span { display: none !important; }
+"""
+
+# ── QA/QB/QC — 빼는 대신 위계를 만든다 ──────────────────────────────────────
+# 소유자 지적(2026-08-03): 주황 바를 그냥 지우면 질문이 다른 줄과 구별되지 않는다.
+# 장식을 없애려면 그 자리를 크기·순서·면이 대신해야 한다. 레퍼런스가 실제로 쓰는
+# 수단이 그것이다 — JPL Education 은 카드에서 제목이 가장 크고 나머지는 전부 메타이며,
+# 색은 유형 배지 하나에만 쓴다. Space Place 는 면(배경 블록)으로 묶는다.
+#
+# 흐린 회색(--text-muted #6b7585, 카드 위 명암비 3.49)은 세 안 모두에서 올린다.
+# 읽히게 만드는 게 목적이라 여기서 빼면 안 된다.
+_READ = ":root { --text-muted: #98a2b3; --text-secondary: #98a2b3; }\n"
+
+QA = _READ + """
+/* A — 순서를 바꾸고 크기로 세운다. 질문이 설명보다 크고 밝다. 상자·바 없음.
+   card-head 를 display:contents 로 풀어 질문을 설명 위로 올린다(마크업 불변). */
+.inquiry-module-card-head { display: contents !important; }
+.inquiry-module-card-chip { order: 1 !important; }
+.inquiry-module-card-head h2 { order: 2 !important; }
+.inquiry-question-box { order: 3 !important; }
+.inquiry-module-card-head p { order: 4 !important; }
+.inquiry-module-card-meta { order: 5 !important; }
+.inquiry-module-tags { order: 6 !important; }
+.inquiry-module-card-action { order: 7 !important; }
+
+.inquiry-question-box {
+  border: 0 !important; border-left: 0 !important; background: none !important;
+  padding: 0 !important; gap: 4px !important;
+}
+.inquiry-question-box strong {
+  font-size: 21px !important; line-height: 1.5 !important;
+  color: var(--text-heading) !important; font-weight: 700 !important;
+}
+.inquiry-module-card-head p {
+  font-size: 15px !important; color: var(--text-muted) !important;
+}
+.inquiry-module-card-body { gap: 13px !important; }
+"""
+
+QB = _READ + """
+/* B — 면으로 묶는다. 주황이 아니라 중립 톤 한 단계. 카드 안에서 한 번만 쓴다. */
+.inquiry-question-box {
+  border: 0 !important; border-left: 0 !important;
+  background: rgba(255,255,255,.05) !important;
+  padding: 15px 17px !important; gap: 6px !important;
+}
+.inquiry-question-box strong {
+  font-size: 19px !important; line-height: 1.55 !important;
+  color: var(--text-heading) !important; font-weight: 700 !important;
+}
+.inquiry-module-card-head p { font-size: 15px !important; }
+"""
+
+QC = _READ + """
+/* C — 질문을 카드 제목 자리로 올린다. 설계원리 ①(탐구 주제 중심 접근)을 시각 위계로
+   그대로 옮긴 것. 모듈 이름은 분류 라벨이 된다. JPL 이 자원 제목을 가장 크게 두고
+   나머지를 메타로 내리는 방식과 같다. */
+.inquiry-module-card-head { display: contents !important; }
+.inquiry-module-card-chip { order: 1 !important; }
+.inquiry-question-box { order: 2 !important; }
+.inquiry-module-card-head h2 { order: 3 !important; }
+.inquiry-module-card-head p { order: 4 !important; }
+.inquiry-module-card-meta { order: 5 !important; }
+.inquiry-module-tags { order: 6 !important; }
+.inquiry-module-card-action { order: 7 !important; }
+
+.inquiry-question-box {
+  border: 0 !important; border-left: 0 !important; background: none !important;
+  padding: 0 !important; gap: 0 !important;
+}
+.inquiry-question-box > span { display: none !important; }
+.inquiry-question-box strong {
+  font-size: 27px !important; line-height: 1.35 !important;
+  color: var(--text-heading) !important; font-weight: 700 !important;
+}
+.inquiry-module-card-head h2 {
+  font-size: 17px !important; font-weight: 600 !important;
+  color: var(--text-primary) !important; line-height: 1.45 !important;
+}
+.inquiry-module-card-head p { font-size: 15px !important; color: var(--text-muted) !important; }
+.inquiry-module-card-body { gap: 12px !important; }
+"""
+
+# KMTNet 모듈만 step0_intro 질문 override 가 없어 공통 문구가 홈 카드에 그대로 나온다
+# (configs.ts:538 부근). 다른 두 모듈은 고유 질문을 갖고 있다. 시안에서는 제안 문구로
+# 갈아 끼워 눈으로 볼 수 있게 한다 — 앱 코드는 건드리지 않는다.
+KMT_OLD = "이 탐구에서 관측 자료로 설명하려는 현상은 무엇인가?"
+KMT_NEW = "매끄러운 증광 곡선 위의 짧은 이상신호만으로 행성이 있다고 어디까지 말할 수 있을까?"
+
 PROBE = r"""
 (()=>{const cs=e=>getComputedStyle(e),V=[...document.querySelectorAll('body *')].filter(e=>{const c=cs(e);return c.display!=='none'&&c.visibility!=='hidden'&&e.getBoundingClientRect().width>0}),bb=cs(document.body).backgroundColor;
 const t=e=>(e.textContent||'').trim().replace(/\s+/g,' ');
@@ -271,11 +379,26 @@ VARIANTS = {
     "btk": B + T + K,     # B + 타이포 + 색감
     "btks": B + T + K + S,  # + 제목 세리프(옵션)
     "ctk": C + T + K,     # C + 타이포 + 색감
+    # 5번(B+글씨) 위에서 주황 세로 바를 뺀 두 안. KMTNet 질문도 갈아 끼운다.
+    "bt_q1": B + T + Q1,
+    "bt_q2": B + T + Q2,
+    # 참고 — 5번에 버튼 명암비만 고친 것(색감 레이어 전체는 아님)
+    "bt_q1_btn": B + T + Q1 + ".btn-primary { color: #0d1117 !important; "
+                             "border-color: rgba(0,0,0,.25) !important; }",
+    # 빼는 대신 위계를 만든 세 안
+    "bt_qa": B + T + QA,
+    "bt_qb": B + T + QB,
+    "bt_qc": B + T + QC,
 }
 
+# 질문 문구를 갈아 끼울 변형(시안 표시용, 앱 코드는 그대로)
+SWAP_KMT = {"bt_q1", "bt_q2", "bt_q1_btn", "bt_qa", "bt_qb", "bt_qc"}
 
-def build(raw: str, css: str, probe: bool) -> str:
+
+def build(raw: str, css: str, probe: bool, swap_kmt: bool = False) -> str:
     h = raw
+    if swap_kmt:
+        h = h.replace(KMT_OLD, KMT_NEW)
     # 정적 스냅샷: SPA 스크립트를 떼어 DOM 을 그대로 고정한다
     h = re.sub(r"<script\b[^>]*\bsrc=[^>]*>\s*</script>", "", h, flags=re.I)
     h = re.sub(r"<script\b[^>]*>.*?</script>", "", h, flags=re.I | re.S)
@@ -294,8 +417,9 @@ def build(raw: str, css: str, probe: bool) -> str:
 def main() -> None:
     raw = RAW.read_text(encoding="utf-8")
     for name, css in VARIANTS.items():
-        (HERE / f"home_{name}.html").write_text(build(raw, css, False), encoding="utf-8")
-        (HERE / f"probe_{name}.html").write_text(build(raw, css, True), encoding="utf-8")
+        sw = name in SWAP_KMT
+        (HERE / f"home_{name}.html").write_text(build(raw, css, False, sw), encoding="utf-8")
+        (HERE / f"probe_{name}.html").write_text(build(raw, css, True, sw), encoding="utf-8")
     print("built:", ", ".join(f"home_{k}.html" for k in VARIANTS))
 
 
