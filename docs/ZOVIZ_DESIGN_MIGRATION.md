@@ -105,8 +105,8 @@
 1. §2 토큰 교체 (기계적) + §3 세 결정 (시안 승인 후)
 2. KMTNet 대표 탐구 질문 복구 — 커밋 `8f7a34e`·`c2012e3` 에 문구 보존
    (DEMO_VERSION_RECORD 2026-08-08 절 재적용 2번)
-3. 교사 피드백 문구 손질 — "AI가 쓴 듯한 표현", "전체 구성이 더 단순했으면"
-   (`docs/survey/RESULTS_2026-07-24_교사시연.md`)
+3. 교사 피드백 반영 — 항목별 배치는 **`docs/FEEDBACK_ZOVIZ_MAP.md`** (피드백
+   클러스터 F1~F10 × 붙는 자리; 우선순위 = Step 5 비교 → Step 6 기록 → 용어 칩)
 4. 랜딩(`landing/zoviz/`)을 앱 진입으로 연결 + 교사용 수업 안내 자료
 5. 완성본으로 전문가 CVI (`docs/survey/easwa_expert_cvi.gs`) — 검토 대상
    버전을 DEMO_VERSION_RECORD 전문가 검토 표에 기입
