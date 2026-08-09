@@ -98,6 +98,7 @@ h1{margin:0 0 8px;font-size:26px;color:var(--text-heading);letter-spacing:-.02em
 .zv .gtrow .newmark{margin-left:auto}
 .zv .gp{margin:8px 0 0;font-size:16px;color:var(--muted);line-height:1.7}
 .zv .body{margin-top:18px}
+.zv .note-under{margin:14px 0 0;font-size:14px;color:var(--muted);line-height:1.7}
 .zv .plot{height:150px;border-radius:12px;background:#0e131b;display:flex;align-items:center;
   justify-content:center;color:var(--muted);font-size:14px;text-align:center;line-height:1.6}
 
@@ -226,7 +227,7 @@ h1{margin:0 0 8px;font-size:26px;color:var(--text-heading);letter-spacing:-.02em
         <div class="tile"><svg viewBox="0 0 24 24"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg></div>
         <div>
           <div class="gtrow"><h3 class="gt">측정한 값과 문헌값 비교</h3></div>
-          <p class="gp">여기 문헌값은 아카이브에 실린 식 깊이에 √를 씌워 거꾸로 구했습니다. 논문이 직접 발표한 반지름비와는 원래 조금 차이가 납니다.</p>
+          <p class="gp">여기 문헌값은 NASA 아카이브에서 가져온 값입니다. 내가 측정한 값과 얼마나 차이나는지 비교해보고, 그 원인을 설명해봅시다.</p>
           <div class="body"><div class="plot">위상을 접은 관측점 · 내가 맞춘 모델 · 카탈로그대로라면 나왔을 모델 · 잔차</div></div>
           <div class="body">
             <table>
@@ -238,6 +239,7 @@ h1{margin:0 0 8px;font-size:26px;color:var(--text-heading);letter-spacing:-.02em
               <tr><td class="lab">공전 주기</td><td class="r">—</td><td class="r ref">1.27493 d</td>
                   <td class="r ref" style="font-family:var(--font-ui);font-size:15px">측정값 아님 · 아카이브에서 가져옴</td></tr>
             </table>
+            <p class="note-under">문헌 반지름비는 아카이브의 식 깊이에서 거꾸로 구한 값이라, 논문이 직접 발표한 값과는 원래 조금 다릅니다.</p>
           </div>
         </div>
       </div>
@@ -246,7 +248,7 @@ h1{margin:0 0 8px;font-size:26px;color:var(--text-heading);letter-spacing:-.02em
         <div class="tile"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
         <div>
           <div class="gtrow"><h3 class="gt">차이와 측정 오차 비교</h3><span class="newmark">여기가 새로 붙습니다</span></div>
-          <p class="gp">−11.9%라는 숫자만으로는 이 차이가 큰지 알 수 없습니다. 내 측정 오차와 견주어 봅니다.</p>
+          <p class="gp">−11.9%라는 숫자만으로는 이 차이가 큰지 알 수 없습니다. 내 측정 오차와 견주어 봅시다.</p>
           <div class="body sig">
             <div class="n">7.4 σ</div>
             <p>반지름비 차이 0.0149는 내 오차 ±0.002의 <b>약 7배</b>입니다.<br>오차 때문에 우연히 이만큼 벌어지기는 어렵습니다. 적합 잔차 χ²_red가 0.98이니 모델이 자료를 못 맞춘 것도 아닙니다.</p>
@@ -258,13 +260,13 @@ h1{margin:0 0 8px;font-size:26px;color:var(--text-heading);letter-spacing:-.02em
         <div class="tile"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg></div>
         <div>
           <div class="gtrow"><h3 class="gt">분석에 쓴 조건</h3><span class="newmark">여기가 새로 붙습니다</span></div>
-          <p class="gp">아래는 내가 고른 값과 모델이 미리 정해 둔 값입니다. 이 가운데 무엇이 차이를 만들었을지 직접 따져 봅니다.</p>
+          <p class="gp">아래는 탐구활동에서 직접 설정한 조건과, 이번 분석에서 고정된 값입니다.</p>
           <div class="body set">
             <div class="r"><div class="k"><em>구경</em> · 내가 정함<span class="badge">Step 3</span></div><div class="v">반지름 2.5 px · 52.5″</div></div>
             <div class="r"><div class="k"><em>구경에 들어온 이웃별</em><span class="badge">Step 2</span></div><div class="v hot">1개 · T = 11.63 · 43.8″</div></div>
             <div class="r"><div class="k"><em>비교성</em> · 내가 고름</div><div class="v">3개 · 산포 1,425 ppm</div></div>
-            <div class="r"><div class="k"><em>주연감광 계수</em> · 모델이 정해 둠</div><div class="v">고정값 사용</div></div>
-            <div class="r"><div class="k"><em>기준선·이상치 처리</em> · 기본값</div><div class="v">시그마 클리핑</div></div>
+            <div class="r"><div class="k"><em>주연감광 계수</em> · 별 가장자리가 어두워 보이는 정도</div><div class="v">모델이 정해 둔 값</div></div>
+            <div class="r"><div class="k"><em>기준선·이상치 처리</em> · 크게 튀는 점 자동 제외</div><div class="v">기본값 사용</div></div>
           </div>
         </div>
       </div>
@@ -273,11 +275,10 @@ h1{margin:0 0 8px;font-size:26px;color:var(--text-heading);letter-spacing:-.02em
         <div class="tile"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></div>
         <div>
           <div class="gtrow"><h3 class="gt">차이가 왜 생겼을까</h3></div>
-          <p class="gp">위 조건 가운데 무엇이 어느 쪽으로 영향을 줬을지, 근거를 들어 써 봅니다.</p>
+          <p class="gp">위 조건이 결과에 구체적으로 어떻게 영향을 줬을지 적어봅시다.</p>
           <div class="body">
             <textarea placeholder="예: 구경 안에 이웃별이 들어와 있어서…"></textarea>
             <div class="foot"><span class="hint">여기 쓴 내용은 6단계 기록으로 넘어갑니다.</span><button class="btn">설명 제출</button></div>
-            <p class="lock"><b>먼저 쓰고 나면 열립니다</b> — 같은 자료를 다른 사람들이 어떻게 설명했는지 볼 수 있습니다.<span class="newmark" style="margin-left:10px">여기가 새로 붙습니다</span></p>
           </div>
         </div>
       </div>
@@ -294,7 +295,7 @@ h1{margin:0 0 8px;font-size:26px;color:var(--text-heading);letter-spacing:-.02em
         <div class="tile"><svg viewBox="0 0 24 24"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg></div>
         <div>
           <div class="gtrow"><h3 class="gt">측정한 값과 문헌값 비교</h3></div>
-          <p class="gp">여기 문헌값은 아카이브에 실린 식 깊이에 √를 씌워 거꾸로 구했습니다. 논문이 직접 발표한 반지름비와는 원래 조금 차이가 납니다.</p>
+          <p class="gp">여기 문헌값은 NASA 아카이브에서 가져온 값입니다. 내가 측정한 값과 얼마나 차이나는지 비교해보고, 그 원인을 설명해봅시다.</p>
           <div class="body"><div class="plot">위상을 접은 관측점 · 내가 맞춘 모델 · 카탈로그대로라면 나왔을 모델 · 잔차</div></div>
           <div class="body">
             <table>
@@ -306,6 +307,7 @@ h1{margin:0 0 8px;font-size:26px;color:var(--text-heading);letter-spacing:-.02em
               <tr><td class="lab">공전 주기</td><td class="r">—</td><td class="r ref">1.27493 d</td>
                   <td class="r ref" style="font-family:var(--font-ui);font-size:15px">측정값 아님 · 아카이브에서 가져옴</td></tr>
             </table>
+            <p class="note-under">문헌 반지름비는 아카이브의 식 깊이에서 거꾸로 구한 값이라, 논문이 직접 발표한 값과는 원래 조금 다릅니다.</p>
           </div>
         </div>
       </div>
@@ -314,7 +316,7 @@ h1{margin:0 0 8px;font-size:26px;color:var(--text-heading);letter-spacing:-.02em
         <div class="tile"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
         <div>
           <div class="gtrow"><h3 class="gt">차이와 측정 오차 비교</h3><span class="newmark">여기가 새로 붙습니다</span></div>
-          <p class="gp">−11.9%라는 숫자만으로는 이 차이가 큰지 알 수 없습니다. 내 측정 오차와 견주어 봅니다.</p>
+          <p class="gp">−11.9%라는 숫자만으로는 이 차이가 큰지 알 수 없습니다. 내 측정 오차와 견주어 봅시다.</p>
           <div class="body sig">
             <div class="n">7.4 σ</div>
             <p>반지름비 차이 0.0149는 내 오차 ±0.002의 <b>약 7배</b>입니다.<br>오차 때문에 우연히 이만큼 벌어지기는 어렵습니다. 적합 잔차 χ²_red가 0.98이니 모델이 자료를 못 맞춘 것도 아닙니다.</p>
@@ -326,13 +328,13 @@ h1{margin:0 0 8px;font-size:26px;color:var(--text-heading);letter-spacing:-.02em
         <div class="tile"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg></div>
         <div>
           <div class="gtrow"><h3 class="gt">분석에 쓴 조건</h3><span class="newmark">여기가 새로 붙습니다</span></div>
-          <p class="gp">아래는 내가 고른 값과 모델이 미리 정해 둔 값입니다. 이 가운데 무엇이 차이를 만들었을지 직접 따져 봅니다.</p>
+          <p class="gp">아래는 탐구활동에서 직접 설정한 조건과, 이번 분석에서 고정된 값입니다.</p>
           <div class="body set">
             <div class="r"><div class="k"><em>구경</em> · 내가 정함<span class="badge">Step 3</span></div><div class="v">반지름 2.5 px · 52.5″</div></div>
             <div class="r"><div class="k"><em>구경에 들어온 이웃별</em><span class="badge">Step 2</span></div><div class="v hot">1개 · T = 11.63 · 43.8″</div></div>
             <div class="r"><div class="k"><em>비교성</em> · 내가 고름</div><div class="v">3개 · 산포 1,425 ppm</div></div>
-            <div class="r"><div class="k"><em>주연감광 계수</em> · 모델이 정해 둠</div><div class="v">고정값 사용</div></div>
-            <div class="r"><div class="k"><em>기준선·이상치 처리</em> · 기본값</div><div class="v">시그마 클리핑</div></div>
+            <div class="r"><div class="k"><em>주연감광 계수</em> · 별 가장자리가 어두워 보이는 정도</div><div class="v">모델이 정해 둔 값</div></div>
+            <div class="r"><div class="k"><em>기준선·이상치 처리</em> · 크게 튀는 점 자동 제외</div><div class="v">기본값 사용</div></div>
           </div>
         </div>
       </div>
@@ -341,11 +343,10 @@ h1{margin:0 0 8px;font-size:26px;color:var(--text-heading);letter-spacing:-.02em
         <div class="tile"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></div>
         <div>
           <div class="gtrow"><h3 class="gt">차이가 왜 생겼을까</h3></div>
-          <p class="gp">위 조건 가운데 무엇이 어느 쪽으로 영향을 줬을지, 근거를 들어 써 봅니다.</p>
+          <p class="gp">위 조건이 결과에 구체적으로 어떻게 영향을 줬을지 적어봅시다.</p>
           <div class="body">
             <textarea placeholder="예: 구경 안에 이웃별이 들어와 있어서…"></textarea>
             <div class="foot"><span class="hint">여기 쓴 내용은 6단계 기록으로 넘어갑니다.</span><button class="btn">설명 제출</button></div>
-            <p class="lock"><b>먼저 쓰고 나면 열립니다</b> — 같은 자료를 다른 사람들이 어떻게 설명했는지 볼 수 있습니다.<span class="newmark" style="margin-left:10px">여기가 새로 붙습니다</span></p>
           </div>
         </div>
       </div>
