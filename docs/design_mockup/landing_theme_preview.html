@@ -1,0 +1,892 @@
+<!doctype html>
+<!-- EASWA 랜딩 · Zoviz 시안 사본 (2026-08-08)
+     원본: website-builder.zoviz.com 프리뷰 저장본. 마크업·컴파일CSS를 그대로 추려
+     레이아웃은 동일. 바꾼 것: ① 다크 섹션에서 배경에 묻히던 글자색·아이콘·점
+     ② 이미지 전부 실자료(UDF/TESS/KMTNet/M45 + 앱 스텝 스크린샷) ③ 죽은 링크.
+     상세는 파일 하단 주석·git 이력 참고. -->
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EASWA — Exploring All-Sky Web App</title>
+<meta name="description" content="Learners analyze public astronomy data — NASA TESS, KASI KMTNet, ESA Gaia — in the browser with guided steps and cited sources.">
+<link rel="preconnect" href="https://rsms.me/">
+<link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+<style>
+:root{--puck-color-rose-01:#4a001c;--puck-color-rose-02:#670833;--puck-color-rose-03:#87114c;--puck-color-rose-04:#a81a66;--puck-color-rose-05:#bc5089;--puck-color-rose-06:#cc7ca5;--puck-color-rose-07:#d89aba;--puck-color-rose-08:#e3b8cf;--puck-color-rose-09:#efd6e3;--puck-color-rose-10:#f6eaf1;--puck-color-rose-11:#faf4f8;--puck-color-rose-12:#fef8fc;--puck-color-azure-01:#00175d;--puck-color-azure-02:#002c77;--puck-color-azure-03:#014292;--puck-color-azure-04:#0158ad;--puck-color-azure-05:#3479be;--puck-color-azure-06:#6499cf;--puck-color-azure-07:#88b0da;--puck-color-azure-08:#abc7e5;--puck-color-azure-09:#cfdff0;--puck-color-azure-10:#e7eef7;--puck-color-azure-11:#f3f6fb;--puck-color-azure-12:#f7faff;--puck-color-green-01:#002000;--puck-color-green-02:#043604;--puck-color-green-03:#084e08;--puck-color-green-04:#0c680c;--puck-color-green-05:#1d882f;--puck-color-green-06:#2faa53;--puck-color-green-07:#56c16f;--puck-color-green-08:#7dd78b;--puck-color-green-09:#b8e8bf;--puck-color-green-10:#ddf3e0;--puck-color-green-11:#eff8f0;--puck-color-green-12:#f3fcf4;--puck-color-yellow-01:#211000;--puck-color-yellow-02:#362700;--puck-color-yellow-03:#4c4000;--puck-color-yellow-04:#645a00;--puck-color-yellow-05:#877614;--puck-color-yellow-06:#ab9429;--puck-color-yellow-07:#bfac4e;--puck-color-yellow-08:#d4c474;--puck-color-yellow-09:#e6deb1;--puck-color-yellow-10:#f3efd9;--puck-color-yellow-11:#f9f7ed;--puck-color-yellow-12:#fcfaf0;--puck-color-red-01:#4c0000;--puck-color-red-02:#6a0a10;--puck-color-red-03:#8a1422;--puck-color-red-04:#ac1f35;--puck-color-red-05:#bf5366;--puck-color-red-06:#ce7e8e;--puck-color-red-07:#d99ca8;--puck-color-red-08:#e4b9c2;--puck-color-red-09:#efd7db;--puck-color-red-10:#f6eaec;--puck-color-red-11:#faf4f5;--puck-color-red-12:#fff9fa;--puck-color-grey-01:#181818;--puck-color-grey-02:#292929;--puck-color-grey-03:#404040;--puck-color-grey-04:#5a5a5a;--puck-color-grey-05:#767676;--puck-color-grey-06:#949494;--puck-color-grey-07:#ababab;--puck-color-grey-08:#c3c3c3;--puck-color-grey-09:#dcdcdc;--puck-color-grey-10:#efefef;--puck-color-grey-11:#f5f5f5;--puck-color-grey-12:#fafafa;--puck-color-black:#000000;--puck-color-white:#ffffff;--puck-font-size-scale-base-unitless:12;--puck-font-size-xxxs-unitless:12;--puck-font-size-xxs-unitless:14;--puck-font-size-xs-unitless:16;--puck-font-size-s-unitless:18;--puck-font-size-m-unitless:21;--puck-font-size-l-unitless:24;--puck-font-size-xl-unitless:28;--puck-font-size-xxl-unitless:36;--puck-font-size-xxxl-unitless:48;--puck-font-size-xxxxl-unitless:56;--puck-font-size-xxxs:calc(1rem * var(--puck-font-size-xxxs-unitless) / 16);--puck-font-size-xxs:calc(1rem * var(--puck-font-size-xxs-unitless) / 16);--puck-font-size-xs:calc(1rem * var(--puck-font-size-xs-unitless) / 16);--puck-font-size-s:calc(1rem * var(--puck-font-size-s-unitless) / 16);--puck-font-size-m:calc(1rem * var(--puck-font-size-m-unitless) / 16);--puck-font-size-l:calc(1rem * var(--puck-font-size-l-unitless) / 16);--puck-font-size-xl:calc(1rem * var(--puck-font-size-xl-unitless) / 16);--puck-font-size-xxl:calc(1rem * var(--puck-font-size-xxl-unitless) / 16);--puck-font-size-xxxl:calc(1rem * var(--puck-font-size-xxxl-unitless) / 16);--puck-font-size-xxxxl:calc(1rem * var(--puck-font-size-xxxxl-unitless) / 16);--puck-font-size-base:var(--puck-font-size-xs);--line-height-reset:1;--line-height-xs:calc(var(--space-m-unitless) / var(--puck-font-size-m-unitless));--line-height-s:calc(var(--space-m-unitless) / var(--puck-font-size-s-unitless));--line-height-m:calc(var(--space-m-unitless) / var(--puck-font-size-xs-unitless));--line-height-l:calc(var(--space-m-unitless) / var(--puck-font-size-xxs-unitless));--line-height-xl:calc(var(--space-m-unitless) / var(--puck-font-size-scale-base-unitless));--line-height-base:var(--line-height-m);--fallback-font-stack:-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica Neue,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol;--puck-font-family:Inter,var(--fallback-font-stack);--puck-font-family-monospaced:ui-monospace,"Cascadia Code","Source Code Pro",Menlo,Consolas,"DejaVu Sans Mono",monospace}
+body{font-family:Inter,-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica Neue,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol;margin:0}@supports (font-variation-settings:normal){body{font-family:InterVariable,-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica Neue,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol}}
+.Button_Button__kVrSI{-webkit-appearance:none;-moz-appearance:none;appearance:none;background:none;border:1px solid transparent;border-radius:4px;color:var(--puck-color-white);display:inline-flex;align-items:center;gap:8px;letter-spacing:.05ch;font-family:var(--puck-font-family);font-size:14px;font-weight:400;box-sizing:border-box;line-height:1;text-align:center;text-decoration:none;transition:background-color 50ms ease-in;cursor:pointer;white-space:nowrap;margin:0}.Button_Button__kVrSI:active,.Button_Button__kVrSI:hover{transition:none}.Button_Button--medium__3pY6s{min-height:34px;padding-bottom:7px;-webkit-padding-start:19px;padding-inline-start:19px;-webkit-padding-end:19px;padding-inline-end:19px;padding-top:7px}.Button_Button--large__mazg1{padding-bottom:11px;-webkit-padding-start:19px;padding-inline-start:19px;-webkit-padding-end:19px;padding-inline-end:19px;padding-top:11px}.Button_Button-icon__jh9tu{margin-top:2px}.Button_Button--primary__ePEsN{background:var(--puck-color-azure-04)}.Button_Button__kVrSI:focus-visible{outline:2px solid var(--puck-color-azure-05);outline-offset:2px}@media (hover:hover) and (pointer:fine){.Button_Button--primary__ePEsN:hover{background-color:var(--puck-color-azure-03)}}.Button_Button--primary__ePEsN:active{background-color:var(--puck-color-azure-02)}.Button_Button--secondary__OAm9w{border:1px solid;color:currentColor}@media (hover:hover) and (pointer:fine){.Button_Button--secondary__OAm9w:hover{background-color:var(--puck-color-azure-12);color:var(--puck-color-black)}}.Button_Button--secondary__OAm9w:active{background-color:var(--puck-color-azure-11);color:var(--puck-color-black)}.Button_Button--flush__s0dEN{border-radius:0}.Button_Button--disabled__3jt20,.Button_Button--disabled__3jt20:hover{background-color:var(--puck-color-grey-07);color:var(--puck-color-grey-03);cursor:not-allowed}.Button_Button--fullWidth__Yo_00{justify-content:center;width:100%}.Button_Button-spinner__zzZKm{-webkit-padding-start:8px;padding-inline-start:8px}
+@keyframes styles_loader-animation__QF_y_{0%{transform:rotate(0deg) scale(1)}50%{transform:rotate(180deg) scale(.8)}to{transform:rotate(1turn) scale(1)}}
+.styles_Carousel__GmYk7{width:100%}
+.styles_Carousel-header__ur4cg{text-align:center;margin-bottom:48px}
+.styles_Carousel-title__d59gG{font-size:32px;font-weight:700;margin:0 0 12px;color:var(--puck-color-grey-01)}
+@media (min-width:768px){.styles_Carousel-title__d59gG{font-size:40px}}
+.styles_Carousel-subtitle__cDrfK{font-size:16px;color:var(--puck-color-grey-05);max-width:600px;margin:0 auto;line-height:1.6}
+.styles_Carousel-wrapper__8SR5f{display:flex;align-items:center;gap:16px}
+.styles_Carousel-track__a3m1a{overflow:hidden;flex:1 1}
+.styles_Carousel-slides__Bnwsf{display:flex;transition:transform .4s ease}
+.styles_Carousel-item__iXsvJ{flex-shrink:0;display:flex;flex-direction:column}
+.styles_Carousel-item--bordered__VAJWt{border:1px solid var(--puck-color-grey-09);border-radius:12px;overflow:hidden}
+.styles_Carousel-itemImage__dH4gS{width:100%;height:180px;background-size:cover;background-position:50%;background-color:var(--puck-color-grey-09)}
+.styles_Carousel-itemContent__8LIWX{padding:20px;display:flex;flex-direction:column;gap:8px;flex:1 1}
+.styles_Carousel-item--minimal__ov0Df .styles_Carousel-itemContent__8LIWX{padding:16px 0}
+.styles_Carousel-itemBadge__Wu2Bm{display:inline-block;padding:4px 10px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;background:var(--puck-color-azure-09);color:var(--puck-color-azure-04);border-radius:4px;width:-moz-fit-content;width:fit-content}
+.styles_Carousel-itemTitle__v3LWj{font-size:18px;font-weight:600;margin:0;color:var(--puck-color-grey-01)}
+.styles_Carousel-itemTitle__v3LWj a{color:inherit;text-decoration:none}
+.styles_Carousel-itemTitle__v3LWj a:hover{text-decoration:underline}
+.styles_Carousel-itemDescription__ABR6G{font-size:14px;color:var(--puck-color-grey-05);margin:0;line-height:1.5}
+.styles_Carousel-arrow__YUHTW{flex-shrink:0;width:44px;height:44px;border-radius:50%;border:1px solid var(--puck-color-grey-08);background:white;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s ease;color:var(--puck-color-grey-03)}
+.styles_Carousel-arrow__YUHTW:hover:not(:disabled){border-color:var(--puck-color-grey-05);color:var(--puck-color-grey-01)}
+.styles_Carousel-arrow__YUHTW:disabled{opacity:.4;cursor:not-allowed}
+.styles_Carousel-dots__ul77l{display:flex;justify-content:center;gap:8px;margin-top:32px}
+.styles_Carousel-dot__D9htX{width:10px;height:10px;border-radius:50%;border:none;background:var(--puck-color-grey-08);cursor:pointer;padding:0;transition:all .2s ease}
+.styles_Carousel-dot--active__ETkPo{background:var(--puck-color-azure-04);transform:scale(1.2)}
+.styles_Carousel-dot__D9htX:hover:not(.styles_Carousel-dot--active__ETkPo){background:var(--puck-color-grey-06)}
+@media (max-width:768px){.styles_Carousel-arrow__YUHTW{display:none}}
+.styles_Section__4tQXe:not(.styles_Section__4tQXe .styles_Section__4tQXe){-webkit-padding-start:16px;padding-inline-start:16px;-webkit-padding-end:16px;padding-inline-end:16px}
+@media (min-width:768px){.styles_Section__4tQXe:not(.styles_Section__4tQXe .styles_Section__4tQXe){-webkit-padding-start:24px;padding-inline-start:24px;-webkit-padding-end:24px;padding-inline-end:24px}}
+.styles_Section-inner__8sPWU{-webkit-margin-start:auto;margin-inline-start:auto;-webkit-margin-end:auto;margin-inline-end:auto;height:100%;width:100%}
+.styles_Section__4tQXe .styles_Section__4tQXe .styles_Section-inner__8sPWU{-webkit-margin-start:0;margin-inline-start:0;-webkit-margin-end:0;margin-inline-end:0}
+.styles_ContactForm__vpnqQ{padding:64px 24px;background-color:#f9fafb}
+.styles_ContactForm-container__tgnDb{max-width:560px;margin:0 auto}
+.styles_ContactForm-header__JLji5{text-align:center;margin-bottom:40px}
+.styles_ContactForm-title__dYf16{font-size:36px;font-weight:700;color:#111827;margin:0 0 16px}
+.styles_ContactForm-subtitle__2dwHH{font-size:18px;color:#6b7280;margin:0;line-height:1.6}
+.styles_ContactForm-form__izymr{display:flex;flex-direction:column;gap:24px}
+.styles_ContactForm-field__VEz9d{display:flex;flex-direction:column;gap:8px}
+.styles_ContactForm-label__jlaFp{font-size:14px;font-weight:600;color:#374151}
+.styles_ContactForm-input__XyDKz,.styles_ContactForm-textarea__1CDoj{width:100%;padding:14px 16px;font-size:16px;border:1px solid #d1d5db;border-radius:8px;background-color:white;color:#111827;transition:border-color .2s,box-shadow .2s;box-sizing:border-box}
+.styles_ContactForm-input__XyDKz:focus,.styles_ContactForm-textarea__1CDoj:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+.styles_ContactForm-input__XyDKz::placeholder,.styles_ContactForm-textarea__1CDoj::placeholder{color:#9ca3af}
+.styles_ContactForm-textarea__1CDoj{resize:vertical;min-height:120px}
+.styles_ContactForm-submit__uDd9k{padding:16px 32px;font-size:16px;font-weight:600;color:white;background-color:#3b82f6;border:none;border-radius:8px;cursor:pointer;transition:background-color .2s,transform .1s;display:flex;align-items:center;justify-content:center;min-height:52px}
+.styles_ContactForm-submit__uDd9k:hover:not(:disabled){background-color:#2563eb}
+.styles_ContactForm-submit__uDd9k:active:not(:disabled){transform:scale(.98)}
+.styles_ContactForm-submit__uDd9k:disabled{opacity:.7;cursor:not-allowed}
+@keyframes styles_spin__wx4BP{to{transform:rotate(1turn)}}
+@keyframes styles_fadeIn__FV2x_{0%{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes styles_scaleIn__vpWfu{0%{transform:scale(0)}to{transform:scale(1)}}
+@media (min-width:768px){.styles_ContactForm__vpnqQ{padding:80px 24px}
+.styles_ContactForm-title__dYf16{font-size:42px}}
+.styles_FAQ__rpRqV{width:100%}
+.styles_FAQ-container__9RJ_q{max-width:800px;margin:0 auto;padding:0 24px}
+.styles_FAQ-header__mH_sa{text-align:center;margin-bottom:48px}
+.styles_FAQ-title__uf666{font-size:36px;font-weight:700;color:#111827;margin:0 0 16px;line-height:1.2}
+.styles_FAQ-subtitle__1lFgN{font-size:18px;color:#6b7280;line-height:1.6;max-width:600px;margin:0 auto}
+.styles_FAQ-list__soQuG{display:flex;flex-direction:column;gap:12px}
+.styles_FAQ-item__nx10n{background:white;border-radius:12px;overflow:hidden;transition:all .2s ease}
+.styles_FAQ-item__nx10n[data-style=flat]{background:transparent;border-radius:0;border-bottom:1px solid #e5e7eb}
+.styles_FAQ-item__nx10n[data-style=bordered]{border:1px solid #e5e7eb}
+.styles_FAQ-item__nx10n[data-style=shadow]{box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.styles_FAQ-item__nx10n[data-open=true][data-style=shadow]{box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.styles_FAQ-question__Gjz_w{width:100%;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px;background:transparent;border:none;border-left:3px solid transparent;cursor:pointer;text-align:left;font-size:16px;font-weight:600;color:#111827;transition:all .2s ease}
+.styles_FAQ-item__nx10n[data-style=flat] .styles_FAQ-question__Gjz_w{padding-left:0;padding-right:0;border-left:none}
+.styles_FAQ-question__Gjz_w:hover{background:rgba(0,0,0,.02)}
+.styles_FAQ-item__nx10n[data-style=flat] .styles_FAQ-question__Gjz_w:hover{background:transparent}
+.styles_FAQ-icon__xD9jY{flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.styles_FAQ-answer__FcriG{padding:0 24px;overflow:hidden;transition:all .3s ease}
+.styles_FAQ-item__nx10n[data-style=flat] .styles_FAQ-answer__FcriG{padding-left:0;padding-right:0}
+.styles_FAQ-answer__FcriG p{margin:0;font-size:15px;line-height:1.7;color:#4b5563}
+@media (max-width:768px){.styles_FAQ-container__9RJ_q{padding:0 16px}
+.styles_FAQ-title__uf666{font-size:28px}
+.styles_FAQ-subtitle__1lFgN{font-size:16px}
+.styles_FAQ-question__Gjz_w{padding:16px 20px;font-size:15px}
+.styles_FAQ-answer__FcriG{padding:0 20px}
+.styles_FAQ-answer__FcriG p{font-size:14px}}
+.styles_Features__lipRG{width:100%}
+.styles_Features-header__dHMQU{text-align:center;margin-bottom:64px;max-width:800px;margin-left:auto;margin-right:auto}
+.styles_Features-title__TP2hb{font-size:2.5rem;font-weight:700;color:#1a1a1a;margin:0 0 16px;line-height:1.2}
+.styles_Features-subtitle__nYog7{font-size:1.125rem;color:#6b7280;margin:0;line-height:1.6}
+.styles_Features-grid__mVNDt{display:grid;grid-gap:48px 64px;gap:48px 64px}
+.styles_Features-item__DPG6C{display:flex;gap:20px;align-items:flex-start}
+.styles_Features-iconWrapper__wAAdX{flex-shrink:0;width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:12px;background-color:rgba(20,184,166,.1)}
+.styles_Features-iconWrapper__wAAdX svg{width:24px;height:24px}
+.styles_Features-content__0kdGI{flex:1 1;min-width:0}
+.styles_Features-itemTitle__vPKqb{font-size:1.25rem;font-weight:600;color:#1a1a1a;margin:0 0 8px;line-height:1.3}
+.styles_Features-itemDescription__jOjtM{font-size:1rem;color:#6b7280;margin:0;line-height:1.7}
+@media (max-width:1024px){.styles_Features-grid__mVNDt{gap:40px 48px}}
+@media (max-width:768px){.styles_Features-header__dHMQU{margin-bottom:48px}
+.styles_Features-title__TP2hb{font-size:2rem}
+.styles_Features-subtitle__nYog7{font-size:1rem}
+.styles_Features-grid__mVNDt{grid-template-columns:1fr!important;gap:32px}
+.styles_Features-item__DPG6C{gap:16px}
+.styles_Features-iconWrapper__wAAdX{width:40px;height:40px}
+.styles_Features-iconWrapper__wAAdX svg{width:20px;height:20px}
+.styles_Features-itemTitle__vPKqb{font-size:1.125rem}
+.styles_Features-itemDescription__jOjtM{font-size:.9375rem}}
+.styles_Footer__OYQuq{padding:64px 0 32px}
+.styles_Footer--divider___TnjM{border-top:1px solid rgba(0,0,0,.1)}
+.styles_Footer--dark__P8WB8.styles_Footer--divider___TnjM{border-top-color:rgba(255,255,255,.1)}
+.styles_Footer-inner__55Rd5{display:grid;grid-template-columns:1fr;grid-gap:48px;gap:48px;margin-bottom:48px}
+@media (min-width:768px){.styles_Footer-inner__55Rd5{grid-template-columns:1.5fr 2fr}}
+.styles_Footer-inner--stacked__uSzss .styles_Footer-brand__4rx_N{align-items:center}
+.styles_Footer-inner--stacked__uSzss .styles_Footer-columns__vKUYB{justify-content:center}
+.styles_Footer-brand__4rx_N{display:flex;flex-direction:column;gap:16px}
+.styles_Footer-logo__vYezq{margin-bottom:8px}
+.styles_Footer-logoText__rx5nK{font-size:24px;font-weight:700;letter-spacing:-.5px}
+.styles_Footer-description__nGW3W{font-size:14px;line-height:1.6;max-width:320px;margin:0}
+.styles_Footer-inner--stacked__uSzss .styles_Footer-description__nGW3W{max-width:none}
+.styles_Footer-social__PxQdG{display:flex;gap:16px;margin-top:8px}
+.styles_Footer-inner--stacked__uSzss .styles_Footer-social__PxQdG{justify-content:center}
+.styles_Footer-socialLink__rFEQV{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.05);transition:all .2s ease}
+.styles_Footer--dark__P8WB8 .styles_Footer-socialLink__rFEQV{background:rgba(255,255,255,.1)}
+.styles_Footer-socialLink__rFEQV:hover{background:rgba(0,0,0,.1);transform:translateY(-2px)}
+.styles_Footer--dark__P8WB8 .styles_Footer-socialLink__rFEQV:hover{background:rgba(255,255,255,.2)}
+.styles_Footer-columns__vKUYB{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));grid-gap:32px;gap:32px}
+.styles_Footer-column__sBgmV{display:flex;flex-direction:column;gap:16px}
+.styles_Footer-columnTitle__9zBcW{font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin:0}
+.styles_Footer-columnLinks__fiXpe{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:12px}
+.styles_Footer-columnLink__NqMI6{font-size:14px;text-decoration:none;transition:opacity .2s ease}
+.styles_Footer-columnLink__NqMI6:hover{opacity:.7;text-decoration:underline}
+.styles_Footer-bottom__SSiUy{padding-top:24px;border-top:1px solid;text-align:center}
+.styles_Footer-copyright__i_2Ev{font-size:13px;margin:0}
+.styles_Hero__AO43E{background-image:linear-gradient(rgba(255,255,255,0),rgb(247,250,255) 100%);display:flex;align-items:center;position:relative;overflow:hidden}
+.styles_Hero-inner__1sGAv{display:flex;align-items:center;position:relative;gap:48px;flex-wrap:wrap;z-index:1}
+@media (min-width:1024px){.styles_Hero-inner__1sGAv{flex-wrap:nowrap}}
+.styles_Hero__AO43E h1{line-height:1.1;font-size:48px;margin:0}
+@media (min-width:768px){.styles_Hero__AO43E h1{font-size:64px}}
+.styles_Hero-subtitle__qAT6c{color:var(--puck-color-grey-05);font-size:var(--puck-font-size-m);line-height:1.5;margin:0 0 8px;font-weight:300}
+.styles_Hero--hasImageBackground__a9rkW .styles_Hero-subtitle__qAT6c{color:var(--puck-color-grey-03)}
+.styles_Hero-image__ZxOrj{background-repeat:no-repeat;background-size:cover;background-position:50%;position:absolute;right:0;top:0;bottom:0;left:0}
+.styles_Hero-imageOverlay__d2XJa{background-image:linear-gradient(-90deg,rgb(247,250,255,.7),rgb(247,250,255,.7) 80%);position:absolute;right:0;top:0;bottom:0;left:0}
+@media (min-width:768px){.styles_Hero--left__Lfc_v .styles_Hero-imageOverlay__d2XJa{background-image:linear-gradient(-90deg,rgba(255,255,255,0),rgb(247,250,255) 70%)}}
+.styles_Hero-content__Uk3w1{display:flex;flex-direction:column;gap:16px;width:100%}
+@media (min-width:768px){.styles_Hero--hasImageBackground__a9rkW .styles_Hero-content__Uk3w1{max-width:50%}}
+.styles_Hero--center__FabKN .styles_Hero-inner__1sGAv{justify-content:center;text-align:center}
+.styles_Hero--center__FabKN .styles_Hero-content__Uk3w1{align-items:center;justify-content:center;max-width:100%}
+.styles_Hero-actions__HqNfN{display:flex;gap:16px}
+.HeadingAnalyzer_HeadingAnalyzer__YUvIy{display:block}
+.HeadingAnalyzer_HeadingAnalyzer-cssWarning__Wuis6{display:none!important}
+.HeadingAnalyzer_HeadingAnalyzerItem__SAJGG{display:inline}
+.HeadingAnalyzer_HeadingAnalyzerItem--missing__YIZnZ{color:var(--puck-color-red-04)}
+.styles_Navbar__yPz3G{display:flex;align-items:center;width:100%;z-index:1000;transition:all .3s ease}
+.styles_Navbar--sticky__Xeqvc{position:-webkit-sticky;position:sticky;top:0;box-shadow:0 2px 4px rgba(0,0,0,.1)}
+.styles_Navbar--dark__EqWrn{border-bottom:1px solid rgba(255,255,255,.1)}
+.styles_Navbar--dark__EqWrn .styles_Navbar-link__OXHa3{color:rgba(255,255,255,.9)}
+.styles_Navbar--dark__EqWrn .styles_Navbar-link__OXHa3:hover{color:#ffffff}
+.styles_Navbar-inner__cnD4j{display:flex;align-items:center;justify-content:space-between;width:100%;height:100%;gap:24px}
+.styles_Navbar-logo__VppU9{flex-shrink:0}
+.styles_Navbar-logoLink__AUimt{text-decoration:none;color:inherit;display:flex;align-items:center}
+.styles_Navbar-logoText__1dFMF{font-size:20px;font-weight:700;letter-spacing:-.5px}
+.styles_Navbar-links__6_cur{display:flex;align-items:center;gap:32px;flex:1 1;padding:0 24px}
+.styles_Navbar-link__OXHa3{text-decoration:none;color:inherit;font-size:15px;font-weight:500;transition:opacity .2s ease;white-space:nowrap}
+.styles_Navbar-link__OXHa3:hover{opacity:.7}
+.styles_Navbar-actions__6vg2U{flex-shrink:0;display:flex;align-items:center;gap:12px}
+.styles_Navbar-cta__0yumK{display:inline-flex;align-items:center;justify-content:center;padding:10px 20px;border-radius:6px;font-size:14px;font-weight:600;text-decoration:none;transition:all .2s ease;white-space:nowrap}
+.styles_Navbar-cta--primary__zZr2Y{background-color:var(--puck-color-azure-04);color:white}
+.styles_Navbar-cta--primary__zZr2Y:hover{background-color:var(--puck-color-azure-03)}
+@media (max-width:768px){.styles_Navbar-links__6_cur{display:none}
+.styles_Navbar-inner__cnD4j{justify-content:space-between}}
+.styles_Space__99Ahb{display:block;height:var(--size);width:var(--size)}
+.styles_Space--vertical__2vM6e{width:100%}
+.styles_Zigzag__Xn9Nq{width:100%}
+.styles_Zigzag-header__Ozpb4{text-align:center;margin-bottom:64px;max-width:700px;margin-left:auto;margin-right:auto}
+.styles_Zigzag-title__DuqTk{font-size:2.5rem;font-weight:700;color:#111827;margin:0 0 16px;line-height:1.2}
+.styles_Zigzag-subtitle__sc4hC{font-size:1.125rem;color:#6b7280;margin:0;line-height:1.6}
+.styles_Zigzag-rows__jX9_G{display:flex;flex-direction:column;gap:80px}
+.styles_Zigzag-row__ZtasI{display:grid;grid-template-columns:1fr 1fr;grid-gap:64px;gap:64px;align-items:center}
+.styles_Zigzag-row--reversed___Bo8s{direction:rtl}
+.styles_Zigzag-row--reversed___Bo8s>*{direction:ltr}
+.styles_Zigzag-imageWrapper__nhjau{position:relative;width:100%;aspect-ratio:4/3;overflow:hidden;background-color:#f3f4f6}
+.styles_Zigzag-imageWrapper__nhjau.styles_Zigzag-image--rounded__DhgDp{border-radius:16px}
+.styles_Zigzag-imageWrapper__nhjau.styles_Zigzag-image--square__ZSmIv{border-radius:0}
+.styles_Zigzag-imageWrapper__nhjau.styles_Zigzag-image--circle__HxpTR{border-radius:50%;aspect-ratio:1}
+.styles_Zigzag-image__HBptY{width:100%;height:100%;object-fit:cover}
+.styles_Zigzag-content__WbgAT{display:flex;flex-direction:column;gap:16px}
+.styles_Zigzag-rowTitle__6iwNW{font-size:1.75rem;font-weight:600;color:#111827;margin:0;line-height:1.3}
+.styles_Zigzag-rowDescription__0sb6L{font-size:1.0625rem;color:#4b5563;margin:0;line-height:1.7}
+.styles_Zigzag-button__DmCY1{display:inline-flex;align-items:center;justify-content:center;padding:12px 24px;font-size:1rem;font-weight:500;text-decoration:none;border-radius:8px;transition:opacity .2s ease,transform .2s ease;width:-moz-fit-content;width:fit-content;margin-top:8px}
+.styles_Zigzag-button__DmCY1:hover{opacity:.9;transform:translateY(-1px)}
+@media (max-width:768px){.styles_Zigzag-header__Ozpb4{margin-bottom:48px}
+.styles_Zigzag-title__DuqTk{font-size:2rem}
+.styles_Zigzag-rows__jX9_G{gap:48px}
+.styles_Zigzag-row__ZtasI{grid-template-columns:1fr;gap:24px}
+.styles_Zigzag-row--reversed___Bo8s{direction:ltr}
+.styles_Zigzag-rowTitle__6iwNW{font-size:1.5rem}
+.styles_Zigzag-imageWrapper__nhjau.styles_Zigzag-image--circle__HxpTR{aspect-ratio:4/3;border-radius:16px}}
+/* ══ 사본에서 손댄 것 전부 (원본 CSS는 위에 그대로) ══════════════
+   Zoviz 빌더가 라이트 배경용 기본 글자색(#1a1a1a 계열)을 다크 섹션
+   (#12161e/#0d1117) 위에 그대로 둬서 제목·항목명이 배경에 묻혔다.
+   레이아웃·크기·간격은 건드리지 않고 색만 세운다. */
+.is-dark .styles_Features-title__TP2hb,
+.is-dark .styles_Zigzag-title__DuqTk,
+.is-dark .styles_Carousel-title__d59gG,
+.is-dark .styles_FAQ-title__uf666{color:#f2f5f9}
+.is-dark .styles_Features-itemTitle__vPKqb{color:#e9edf3}
+.is-dark .styles_Zigzag-rowTitle__6iwNW{color:#f2f5f9}
+.is-dark .styles_Carousel-itemTitle__v3LWj a{color:#e9edf3}
+.is-dark .styles_Features-subtitle__nYog7,
+.is-dark .styles_Zigzag-subtitle__sc4hC,
+.is-dark .styles_Carousel-subtitle__cDrfK,
+.is-dark .styles_FAQ-subtitle__1lFgN{color:#98a4b5}
+.is-dark .styles_Features-itemDescription__jOjtM{color:#9aa6b7}
+.is-dark .styles_Zigzag-rowDescription__0sb6L{color:#aab5c4}
+.is-dark .styles_Carousel-itemDescription__ABR6G{color:#a3aebd}
+/* 다크 배경 위 진검정(#0d1117) 버튼 — 글자는 보였지만 버튼 형태가
+   배경에 녹아 사라졌다. 채움색은 시안 그대로, 윤곽만 세운다. */
+.styles_Navbar-cta--primary__zZr2Y,
+.is-dark .styles_Zigzag-button__DmCY1{border:1px solid rgba(255,255,255,.28)}
+/* 캐러셀 점 탐색: 진청(#0158ad)이 #0d1117 위에서 소실 → 한 단계 밝게 */
+.is-dark .styles_Carousel-dot__D9htX{background-color:rgba(255,255,255,.28)}
+.is-dark .styles_Carousel-dot--active__ETkPo{background-color:#6499cf}
+
+</style>
+<style>
+/* ══ 테마 미리보기 — 원본 랜딩은 그대로 두고 여기서만 색을 갈아끼운다.
+   인라인 style 을 이기려면 !important 가 필요하다.                     ══ */
+:root{ --t-ink:#14b8a6; --t-tint:rgba(20,184,166,.10);
+       --t-badge-bg:#cfdff0; --t-badge-fg:#0158ad; --t-dot:#6499cf;
+       --t-panel:#12161e; --t-panel2:#0d1117; --t-nav:#111827; }
+:root[data-theme="blue"]{ --t-ink:#6499cf; --t-tint:rgba(100,153,207,.13);
+       --t-badge-bg:rgba(100,153,207,.16); --t-badge-fg:#8fb8e0; --t-dot:#6499cf; }
+:root[data-theme="orange"]{ --t-ink:#e8722a; --t-tint:rgba(232,114,42,.13);
+       --t-badge-bg:rgba(232,114,42,.16); --t-badge-fg:#f0925a; --t-dot:#e8722a;
+       --t-panel:#161d2b; --t-panel2:#10151f; --t-nav:#141b2b; }
+
+[style*="background-color:#12161e"]{ background-color:var(--t-panel) !important }
+[style*="background-color:#0d1117"]{ background-color:var(--t-panel2) !important }
+[style*="background-color:#111827"]{ background-color:var(--t-nav) !important }
+.styles_Features-iconWrapper__wAAdX{ color:var(--t-ink) !important; background:var(--t-tint) !important }
+.styles_Carousel-itemBadge__Wu2Bm{ background:var(--t-badge-bg) !important; color:var(--t-badge-fg) !important }
+.is-dark .styles_Carousel-dot--active__ETkPo{ background-color:var(--t-dot) !important }
+.styles_FAQ-item__nx10n .styles_FAQ-question__Gjz_w[style*="border-left-color:#0d1117"]{
+  border-left-color:var(--t-ink) !important }
+.styles_FAQ-icon__xD9jY{ color:var(--t-ink) !important }
+
+/* 전환 막대 — 미리보기 전용, 실제 랜딩에는 없다 */
+#tsw{position:fixed;right:18px;bottom:18px;z-index:9999;display:flex;gap:8px;padding:9px 11px;
+  border-radius:999px;background:rgba(10,13,20,.92);border:1px solid rgba(255,255,255,.16);
+  box-shadow:0 10px 30px rgba(0,0,0,.5);font-family:system-ui,sans-serif}
+#tsw button{appearance:none;border:1px solid rgba(255,255,255,.18);background:transparent;
+  color:#cfd6e2;font-size:13px;font-weight:600;padding:7px 14px;border-radius:999px;cursor:pointer}
+#tsw button[aria-pressed="true"]{background:#fff;color:#0d1117;border-color:#fff}
+#tsw .sw{width:13px;height:13px;border-radius:50%;display:inline-block;margin-right:7px;vertical-align:-2px}
+</style>
+</head>
+<body>
+<div id="top" style="display:flex;flex-direction:column;min-height:100vh">
+<div style="flex-grow:1">
+<nav class="styles_Navbar__yPz3G styles_Navbar--sticky__Xeqvc styles_Navbar--dark__EqWrn" style="background-color:#111827;color:#ffffff;height:64px">
+<div class="styles_Section__4tQXe">
+<div class="styles_Section-inner__8sPWU" style="max-width:1280px">
+<div class="styles_Navbar-inner__cnD4j">
+<div class="styles_Navbar-logo__VppU9">
+<a href="#top" class="styles_Navbar-logoLink__AUimt">
+<span class="styles_Navbar-logoText__1dFMF">EASWA</span>
+</a>
+</div>
+<div class="styles_Navbar-links__6_cur" style="justify-content:flex-start">
+<a href="#top" class="styles_Navbar-link__OXHa3">Home</a>
+<a href="#modules" class="styles_Navbar-link__OXHa3">Modules</a>
+<a href="#flow" class="styles_Navbar-link__OXHa3">How It Works</a>
+<a href="#teachers" class="styles_Navbar-link__OXHa3">For Teachers</a>
+<a href="#credits" class="styles_Navbar-link__OXHa3">Credits</a>
+</div>
+<div class="styles_Navbar-actions__6vg2U">
+<a href="https://easwa-webapp.onrender.com/" class="styles_Navbar-cta__0yumK styles_Navbar-cta--primary__zZr2Y" style="background-color:#0d1117">Start Now</a>
+</div>
+</div>
+</div>
+</div>
+</nav>
+<div class="styles_Section__4tQXe styles_Hero__AO43E styles_Hero--left__Lfc_v styles_Hero--hasImageBackground__a9rkW" style="padding-top:80px;padding-bottom:80px">
+<div class="styles_Section-inner__8sPWU" style="max-width:1280px">
+<div class="styles_Hero-image__ZxOrj" style="background-image:url(&quot;../../landing/zoviz/img/hero-udf.jpg&quot;)">
+</div>
+<div class="styles_Hero-imageOverlay__d2XJa">
+</div>
+<div class="styles_Hero-inner__1sGAv">
+<div class="styles_Hero-content__Uk3w1">
+<h1>Analyze public sky data in your browser</h1>
+<p class="styles_Hero-subtitle__qAT6c">EASWA lets learners examine real observations from TESS, KMTNet, and Gaia. Each activity guides Steps 0–6 with sources, observing conditions, and model assumptions visible throughout.</p>
+<div class="styles_Hero-actions__HqNfN">
+<a class="Button_Button__kVrSI Button_Button--primary__ePEsN Button_Button--large__mazg1" style="background-color:#0d1117" href="#modules">Start now</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="styles_Space__99Ahb styles_Space--vertical__2vM6e" style="--size:64px">
+</div>
+<section id="modules" class="styles_Features__lipRG is-dark" style="background-color:#12161e;padding-top:120px;padding-bottom:120px">
+<div class="styles_Section__4tQXe">
+<div class="styles_Section-inner__8sPWU" style="max-width:1280px">
+<div class="styles_Features-header__dHMQU">
+<h2 class="styles_Features-title__TP2hb">Inquiry modules</h2>
+<p class="styles_Features-subtitle__nYog7">Three guided investigations. Each presents data provenance, observing conditions, and model choices before fitting or classification.</p>
+</div>
+<div class="styles_Features-grid__mVNDt" style="grid-template-columns:repeat(2, 1fr)">
+<div class="styles_Features-item__DPG6C">
+<div class="styles_Features-iconWrapper__wAAdX" style="color:#14b8a6">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<circle cx="12" cy="12" r="10">
+</circle>
+<circle cx="12" cy="12" r="6">
+</circle>
+<circle cx="12" cy="12" r="2">
+</circle>
+</svg>
+</div>
+<div class="styles_Features-content__0kdGI">
+<h3 class="styles_Features-itemTitle__vPKqb">TESS transit question</h3>
+<p class="styles_Features-itemDescription__jOjtM">Guiding question: Does this star show a transit and what radius ratio does the fit imply? Data source: NASA TESS light curves; compare to NASA Exoplanet Archive. Action: measure dip, fit model, compare results.</p>
+</div>
+</div>
+<div class="styles_Features-item__DPG6C">
+<div class="styles_Features-iconWrapper__wAAdX" style="color:#14b8a6">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2">
+</path>
+<circle cx="9" cy="7" r="4">
+</circle>
+<path d="M23 21v-2a4 4 0 0 0-3-3.87">
+</path>
+<path d="M16 3.13a4 4 0 0 1 0 7.75">
+</path>
+</svg>
+</div>
+<div class="styles_Features-content__0kdGI">
+<h3 class="styles_Features-itemTitle__vPKqb">KMTNet lensing question</h3>
+<p class="styles_Features-itemDescription__jOjtM">Guiding question: Do the three observatories reveal a planetary anomaly in magnification? Data source: KASI KMTNet public microlensing light curves. Action: align sites, inspect residuals, flag anomaly.</p>
+</div>
+</div>
+<div class="styles_Features-item__DPG6C">
+<div class="styles_Features-iconWrapper__wAAdX" style="color:#14b8a6">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<rect x="3" y="3" width="7" height="7">
+</rect>
+<rect x="14" y="3" width="7" height="7">
+</rect>
+<rect x="14" y="14" width="7" height="7">
+</rect>
+<rect x="3" y="14" width="7" height="7">
+</rect>
+</svg>
+</div>
+<div class="styles_Features-content__0kdGI">
+<h3 class="styles_Features-itemTitle__vPKqb">Gaia cluster question</h3>
+<p class="styles_Features-itemDescription__jOjtM">Guiding question: What age and distance match this cluster’s color–magnitude shape? Data source: Gaia DR3 photometry. Action: build CMD, overlay isochrones, read age and distance.</p>
+</div>
+</div>
+<div class="styles_Features-item__DPG6C">
+<div class="styles_Features-iconWrapper__wAAdX" style="color:#14b8a6">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14">
+</path>
+<polyline points="22 4 12 14.01 9 11.01">
+</polyline>
+</svg>
+</div>
+<div class="styles_Features-content__0kdGI">
+<h3 class="styles_Features-itemTitle__vPKqb">Start an activity</h3>
+<p class="styles_Features-itemDescription__jOjtM">Open any module to load public data, follow the prompts, and record findings. Results can be exported with citations and assumptions.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="start" class="styles_Zigzag__Xn9Nq is-dark" style="background-color:#12161e;padding-top:120px;padding-bottom:120px">
+<div class="styles_Section__4tQXe">
+<div class="styles_Section-inner__8sPWU" style="max-width:1280px">
+<div class="styles_Zigzag-header__Ozpb4">
+<h2 class="styles_Zigzag-title__DuqTk">Start a guided investigation</h2>
+<p class="styles_Zigzag-subtitle__sc4hC">Select a module below to load data and begin.</p>
+</div>
+<div class="styles_Zigzag-rows__jX9_G">
+<div class="styles_Zigzag-row__ZtasI ">
+<div class="styles_Zigzag-imageWrapper__nhjau styles_Zigzag-image--square__ZSmIv">
+<img src="../../landing/zoviz/img/tess.jpg" alt="NASA TESS spacecraft preview" class="styles_Zigzag-image__HBptY">
+</div>
+<div class="styles_Zigzag-content__WbgAT">
+<h3 class="styles_Zigzag-rowTitle__6iwNW">NASA TESS light curves</h3>
+<p class="styles_Zigzag-rowDescription__0sb6L">Measure a transit depth, fit a simple transit model, and compare the inferred radius ratio with values in the NASA Exoplanet Archive. Source metadata, sector, and flags are shown alongside the plot.</p>
+<a href="https://easwa-webapp.onrender.com/" class="styles_Zigzag-button__DmCY1" style="background-color:#0d1117;color:#ffffff">Start TESS</a>
+</div>
+</div>
+<div class="styles_Zigzag-row__ZtasI styles_Zigzag-row--reversed___Bo8s">
+<div class="styles_Zigzag-imageWrapper__nhjau styles_Zigzag-image--square__ZSmIv">
+<img src="../../landing/zoviz/img/kmtnet.jpg" alt="KASI KMTNet observatory network" class="styles_Zigzag-image__HBptY">
+</div>
+<div class="styles_Zigzag-content__WbgAT">
+<h3 class="styles_Zigzag-rowTitle__6iwNW">KASI KMTNet microlensing</h3>
+<p class="styles_Zigzag-rowDescription__0sb6L">Inspect magnification curves from three observatories, align time series, and look for short-timescale deviations indicative of a planetary anomaly. Site conditions and cadence are displayed.</p>
+<a href="https://easwa-webapp.onrender.com/" class="styles_Zigzag-button__DmCY1" style="background-color:#0d1117;color:#ffffff">Start KMTNet</a>
+</div>
+</div>
+<div class="styles_Zigzag-row__ZtasI ">
+<div class="styles_Zigzag-imageWrapper__nhjau styles_Zigzag-image--square__ZSmIv">
+<img src="../../landing/zoviz/img/m45.jpg" alt="Pleiades open cluster (M45)" class="styles_Zigzag-image__HBptY">
+</div>
+<div class="styles_Zigzag-content__WbgAT">
+<h3 class="styles_Zigzag-rowTitle__6iwNW">Gaia DR3 cluster photometry</h3>
+<p class="styles_Zigzag-rowDescription__0sb6L">Build a color–magnitude diagram, overlay isochrone families, and read age and distance from the sequence shape. Parallax quality and photometric uncertainties are visible.</p>
+<a href="https://easwa-webapp.onrender.com/" class="styles_Zigzag-button__DmCY1" style="background-color:#0d1117;color:#ffffff">Start Gaia</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<div class="styles_Space__99Ahb styles_Space--vertical__2vM6e" style="--size:64px">
+</div>
+<section id="flow" class="styles_Carousel__GmYk7 is-dark" style="background-color:#0d1117;padding-top:96px;padding-bottom:96px">
+<div class="styles_Section__4tQXe">
+<div class="styles_Section-inner__8sPWU" style="max-width:1280px">
+<div class="styles_Carousel-header__ur4cg">
+<h2 class="styles_Carousel-title__d59gG">How a session runs</h2>
+<p class="styles_Carousel-subtitle__cDrfK">Each activity follows the same Step 0–6 flow with sources, observing conditions, and model assumptions always visible — automation without a black box.</p>
+</div>
+<div class="styles_Carousel-wrapper__8SR5f">
+<button class="styles_Carousel-arrow__YUHTW " disabled="" aria-label="Previous">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+<polyline points="15 18 9 12 15 6">
+</polyline>
+</svg>
+</button>
+<div class="styles_Carousel-track__a3m1a">
+<div class="styles_Carousel-slides__Bnwsf" style="gap:24px;transform:translateX(calc(-0 * (calc((100% - 72px) / 4) + 24px)))">
+<div class="styles_Carousel-item__iXsvJ styles_Carousel-item--bordered__VAJWt" style="width:calc((100% - 72px) / 4);min-width:calc((100% - 72px) / 4)">
+<div class="styles_Carousel-itemImage__dH4gS" style="background-image:url(../../landing/zoviz/img/step0.jpg)">
+</div>
+<div class="styles_Carousel-itemContent__8LIWX">
+<span class="styles_Carousel-itemBadge__Wu2Bm">Flow</span>
+<h3 class="styles_Carousel-itemTitle__v3LWj">
+<a href="#flow">Step 0</a>
+</h3>
+<p class="styles_Carousel-itemDescription__ABR6G">Select module and dataset; read data provenance and observing context.</p>
+</div>
+</div>
+<div class="styles_Carousel-item__iXsvJ styles_Carousel-item--bordered__VAJWt" style="width:calc((100% - 72px) / 4);min-width:calc((100% - 72px) / 4)">
+<div class="styles_Carousel-itemImage__dH4gS" style="background-image:url(../../landing/zoviz/img/step1.jpg)">
+</div>
+<div class="styles_Carousel-itemContent__8LIWX">
+<span class="styles_Carousel-itemBadge__Wu2Bm">Flow</span>
+<h3 class="styles_Carousel-itemTitle__v3LWj">
+<a href="#flow">Step 1</a>
+</h3>
+<p class="styles_Carousel-itemDescription__ABR6G">Define the guiding question and identify the key observable.</p>
+</div>
+</div>
+<div class="styles_Carousel-item__iXsvJ styles_Carousel-item--bordered__VAJWt" style="width:calc((100% - 72px) / 4);min-width:calc((100% - 72px) / 4)">
+<div class="styles_Carousel-itemImage__dH4gS" style="background-image:url(../../landing/zoviz/img/step2.jpg)">
+</div>
+<div class="styles_Carousel-itemContent__8LIWX">
+<span class="styles_Carousel-itemBadge__Wu2Bm">Flow</span>
+<h3 class="styles_Carousel-itemTitle__v3LWj">
+<a href="#flow">Step 2</a>
+</h3>
+<p class="styles_Carousel-itemDescription__ABR6G">Inspect raw data; note flags, uncertainties, and observing conditions.</p>
+</div>
+</div>
+<div class="styles_Carousel-item__iXsvJ styles_Carousel-item--bordered__VAJWt" style="width:calc((100% - 72px) / 4);min-width:calc((100% - 72px) / 4)">
+<div class="styles_Carousel-itemImage__dH4gS" style="background-image:url(../../landing/zoviz/img/step3.jpg)">
+</div>
+<div class="styles_Carousel-itemContent__8LIWX">
+<span class="styles_Carousel-itemBadge__Wu2Bm">Flow</span>
+<h3 class="styles_Carousel-itemTitle__v3LWj">
+<a href="#flow">Step 3</a>
+</h3>
+<p class="styles_Carousel-itemDescription__ABR6G">Apply a baseline or alignment; document assumptions applied.</p>
+</div>
+</div>
+<div class="styles_Carousel-item__iXsvJ styles_Carousel-item--bordered__VAJWt" style="width:calc((100% - 72px) / 4);min-width:calc((100% - 72px) / 4)">
+<div class="styles_Carousel-itemImage__dH4gS" style="background-image:url(../../landing/zoviz/img/step4.jpg)">
+</div>
+<div class="styles_Carousel-itemContent__8LIWX">
+<span class="styles_Carousel-itemBadge__Wu2Bm">Flow</span>
+<h3 class="styles_Carousel-itemTitle__v3LWj">
+<a href="#flow">Step 4</a>
+</h3>
+<p class="styles_Carousel-itemDescription__ABR6G">Fit the model or overlay template; view residuals immediately.</p>
+</div>
+</div>
+<div class="styles_Carousel-item__iXsvJ styles_Carousel-item--bordered__VAJWt" style="width:calc((100% - 72px) / 4);min-width:calc((100% - 72px) / 4)">
+<div class="styles_Carousel-itemImage__dH4gS" style="background-image:url(../../landing/zoviz/img/step5.jpg)">
+</div>
+<div class="styles_Carousel-itemContent__8LIWX">
+<span class="styles_Carousel-itemBadge__Wu2Bm">Flow</span>
+<h3 class="styles_Carousel-itemTitle__v3LWj">
+<a href="#flow">Step 5</a>
+</h3>
+<p class="styles_Carousel-itemDescription__ABR6G">Interpret parameters; compare with published references.</p>
+</div>
+</div>
+<div class="styles_Carousel-item__iXsvJ styles_Carousel-item--bordered__VAJWt" style="width:calc((100% - 72px) / 4);min-width:calc((100% - 72px) / 4)">
+<div class="styles_Carousel-itemImage__dH4gS" style="background-image:url(../../landing/zoviz/img/step6.jpg)">
+</div>
+<div class="styles_Carousel-itemContent__8LIWX">
+<span class="styles_Carousel-itemBadge__Wu2Bm">Flow</span>
+<h3 class="styles_Carousel-itemTitle__v3LWj">
+<a href="#flow">Step 6</a>
+</h3>
+<p class="styles_Carousel-itemDescription__ABR6G">Export results with citations, assumptions, and limitations.</p>
+</div>
+</div>
+</div>
+</div>
+<button class="styles_Carousel-arrow__YUHTW " aria-label="Next">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+<polyline points="9 18 15 12 9 6">
+</polyline>
+</svg>
+</button>
+</div>
+<div class="styles_Carousel-dots__ul77l">
+<button class="styles_Carousel-dot__D9htX styles_Carousel-dot--active__ETkPo" aria-label="Go to page 1">
+</button>
+<button class="styles_Carousel-dot__D9htX " aria-label="Go to page 2">
+</button>
+<button class="styles_Carousel-dot__D9htX " aria-label="Go to page 3">
+</button>
+<button class="styles_Carousel-dot__D9htX " aria-label="Go to page 4">
+</button>
+</div>
+</div>
+</div>
+</section>
+<div class="styles_Space__99Ahb styles_Space--vertical__2vM6e" style="--size:64px">
+</div>
+<section id="teachers" class="styles_Features__lipRG is-dark" style="background-color:#12161e;padding-top:120px;padding-bottom:120px">
+<div class="styles_Section__4tQXe">
+<div class="styles_Section-inner__8sPWU" style="max-width:1280px">
+<div class="styles_Features-header__dHMQU">
+<h2 class="styles_Features-title__TP2hb">For teachers</h2>
+<p class="styles_Features-subtitle__nYog7">Planning guidance for classroom use.</p>
+</div>
+<div class="styles_Features-grid__mVNDt" style="grid-template-columns:repeat(2, 1fr)">
+<div class="styles_Features-item__DPG6C">
+<div class="styles_Features-iconWrapper__wAAdX" style="color:#14b8a6">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<circle cx="12" cy="12" r="10">
+</circle>
+<polyline points="12 6 12 12 16 14">
+</polyline>
+</svg>
+</div>
+<div class="styles_Features-content__0kdGI">
+<h3 class="styles_Features-itemTitle__vPKqb">Suggested time</h3>
+<p class="styles_Features-itemDescription__jOjtM">A single module fits in 45–60 minutes with brief wrap‑up. Two modules can span a 90‑minute block with time for discussion.</p>
+</div>
+</div>
+<div class="styles_Features-item__DPG6C">
+<div class="styles_Features-iconWrapper__wAAdX" style="color:#14b8a6">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2">
+</path>
+<circle cx="9" cy="7" r="4">
+</circle>
+<path d="M23 21v-2a4 4 0 0 0-3-3.87">
+</path>
+<path d="M16 3.13a4 4 0 0 1 0 7.75">
+</path>
+</svg>
+</div>
+<div class="styles_Features-content__0kdGI">
+<h3 class="styles_Features-itemTitle__vPKqb">Grouping</h3>
+<p class="styles_Features-itemDescription__jOjtM">Pairs at one computer support discussion during model fitting. Whole‑class debrief uses exported results to compare reasoning.</p>
+</div>
+</div>
+<div class="styles_Features-item__DPG6C">
+<div class="styles_Features-iconWrapper__wAAdX" style="color:#14b8a6">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<polygon points="12 2 2 7 12 12 22 7 12 2">
+</polygon>
+<polyline points="2 17 12 22 22 17">
+</polyline>
+<polyline points="2 12 12 17 22 12">
+</polyline>
+</svg>
+</div>
+<div class="styles_Features-content__0kdGI">
+<h3 class="styles_Features-itemTitle__vPKqb">Difficulty level</h3>
+<p class="styles_Features-itemDescription__jOjtM">Middle to early undergraduate. Quantitative steps are scaffolded; uncertainty and limitations are discussed at each stage.</p>
+</div>
+</div>
+<div class="styles_Features-item__DPG6C">
+<div class="styles_Features-iconWrapper__wAAdX" style="color:#14b8a6">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<circle cx="12" cy="12" r="3">
+</circle>
+<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+</path>
+</svg>
+</div>
+<div class="styles_Features-content__0kdGI">
+<h3 class="styles_Features-itemTitle__vPKqb">Prerequisites</h3>
+<p class="styles_Features-itemDescription__jOjtM">Comfort with plotting and reading graphs. For TESS and KMTNet, basic light‑curve concepts; for Gaia, color and magnitude basics.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<div class="styles_Space__99Ahb styles_Space--vertical__2vM6e" style="--size:64px">
+</div>
+<div id="credits" class="styles_Section__4tQXe styles_FAQ__rpRqV is-dark" style="background-color:#0d1117;padding:96px 0">
+<div class="styles_Section-inner__8sPWU" style="max-width:1280px">
+<div class="styles_FAQ-container__9RJ_q">
+<div class="styles_FAQ-header__mH_sa">
+<h2 class="styles_FAQ-title__uf666">Data sources and credits</h2>
+<p class="styles_FAQ-subtitle__1lFgN">Primary sources, observing conditions, and model assumptions used in EASWA.</p>
+</div>
+<div class="styles_FAQ-list__soQuG">
+<div class="styles_FAQ-item__nx10n" data-open="true" data-style="bordered">
+<button class="styles_FAQ-question__Gjz_w" style="border-left-color:#0d1117">
+<span>Where do the TESS light curves come from?</span>
+<span class="styles_FAQ-icon__xD9jY" style="color:#0d1117">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(180deg);transition:transform 0.2s ease">
+<polyline points="6,9 12,15 18,9">
+</polyline>
+</svg>
+</span>
+</button>
+<div class="styles_FAQ-answer__FcriG" style="max-height:500px;opacity:1;padding-top:16px;padding-bottom:20px">
+<p>Public NASA TESS mission data via MAST. Comparisons use the NASA Exoplanet Archive. Sector, cadence, and quality flags are shown in‑app.</p>
+</div>
+</div>
+<div class="styles_FAQ-item__nx10n" data-open="false" data-style="bordered">
+<button class="styles_FAQ-question__Gjz_w" style="border-left-color:transparent">
+<span>What are the KMTNet data specifics?</span>
+<span class="styles_FAQ-icon__xD9jY" style="color:#0d1117">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(0deg);transition:transform 0.2s ease">
+<polyline points="6,9 12,15 18,9">
+</polyline>
+</svg>
+</span>
+</button>
+<div class="styles_FAQ-answer__FcriG" style="max-height:0;opacity:0;padding-top:0;padding-bottom:0">
+<p>KASI KMTNet public microlensing photometry from Chile, South Africa, and Australia. Site, filter, and timing alignment are documented.</p>
+</div>
+</div>
+<div class="styles_FAQ-item__nx10n" data-open="false" data-style="bordered">
+<button class="styles_FAQ-question__Gjz_w" style="border-left-color:transparent">
+<span>How is Gaia DR3 used?</span>
+<span class="styles_FAQ-icon__xD9jY" style="color:#0d1117">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(0deg);transition:transform 0.2s ease">
+<polyline points="6,9 12,15 18,9">
+</polyline>
+</svg>
+</span>
+</button>
+<div class="styles_FAQ-answer__FcriG" style="max-height:0;opacity:0;padding-top:0;padding-bottom:0">
+<p>Gaia DR3 photometry builds color–magnitude diagrams. Parallax quality, extinction notes, and photometric uncertainties are indicated.</p>
+</div>
+</div>
+<div class="styles_FAQ-item__nx10n" data-open="false" data-style="bordered">
+<button class="styles_FAQ-question__Gjz_w" style="border-left-color:transparent">
+<span>What model assumptions are applied?</span>
+<span class="styles_FAQ-icon__xD9jY" style="color:#0d1117">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(0deg);transition:transform 0.2s ease">
+<polyline points="6,9 12,15 18,9">
+</polyline>
+</svg>
+</span>
+</button>
+<div class="styles_FAQ-answer__FcriG" style="max-height:0;opacity:0;padding-top:0;padding-bottom:0">
+<p>Transit fits use a simple limb‑darkened model; microlensing uses standard point‑lens baselines; CMD overlays use published isochrones.</p>
+</div>
+</div>
+<div class="styles_FAQ-item__nx10n" data-open="false" data-style="bordered">
+<button class="styles_FAQ-question__Gjz_w" style="border-left-color:transparent">
+<span>Image credits for backgrounds?</span>
+<span class="styles_FAQ-icon__xD9jY" style="color:#0d1117">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(0deg);transition:transform 0.2s ease">
+<polyline points="6,9 12,15 18,9">
+</polyline>
+</svg>
+</span>
+</button>
+<div class="styles_FAQ-answer__FcriG" style="max-height:0;opacity:0;padding-top:0;padding-bottom:0">
+<p>Hero: NASA/ESA Hubble Ultra Deep Field. Module images: NASA TESS preview (NASA), KMTNet network (KASI), Pleiades / M45 (NASA/ESA/AURA·Caltech). The session-flow cards are screenshots of the EASWA app itself.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="styles_Space__99Ahb styles_Space--vertical__2vM6e" style="--size:64px">
+</div>
+<div id="contact" class="styles_Section__4tQXe styles_ContactForm__vpnqQ" style="background-color:#f9fafb">
+<div class="styles_Section-inner__8sPWU" style="max-width:1280px">
+<div class="styles_ContactForm-container__tgnDb">
+<div class="styles_ContactForm-header__JLji5">
+<h2 class="styles_ContactForm-title__dYf16">Educator interest</h2>
+<p class="styles_ContactForm-subtitle__2dwHH">Tell us your course context and we will follow up with alignment ideas and sample datasets.</p>
+</div>
+<form class="styles_ContactForm-form__izymr">
+<div class="styles_ContactForm-field__VEz9d">
+<label class="styles_ContactForm-label__jlaFp">Email</label>
+<input type="email" class="styles_ContactForm-input__XyDKz" placeholder="you@school.edu" required="" value="">
+</div>
+<div class="styles_ContactForm-field__VEz9d">
+<label class="styles_ContactForm-label__jlaFp">Message</label>
+<textarea class="styles_ContactForm-textarea__1CDoj" placeholder="Class size, subject, timeframe, and which module you plan to use." rows="5" required="">
+</textarea>
+</div>
+<button type="submit" class="styles_ContactForm-submit__uDd9k" style="background-color:#0d1117">Send message</button>
+</form>
+</div>
+</div>
+</div>
+<footer class="styles_Footer__OYQuq styles_Footer--dark__P8WB8 styles_Footer--divider___TnjM" style="background-color:#111827;color:#ffffff">
+<div class="styles_Section__4tQXe">
+<div class="styles_Section-inner__8sPWU" style="max-width:1280px">
+<div class="styles_Footer-inner__55Rd5 ">
+<div class="styles_Footer-brand__4rx_N">
+<div class="styles_Footer-logo__vYezq">
+<span class="styles_Footer-logoText__rx5nK">EASWA</span>
+</div>
+<p class="styles_Footer-description__nGW3W" style="color:#9ca3af">Exploring All-Sky Web App: learners analyze public astronomy data in the browser with guided steps and cited sources.</p>
+<div class="styles_Footer-social__PxQdG">
+<a href="https://twitter.com/" target="_blank" rel="noopener noreferrer" class="styles_Footer-socialLink__rFEQV" style="color:#9ca3af">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z">
+</path>
+</svg>
+</a>
+<a href="https://github.com/Diu1773/EASWA_ExploreAllSkyWebApplication" target="_blank" rel="noopener noreferrer" class="styles_Footer-socialLink__rFEQV" style="color:#9ca3af">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+<path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22">
+</path>
+</svg>
+</a>
+<a href="https://www.linkedin.com/" target="_blank" rel="noopener noreferrer" class="styles_Footer-socialLink__rFEQV" style="color:#9ca3af">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+<path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z">
+</path>
+<rect x="2" y="9" width="4" height="12">
+</rect>
+<circle cx="4" cy="4" r="2">
+</circle>
+</svg>
+</a>
+</div>
+</div>
+<div class="styles_Footer-columns__vKUYB">
+<div class="styles_Footer-column__sBgmV">
+<h4 class="styles_Footer-columnTitle__9zBcW">Explore</h4>
+<ul class="styles_Footer-columnLinks__fiXpe">
+<li>
+<a href="#top" class="styles_Footer-columnLink__NqMI6" style="color:#9ca3af">Home</a>
+</li>
+<li>
+<a href="#modules" class="styles_Footer-columnLink__NqMI6" style="color:#9ca3af">Modules</a>
+</li>
+<li>
+<a href="#flow" class="styles_Footer-columnLink__NqMI6" style="color:#9ca3af">How It Works</a>
+</li>
+</ul>
+</div>
+<div class="styles_Footer-column__sBgmV">
+<h4 class="styles_Footer-columnTitle__9zBcW">Educators</h4>
+<ul class="styles_Footer-columnLinks__fiXpe">
+<li>
+<a href="#teachers" class="styles_Footer-columnLink__NqMI6" style="color:#9ca3af">For Teachers</a>
+</li>
+<li>
+<a href="#teachers" class="styles_Footer-columnLink__NqMI6" style="color:#9ca3af">Class Setup</a>
+</li>
+<li>
+<a href="#contact" class="styles_Footer-columnLink__NqMI6" style="color:#9ca3af">Accessibility</a>
+</li>
+</ul>
+</div>
+<div class="styles_Footer-column__sBgmV">
+<h4 class="styles_Footer-columnTitle__9zBcW">About</h4>
+<ul class="styles_Footer-columnLinks__fiXpe">
+<li>
+<a href="#credits" class="styles_Footer-columnLink__NqMI6" style="color:#9ca3af">Credits</a>
+</li>
+<li>
+<a href="#credits" class="styles_Footer-columnLink__NqMI6" style="color:#9ca3af">Data Sources</a>
+</li>
+<li>
+<a href="#contact" class="styles_Footer-columnLink__NqMI6" style="color:#9ca3af">Contact</a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="styles_Footer-bottom__SSiUy" style="border-color:rgba(255,255,255,0.1)">
+<p class="styles_Footer-copyright__i_2Ev" style="color:#9ca3af">© 2026 EASWA. All rights reserved.</p>
+</div>
+</div>
+</div>
+</footer>
+</div>
+<script>
+
+// 캐러셀: 7장 · 한 화면 4장 · 페이지 0..3 (시안의 translateX 식 그대로)
+(function(){
+  var slides=document.querySelector('.styles_Carousel-slides__Bnwsf');
+  if(!slides) return;
+  var prev=document.querySelector('.styles_Carousel-arrow__YUHTW[aria-label="Previous"]');
+  var next=document.querySelector('.styles_Carousel-arrow__YUHTW[aria-label="Next"]');
+  var dots=[].slice.call(document.querySelectorAll('.styles_Carousel-dot__D9htX'));
+  var page=0, MAX=3;
+  function render(){
+    slides.style.transform='translateX(calc(-'+page+' * (calc((100% - 72px) / 4) + 24px)))';
+    prev.disabled=(page===0); next.disabled=(page===MAX);
+    dots.forEach(function(d,i){d.classList.toggle('styles_Carousel-dot--active__ETkPo',i===page);});
+  }
+  prev.addEventListener('click',function(){if(page>0){page--;render();}});
+  next.addEventListener('click',function(){if(page<MAX){page++;render();}});
+  dots.forEach(function(d,i){d.addEventListener('click',function(){page=i;render();});});
+  render();
+})();
+// FAQ 아코디언: 시안 저장본의 인라인 상태값을 그대로 재현
+(function(){
+  var items=[].slice.call(document.querySelectorAll('.styles_FAQ-item__nx10n'));
+  items.forEach(function(item){
+    var btn=item.querySelector('.styles_FAQ-question__Gjz_w');
+    var ans=item.querySelector('.styles_FAQ-answer__FcriG');
+    var ico=item.querySelector('.styles_FAQ-icon__xD9jY svg');
+    function set(open){
+      item.setAttribute('data-open',open?'true':'false');
+      ans.style.maxHeight=open?'500px':'0'; ans.style.opacity=open?'1':'0';
+      ans.style.paddingTop=open?'16px':'0'; ans.style.paddingBottom=open?'20px':'0';
+      btn.style.borderLeftColor=open?'#0d1117':'transparent';
+      ico.style.transform='rotate('+(open?180:0)+'deg)';
+    }
+    btn.addEventListener('click',function(){set(item.getAttribute('data-open')!=='true');});
+  });
+})();
+// 문의 폼: 백엔드 없는 정적 사본 — 메일 초안으로 연결
+(function(){
+  var form=document.querySelector('.styles_ContactForm-form__izymr');
+  if(!form) return;
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    var mail=form.querySelector('input[type=email]').value;
+    var msg=form.querySelector('textarea').value;
+    location.href='mailto:pmj3265@knue.ac.kr?subject='+encodeURIComponent('EASWA educator interest')
+      +'&body='+encodeURIComponent(msg+'\n\nfrom: '+mail);
+  });
+})();
+
+</script>
+
+<div id="tsw" role="group" aria-label="테마 미리보기">
+  <button data-t="teal"   aria-pressed="true"><i class="sw" style="background:#14b8a6"></i>틸</button>
+  <button data-t="blue"   aria-pressed="false"><i class="sw" style="background:#6499cf"></i>청</button>
+  <button data-t="orange" aria-pressed="false"><i class="sw" style="background:#e8722a"></i>주황</button>
+</div>
+<script>
+(function(){
+  var bs = document.querySelectorAll('#tsw button');
+  bs.forEach(function(b){
+    b.addEventListener('click', function(){
+      var v = b.dataset.t;
+      if (v === 'teal') document.documentElement.removeAttribute('data-theme');
+      else document.documentElement.setAttribute('data-theme', v);
+      bs.forEach(function(x){ x.setAttribute('aria-pressed', String(x === b)); });
+      try { localStorage.setItem('easwa-theme', v); } catch (e) {}
+    });
+  });
+  try {
+    var saved = localStorage.getItem('easwa-theme');
+    if (saved) document.querySelector('#tsw button[data-t="' + saved + '"]').click();
+  } catch (e) {}
+})();
+</script>
+</body></html>
