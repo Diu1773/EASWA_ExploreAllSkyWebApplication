@@ -37,8 +37,40 @@ STYLE = {
     '~것이다/하는 것': r'것이다|것입니다|하는 것을|하는 것이',
     '~로 인해/에 의해': r'로 인해|에 의해|으로 인해',
     '관계절 명사구(~수 있는 N)': r'줄 수 있는 |있는 [가-힣]{2,}(을|를|이|가) ',
-    '한국어 문장 속 대시': r'[가-힣] — [가-힣]',
+    '한국어 문장 속 대시': r'[가-힣] — [가-힣]|[가-힣]— |[가-힣] —[가-힣]',
+    # ── 2026-08-09 소유자 첨삭에서 승격된 패턴 (KOREAN_COPY_RULES ①⑦⑨⑫ 등) ──
+    # ① 직역 의문형 제목: '이 차이는 큰가'. 입말 '~을까/~까'는 규칙이 허용한다.
+    '직역 의문형(-는가/-인가)': r'(는가|은가|인가)\??\s*$',
+    # ⑦ 학습자 지시가 서술형으로 끝남: '비교해 봅니다' → '비교해 봅시다'
+    '지시문 서술형(~해 봅니다)': r'(적어|써|비교해|설명해|확인해|살펴|견주어|따져|예상해|찾아|정리해)\s*봅니다',
+    # ⑫ 1인칭: '내가 측정한', '내 오차' (안내·현재 같은 낱말과 구분해 어두만)
+    "1인칭(내/내가)": r"(^|[\s(«\"'])내가?\s",
+    # ⑪ 기능 announce: '~하면 열립니다'
+    '기능 안내문(~하면 열립니다)': r'(하면|나면|되면)\s*(열립니다|나타납니다|보입니다)',
 }
+
+# 문서 단위 통계 — F-037 실측에서 실제로 높았던 신호들. 문구별 플래그가 아니라
+# 말투의 단조로움을 재는 요약 수치다.
+def corpus_stats(texts: list[str]) -> dict:
+    endings = collections.Counter()
+    rel_chain = 0
+    for s in texts:
+        for sent in re.split(r'[.!?]\s|[.!?]$', s):
+            sent = sent.strip()
+            if not re.search(r'[가-힣]', sent):
+                continue
+            m = re.search(r'([가-힣]{1,3})\s*$', sent)
+            if m:
+                endings[m.group(1)[-2:]] += 1
+            # 관형절 사슬: '~는/~한/~할 + 명사' 가 한 문장에 3회 이상
+            if len(re.findall(r'[가-힣]+(?:는|한|할|된|던)\s[가-힣]+', sent)) >= 3:
+                rel_chain += 1
+    total = sum(endings.values()) or 1
+    return {
+        '종결어미 다양도': round(len(endings) / total, 3),
+        '최빈 종결 5': endings.most_common(5),
+        '관형절 3회+ 문장': rel_chain,
+    }
 
 
 def collect() -> list[tuple[str, str]]:
@@ -64,9 +96,24 @@ def main() -> int:
     ap.add_argument('--list', action='store_true', help='해당 문구를 전부 출력')
     ap.add_argument('--base', type=int, default=None,
                     help='영문 노출 기준선. 이 수를 넘으면 종료코드 1')
+    ap.add_argument('--landing', action='store_true',
+                    help='앱 대신 landing/zoviz/index.html 의 한국어 사전을 검사')
     args = ap.parse_args()
 
-    ko = collect()
+    if args.landing:
+        import json
+        lp = os.path.join(os.path.dirname(ROOT.rstrip('\\/')), '..', 'landing', 'zoviz', 'index.html')
+        lp = os.path.normpath(os.path.join(os.path.dirname(os.path.dirname(ROOT)), 'landing', 'zoviz', 'index.html'))
+        raw = open(lp, encoding='utf-8').read()
+        m = re.search(r'var KO = (\{.*?\}), PH = (\{.*?\});', raw, re.S)
+        if not m:
+            print('랜딩에서 KO 사전을 찾지 못했습니다:', lp)
+            return 2
+        d = json.loads(m.group(1))
+        d.update(json.loads(m.group(2)))
+        ko = [('landing', v) for v in d.values() if re.search(r'[가-힣]', v)]
+    else:
+        ko = collect()
     if not ko:
         print(f'한국어 문구를 찾지 못했습니다 — 경로 확인: {ROOT}')
         return 2
@@ -99,6 +146,11 @@ def main() -> int:
         if args.list:
             for f, s in v:
                 print(f'        {f}: {s[:100]}')
+
+    st = corpus_stats([s for _, s in ko])
+    print(f'\n■ 말투 요약 (F-037 실측 신호)')
+    print(f"   종결어미 다양도 {st['종결어미 다양도']}  · 관형절 3회+ 문장 {st['관형절 3회+ 문장']}건")
+    print(f"   최빈 종결: {', '.join(f'{e}({c})' for e, c in st['최빈 종결 5'])}")
 
     print('\n판정은 사람이 합니다 — 원어가 맞는 자리(코드 식별자·파일명·논문 제목)가 있습니다.')
     print('용어 결정: docs/TERMS_KO.md · 문체 규칙: docs/KOREAN_COPY_RULES.md')
