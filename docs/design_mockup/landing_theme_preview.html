@@ -229,6 +229,25 @@ body{font-family:Inter,-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica Neue,
 .is-dark .styles_Carousel-dot__D9htX{background-color:rgba(255,255,255,.28)}
 .is-dark .styles_Carousel-dot--active__ETkPo{background-color:#6499cf}
 
+
+/* ══ 히어로 — 그라디언트를 걷고 사진을 그대로 쓴다 (2026-08-09 소유자 지시)
+   사진이 전면으로 나오면 어두운 글자가 안 보이므로 흰 글자로 뒤집고,
+   판독을 위한 «평평한» 어둠막만 남긴다(그라디언트 아님).            ══ */
+.styles_Hero__AO43E{background-image:none !important}
+.styles_Hero-imageOverlay__d2XJa,
+.styles_Hero--left__Lfc_v .styles_Hero-imageOverlay__d2XJa{
+  background-image:none !important; background-color:rgba(7,10,17,.5) !important}
+.styles_Hero__AO43E h1{color:#f7faff}
+.styles_Hero__AO43E .styles_Hero-subtitle__qAT6c{color:rgba(232,239,250,.9) !important}
+.styles_Hero--hasImageBackground__a9rkW .styles_Hero-content__Uk3w1{max-width:56%}
+/* 진한 버튼은 어두운 사진 위에서 사라진다 — 네비와 같은 반전 */
+.styles_Hero-actions__HqNfN .Button_Button__kVrSI{
+  background-color:#eef2f8 !important; color:#0d1117 !important; font-weight:700}
+.hero-kicker{margin:0 0 14px;font-size:13px;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;color:rgba(232,239,250,.72)}
+/* 히어로와 다음 섹션이 맞닿게 — 사이 여백을 없앤다 */
+.styles_Hero__AO43E{border-bottom:0}
+body{background:#12161e}
 </style>
 <style>
 /* ══ 테마 미리보기 — 원본 랜딩은 그대로 두고 여기서만 색을 갈아끼운다.
@@ -242,17 +261,16 @@ body{font-family:Inter,-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica Neue,
        --t-badge-bg:rgba(232,114,42,.16); --t-badge-fg:#f0925a; --t-dot:#e8722a;
        --t-panel:#161d2b; --t-panel2:#10151f; --t-nav:#141b2b; }
 
+body{ background:var(--t-panel) !important }
 [style*="background-color:#12161e"]{ background-color:var(--t-panel) !important }
 [style*="background-color:#0d1117"]{ background-color:var(--t-panel2) !important }
 [style*="background-color:#111827"]{ background-color:var(--t-nav) !important }
 .styles_Features-iconWrapper__wAAdX{ color:var(--t-ink) !important; background:var(--t-tint) !important }
 .styles_Carousel-itemBadge__Wu2Bm{ background:var(--t-badge-bg) !important; color:var(--t-badge-fg) !important }
 .is-dark .styles_Carousel-dot--active__ETkPo{ background-color:var(--t-dot) !important }
-.styles_FAQ-item__nx10n .styles_FAQ-question__Gjz_w[style*="border-left-color:#0d1117"]{
-  border-left-color:var(--t-ink) !important }
 .styles_FAQ-icon__xD9jY{ color:var(--t-ink) !important }
+.hero-kicker{ color:var(--t-ink) !important }
 
-/* 전환 막대 — 미리보기 전용, 실제 랜딩에는 없다 */
 #tsw{position:fixed;right:18px;bottom:18px;z-index:9999;display:flex;gap:8px;padding:9px 11px;
   border-radius:999px;background:rgba(10,13,20,.92);border:1px solid rgba(255,255,255,.16);
   box-shadow:0 10px 30px rgba(0,0,0,.5);font-family:system-ui,sans-serif}
@@ -296,6 +314,7 @@ body{font-family:Inter,-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica Neue,
 </div>
 <div class="styles_Hero-inner__1sGAv">
 <div class="styles_Hero-content__Uk3w1">
+<p class="hero-kicker">Exploring All-Sky Web App</p>
 <h1>Analyze public sky data in your browser</h1>
 <p class="styles_Hero-subtitle__qAT6c">EASWA lets learners examine real observations from TESS, KMTNet, and Gaia. Each activity guides Steps 0–6 with sources, observing conditions, and model assumptions visible throughout.</p>
 <div class="styles_Hero-actions__HqNfN">
@@ -304,8 +323,6 @@ body{font-family:Inter,-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica Neue,
 </div>
 </div>
 </div>
-</div>
-<div class="styles_Space__99Ahb styles_Space--vertical__2vM6e" style="--size:64px">
 </div>
 <section id="modules" class="styles_Features__lipRG is-dark" style="background-color:#12161e;padding-top:120px;padding-bottom:120px">
 <div class="styles_Section__4tQXe">
@@ -884,8 +901,8 @@ body{font-family:Inter,-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica Neue,
     });
   });
   try {
-    var saved = localStorage.getItem('easwa-theme');
-    if (saved) document.querySelector('#tsw button[data-t="' + saved + '"]').click();
+    var s = localStorage.getItem('easwa-theme');
+    if (s) document.querySelector('#tsw button[data-t="' + s + '"]').click();
   } catch (e) {}
 })();
 </script>
