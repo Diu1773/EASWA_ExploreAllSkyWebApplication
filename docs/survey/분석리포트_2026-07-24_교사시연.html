@@ -1,157 +1,521 @@
-<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>EASWA 교사 시연 분석 리포트 (2026-07-24)</title>
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EASWA 교사 수업시연 분석 리포트 (2026-07-24)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
-:root{--bg:#16181d;--card:#1d2026;--ink:#e8eaf0;--sub:#9aa3b2;--mut:#6b7280;--line:#2a2e36;--blue:#4a7fe0;--amber:#c77f35}
+:root{
+  --bg:#12161e; --bg2:#0e131b; --line:#1f2937; --line2:#2b3444;
+  --head:#f2f5f9; --body:#c3ccd9; --muted:#98a4b5;
+  --ink:#14b8a6; --tint:rgba(20,184,166,.10);
+  --up:#4ade80; --down:#f0a35e;
+  --ui:'Pretendard',system-ui,-apple-system,sans-serif;
+  --mono:'IBM Plex Mono',Consolas,monospace;
+}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 'Segoe UI','Malgun Gothic',sans-serif}
-.wrap{max-width:960px;margin:0 auto;padding:20px 16px 80px}
-h1{font-size:21px;margin:4px 0 2px} .sub{color:var(--sub);font-size:13px;margin-bottom:14px}
-nav{display:flex;gap:6px;flex-wrap:wrap;position:sticky;top:0;background:var(--bg);padding:10px 0;border-bottom:1px solid var(--line);z-index:5}
-nav button{background:var(--card);border:1px solid var(--line);color:var(--sub);padding:7px 14px;border-radius:6px;font-size:13.5px;cursor:pointer}
-nav button.on{color:var(--ink);border-color:var(--blue);background:#20242c}
-section{display:none;padding-top:18px} section.on{display:block}
-.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:18px 20px;margin:14px 0}
-h2{font-size:16px;margin:0 0 10px} h3{font-size:14px;margin:16px 0 8px;color:var(--sub)}
-.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
-.tile{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
-.tv{font-size:24px;font-weight:700} .tl{font-size:12.5px;color:var(--sub);margin-top:2px} .ts{font-size:11.5px;color:var(--mut)}
-table{border-collapse:collapse;width:100%;font-size:13px;margin:8px 0}
-th,td{border:1px solid var(--line);padding:6px 9px;text-align:left} th{color:var(--sub);font-weight:600;background:#20232a}
-.cap{font-size:11.5px;color:var(--mut);margin-top:6px}
-ul{margin:6px 0;padding-left:20px} li{margin:3px 0}
-.quotes .q-item{border-left:3px solid var(--line);padding:6px 12px;margin:10px 0}
-.q-num{color:var(--mut);font-size:12px;margin-right:6px} .q-item p{margin:4px 0 0;font-size:13.5px;color:var(--ink)}
-.badge{font-size:11px;border-radius:9px;padding:1px 8px;font-weight:700}
-.b-blue{background:#1e3a5f;color:#8fb8f0} .b-amber{background:#4a3319;color:#e0a763} .b-green{background:#1e4030;color:#7fd0a0} .b-gray{background:#2a2e36;color:#9aa3b2}
-.note{font-size:12px;color:var(--sub)}
-.warn{border-left:3px solid var(--amber);background:#221d15;padding:10px 14px;border-radius:6px;font-size:13.5px;margin:10px 0}
-.good{border-left:3px solid #4a9d6f;background:#16211b;padding:10px 14px;border-radius:6px;font-size:13.5px;margin:10px 0}
-svg{width:100%;height:auto;display:block}
-a{color:#8fb8f0}
-</style></head><body><div class="wrap">
-<h1>EASWA 교사 수업시연 — 반응조사 분석 리포트</h1>
-<div class="sub">2026-07-24 현직 교사 시연 · 구글폼 설문 N=12 + 앱 익명제출 18명(20건) · 생성 2026-07-24</div>
-<nav>
-<button class="on" data-t="t1">요약</button><button data-t="t2">응답자·수행</button>
-<button data-t="t3">반응척도</button><button data-t="t4">어려움·보완</button>
-<button data-t="t5">앱 산출값</button><button data-t="t6">서술형·예상대조</button><button data-t="t7">데이터 명세</button>
-</nav>
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--body);font-family:var(--ui);font-size:17px;
+     line-height:1.7;-webkit-font-smoothing:antialiased}
+.wrap{max-width:920px;margin:0 auto;padding:64px 28px 120px}
 
-<section id="t1" class="on">
-<div class="tiles">
-<div class="tile"><div class="tv">4.09<span style='font-size:14px;color:var(--mut)'> /5</span></div><div class="tl">반응척도 11문항 합성(역채점)</div><div class=ts>SD 0.37 · α=0.64</div></div>
-<div class="tile"><div class="tv">12</div><div class="tl">설문 응답(전원 현직·전공자)</div><div class=ts>현직 지구과학 9 · 타전공 3</div></div>
-<div class="tile"><div class="tv">18명</div><div class="tl">앱 익명제출 참여</div><div class=ts>제출 20건 · 5개 대상</div></div>
-<div class="tile"><div class="tv">0.1457</div><div class="tl">Rp/R* 중앙값 (WASP-6 b, 14건)</div><div class=ts>문헌 0.146과 차이 0.0003</div></div>
+/* 머리 */
+.eyebrow{font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink);margin:0 0 14px}
+h1{margin:0;font-size:40px;font-weight:700;color:var(--head);letter-spacing:-.025em;line-height:1.2}
+.meta{margin:14px 0 0;font-size:16px;color:var(--muted)}
+.howto{margin:36px 0 0;padding:20px 24px;background:var(--bg2);border-radius:12px;font-size:15.5px;line-height:1.75;color:var(--muted)}
+.howto b{color:var(--head);font-weight:600}
+.howto .mk{font-weight:700;color:var(--head)}
+.howto .st{color:var(--ink);font-weight:700}
+.warn{margin:14px 0 0;padding-top:14px;border-top:1px solid var(--line);color:var(--down)}
+
+/* 큰 수치 띠 */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:36px 28px;margin:44px 0 0}
+.kpi .n{font-family:var(--mono);font-size:34px;font-weight:600;color:var(--head);line-height:1;letter-spacing:-.02em}
+.kpi .n small{font-size:16px;color:var(--muted);font-weight:400;margin-left:3px}
+.kpi .k{margin-top:9px;font-size:15px;color:var(--head)}
+.kpi .s{margin-top:3px;font-size:13.5px;color:var(--muted);line-height:1.5}
+
+/* 절 */
+section{margin-top:72px}
+.sechead{display:grid;grid-template-columns:48px 1fr;gap:20px;align-items:start}
+.tile{width:48px;height:48px;border-radius:12px;background:var(--tint);display:flex;align-items:center;justify-content:center}
+.tile svg{width:22px;height:22px;stroke:var(--ink);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+h2{margin:0;font-size:26px;font-weight:700;color:var(--head);letter-spacing:-.02em;line-height:1.35}
+.sechead p{margin:8px 0 0;font-size:16px;color:var(--muted);line-height:1.7}
+.secbody{margin:26px 0 0 68px}
+@media (max-width:660px){ .secbody{margin-left:0} .sechead{grid-template-columns:1fr} }
+
+h3{margin:34px 0 14px;font-size:18px;font-weight:600;color:var(--head)}
+h3:first-child{margin-top:0}
+p{margin:0 0 14px}
+p:last-child{margin-bottom:0}
+
+/* 막대 목록 */
+.bars{display:grid;gap:2px}
+.bar{display:grid;grid-template-columns:1fr 42px;gap:16px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)}
+.bar:last-child{border-bottom:0}
+.bar .t{font-size:15.5px;color:var(--body);line-height:1.5}
+.bar .t .track{display:block;height:4px;margin-top:8px;background:var(--line2);border-radius:2px;overflow:hidden}
+.bar .t .fill{display:block;height:100%;background:var(--ink);opacity:.55;border-radius:2px}
+.bar.top .t{color:var(--head)}
+.bar.top .fill{opacity:1}
+.bar .c{font-family:var(--mono);font-size:16px;color:var(--muted);text-align:right}
+.bar.top .c{color:var(--head);font-weight:600}
+
+/* 표 */
+table{width:100%;border-collapse:collapse;font-size:15.5px}
+th{text-align:left;font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.03em;
+   padding:0 0 11px;border-bottom:1px solid var(--line)}
+th.r,td.r{text-align:right}
+td{padding:13px 0;border-bottom:1px solid var(--line);color:var(--body);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.num{font-family:var(--mono);color:var(--head)}
+td.q{padding-right:18px;line-height:1.55}
+tr.hi td{color:var(--head)}
+tr.hi td.num{font-weight:600}
+.mk-up{color:var(--up);font-weight:700;margin-right:6px}
+.mk-down{color:var(--down);font-weight:700;margin-right:6px}
+.dist{font-family:var(--mono);font-size:13.5px;color:var(--muted);white-space:nowrap}
+
+/* ★ 해설 */
+.star{margin:26px 0 0;padding:20px 24px;background:var(--bg2);border-left:2px solid var(--ink);
+      border-radius:0 12px 12px 0;font-size:15.5px;line-height:1.75}
+.star + .star{margin-top:14px}
+.star .lead{color:var(--head);font-weight:600}
+.star p{margin:0 0 10px;color:var(--muted)}
+.star p:last-child{margin-bottom:0}
+.star b{color:var(--body);font-weight:600}
+.star::before{content:'★';color:var(--ink);font-size:13px;margin-right:8px;vertical-align:1px}
+
+/* 서술형 인용 */
+.quotes{display:grid;gap:0}
+.qt{padding:16px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:34px 1fr;gap:14px}
+.qt:last-child{border-bottom:0}
+.qt .no{font-family:var(--mono);font-size:14px;color:var(--muted);padding-top:2px}
+.qt .tx{font-size:15.5px;line-height:1.75;color:var(--body);white-space:pre-line}
+.qt.key{background:linear-gradient(90deg,var(--tint),transparent 70%);margin:0 -16px;padding:16px;border-radius:8px}
+.qt.key .tx{color:var(--head)}
+.qt.key .no{color:var(--ink);font-weight:700}
+
+/* 서술형 요약표 */
+.pick{width:100%;border-collapse:collapse;font-size:15px;margin-top:6px}
+.pick th{padding-bottom:10px}
+.pick td{padding:12px 0}
+.pick td:first-child{font-family:var(--mono);font-size:13.5px;color:var(--ink);white-space:nowrap;padding-right:16px;width:76px}
+.pick td:last-child{color:var(--muted);white-space:nowrap;padding-left:16px;text-align:right}
+
+.foot{margin-top:80px;padding-top:24px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);line-height:1.75}
+.foot code{font-family:var(--mono);font-size:.92em;color:var(--body)}
+</style>
+</head><body>
+<div class="wrap">
+
+<p class="eyebrow">EASWA · 1차 코호트</p>
+<h1>교사 수업시연 반응조사</h1>
+<p class="meta">2026-07-24 현직 교사 시연 · 구글폼 N=12 + 앱 익명제출 18명(20건)<br>
+배포 커밋 <code style="font-family:var(--mono)">2956d24</code> · 리포트 2026-08-11 재작성</p>
+
+<div class="howto">
+  <p style="margin:0 0 10px"><span class="mk">굵게</span> = 논문·개선에서 실제로 근거로 쓰는 값.
+  <span class="st">★</span> 문단 = 그 값이 왜 실리는지.</p>
+  <p style="margin:0">수치는 원자료 <code style="font-family:var(--mono)">RESULTS_2026-07-24_교사시연.md</code> 와 같고, 구성도 그 문서를 따랐다.</p>
+  <p class="warn" style="margin-bottom:0"><b style="color:var(--down)">N=12 소표본, 단일 시연, 자기보고.</b> 경향을 보기 위한 자료이며 일반화할 수 없다. 예비교사 코호트는 아직 수집 전이다.</p>
 </div>
-<div class="card"><h2>3줄 요약</h2>
-<ul>
-<li><b>자동화·가시화는 통했다</b> — "코딩 없이 분석"(4.50)·"해석 제시"(4.50)·"출처 제시"(4.42)·"조건 조정"(4.42). 산출값도 14건 중 12건이 문헌 ±0.01 이내로, 교사들이 실제 유효한 측광을 수행.</li>
-<li><b>약점은 해석 구간</b> — 역문항 두 개(화면 복잡 3.50, 기준값 화면 3.42)가 최하위이고, 학생이 어려워할 단계 1위가 해석·기록(9/12), 보완 1순위가 그래프 해석 도움말·기준값/기록 강화(각 7). 신호가 세 갈래에서 일치.</li>
-<li><b>최대 장벽은 앱 밖</b> — 교육과정 불일치·시수·용어(서술형 지배 주제). 수업 형태로 동아리·과제연구(5) > 2차시(4). "지금 그대로" 활용 의향은 3.92로 긍정.</li>
-</ul></div>
-<div class="warn"><b>해석 주의</b> — N=12 소표본·단일 시연 맥락·자기보고. 통계는 경향 파악용이며 일반화 불가. 예비교사 코호트는 미수집(후속 예정).</div>
+
+<div class="kpis">
+  <div class="kpi"><div class="n">4.09<small>/5</small></div><div class="k">반응척도 11문항 합성</div><div class="s">역채점 후 · SD 0.37</div></div>
+  <div class="kpi"><div class="n">9<small>/12</small></div><div class="k">Step 0~6 완주</div><div class="s">대부분 10~30분</div></div>
+  <div class="kpi"><div class="n">0.0003</div><div class="k">Rp/R* 중앙값과 문헌값 차이</div><div class="s">WASP-6 b · 적합 14건</div></div>
+  <div class="kpi"><div class="n">3.42</div><div class="k">최저점 — 기준값 비교 화면</div><div class="s">역채점 · 원점수 2.58</div></div>
+</div>
+
+<!-- 1 -->
+<section>
+  <div class="sechead">
+    <div class="tile"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg></div>
+    <div><h2>1. 응답자 배경</h2>
+      <p>현직 지구과학교사가 다수이고, 실관측자료를 다뤄본 사람은 절반이다.</p></div>
+  </div>
+  <div class="secbody">
+    <table>
+      <tr><td class="q">현직 지구과학교사</td><td class="r num">9명</td></tr>
+      <tr><td class="q">과학교육 전공자 (지구과학교육 외)</td><td class="r num">2명</td></tr>
+      <tr><td class="q">현직 생명과학교사 (통합과학 수업)</td><td class="r num">1명</td></tr>
+    </table>
+    <h3>사전 경험</h3>
+    <table>
+      <tr><td class="q">Q2 천문 교육·자료 경험 (1~5)</td><td class="r num">평균 2.75</td><td class="r dist">중앙값 3.0 · [1:1, 2:4, 3:4, 4:3]</td></tr>
+      <tr><td class="q">Q3 공공·실관측자료 경험 있음</td><td class="r num">6/12</td><td class="r dist"></td></tr>
+      <tr><td class="q">Q4 웹 분석도구 경험 있음</td><td class="r num">8/12</td><td class="r dist"></td></tr>
+    </table>
+  </div>
 </section>
 
-<section id="t2">
-<div class="card"><h2>응답자 배경</h2>
-<svg viewBox="0 0 680 110" role="img" aria-label="신분"><text x="290" y="25.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">현직 지구과학교사</text><rect x="300" y="8" width="320.0" height="26" rx="4" fill="#4a7fe0"><title>현직 지구과학교사: 9명 / 12명</title></rect><text x="628.0" y="25.0" fill="#e8eaf0" font-size="12.5">9</text><text x="290" y="59.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">과학교육 전공자 (지구과학교육 외)</text><rect x="300" y="42" width="71.1" height="26" rx="4" fill="#4a7fe0"><title>과학교육 전공자 (지구과학교육 외): 2명 / 12명</title></rect><text x="379.1" y="59.0" fill="#e8eaf0" font-size="12.5">2</text><text x="290" y="93.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">현직 생명과학교사(통합과학 수업)</text><rect x="300" y="76" width="35.6" height="26" rx="4" fill="#4a7fe0"><title>현직 생명과학교사(통합과학 수업): 1명 / 12명</title></rect><text x="343.6" y="93.0" fill="#e8eaf0" font-size="12.5">1</text></svg>
-<ul><li>천문 교육·자료 경험(1~5): 평균 2.75, 분포 [(1, 1), (2, 4), (3, 4), (4, 3)]</li>
-<li>공공·실관측자료 경험 있음 6/12 · 웹 분석도구 경험 있음 8/12</li></ul></div>
-<div class="card"><h2>실관측자료를 수업에 쓰고 싶은 이유 (Q3-1, 복수)</h2>
-<svg viewBox="0 0 680 178" role="img" aria-label=""><text x="290" y="25.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">자료 해석과 분석 역량을 기를 수 있어서</text><rect x="300" y="8" width="320.0" height="26" rx="4" fill="#4a7fe0"><title>자료 해석과 분석 역량을 기를 수 있어서: 10명 / 12명</title></rect><text x="628.0" y="25.0" fill="#e8eaf0" font-size="12.5">10</text><text x="290" y="59.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">학생에게 진짜 데이터를 다루는 경험을 주고 싶어서</text><rect x="300" y="42" width="320.0" height="26" rx="4" fill="#4a7fe0"><title>학생에게 진짜 데이터를 다루는 경험을 주고 싶어서: 10명 / 12명</title></rect><text x="628.0" y="59.0" fill="#e8eaf0" font-size="12.5">10</text><text x="290" y="93.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">교과서나 시뮬레이션보다 탐구의 실제성이 높아서</text><rect x="300" y="76" width="192.0" height="26" rx="4" fill="#4a7fe0"><title>교과서나 시뮬레이션보다 탐구의 실제성이 높아서: 6명 / 12명</title></rect><text x="500.0" y="93.0" fill="#e8eaf0" font-size="12.5">6</text><text x="290" y="127.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">최신 천문 연구와 학교 수업을 연결할 수 있어서</text><rect x="300" y="110" width="192.0" height="26" rx="4" fill="#4a7fe0"><title>최신 천문 연구와 학교 수업을 연결할 수 있어서: 6명 / 12명</title></rect><text x="500.0" y="127.0" fill="#e8eaf0" font-size="12.5">6</text><text x="290" y="161.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">학생의 흥미와 동기를 높일 수 있어서</text><rect x="300" y="144" width="160.0" height="26" rx="4" fill="#4a7fe0"><title>학생의 흥미와 동기를 높일 수 있어서: 5명 / 12명</title></rect><text x="468.0" y="161.0" fill="#e8eaf0" font-size="12.5">5</text></svg></div>
-<div class="card"><h2>수행 수준·시간</h2>
-<svg viewBox="0 0 680 110" role="img" aria-label="수행 단계"><text x="290" y="25.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">Step 0~6 전체 완료 (해석·기록까지)</text><rect x="300" y="8" width="320.0" height="26" rx="4" fill="#4a7fe0"><title>Step 0~6 전체 완료 (해석·기록까지): 9명 / 12명</title></rect><text x="628.0" y="25.0" fill="#e8eaf0" font-size="12.5">9</text><text x="290" y="59.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">분석 실행·시각화(광도곡선·모델 적합)까지 완료</text><rect x="300" y="42" width="71.1" height="26" rx="4" fill="#4a7fe0"><title>분석 실행·시각화(광도곡선·모델 적합)까지 완료: 2명 / 12명</title></rect><text x="379.1" y="59.0" fill="#e8eaf0" font-size="12.5">2</text><text x="290" y="93.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">일부 단계만 수행함</text><rect x="300" y="76" width="35.6" height="26" rx="4" fill="#4a7fe0"><title>일부 단계만 수행함: 1명 / 12명</title></rect><text x="343.6" y="93.0" fill="#e8eaf0" font-size="12.5">1</text></svg>
-<h3>소요 시간</h3><svg viewBox="0 0 680 144" role="img" aria-label=""><text x="290" y="25.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">10~20분</text><rect x="300" y="8" width="320.0" height="26" rx="4" fill="#4a7fe0"><title>10~20분: 4명 / 12명</title></rect><text x="628.0" y="25.0" fill="#e8eaf0" font-size="12.5">4</text><text x="290" y="59.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">20~30분</text><rect x="300" y="42" width="320.0" height="26" rx="4" fill="#4a7fe0"><title>20~30분: 4명 / 12명</title></rect><text x="628.0" y="59.0" fill="#e8eaf0" font-size="12.5">4</text><text x="290" y="93.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">30분 이상</text><rect x="300" y="76" width="240.0" height="26" rx="4" fill="#4a7fe0"><title>30분 이상: 3명 / 12명</title></rect><text x="548.0" y="93.0" fill="#e8eaf0" font-size="12.5">3</text><text x="290" y="127.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">10분 미만</text><rect x="300" y="110" width="80.0" height="26" rx="4" fill="#4a7fe0"><title>10분 미만: 1명 / 12명</title></rect><text x="388.0" y="127.0" fill="#e8eaf0" font-size="12.5">1</text></svg>
-<div class="good">9/12가 Step 0~6 전체 완주(해석·기록까지). 시연 운영이 유효했다는 지표.</div></div>
+<!-- 2 -->
+<section>
+  <div class="sechead">
+    <div class="tile"><svg viewBox="0 0 24 24"><path d="M12 2v20M2 12h20"/><circle cx="12" cy="12" r="9"/></svg></div>
+    <div><h2>2. 실관측자료를 수업에 쓰고 싶은 이유</h2>
+      <p>Q3-1 · 복수선택 · 실관측자료 경험이 있다고 답한 응답자 대상</p></div>
+  </div>
+  <div class="secbody">
+    <div class="bars">
+      <div class="bar top"><div class="t">자료 해석과 분석 역량을 기를 수 있어서<span class="track"><span class="fill" style="width:100%"></span></span></div><div class="c">10</div></div>
+      <div class="bar top"><div class="t">학생에게 진짜 데이터를 다루는 경험을 주고 싶어서<span class="track"><span class="fill" style="width:100%"></span></span></div><div class="c">10</div></div>
+      <div class="bar"><div class="t">교과서나 시뮬레이션보다 탐구의 실제성이 높아서<span class="track"><span class="fill" style="width:60%"></span></span></div><div class="c">6</div></div>
+      <div class="bar"><div class="t">최신 천문 연구와 학교 수업을 연결할 수 있어서<span class="track"><span class="fill" style="width:60%"></span></span></div><div class="c">6</div></div>
+      <div class="bar"><div class="t">학생의 흥미와 동기를 높일 수 있어서<span class="track"><span class="fill" style="width:50%"></span></span></div><div class="c">5</div></div>
+    </div>
+  </div>
 </section>
 
-<section id="t3">
-<div class="card"><h2>반응척도 Q8~18 — 역채점 평균 ± SD (1~5)</h2>
-<svg viewBox="0 0 680 420" role="img" aria-label="반응척도 평균"><line x1="250.0" y1="18" x2="250.0" y2="392" stroke="#2a2e36" stroke-width="1"/><text x="250.0" y="408" text-anchor="middle" fill="#6b7280" font-size="11">1</text><line x1="350.0" y1="18" x2="350.0" y2="392" stroke="#2a2e36" stroke-width="1"/><text x="350.0" y="408" text-anchor="middle" fill="#6b7280" font-size="11">2</text><line x1="450.0" y1="18" x2="450.0" y2="392" stroke="#2a2e36" stroke-width="1"/><text x="450.0" y="408" text-anchor="middle" fill="#6b7280" font-size="11">3</text><line x1="550.0" y1="18" x2="550.0" y2="392" stroke="#2a2e36" stroke-width="1"/><text x="550.0" y="408" text-anchor="middle" fill="#6b7280" font-size="11">4</text><line x1="650.0" y1="18" x2="650.0" y2="392" stroke="#2a2e36" stroke-width="1"/><text x="650.0" y="408" text-anchor="middle" fill="#6b7280" font-size="11">5</text><line x1="450.0" y1="18" x2="450.0" y2="392" stroke="#6b7280" stroke-width="1" stroke-dasharray="3 3"/><text x="238" y="30" text-anchor="end" fill="#9aa3b2" font-size="12.5">탐구 주제·질문 중심 구성</text><line x1="491.5" y1="26" x2="625.2" y2="26" stroke="#4a7fe0" stroke-width="2" opacity="0.45"/><circle cx="558.3" cy="26" r="6" fill="#4a7fe0"><title>탐구 주제·질문 중심 구성 — 평균 4.08 · SD 0.67 · 분포(1→5) [0, 0, 2, 7, 3]</title></circle><text x="558.3" y="15" text-anchor="middle" fill="#e8eaf0" font-size="11.5">4.08</text><text x="238" y="64" text-anchor="end" fill="#9aa3b2" font-size="12.5">코딩 없이 분석 수행</text><line x1="547.8" y1="60" x2="650.0" y2="60" stroke="#4a7fe0" stroke-width="2" opacity="0.45"/><circle cx="600.0" cy="60" r="6" fill="#4a7fe0"><title>코딩 없이 분석 수행 — 평균 4.50 · SD 0.52 · 분포(1→5) [0, 0, 0, 6, 6]</title></circle><text x="600.0" y="49" text-anchor="middle" fill="#e8eaf0" font-size="11.5">4.50</text><text x="238" y="98" text-anchor="end" fill="#9aa3b2" font-size="12.5">자료 출처·관측정보 제시</text><line x1="512.4" y1="94" x2="650.0" y2="94" stroke="#4a7fe0" stroke-width="2" opacity="0.45"/><circle cx="591.7" cy="94" r="6" fill="#4a7fe0"><title>자료 출처·관측정보 제시 — 평균 4.42 · SD 0.79 · 분포(1→5) [0, 0, 2, 3, 7]</title></circle><text x="591.7" y="83" text-anchor="middle" fill="#e8eaf0" font-size="11.5">4.42</text><text x="238" y="132" text-anchor="end" fill="#9aa3b2" font-size="12.5">분석 조건 조정 기능</text><line x1="524.8" y1="128" x2="650.0" y2="128" stroke="#4a7fe0" stroke-width="2" opacity="0.45"/><circle cx="591.7" cy="128" r="6" fill="#4a7fe0"><title>분석 조건 조정 기능 — 평균 4.42 · SD 0.67 · 분포(1→5) [0, 0, 1, 5, 6]</title></circle><text x="591.7" y="117" text-anchor="middle" fill="#e8eaf0" font-size="11.5">4.42</text><text x="238" y="166" text-anchor="end" fill="#c77f35" font-size="12.5">화면 복잡·흐름 파악 어려움 (역)</text><line x1="375.7" y1="162" x2="624.3" y2="162" stroke="#4a7fe0" stroke-width="2" opacity="0.45"/><circle cx="500.0" cy="162" r="6" fill="#4a7fe0"><title>화면 복잡·흐름 파악 어려움 (역) — 평균 3.50 · SD 1.24 · 분포(1→5) [3, 3, 4, 1, 1] · 역채점</title></circle><text x="500.0" y="151" text-anchor="middle" fill="#e8eaf0" font-size="11.5">3.50</text><text x="238" y="200" text-anchor="end" fill="#9aa3b2" font-size="12.5">STEP 질문·생각해보기 도움</text><line x1="476.1" y1="196" x2="623.9" y2="196" stroke="#4a7fe0" stroke-width="2" opacity="0.45"/><circle cx="550.0" cy="196" r="6" fill="#4a7fe0"><title>STEP 질문·생각해보기 도움 — 평균 4.00 · SD 0.74 · 분포(1→5) [0, 0, 3, 6, 3]</title></circle><text x="550.0" y="185" text-anchor="middle" fill="#e8eaf0" font-size="11.5">4.00</text><text x="238" y="234" text-anchor="end" fill="#9aa3b2" font-size="12.5">광도곡선·적합 해석 제시</text><line x1="532.6" y1="230" x2="650.0" y2="230" stroke="#4a7fe0" stroke-width="2" opacity="0.45"/><circle cx="600.0" cy="230" r="6" fill="#4a7fe0"><title>광도곡선·적합 해석 제시 — 평균 4.50 · SD 0.67 · 분포(1→5) [0, 0, 1, 4, 7]</title></circle><text x="600.0" y="219" text-anchor="middle" fill="#e8eaf0" font-size="11.5">4.50</text><text x="238" y="268" text-anchor="end" fill="#c77f35" font-size="12.5">기준값 화면 해석 어려움 (역)</text><line x1="375.2" y1="264" x2="608.1" y2="264" stroke="#4a7fe0" stroke-width="2" opacity="0.45"/><circle cx="491.7" cy="264" r="6" fill="#4a7fe0"><title>기준값 화면 해석 어려움 (역) — 평균 3.42 · SD 1.16 · 분포(1→5) [1, 7, 1, 2, 1] · 역채점</title></circle><text x="491.7" y="253" text-anchor="middle" fill="#e8eaf0" font-size="11.5">3.42</text><text x="238" y="302" text-anchor="end" fill="#9aa3b2" font-size="12.5">차이의 학습자 해석 지원</text><line x1="438.4" y1="298" x2="611.6" y2="298" stroke="#4a7fe0" stroke-width="2" opacity="0.45"/><circle cx="525.0" cy="298" r="6" fill="#4a7fe0"><title>차이의 학습자 해석 지원 — 평균 3.75 · SD 0.87 · 분포(1→5) [0, 1, 3, 6, 2]</title></circle><text x="525.0" y="287" text-anchor="middle" fill="#e8eaf0" font-size="11.5">3.75</text><text x="238" y="336" text-anchor="end" fill="#9aa3b2" font-size="12.5">수업·교육 활용 적절</text><line x1="491.5" y1="332" x2="625.2" y2="332" stroke="#4a7fe0" stroke-width="2" opacity="0.45"/><circle cx="558.3" cy="332" r="6" fill="#4a7fe0"><title>수업·교육 활용 적절 — 평균 4.08 · SD 0.67 · 분포(1→5) [0, 0, 2, 7, 3]</title></circle><text x="558.3" y="321" text-anchor="middle" fill="#e8eaf0" font-size="11.5">4.08</text><text x="238" y="370" text-anchor="end" fill="#9aa3b2" font-size="12.5">교육용 플랫폼 종합 적절</text><line x1="534.1" y1="366" x2="632.6" y2="366" stroke="#4a7fe0" stroke-width="2" opacity="0.45"/><circle cx="583.3" cy="366" r="6" fill="#4a7fe0"><title>교육용 플랫폼 종합 적절 — 평균 4.33 · SD 0.49 · 분포(1→5) [0, 0, 0, 8, 4]</title></circle><text x="583.3" y="355" text-anchor="middle" fill="#e8eaf0" font-size="11.5">4.33</text></svg>
-<div class="cap">주황 라벨 = 역문항(원문은 부정 진술, 점수는 6−원점수로 환산해 높을수록 긍정). 점=평균, 수염=±1SD, 점선=중립 3점. 데이터: EASWA 교사 시연 설문 2026-07-24, N=12.</div>
-<ul>
-<li>합성 평균 <b>4.09</b> (SD 0.37, 개인 범위 3.36~4.64) · Cronbach α = <b>0.64</b> (11문항, 소표본 참고치)</li>
-<li>최상위: 코딩 없이 분석 4.50 · 해석 제시 4.50 — <b>설계원리 2(부담 완화)·3(가시화) 인정</b></li>
-<li>최하위: 기준값 화면(역) 3.42 · 화면 복잡(역) 3.50 · 차이 해석 지원 3.75 — <b>해석 구간이 상대 약점</b></li>
-</ul>
-<h3>문항별 상세</h3><table><tr><th>문항</th><th>원평균</th><th>역채점</th><th>SD</th><th>분포 1·2·3·4·5</th></tr><tr><td>8. 탐구 주제·질문 중심 구성</td><td>4.08</td><td><b>4.08</b></td><td>0.67</td><td>0·0·2·7·3</td></tr><tr><td>9. 코딩 없이 분석 수행</td><td>4.50</td><td><b>4.50</b></td><td>0.52</td><td>0·0·0·6·6</td></tr><tr><td>10. 자료 출처·관측정보 제시</td><td>4.42</td><td><b>4.42</b></td><td>0.79</td><td>0·0·2·3·7</td></tr><tr><td>11. 분석 조건 조정 기능</td><td>4.42</td><td><b>4.42</b></td><td>0.67</td><td>0·0·1·5·6</td></tr><tr><td>12. 화면 복잡·흐름 파악 어려움 (역)</td><td>2.50</td><td><b>3.50</b></td><td>1.24</td><td>3·3·4·1·1</td></tr><tr><td>13. STEP 질문·생각해보기 도움</td><td>4.00</td><td><b>4.00</b></td><td>0.74</td><td>0·0·3·6·3</td></tr><tr><td>14. 광도곡선·적합 해석 제시</td><td>4.50</td><td><b>4.50</b></td><td>0.67</td><td>0·0·1·4·7</td></tr><tr><td>15. 기준값 화면 해석 어려움 (역)</td><td>2.58</td><td><b>3.42</b></td><td>1.16</td><td>1·7·1·2·1</td></tr><tr><td>16. 차이의 학습자 해석 지원</td><td>3.75</td><td><b>3.75</b></td><td>0.87</td><td>0·1·3·6·2</td></tr><tr><td>17. 수업·교육 활용 적절</td><td>4.08</td><td><b>4.08</b></td><td>0.67</td><td>0·0·2·7·3</td></tr><tr><td>18. 교육용 플랫폼 종합 적절</td><td>4.33</td><td><b>4.33</b></td><td>0.49</td><td>0·0·0·8·4</td></tr></table></div>
+<!-- 3 -->
+<section>
+  <div class="sechead">
+    <div class="tile"><svg viewBox="0 0 24 24"><path d="M4 4h16v5H4zM4 15h16v5H4z"/><path d="M9 9v6"/></svg></div>
+    <div><h2>3. 기존 서비스의 장벽</h2>
+      <p>Q5 · 복수선택 · EASWA 를 보기 전, 기존 공공 천문자료 서비스에 대해</p></div>
+  </div>
+  <div class="secbody">
+    <div class="bars">
+      <div class="bar top"><div class="t">학생 수준에 맞게 자료를 재구성하기 어려울 것 같음<span class="track"><span class="fill" style="width:100%"></span></span></div><div class="c">10</div></div>
+      <div class="bar top"><div class="t">영어 인터페이스와 전문 용어가 부담될 것 같음<span class="track"><span class="fill" style="width:90%"></span></span></div><div class="c">9</div></div>
+      <div class="bar top"><div class="t">수업 시간 안에서 활용하기 어려울 것 같음<span class="track"><span class="fill" style="width:80%"></span></span></div><div class="c">8</div></div>
+      <div class="bar"><div class="t">좌표와 메타데이터 이해가 어려울 것 같음<span class="track"><span class="fill" style="width:70%"></span></span></div><div class="c">7</div></div>
+      <div class="bar"><div class="t">자료 검색 절차가 복잡할 것 같음<span class="track"><span class="fill" style="width:50%"></span></span></div><div class="c">5</div></div>
+      <div class="bar"><div class="t">코딩 또는 별도 분석 프로그램 사용이 필요할 것 같음<span class="track"><span class="fill" style="width:50%"></span></span></div><div class="c">5</div></div>
+      <div class="bar"><div class="t">그래프 또는 분석 결과를 해석하기 어려울 것 같음<span class="track"><span class="fill" style="width:20%"></span></span></div><div class="c">2</div></div>
+      <div class="bar"><div class="t">파일 형식과 다운로드 과정이 부담될 것 같음<span class="track"><span class="fill" style="width:20%"></span></span></div><div class="c">2</div></div>
+    </div>
+    <div class="star">
+      <p class="lead">가장 많이 꼽힌 셋이 전부 앱 바깥의 문제다.</p>
+      <p>학생 수준에 맞게 자료를 다시 짜는 일, 영어와 전문 용어, 수업 시간. 반대로 코딩(5)과 그래프 해석(2)은 적게 나왔다.
+         <b>EASWA 가 없앨 수 있는 장벽과 없앨 수 없는 장벽이 여기서 갈린다.</b> 논문 4.1·5.4 절의 근거로 쓴다.</p>
+    </div>
+  </div>
 </section>
 
-<section id="t4">
-<div class="card"><h2>어려움 단계 (Q19) — 본인 경험 vs 학생 예상</h2>
-<svg viewBox="0 0 680 526" role="img" aria-label="어려움 단계"><g font-size="12"><rect x="170" y="0" width="12" height="12" rx="3" fill="#4a7fe0"/><text x="188" y="10" fill="#9aa3b2">본인이 어려웠음</text><rect x="310" y="0" width="12" height="12" rx="3" fill="#c77f35"/><text x="328" y="10" fill="#9aa3b2">학생이 어려워할 것(예상)</text></g><text x="160" y="49" text-anchor="end" fill="#9aa3b2" font-size="12.5">접속·서버 활성화</text><rect x="170" y="30" width="51.1" height="17" rx="4" fill="#4a7fe0"><title>접속·서버 활성화 — 본인: 1/12명</title></rect><text x="228.1" y="43" fill="#e8eaf0" font-size="11.5">1</text><rect x="170" y="49" width="102.2" height="17" rx="4" fill="#c77f35"><title>접속·서버 활성화 — 학생 예상: 2/12명</title></rect><text x="279.2" y="62" fill="#e8eaf0" font-size="11.5">2</text><text x="160" y="111" text-anchor="end" fill="#9aa3b2" font-size="12.5">주제 소개</text><rect x="170" y="92" width="2.0" height="17" rx="4" fill="#4a7fe0"><title>주제 소개 — 본인: 0/12명</title></rect><text x="179.0" y="105" fill="#e8eaf0" font-size="11.5">0</text><rect x="170" y="111" width="102.2" height="17" rx="4" fill="#c77f35"><title>주제 소개 — 학생 예상: 2/12명</title></rect><text x="279.2" y="124" fill="#e8eaf0" font-size="11.5">2</text><text x="160" y="173" text-anchor="end" fill="#9aa3b2" font-size="12.5">대상 선택</text><rect x="170" y="154" width="51.1" height="17" rx="4" fill="#4a7fe0"><title>대상 선택 — 본인: 1/12명</title></rect><text x="228.1" y="167" fill="#e8eaf0" font-size="11.5">1</text><rect x="170" y="173" width="255.6" height="17" rx="4" fill="#c77f35"><title>대상 선택 — 학생 예상: 5/12명</title></rect><text x="432.6" y="186" fill="#e8eaf0" font-size="11.5">5</text><text x="160" y="235" text-anchor="end" fill="#9aa3b2" font-size="12.5">자료 확인</text><rect x="170" y="216" width="102.2" height="17" rx="4" fill="#4a7fe0"><title>자료 확인 — 본인: 2/12명</title></rect><text x="279.2" y="229" fill="#e8eaf0" font-size="11.5">2</text><rect x="170" y="235" width="153.3" height="17" rx="4" fill="#c77f35"><title>자료 확인 — 학생 예상: 3/12명</title></rect><text x="330.3" y="248" fill="#e8eaf0" font-size="11.5">3</text><text x="160" y="297" text-anchor="end" fill="#9aa3b2" font-size="12.5">분석 준비</text><rect x="170" y="278" width="153.3" height="17" rx="4" fill="#4a7fe0"><title>분석 준비 — 본인: 3/12명</title></rect><text x="330.3" y="291" fill="#e8eaf0" font-size="11.5">3</text><rect x="170" y="297" width="306.7" height="17" rx="4" fill="#c77f35"><title>분석 준비 — 학생 예상: 6/12명</title></rect><text x="483.7" y="310" fill="#e8eaf0" font-size="11.5">6</text><text x="160" y="359" text-anchor="end" fill="#9aa3b2" font-size="12.5">분석 실행·시각화</text><rect x="170" y="340" width="102.2" height="17" rx="4" fill="#4a7fe0"><title>분석 실행·시각화 — 본인: 2/12명</title></rect><text x="279.2" y="353" fill="#e8eaf0" font-size="11.5">2</text><rect x="170" y="359" width="306.7" height="17" rx="4" fill="#c77f35"><title>분석 실행·시각화 — 학생 예상: 6/12명</title></rect><text x="483.7" y="372" fill="#e8eaf0" font-size="11.5">6</text><text x="160" y="421" text-anchor="end" fill="#9aa3b2" font-size="12.5">기준값 비교</text><rect x="170" y="402" width="153.3" height="17" rx="4" fill="#4a7fe0"><title>기준값 비교 — 본인: 3/12명</title></rect><text x="330.3" y="415" fill="#e8eaf0" font-size="11.5">3</text><rect x="170" y="421" width="357.8" height="17" rx="4" fill="#c77f35"><title>기준값 비교 — 학생 예상: 7/12명</title></rect><text x="534.8" y="434" fill="#e8eaf0" font-size="11.5">7</text><text x="160" y="483" text-anchor="end" fill="#9aa3b2" font-size="12.5">해석·기록</text><rect x="170" y="464" width="102.2" height="17" rx="4" fill="#4a7fe0"><title>해석·기록 — 본인: 2/12명</title></rect><text x="279.2" y="477" fill="#e8eaf0" font-size="11.5">2</text><rect x="170" y="483" width="460.0" height="17" rx="4" fill="#c77f35"><title>해석·기록 — 학생 예상: 9/12명</title></rect><text x="637.0" y="496" fill="#e8eaf0" font-size="11.5">9</text></svg>
-<div class="cap">복수 선택, N=12. "학생" = 교사가 예상한 학생의 어려움(실제 학생 데이터 아님).</div>
-<div class="warn">본인 어려움(1~3)과 학생 예상(최대 9)의 간극 — 교사들은 "나는 할 수 있지만 학생에겐 어렵다"고 판단. 특히 <b>해석·기록(9)·기준값 비교(7)</b>. 반응척도의 역문항 약점과 같은 지점.</div></div>
-<div class="card"><h2>기존 서비스 장벽 (Q5, 복수)</h2>
-<svg viewBox="0 0 680 280" role="img" aria-label=""><text x="290" y="25.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">학생 수준에 맞게 자료를 재구성하기 어려울 것 같음</text><rect x="300" y="8" width="320.0" height="26" rx="4" fill="#4a7fe0"><title>학생 수준에 맞게 자료를 재구성하기 어려울 것 같음: 10명 / 12명</title></rect><text x="628.0" y="25.0" fill="#e8eaf0" font-size="12.5">10</text><text x="290" y="59.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">영어 인터페이스와 전문 용어가 부담될 것 같음</text><rect x="300" y="42" width="288.0" height="26" rx="4" fill="#4a7fe0"><title>영어 인터페이스와 전문 용어가 부담될 것 같음: 9명 / 12명</title></rect><text x="596.0" y="59.0" fill="#e8eaf0" font-size="12.5">9</text><text x="290" y="93.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">수업 시간 안에서 활용하기 어려울 것 같음</text><rect x="300" y="76" width="256.0" height="26" rx="4" fill="#4a7fe0"><title>수업 시간 안에서 활용하기 어려울 것 같음: 8명 / 12명</title></rect><text x="564.0" y="93.0" fill="#e8eaf0" font-size="12.5">8</text><text x="290" y="127.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">좌표와 메타데이터 이해가 어려울 것 같음</text><rect x="300" y="110" width="224.0" height="26" rx="4" fill="#4a7fe0"><title>좌표와 메타데이터 이해가 어려울 것 같음: 7명 / 12명</title></rect><text x="532.0" y="127.0" fill="#e8eaf0" font-size="12.5">7</text><text x="290" y="161.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">자료 검색 절차가 복잡할 것 같음</text><rect x="300" y="144" width="160.0" height="26" rx="4" fill="#4a7fe0"><title>자료 검색 절차가 복잡할 것 같음: 5명 / 12명</title></rect><text x="468.0" y="161.0" fill="#e8eaf0" font-size="12.5">5</text><text x="290" y="195.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">코딩 또는 별도 분석 프로그램 사용이 필요할 것 같음</text><rect x="300" y="178" width="160.0" height="26" rx="4" fill="#4a7fe0"><title>코딩 또는 별도 분석 프로그램 사용이 필요할 것 같음: 5명 / 12명</title></rect><text x="468.0" y="195.0" fill="#e8eaf0" font-size="12.5">5</text><text x="290" y="229.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">그래프 또는 분석 결과를 해석하기 어려울 것 같음</text><rect x="300" y="212" width="64.0" height="26" rx="4" fill="#4a7fe0"><title>그래프 또는 분석 결과를 해석하기 어려울 것 같음: 2명 / 12명</title></rect><text x="372.0" y="229.0" fill="#e8eaf0" font-size="12.5">2</text><text x="290" y="263.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">파일 형식과 다운로드 과정이 부담될 것 같음</text><rect x="300" y="246" width="64.0" height="26" rx="4" fill="#4a7fe0"><title>파일 형식과 다운로드 과정이 부담될 것 같음: 2명 / 12명</title></rect><text x="372.0" y="263.0" fill="#e8eaf0" font-size="12.5">2</text></svg></div>
-<div class="card"><h2>보완 요구 (Q21, 복수)</h2>
-<svg viewBox="0 0 680 280" role="img" aria-label=""><text x="290" y="25.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">그래프와 분석 결과를 해석할 수 있는 도움말을 제공하는 것</text><rect x="300" y="8" width="320.0" height="26" rx="4" fill="#4a7fe0"><title>그래프와 분석 결과를 해석할 수 있는 도움말을 제공하는 것: 7명 / 12명</title></rect><text x="628.0" y="25.0" fill="#e8eaf0" font-size="12.5">7</text><text x="290" y="59.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">기준값 비교, 차이 원인 설명, 결과 기록 활동을 강화하는 것</text><rect x="300" y="42" width="320.0" height="26" rx="4" fill="#4a7fe0"><title>기준값 비교, 차이 원인 설명, 결과 기록 활동을 강화하는 것: 7명 / 12명</title></rect><text x="628.0" y="59.0" fill="#e8eaf0" font-size="12.5">7</text><text x="290" y="93.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">수업 적용을 위한 활동지와 교사용 안내 자료를 제공하는 것</text><rect x="300" y="76" width="274.3" height="26" rx="4" fill="#4a7fe0"><title>수업 적용을 위한 활동지와 교사용 안내 자료를 제공하는 것: 6명 / 12명</title></rect><text x="582.3" y="93.0" fill="#e8eaf0" font-size="12.5">6</text><text x="290" y="127.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">STEP별 질문과 생각해보기를 보완하는 것</text><rect x="300" y="110" width="182.9" height="26" rx="4" fill="#4a7fe0"><title>STEP별 질문과 생각해보기를 보완하는 것: 4명 / 12명</title></rect><text x="490.9" y="127.0" fill="#e8eaf0" font-size="12.5">4</text><text x="290" y="161.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">추가 탐구 주제를 제공하는 것</text><rect x="300" y="144" width="91.4" height="26" rx="4" fill="#4a7fe0"><title>추가 탐구 주제를 제공하는 것: 2명 / 12명</title></rect><text x="399.4" y="161.0" fill="#e8eaf0" font-size="12.5">2</text><text x="290" y="195.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">자료 출처와 분석 조건을 더 명확히 제시하는 것</text><rect x="300" y="178" width="91.4" height="26" rx="4" fill="#4a7fe0"><title>자료 출처와 분석 조건을 더 명확히 제시하는 것: 2명 / 12명</title></rect><text x="399.4" y="195.0" fill="#e8eaf0" font-size="12.5">2</text><text x="290" y="229.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">분석 과정과 품질 점검 정보를 더 자세히 제공하는 것</text><rect x="300" y="212" width="91.4" height="26" rx="4" fill="#4a7fe0"><title>분석 과정과 품질 점검 정보를 더 자세히 제공하는 것: 2명 / 12명</title></rect><text x="399.4" y="229.0" fill="#e8eaf0" font-size="12.5">2</text><text x="290" y="263.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">동시에 자료 출력이 가능하게..? 다인원 수용 가능하게</text><rect x="300" y="246" width="45.7" height="26" rx="4" fill="#4a7fe0"><title>동시에 자료 출력이 가능하게..? 다인원 수용 가능하게: 1명 / 12명</title></rect><text x="353.7" y="263.0" fill="#e8eaf0" font-size="12.5">1</text></svg>
-<h3>활용 의향·형태</h3>
-<ul><li>"지금 형태 그대로" 활용 의향: 평균 <b>3.92</b> (분포 [(2, 1), (3, 1), (4, 8), (5, 2)])</li></ul>
-<svg viewBox="0 0 680 144" role="img" aria-label="적절 수업 시간"><text x="290" y="25.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">동아리·과제연구가 적합</text><rect x="300" y="8" width="320.0" height="26" rx="4" fill="#4a7fe0"><title>동아리·과제연구가 적합: 5명 / 12명</title></rect><text x="628.0" y="25.0" fill="#e8eaf0" font-size="12.5">5</text><text x="290" y="59.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">2차시</text><rect x="300" y="42" width="256.0" height="26" rx="4" fill="#4a7fe0"><title>2차시: 4명 / 12명</title></rect><text x="564.0" y="59.0" fill="#e8eaf0" font-size="12.5">4</text><text x="290" y="93.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">3차시 이상</text><rect x="300" y="76" width="128.0" height="26" rx="4" fill="#4a7fe0"><title>3차시 이상: 2명 / 12명</title></rect><text x="436.0" y="93.0" fill="#e8eaf0" font-size="12.5">2</text><text x="290" y="127.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">1차시 이내</text><rect x="300" y="110" width="64.0" height="26" rx="4" fill="#4a7fe0"><title>1차시 이내: 1명 / 12명</title></rect><text x="372.0" y="127.0" fill="#e8eaf0" font-size="12.5">1</text></svg></div>
+<!-- 4 -->
+<section>
+  <div class="sechead">
+    <div class="tile"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+    <div><h2>4. 어디까지 했고, 얼마나 걸렸나</h2>
+      <p>Q7 · Q7-1 · 진행자 안내에 따라 참여자가 직접 수행한 뒤 응답</p></div>
+  </div>
+  <div class="secbody">
+    <h3>수행 단계</h3>
+    <table>
+      <tr class="hi"><td class="q">Step 0~6 전체 완료 (해석·기록까지)</td><td class="r num">9명</td></tr>
+      <tr><td class="q">분석 실행·시각화(광도곡선·모델 적합)까지 완료</td><td class="r num">2명</td></tr>
+      <tr><td class="q">일부 단계만 수행함</td><td class="r num">1명</td></tr>
+    </table>
+    <h3>소요 시간</h3>
+    <table>
+      <tr><td class="q">10분 미만</td><td class="r num">1명</td></tr>
+      <tr class="hi"><td class="q">10~20분</td><td class="r num">4명</td></tr>
+      <tr class="hi"><td class="q">20~30분</td><td class="r num">4명</td></tr>
+      <tr><td class="q">30분 이상</td><td class="r num">3명</td></tr>
+    </table>
+    <div class="star">
+      <p class="lead">12명 중 9명이 마지막 단계까지 갔고, 대부분 10~30분에 마쳤다.</p>
+      <p>코딩 없이 실제 자료 분석을 끝까지 해낼 수 있다는 것을 실제 수행으로 보인 값이다.
+         다만 <b>이건 교사가 직접 해본 시간이지 학생 수업에 필요한 시간이 아니다.</b> 학생용 차시는 7절을 봐야 한다.</p>
+    </div>
+  </div>
 </section>
 
-<section id="t5">
-<div class="card"><h2>WASP-6 b 산출값 분포 — Rp/R* (fit 완료 14건)</h2>
-<svg viewBox="0 0 680 150" role="img" aria-label="Rp/Rs 분포"><line x1="60.0" y1="30" x2="60.0" y2="116" stroke="#2a2e36"/><text x="60.0" y="132" text-anchor="middle" fill="#6b7280" font-size="11">0.02</text><line x1="207.5" y1="30" x2="207.5" y2="116" stroke="#2a2e36"/><text x="207.5" y="132" text-anchor="middle" fill="#6b7280" font-size="11">0.06</text><line x1="355.0" y1="30" x2="355.0" y2="116" stroke="#2a2e36"/><text x="355.0" y="132" text-anchor="middle" fill="#6b7280" font-size="11">0.1</text><line x1="524.6" y1="30" x2="524.6" y2="116" stroke="#2a2e36"/><text x="524.6" y="132" text-anchor="middle" fill="#6b7280" font-size="11">0.146</text><line x1="650.0" y1="30" x2="650.0" y2="116" stroke="#2a2e36"/><text x="650.0" y="132" text-anchor="middle" fill="#6b7280" font-size="11">0.18</text><line x1="524.6" y1="24" x2="524.6" y2="116" stroke="#c77f35" stroke-width="2" stroke-dasharray="5 4"/><text x="524.6" y="16" text-anchor="middle" fill="#c77f35" font-size="11.5">NASA EA 0.146</text><line x1="76.7" y1="60" x2="130.2" y2="60" stroke="#4a7fe0" stroke-width="1.6" opacity="0.5"/><circle cx="103.5" cy="60" r="6" fill="#4a7fe0" stroke="#16181d" stroke-width="2"><title>Rp/R* = 0.0318 ± 0.0073 · χ²_red 0.62</title></circle><line x1="481.4" y1="60" x2="530.9" y2="60" stroke="#4a7fe0" stroke-width="1.6" opacity="0.5"/><circle cx="506.2" cy="60" r="6" fill="#4a7fe0" stroke="#16181d" stroke-width="2"><title>Rp/R* = 0.1410 ± 0.0067 · χ²_red 1.20</title></circle><line x1="491.1" y1="60" x2="536.8" y2="60" stroke="#4a7fe0" stroke-width="1.6" opacity="0.5"/><circle cx="513.9" cy="60" r="6" fill="#4a7fe0" stroke="#16181d" stroke-width="2"><title>Rp/R* = 0.1431 ± 0.0062 · χ²_red 0.93</title></circle><line x1="501.9" y1="60" x2="536.4" y2="60" stroke="#4a7fe0" stroke-width="1.6" opacity="0.5"/><circle cx="519.2" cy="60" r="6" fill="#4a7fe0" stroke="#16181d" stroke-width="2"><title>Rp/R* = 0.1445 ± 0.0047 · χ²_red 0.76</title></circle><line x1="500.5" y1="76" x2="539.0" y2="76" stroke="#4a7fe0" stroke-width="1.6" opacity="0.5"/><circle cx="519.8" cy="76" r="6" fill="#4a7fe0" stroke="#16181d" stroke-width="2"><title>Rp/R* = 0.1447 ± 0.0052 · χ²_red 0.65</title></circle><line x1="500.1" y1="92" x2="539.7" y2="92" stroke="#4a7fe0" stroke-width="1.6" opacity="0.5"/><circle cx="519.9" cy="92" r="6" fill="#4a7fe0" stroke="#16181d" stroke-width="2"><title>Rp/R* = 0.1447 ± 0.0054 · χ²_red 0.84</title></circle><line x1="501.4" y1="60" x2="544.8" y2="60" stroke="#4a7fe0" stroke-width="1.6" opacity="0.5"/><circle cx="523.1" cy="60" r="6" fill="#4a7fe0" stroke="#16181d" stroke-width="2"><title>Rp/R* = 0.1456 ± 0.0059 · χ²_red 1.09</title></circle><line x1="492.8" y1="76" x2="554.9" y2="76" stroke="#4a7fe0" stroke-width="1.6" opacity="0.5"/><circle cx="523.9" cy="76" r="6" fill="#4a7fe0" stroke="#16181d" stroke-width="2"><title>Rp/R* = 0.1458 ± 0.0084 · χ²_red 0.57</title></circle><line x1="500.1" y1="92" x2="550.7" y2="92" stroke="#4a7fe0" stroke-width="1.6" opacity="0.5"/><circle cx="525.4" cy="92" r="6" fill="#4a7fe0" stroke="#16181d" stroke-width="2"><title>Rp/R* = 0.1462 ± 0.0069 · χ²_red 1.38</title></circle><line x1="498.8" y1="60" x2="552.4" y2="60" stroke="#4a7fe0" stroke-width="1.6" opacity="0.5"/><circle cx="525.6" cy="60" r="6" fill="#4a7fe0" stroke="#16181d" stroke-width="2"><title>Rp/R* = 0.1463 ± 0.0073 · χ²_red 0.84</title></circle><line x1="517.7" y1="60" x2="554.6" y2="60" stroke="#4a7fe0" stroke-width="1.6" opacity="0.5"/><circle cx="536.1" cy="60" r="6" fill="#4a7fe0" stroke="#16181d" stroke-width="2"><title>Rp/R* = 0.1491 ± 0.0050 · χ²_red 0.87</title></circle><line x1="509.3" y1="76" x2="564.5" y2="76" stroke="#4a7fe0" stroke-width="1.6" opacity="0.5"/><circle cx="536.9" cy="76" r="6" fill="#4a7fe0" stroke="#16181d" stroke-width="2"><title>Rp/R* = 0.1493 ± 0.0075 · χ²_red 2.33</title></circle><line x1="530.1" y1="60" x2="575.0" y2="60" stroke="#4a7fe0" stroke-width="1.6" opacity="0.5"/><circle cx="552.5" cy="60" r="6" fill="#4a7fe0" stroke="#16181d" stroke-width="2"><title>Rp/R* = 0.1536 ± 0.0061 · χ²_red 1.32</title></circle><line x1="522.2" y1="60" x2="625.8" y2="60" stroke="#4a7fe0" stroke-width="1.6" opacity="0.5"/><circle cx="574.0" cy="60" r="6" fill="#4a7fe0" stroke="#16181d" stroke-width="2"><title>Rp/R* = 0.1594 ± 0.0140 · χ²_red 4.49</title></circle></svg>
-<div class="cap">점=개별 제출, 가로선=±1σ(fit 오차), 주황 점선=NASA Exoplanet Archive 문헌값 0.146. 데이터: EASWA record sink 2026-07-24, TESS WASP-6 b Sector 2.</div>
-<ul>
-<li>중앙값 <b>0.1457</b> — 문헌 0.146과 차이 <b>0.0003</b> · 12/14건이 ±0.01 이내</li>
-<li>이탈 2건: 0.0318(구경/ROI 설정 실패 추정 — 차이 원인 학습의 실제 소재), 0.1594</li>
-<li>χ²_red 중앙값 0.90 (범위 0.57~4.49)</li>
-</ul></div>
-<div class="card"><h2>참여·대상</h2>
-<svg viewBox="0 0 680 178" role="img" aria-label="대상별 제출"><text x="290" y="25.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">wasp_6_b</text><rect x="300" y="8" width="320.0" height="26" rx="4" fill="#4a7fe0"><title>wasp_6_b: 14명 / 20명</title></rect><text x="628.0" y="25.0" fill="#e8eaf0" font-size="12.5">14</text><text x="290" y="59.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">wasp_151_b</text><rect x="300" y="42" width="68.6" height="26" rx="4" fill="#4a7fe0"><title>wasp_151_b: 3명 / 20명</title></rect><text x="376.6" y="59.0" fill="#e8eaf0" font-size="12.5">3</text><text x="290" y="93.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">wasp_23_b</text><rect x="300" y="76" width="22.9" height="26" rx="4" fill="#4a7fe0"><title>wasp_23_b: 1명 / 20명</title></rect><text x="330.9" y="93.0" fill="#e8eaf0" font-size="12.5">1</text><text x="290" y="127.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">wasp_140_b</text><rect x="300" y="110" width="22.9" height="26" rx="4" fill="#4a7fe0"><title>wasp_140_b: 1명 / 20명</title></rect><text x="330.9" y="127.0" fill="#e8eaf0" font-size="12.5">1</text><text x="290" y="161.0" text-anchor="end" fill="#9aa3b2" font-size="12.5">wasp_164_b</text><rect x="300" y="144" width="22.9" height="26" rx="4" fill="#4a7fe0"><title>wasp_164_b: 1명 / 20명</title></rect><text x="330.9" y="161.0" fill="#e8eaf0" font-size="12.5">1</text></svg>
-<div class="good">WASP-6 b(번들) 외 <b>4개 대상 5건</b> — MAST 실시간 다운로드 경로가 현장에서 실제 작동. 대상 선택 확장의 실증.</div>
-<h3>학습 반응 신호</h3>
-<ul>
-<li>생각해보기(self-check): 응답 제출 15건, 정답률 <b>36/37</b> (97%)</li>
-<li>Step6 "transit 보였나": {'clear': 9} · 관찰 문제(복수): {'few_comparisons': 10, 'blended_field': 7, 'noisy_curve': 6, 'field_too_small': 6}</li>
-<li>사이트 별점(미응답 제외): [(5, 4)] — 평균 5.00</li>
-</ul></div>
+<!-- 5 -->
+<section>
+  <div class="sechead">
+    <div class="tile"><svg viewBox="0 0 24 24"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg></div>
+    <div><h2>5. 반응척도</h2>
+      <p>Q8~18 · 1~5점 · N=12 · 12번과 15번은 역문항이라 역채점(6−점수)했다</p></div>
+  </div>
+  <div class="secbody">
+    <table>
+      <tr><th>문항</th><th class="r">원평균</th><th class="r">역채점</th><th class="r">SD</th><th class="r">분포 1→5</th></tr>
+      <tr><td class="q">8. 천체명·자료 검색보다 탐구 주제와 질문에서 출발한다</td><td class="r num">4.08</td><td class="r num">4.08</td><td class="r num">0.67</td><td class="r dist">0·0·2·7·3</td></tr>
+      <tr class="hi"><td class="q"><span class="mk-up">▲</span>9. 별도의 코딩 환경 없이 분석 과정을 수행할 수 있다</td><td class="r num">4.50</td><td class="r num">4.50</td><td class="r num">0.52</td><td class="r dist">0·0·0·6·6</td></tr>
+      <tr><td class="q">10. 자료의 출처와 관측 정보를 확인할 수 있다</td><td class="r num">4.42</td><td class="r num">4.42</td><td class="r num">0.79</td><td class="r dist">0·0·2·3·7</td></tr>
+      <tr><td class="q">11. 분석 조건을 직접 조정할 수 있다</td><td class="r num">4.42</td><td class="r num">4.42</td><td class="r num">0.67</td><td class="r dist">0·0·1·5·6</td></tr>
+      <tr class="hi"><td class="q"><span class="mk-down">▼</span>12. <i>화면 구성이 복잡하여</i> 탐구 흐름을 파악하기 어렵다</td><td class="r num">2.50</td><td class="r num">3.50</td><td class="r num">1.24</td><td class="r dist">3·3·4·1·1</td></tr>
+      <tr><td class="q">13. STEP별 질문과 생각해보기가 각 단계에서 도움이 된다</td><td class="r num">4.00</td><td class="r num">4.00</td><td class="r num">0.74</td><td class="r dist">0·0·3·6·3</td></tr>
+      <tr class="hi"><td class="q"><span class="mk-up">▲</span>14. 광도곡선과 모델 적합 결과를 해석할 수 있게 제시한다</td><td class="r num">4.50</td><td class="r num">4.50</td><td class="r num">0.67</td><td class="r dist">0·0·1·4·7</td></tr>
+      <tr class="hi"><td class="q"><span class="mk-down">▼</span>15. <i>기준값 비교 화면은</i> 무엇을 해석해야 하는지 파악하기 어렵다</td><td class="r num">2.58</td><td class="r num">3.42</td><td class="r num">1.16</td><td class="r dist">1·7·1·2·1</td></tr>
+      <tr><td class="q">16. 산출값과 NASA Exoplanet Archive 기준값을 비교할 수 있다</td><td class="r num">3.75</td><td class="r num">3.75</td><td class="r num">0.87</td><td class="r dist">0·1·3·6·2</td></tr>
+      <tr><td class="q">17. 단계별 안내와 질문이 학교 수업·예비교사 교육에 쓸 만하다</td><td class="r num">4.08</td><td class="r num">4.08</td><td class="r num">0.67</td><td class="r dist">0·0·2·7·3</td></tr>
+      <tr><td class="q">18. 공공 천문자료 기반 탐구를 지원하는 웹 플랫폼으로 적절하다</td><td class="r num">4.33</td><td class="r num">4.33</td><td class="r num">0.49</td><td class="r dist">0·0·0·8·4</td></tr>
+    </table>
+    <p style="margin-top:18px;font-size:15.5px;color:var(--muted)">11문항 역채점 합성 평균 <b style="color:var(--head);font-family:var(--mono)">4.09</b> · SD 0.37 · 범위 3.36~4.64</p>
+
+    <div class="star">
+      <p class="lead">가장 높은 두 문항이 자동화와 해석 지원이고, 가장 낮은 두 문항이 역문항 둘이다.</p>
+      <p>설계 원리로 옮기면 <b>기술 실행 부담 완화와 분석 과정 가시화는 통했고</b>,
+         남은 약점은 <b>화면 복잡도(3.50)와 기준값 비교 화면(3.42)</b> 이다. 논문 4.5절과 6.1절 넷째의 근거다.</p>
+    </div>
+    <div class="star">
+      <p class="lead">이 두 문항은 표준편차도 크다 — 1.24 와 1.16.</p>
+      <p>나머지 문항이 0.5~0.9 인 것과 견주면 뚜렷하게 넓다. <b>평균이 낮다기보다 응답이 갈렸다.</b>
+         특히 15번은 원점수 2점에 7명이 몰려, 어렵다고 답한 쪽이 한 덩어리로 있다.</p>
+    </div>
+  </div>
 </section>
 
-<section id="t6">
-<div class="card"><h2>Q20-1 기준값 차이 원인 — 예상답변 프레임 대조</h2>
-<p style="font-size:13.5px;color:var(--sub)">사전 작성된 <b>탐구질문 예상답변 v1</b>(2026-07-16, 문항 타당화 문서)은 차이 원인이 <b>자료 품질 / 분석 조건 / 모델 가정</b> 3범주로 귀속되도록 설계했고, 이를 연역 코딩 프레임으로 사용했다.</p>
-<div class="quotes"><div class="q-item"><span class="q-num">#1</span> <span class="badge b-gray">미분류</span> <span class="note">전공 부담 호소 — 원인 아님</span><p>제가 지구과학 전공자가 아니라..^^;</p></div><div class="q-item"><span class="q-num">#3</span> <span class="badge b-amber">분석 조건</span> <span class="note">구경 설정</span><p>구경 설정에 섬세하지 못했던 것이 아닐까 생각해요.</p></div><div class="q-item"><span class="q-num">#9</span> <span class="badge b-green">모델 가정</span> <span class="note">주연 감광(limb darkening) 미반영 — 앱이 명시한 고정 가정을 정확히 지목</span><p>주연 감광을 고려하지 않았다.</p></div><div class="q-item"><span class="q-num">#10</span> <span class="badge b-blue">자료 품질</span> <span class="note">주변 별빛 오염(blending) 통제</span><p>주변 별빛에 의해 데이터가 오염되는 것을 제대로 통제하지 않았을 수 있음</p></div><div class="q-item"><span class="q-num">#11</span> <span class="badge b-blue">자료 품질</span> <span class="note">비교성 품질 + 별빛 오염</span><p>비교성의 품질 하락 및 주변 별빛의 오염</p></div><div class="q-item"><span class="q-num">#12</span> <span class="badge b-amber">분석 조건</span> <span class="note">수행자 임의 설정값 차이</span><p>차등 측광 분석을 위해 수행자가 임의로 설정한 값들의 차이로 인해 발생할 수 있다.</p></div></div>
-<div class="good"><b>대조 결과</b>: 유효 응답 5건 전원이 3범주 중 하나를 정확히 지목 — 예상답변 A패턴("앱이 가르친 개념으로 원인 귀속")이 실제로 관찰됨. 특히 #9 주연 감광은 앱이 명시한 모델 고정 가정을 짚은 최상위 응답. 예상답변 문서의 우려(개념 복창·나열)는 이 문항에서는 나타나지 않음.</div></div>
-<div class="card"><h2>Q22 본인 입장에서 가장 걱정되는 점 (필수)</h2><div class="quotes"><div class="q-item"><span class="q-num">#1</span> <p>많은 시간 소요. 프로그램 활용에 어려움을 느끼는 학생들의 참여도 및 의욕 저하 우려</p></div><div class="q-item"><span class="q-num">#2</span> <p>용어들에 대한 어려움이 예상됩니다. 학생들이 어려워 할만한 용어들 (잡음, 픽셀, 그래프에 사용되는 용 등)이 무슨뜻인지 함께 설명하는 과정도 필요하지 않을까라고 생각됩니다.</p></div><div class="q-item"><span class="q-num">#3</span> <p>현장에서는 지구과학 교과 선택 학생이 많이 줄어들고 있어요. 애초에 이러한 좋은 자료를 활용할 교과 시수 확보가 많이 힘들다고 생각해요.</p></div><div class="q-item"><span class="q-num">#4</span> <p>교과서만 보는 것 보다 천문학자들의 수행 과정을 따라 직접 수행하면 좋을 것 같습니다.</p></div><div class="q-item"><span class="q-num">#5</span> <p>역설적이게도 과학 이론을 오히려 더 어려워할 가능성이 있음</p></div><div class="q-item"><span class="q-num">#6</span> <p>이 프로그램을 활용하기 전에 알고 있어야 하는 사전 지식이 많이 필요함. 실제 관측하는것처럼 따라서 진행하는데, 학생들에게 설명할 때 각 전문 용어들에대한 설명이 필요함.</p></div><div class="q-item"><span class="q-num">#8</span> <p>지구과학 심화과목 선택자에게만 활용할 수 있는 자료가 될 것 같아
+<!-- 6 -->
+<section>
+  <div class="sechead">
+    <div class="tile"><svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></div>
+    <div><h2>6. 어려웠던 단계</h2>
+      <p>Q19 · 복수선택 · 교사 본인이 겪은 것과, 학생이 겪을 것으로 예상한 것을 따로 물었다</p></div>
+  </div>
+  <div class="secbody">
+    <table>
+      <tr><th>단계</th><th class="r">본인</th><th class="r">학생 예상</th></tr>
+      <tr><td class="q">접속·서버 활성화</td><td class="r num">1</td><td class="r num">2</td></tr>
+      <tr><td class="q">주제 소개</td><td class="r num">0</td><td class="r num">2</td></tr>
+      <tr><td class="q">대상 선택</td><td class="r num">1</td><td class="r num">5</td></tr>
+      <tr><td class="q">자료 확인</td><td class="r num">2</td><td class="r num">3</td></tr>
+      <tr><td class="q">분석 준비</td><td class="r num">3</td><td class="r num">6</td></tr>
+      <tr><td class="q">분석 실행·시각화</td><td class="r num">2</td><td class="r num">6</td></tr>
+      <tr class="hi"><td class="q">기준값 비교</td><td class="r num">3</td><td class="r num">7</td></tr>
+      <tr class="hi"><td class="q">해석·기록</td><td class="r num">2</td><td class="r num">9</td></tr>
+    </table>
+    <div class="star">
+      <p class="lead">교사 본인은 많아야 3명인데, 학생은 어려울 것이라는 답이 9명까지 간다.</p>
+      <p>어려움이 앞쪽(접속·주제 소개)이 아니라 <b>뒤쪽 해석 구간</b>에 몰린다.
+         5절의 최저점 두 문항, 7절의 보완 요구 1·2위가 <b>모두 같은 곳을 가리킨다.</b>
+         문항 형식이 다른 세 갈래에서 같은 신호가 나왔으므로 근거로 세기 좋다.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 7 -->
+<section>
+  <div class="sechead">
+    <div class="tile"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></div>
+    <div><h2>7. 무엇을 보완해야 하나</h2>
+      <p>Q21 · 복수선택 · 활용 의향과 적절한 수업 형태를 함께 물었다</p></div>
+  </div>
+  <div class="secbody">
+    <div class="bars">
+      <div class="bar top"><div class="t">그래프와 분석 결과를 해석할 수 있는 도움말을 제공하는 것<span class="track"><span class="fill" style="width:100%"></span></span></div><div class="c">7</div></div>
+      <div class="bar top"><div class="t">기준값 비교, 차이 원인 설명, 결과 기록 활동을 강화하는 것<span class="track"><span class="fill" style="width:100%"></span></span></div><div class="c">7</div></div>
+      <div class="bar top"><div class="t">수업 적용을 위한 활동지와 교사용 안내 자료를 제공하는 것<span class="track"><span class="fill" style="width:86%"></span></span></div><div class="c">6</div></div>
+      <div class="bar"><div class="t">STEP별 질문과 생각해보기를 보완하는 것<span class="track"><span class="fill" style="width:57%"></span></span></div><div class="c">4</div></div>
+      <div class="bar"><div class="t">추가 탐구 주제를 제공하는 것<span class="track"><span class="fill" style="width:29%"></span></span></div><div class="c">2</div></div>
+      <div class="bar"><div class="t">자료 출처와 분석 조건을 더 명확히 제시하는 것<span class="track"><span class="fill" style="width:29%"></span></span></div><div class="c">2</div></div>
+      <div class="bar"><div class="t">분석 과정과 품질 점검 정보를 더 자세히 제공하는 것<span class="track"><span class="fill" style="width:29%"></span></span></div><div class="c">2</div></div>
+      <div class="bar"><div class="t">동시에 자료 출력이 가능하게..? 다인원 수용 가능하게 <span style="color:var(--muted);font-size:13.5px">(직접 입력)</span><span class="track"><span class="fill" style="width:14%"></span></span></div><div class="c">1</div></div>
+    </div>
+
+    <h3>지금 형태 그대로 쓸 의향 · 적절한 수업 형태</h3>
+    <table>
+      <tr><td class="q">Q21-1 '지금 형태 그대로' 활용 의향 (1~5)</td><td class="r num">3.92</td><td class="r dist">SD 0.79 · [2:1, 3:1, 4:8, 5:2]</td></tr>
+    </table>
+    <div class="bars" style="margin-top:14px">
+      <div class="bar top"><div class="t">동아리·과제연구가 적합<span class="track"><span class="fill" style="width:100%"></span></span></div><div class="c">5</div></div>
+      <div class="bar top"><div class="t">2차시<span class="track"><span class="fill" style="width:80%"></span></span></div><div class="c">4</div></div>
+      <div class="bar"><div class="t">3차시 이상<span class="track"><span class="fill" style="width:40%"></span></span></div><div class="c">2</div></div>
+      <div class="bar top"><div class="t">1차시 이내<span class="track"><span class="fill" style="width:20%"></span></span></div><div class="c">1</div></div>
+    </div>
+
+    <div class="star">
+      <p class="lead">보완 요구 1·2위가 5절 최저점, 6절 어려움 단계와 같은 구간이다.</p>
+      <p>3위인 활동지·교사용 자료(6)는 성격이 다르다. 화면을 고쳐서 되는 것이 아니라
+         <b>앱 바깥 자료로 받아야 하는 요구</b>다.</p>
+    </div>
+    <div class="star">
+      <p class="lead">평가는 좋은데(3.92) 정규 차시로는 오지 않는다.</p>
+      <p>한 차시 안에 넣겠다는 답은 1명뿐이고, 동아리·과제연구(5)와 2차시(4)가 대부분이다.
+         논문 5.4절은 이것을 실패가 아니라 <b>«교육적 가치를 인정하는 것»과 «정규 교육과정에 넣을 수 있는 것»을
+         나눠 봐야 할 근거</b>로 쓴다.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 8 -->
+<section>
+  <div class="sechead">
+    <div class="tile"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+    <div><h2>8. 서술형 원문</h2>
+      <p>코딩 전 원자료 그대로. 번호는 응답자 번호이며 빈 번호는 미응답이다.</p></div>
+  </div>
+  <div class="secbody">
+
+    <div class="star" style="margin-top:0">
+      <p class="lead">서술형에서만 나온 것 네 가지 — 선택지에 없어서 여기에만 있다.</p>
+      <table class="pick">
+        <tr><td>Q23-9</td><td>«AI를 사용한 듯한 문맥·문장·표현이 있어 자연스럽게 읽히지 않는다»</td><td>앱 문구 손질</td></tr>
+        <tr><td>Q22-9</td><td>«교사 설명이 대부분이 되고 학생들은 버튼을 누르며 따라오는 주입식 수업이 될 수도»</td><td>스캐폴딩 한계선</td></tr>
+        <tr><td>Q6-11</td><td>«BTJD, BJD, Rp/R*, χ²_red, ROI 등 생소한 용어가 갑자기 튀어나온다»</td><td>용어 풀이 · 스텝 안내</td></tr>
+        <tr><td>Q23-10</td><td>«20-30명이 동시에 사용해도 딜레이 없이»</td><td>서버 용량 (화면 밖)</td></tr>
+      </table>
+      <p style="margin-top:14px">Q22-9 는 <b>보완 요구와 정면으로 부딪히는 유일한 응답</b>이다. 다른 교사들은 더 알려달라고 했는데(각 7명),
+         안내를 늘릴수록 주입식에 가까워진다. 어디까지 알려주고 어디부터 비워둘지를 정할 때 이 응답이 기준이 된다.</p>
+    </div>
+
+    <h3>Q6 · 기존 서비스에서 가장 큰 장벽과 그 이유</h3>
+    <div class="quotes">
+      <div class="qt"><div class="no">1</div><div class="tx">고등학생이 수업 시간 안에 활용하기가 다소 어려울 것 같다는 생각이 듭니다.(플랫폼 사용 설명에 많은 시간이 소요될 것 같음.)</div></div>
+      <div class="qt"><div class="no">2</div><div class="tx">수업 시간 안에서 활용하기가 활용하기가 가장 어려울 것 같습니다. 상상이상으로 학생들의 수준이 천차만별이라, 하나하나 모두를 끌고가는 교사의 입장에서는 천문 자료 서비스 모두를 한 차시안에 활용하기 쉽지 않을 것 같다고 예상됩니다.</div></div>
+      <div class="qt"><div class="no">3</div><div class="tx">학생 수준에 맞게 재구성</div></div>
+      <div class="qt"><div class="no">4</div><div class="tx">이 데이터가 무엇을 의미하고 이러한 과정이 뭘 의미하는지 일반 학생들 입장에서 어려워 할 것 같습니다.</div></div>
+      <div class="qt"><div class="no">5</div><div class="tx">학생들이 코딩에 대한 이해, 개념에 대한 이해 없이 프로그램을 먼저 접할 경우 내용 자체를 어려워하는 역설적 현상이 발생할 것 같습니다</div></div>
+      <div class="qt"><div class="no">6</div><div class="tx">영어 인터페이스와 메타데이터의 이해 : 자료의 의미를 이해하는데 영어를 해석해야해서 제일 어렵다.</div></div>
+      <div class="qt"><div class="no">7</div><div class="tx">코딩 능력의 한계점과 학생 수준으로 자료 재구성의 부담감, 현장에서의 수업 여건(크롬북으로 가동 가능해야하며, 이 과정을 수업시간 내에 30여명의 학생들이 다 따라올 수 있으면서 이해시키는 것이 어려울 수 있음)</div></div>
+      <div class="qt"><div class="no">8</div><div class="tx">일반계 고등학고 학생 수준에 맞게 자료를 재구성이 필요할 것 같습니다.
+일반계 고등학생이 하기에는 전공 내용이 많이 필요하기 때문입니다.</div></div>
+      <div class="qt"><div class="no">9</div><div class="tx">학생 수준에 맞게 자료를 재구성하기 어려울 것 같습니다. 다양한 수준을 가지고 있는 교실 내에서 실제 데이터를 가지고 활용을 하려면 데이터를 다운 받고 재구성까지 교사의 역량이 절대적으로 필요한 부분인데, 이 부분에서 현실적으로 어려움을 느끼고 있습니다.</div></div>
+      <div class="qt"><div class="no">10</div><div class="tx">정성적 내용이 아닌 적경과 적위를 다루는 내용, 관측 천문학은 고등학교 교육과정의 거의 마지막 부분이며 학생들이 가장 어려워 함, 영어로 된 전문 용어 역시 학생들이 수업시간에 보면 어려워 할 것 같음</div></div>
+      <div class="qt key"><div class="no">11</div><div class="tx">피상적으로만 알던 천문 연구 과정을 웹에서 해볼 수 있다는것이 큰 장점인 것 같습니다. 다만, 설명 없이, 웹만 처음 보았을 때 무엇을 해야하는지 찾는 시간이 좀 걸리는 것 같습니다. 각 스텝에서 해야할 것을 명확하게 눈에 띄게 보여주면 더 좋을 것 같습니다. 또한, 그래프를 그렸을 때 변수에 대한 설명이 먼저 진행되지 않고, 생소한 용어들이 많아서, 그래프 해석에 시간이 좀 걸렸던 것 같습니다. 비교별 품질 점검 그래프에서 가로축, 세로축이 무엇을 나타내는지 명확한 설명이 있었으면 더 편안하게 학생들이 탐구하기 편할 것 같습니다. BTJD, BJD, Rp/R*, χ²_red, ROI 등 생소한 용어들이 갑자기 튀어나오는데, 간단한 설명 또는 한글로 풀어서 설명해주는 방식이 있으면 더 도움될 것 같습니다.</div></div>
+      <div class="qt"><div class="no">12</div><div class="tx">수업 시간 안에서 활용하는 것이 어렵긴 합니다. 실제 과학자들이 해보는 경험을 같이 한다는 게 득이 될지 실이 될지는 미지수라는 생각이 듭니다. 방과후 시간에 데이터를 활용한 수업이 개설된다면 활용한 용의는 무조건 있습니다~</div></div>
+    </div>
+
+    <h3>Q20 · 어려웠던 이유</h3>
+    <div class="quotes">
+      <div class="qt"><div class="no">1</div><div class="tx">제가 지구과학 전공자가 아니라..다 어렵게 느껴졌습니다ㅜ.ㅠ</div></div>
+      <div class="qt"><div class="no">3</div><div class="tx">수학적? 통계적 지식이 필요할 것 같아요.</div></div>
+      <div class="qt"><div class="no">4</div><div class="tx">점이 찍혀져 있는 것의 의미, 중간에 끊어진 부분이 있었는데, 이러한 부분이 뭘 의미하는지 알려주면 더 해석에 용이할 것 같습니다.</div></div>
+      <div class="qt"><div class="no">5</div><div class="tx">학생들이 생각보다 과학개념에 대한 이해가 더디고 여기에 프로그램을 도입할 경우 어려워할 가능성이 있습니다</div></div>
+      <div class="qt"><div class="no">9</div><div class="tx">고등학교 교육과정에서 차등 측광 개념을 배우지 않아 프로그램 처음부터 교사의 식현상 설명, 차등 측광의 개념의 설명이 필요하다.</div></div>
+      <div class="qt"><div class="no">10</div><div class="tx">학생이 접해보지 못한 전문 용어들이 사용되어 페이지 전체 내용 이해에 어려움이 있을 것, 별 관측에 대해 경험이 적기 때문에 별 관측에 있어 어떤 점들을 고려해야 하는지에 대해서도 어색한 부분이 많을 것</div></div>
+      <div class="qt"><div class="no">11</div><div class="tx">오차 해석의 여지가 많고, 외계행성에 대한 교육과정 내용이 탐구에서 나오는 만큼 많지 않다. 교육과정 정도의 배경 지식을 가지고 있는 수준의 학생이라면, 웹사이트에서는 키워드가 주어졌지만, 키워드가 주어지지 않는 상황이라면, 오차에 대한 분석을 쓰지 못하지 않을까하고 생각된다.</div></div>
+    </div>
+
+    <h3>Q20-1 · 기준값과 차이가 난 원인</h3>
+    <div class="quotes">
+      <div class="qt"><div class="no">1</div><div class="tx">제가 지구과학 전공자가 아니라..^^;</div></div>
+      <div class="qt key"><div class="no">3</div><div class="tx">구경 설정에 섬세하지 못했던 것이 아닐까 생각해요.</div></div>
+      <div class="qt key"><div class="no">9</div><div class="tx">주연 감광을 고려하지 않았다.</div></div>
+      <div class="qt key"><div class="no">10</div><div class="tx">주변 별빛에 의해 데이터가 오염되는 것을 제대로 통제하지 않았을 수 있음</div></div>
+      <div class="qt key"><div class="no">11</div><div class="tx">비교성의 품질 하락 및 주변 별빛의 오염</div></div>
+      <div class="qt key"><div class="no">12</div><div class="tx">차등 측광 분석을 위해 수행자가 임의로 설정한 값들의 차이로 인해 발생할 수 있다.</div></div>
+    </div>
+    <div class="star">
+      <p class="lead">원인을 알려주지 않았는데도 다섯 명이 실제 원인에 도달했다.</p>
+      <p>구경 설정, 주연감광, 주변 별빛 오염, 임의 설정값 — 논문 4.7.1절이 정량으로 분해한 원인과 같다.
+         <b>원인 후보를 선택지로 미리 주지 말아야 할 근거</b>이며, 화면은 답 대신 판단할 수치를 보여주면 된다는 뜻이다.</p>
+    </div>
+
+    <h3>Q22 · 본인 입장에서 가장 걱정되는 점</h3>
+    <div class="quotes">
+      <div class="qt"><div class="no">1</div><div class="tx">많은 시간 소요. 프로그램 활용에 어려움을 느끼는 학생들의 참여도 및 의욕 저하 우려</div></div>
+      <div class="qt"><div class="no">2</div><div class="tx">용어들에 대한 어려움이 예상됩니다. 학생들이 어려워 할만한 용어들 (잡음, 픽셀, 그래프에 사용되는 용 등)이 무슨뜻인지 함께 설명하는 과정도 필요하지 않을까라고 생각됩니다.</div></div>
+      <div class="qt"><div class="no">3</div><div class="tx">현장에서는 지구과학 교과 선택 학생이 많이 줄어들고 있어요. 애초에 이러한 좋은 자료를 활용할 교과 시수 확보가 많이 힘들다고 생각해요.</div></div>
+      <div class="qt"><div class="no">4</div><div class="tx">교과서만 보는 것 보다 천문학자들의 수행 과정을 따라 직접 수행하면 좋을 것 같습니다.</div></div>
+      <div class="qt"><div class="no">5</div><div class="tx">역설적이게도 과학 이론을 오히려 더 어려워할 가능성이 있음</div></div>
+      <div class="qt"><div class="no">6</div><div class="tx">이 프로그램을 활용하기 전에 알고 있어야 하는 사전 지식이 많이 필요함. 실제 관측하는것처럼 따라서 진행하는데, 학생들에게 설명할 때 각 전문 용어들에대한 설명이 필요함.</div></div>
+      <div class="qt"><div class="no">8</div><div class="tx">지구과학 심화과목 선택자에게만 활용할 수 있는 자료가 될 것 같아
 (현재 고등학교에서는 고교학점제가 시행되고 난 후 지구과학 선택자가 매우 적어진 상황입니다.)
 실제로 2022개정 교육과정에 있는 기본 내용에서는 적용하기가 어려울 것 같아 아쉽다.
-난이도가 조금 더 쉬운 자료 해석부터 순차적으로 난이도를 높여가면 좋을 것 같다.</p></div><div class="q-item"><span class="q-num">#9</span> <p>교육과정 내에서 수업을 하기에는 성취기준, 학생 수준에 조금 맞지 않는 부분도 있고 아직 자료의 선택지?가 많지 않아 실제 수업을 한다면 교사의 설명이 대부분이 되고 학생들은 버튼을 누르며 따라오는 주입식 수업이 될 수도 있을 것 같습니다. 
-직접 해보며 생각해보니 지구과학, 행성우주과학 수업 보다는 천체를 진로로 희망하는 학생들만 따로 모아 활동을 진행해볼 것 같다는 생각이 듭니다.</p></div><div class="q-item"><span class="q-num">#10</span> <p>식 현상 개념 설명부터 탐구 활동까지, 3차시 이상의 수업이 예상되며, 해당 수업 전후로 하여 진도 상홍에 대한 우려가 있음. EASWA에서 사용되는, 고등학교 교과서 내용에서 잘 다루지 않는 기호, 단위 등에 대한 설명이 확실하게 이루어져야 학생들에게 의미있는 수업이 될 것 같음.</p></div><div class="q-item"><span class="q-num">#11</span> <p>교육과정과의 불일치</p></div><div class="q-item"><span class="q-num">#12</span> <p>어려운 코딩이나 데이터 수집과 같은 활동없이 간단하게(?) 학생들에게 과학자들이 해보는 활동을 체험해볼 수 있다는 점에선 훌륭한 컨텐츠이지만, 실제 수업에서 교사가 활용할 때에는 A~Z까지 설명을 할 수 있어야 된다고 생각합니다. 이를테면, 식현상에 대한 개념, 식현상을 파악하는 과정의 어려움, 차등측광의 개념, Simbad와 같은 데이터베이스에 대한 설명이 수반되어야 교육적 효과가 있을 것 같아요.</p></div></div>
-<div class="warn">지배 주제: <b>교육과정 불일치·시수(#3·8·9·10·11)</b> + <b>용어·사전지식(#2·5·6·12)</b>. 앱 내부 기능보다 수업 맥락 장벽이 큼 → 활동지·교사자료·용어 한글화가 대응 지점.</div></div>
-<div class="card"><h2>Q23 장점 + 시급 보완</h2><div class="quotes"><div class="q-item"><span class="q-num">#1</span> <p>가장 잘 되어 있는 점 : 화면 구성, 인터페이스, 자료 활용
-보완 : 전체적인 구성이 조금 더 단순했으면 좋겠습니다.</p></div><div class="q-item"><span class="q-num">#5</span> <p>학생들에게 시각화자료를 주고 실제 데이터로 만들 수 있도록 한 점이 흥미를 불러일으 킬 것</p></div><div class="q-item"><span class="q-num">#9</span> <p>단어, 표현 방법이 AI를 사용한 듯한 문맥, 문장, 표현이 있어 자연스럽게 읽히지 않는 설명들이 있었습니다.(교사가 세특 AI로 쓰면 부자연스러운 표현이 티가 나듯이요) 이 부분을 검토해서 수정하면 좋을 것 같습니다. 
-아이디어부터 사이트까지 너무 창의적이고 실제로 계속 여러 주제가 탑재된다면 많은 사람들이 쓰게 될 것 같습니다. 좋은 자료 감사합니다~!!</p></div><div class="q-item"><span class="q-num">#10</span> <p>학생이 직접 조작할 수 있는 부분,  신뢰도 높은 DB를 구축해놓은 것이 굉장히 좋았습니다! 20-30명이 동시에 사용해도 모두가 딜레이없이 거의 동시에 활동을 이어갈 수 있도록 서버를 세팅해 놓으면 바로 현장에서 사용 가능할 것 같습니다</p></div><div class="q-item"><span class="q-num">#12</span> <p>수행자가 해당 차시의 과정이나 방법을 잘 이해하고 있는지에 대한 연구질문? 도움질문의 UI가 보완되어서 학습자 스스로 진단해볼 수 있는 과정이 지금보다 확실히 눈에 띄고 보완되면 좋을 것 같습니다~</p></div></div></div>
-<div class="card"><h2>Q6 기존 서비스 최대 장벽 이유</h2><div class="quotes"><div class="q-item"><span class="q-num">#1</span> <p>고등학생이 수업 시간 안에 활용하기가 다소 어려울 것 같다는 생각이 듭니다.(플랫폼 사용 설명에 많은 시간이 소요될 것 같음.)</p></div><div class="q-item"><span class="q-num">#2</span> <p>수업 시간 안에서 활용하기가 활용하기가 가장 어려울 것 같습니다. 상상이상으로 학생들의 수준이 천차만별이라, 하나하나 모두를 끌고가는 교사의 입장에서는 천문 자료 서비스 모두를 한 차시안에 활용하기 쉽지 않을 것 같다고 예상됩니다.</p></div><div class="q-item"><span class="q-num">#3</span> <p>학생 수준에 맞게 재구성</p></div><div class="q-item"><span class="q-num">#4</span> <p>이 데이터가 무엇을 의미하고 이러한 과정이 뭘 의미하는지 일반 학생들 입장에서 어려워 할 것 같습니다.</p></div><div class="q-item"><span class="q-num">#5</span> <p>학생들이 코딩에 대한 이해, 개념에 대한 이해 없이 프로그램을 먼저 접할 경우 내용 자체를 어려워하는 역설적 현상이 발생할 것 같습니다</p></div><div class="q-item"><span class="q-num">#6</span> <p>영어 인터페이스와 메타데이터의 이해 : 자료의 의미를 이해하는데 영어를 해석해야해서 제일 어렵다.</p></div><div class="q-item"><span class="q-num">#7</span> <p>코딩 능력의 한계점과 학생 수준으로 자료 재구성의 부담감, 현장에서의 수업 여건(크롬북으로 가동 가능해야하며, 이 과정을 수업시간 내에 30여명의 학생들이 다 따라올 수 있으면서 이해시키는 것이 어려울 수 있음)</p></div><div class="q-item"><span class="q-num">#8</span> <p>일반계 고등학고 학생 수준에 맞게 자료를 재구성이 필요할 것 같습니다.
-일반계 고등학생이 하기에는 전공 내용이 많이 필요하기 때문입니다.</p></div><div class="q-item"><span class="q-num">#9</span> <p>학생 수준에 맞게 자료를 재구성하기 어려울 것 같습니다. 다양한 수준을 가지고 있는 교실 내에서 실제 데이터를 가지고 활용을 하려면 데이터를 다운 받고 재구성까지 교사의 역량이 절대적으로 필요한 부분인데, 이 부분에서 현실적으로 어려움을 느끼고 있습니다.</p></div><div class="q-item"><span class="q-num">#10</span> <p>정성적 내용이 아닌 적경과 적위를 다루는 내용, 관측 천문학은 고등학교 교육과정의 거의 마지막 부분이며 학생들이 가장 어려워 함, 영어로 된 전문 용어 역시 학생들이 수업시간에 보면 어려워 할 것 같음</p></div><div class="q-item"><span class="q-num">#11</span> <p>피상적으로만 알던 천문 연구 과정을 웹에서 해볼 수 있다는것이 큰 장점인 것 같습니다. 다만, 설명 없이, 웹만 처음 보았을 때 무엇을 해야하는지 찾는 시간이 좀 걸리는 것 같습니다. 각 스텝에서 해야할 것을 명확하게 눈에 띄게 보여주면 더 좋을 것 같습니다. 또한, 그래프를 그렸을 때 변수에 대한 설명이 먼저 진행되지 않고, 생소한 용어들이 많아서, 그래프 해석에 시간이 좀 걸렸던 것 같습니다. 비교별 품질 점검 그래프에서 가로축, 세로축이 무엇을 나타내는지 명확한 설명이 있었으면 더 편안하게 학생들이 탐구하기 편할 것 같습니다. BTJD, BJD, Rp/R*, χ²_red, ROI 등 생소한 용어들이 갑자기 튀어나오는데, 간단한 설명 또는 한글로 풀어서 설명해주는 방식이 있으면 더 도움될 것 같습니다.</p></div><div class="q-item"><span class="q-num">#12</span> <p>수업 시간 안에서 활용하는 것이 어렵긴 합니다. 실제 과학자들이 해보는 경험을 같이 한다는 게 득이 될지 실이 될지는 미지수라는 생각이 듭니다. 방과후 시간에 데이터를 활용한 수업이 개설된다면 활용한 용의는 무조건 있습니다~</p></div></div></div>
-<div class="card"><h2>Q20 어려움 이유</h2><div class="quotes"><div class="q-item"><span class="q-num">#1</span> <p>제가 지구과학 전공자가 아니라..다 어렵게 느껴졌습니다ㅜ.ㅠ</p></div><div class="q-item"><span class="q-num">#3</span> <p>수학적? 통계적 지식이 필요할 것 같아요.</p></div><div class="q-item"><span class="q-num">#4</span> <p>점이 찍혀져 있는 것의 의미, 중간에 끊어진 부분이 있었는데, 이러한 부분이 뭘 의미하는지 알려주면 더 해석에 용이할 것 같습니다.</p></div><div class="q-item"><span class="q-num">#5</span> <p>학생들이 생각보다 과학개념에 대한 이해가 더디고 여기에 프로그램을 도입할 경우 어려워할 가능성이 있습니다</p></div><div class="q-item"><span class="q-num">#9</span> <p>고등학교 교육과정에서 차등 측광 개념을 배우지 않아 프로그램 처음부터 교사의 식현상 설명, 차등 측광의 개념의 설명이 필요하다.</p></div><div class="q-item"><span class="q-num">#10</span> <p>학생이 접해보지 못한 전문 용어들이 사용되어 페이지 전체 내용 이해에 어려움이 있을 것, 별 관측에 대해 경험이 적기 때문에 별 관측에 있어 어떤 점들을 고려해야 하는지에 대해서도 어색한 부분이 많을 것</p></div><div class="q-item"><span class="q-num">#11</span> <p>오차 해석의 여지가 많고, 외계행성에 대한 교육과정 내용이 탐구에서 나오는 만큼 많지 않다. 교육과정 정도의 배경 지식을 가지고 있는 수준의 학생이라면, 웹사이트에서는 키워드가 주어졌지만, 키워드가 주어지지 않는 상황이라면, 오차에 대한 분석을 쓰지 못하지 않을까하고 생각된다.</p></div></div></div>
+난이도가 조금 더 쉬운 자료 해석부터 순차적으로 난이도를 높여가면 좋을 것 같다.</div></div>
+      <div class="qt key"><div class="no">9</div><div class="tx">교육과정 내에서 수업을 하기에는 성취기준, 학생 수준에 조금 맞지 않는 부분도 있고 아직 자료의 선택지?가 많지 않아 실제 수업을 한다면 교사의 설명이 대부분이 되고 학생들은 버튼을 누르며 따라오는 주입식 수업이 될 수도 있을 것 같습니다.
+직접 해보며 생각해보니 지구과학, 행성우주과학 수업 보다는 천체를 진로로 희망하는 학생들만 따로 모아 활동을 진행해볼 것 같다는 생각이 듭니다.</div></div>
+      <div class="qt"><div class="no">10</div><div class="tx">식 현상 개념 설명부터 탐구 활동까지, 3차시 이상의 수업이 예상되며, 해당 수업 전후로 하여 진도 상홍에 대한 우려가 있음. EASWA에서 사용되는, 고등학교 교과서 내용에서 잘 다루지 않는 기호, 단위 등에 대한 설명이 확실하게 이루어져야 학생들에게 의미있는 수업이 될 것 같음.</div></div>
+      <div class="qt"><div class="no">11</div><div class="tx">교육과정과의 불일치</div></div>
+      <div class="qt"><div class="no">12</div><div class="tx">어려운 코딩이나 데이터 수집과 같은 활동없이 간단하게(?) 학생들에게 과학자들이 해보는 활동을 체험해볼 수 있다는 점에선 훌륭한 컨텐츠이지만, 실제 수업에서 교사가 활용할 때에는 A~Z까지 설명을 할 수 있어야 된다고 생각합니다. 이를테면, 식현상에 대한 개념, 식현상을 파악하는 과정의 어려움, 차등측광의 개념, Simbad와 같은 데이터베이스에 대한 설명이 수반되어야 교육적 효과가 있을 것 같아요.</div></div>
+    </div>
+
+    <h3>Q23 · 가장 잘 된 점과 시급한 보완</h3>
+    <div class="quotes">
+      <div class="qt"><div class="no">1</div><div class="tx">가장 잘 되어 있는 점 : 화면 구성, 인터페이스, 자료 활용
+보완 : 전체적인 구성이 조금 더 단순했으면 좋겠습니다.</div></div>
+      <div class="qt"><div class="no">5</div><div class="tx">학생들에게 시각화자료를 주고 실제 데이터로 만들 수 있도록 한 점이 흥미를 불러일으 킬 것</div></div>
+      <div class="qt key"><div class="no">9</div><div class="tx">단어, 표현 방법이 AI를 사용한 듯한 문맥, 문장, 표현이 있어 자연스럽게 읽히지 않는 설명들이 있었습니다.(교사가 세특 AI로 쓰면 부자연스러운 표현이 티가 나듯이요) 이 부분을 검토해서 수정하면 좋을 것 같습니다.
+아이디어부터 사이트까지 너무 창의적이고 실제로 계속 여러 주제가 탑재된다면 많은 사람들이 쓰게 될 것 같습니다. 좋은 자료 감사합니다~!!</div></div>
+      <div class="qt key"><div class="no">10</div><div class="tx">학생이 직접 조작할 수 있는 부분,  신뢰도 높은 DB를 구축해놓은 것이 굉장히 좋았습니다! 20-30명이 동시에 사용해도 모두가 딜레이없이 거의 동시에 활동을 이어갈 수 있도록 서버를 세팅해 놓으면 바로 현장에서 사용 가능할 것 같습니다</div></div>
+      <div class="qt key"><div class="no">12</div><div class="tx">수행자가 해당 차시의 과정이나 방법을 잘 이해하고 있는지에 대한 연구질문? 도움질문의 UI가 보완되어서 학습자 스스로 진단해볼 수 있는 과정이 지금보다 확실히 눈에 띄고 보완되면 좋을 것 같습니다~</div></div>
+    </div>
+  </div>
 </section>
 
-<section id="t7">
-<div class="card"><h2>데이터 명세</h2>
-<table>
-<tr><th>항목</th><th>내용</th></tr>
-<tr><td>설문</td><td>구글폼 「EASWA 프로토타입 반응 및 보완 요구 조사」(2026-07-24 최종본 — 레포 .gs와 문항 구성 상이: Q7 확인방식 삭제, Q3-1 신설, Q21-1 문구 변경). 응답 시트 gviz CSV로 취득(2026-07-24). N=12, 전원 동의.</td></tr>
-<tr><td>앱 제출</td><td>Google Sheets 「익명제출EASWA」(record sink, Apps Script doPost·upsert). 전체 51행 → 제외 규칙 적용 후 7/24 당일 20건·고유 18명.</td></tr>
-<tr><td>제외 규칙</td><td>anon_id에 DELETE-ME 포함 / target_id가 __로 시작(프로브·부하테스트) / HeadlessChrome·Claude(Electron) UA / app_version ∈ {dev, local-dev, LOADTEST, probe} — 개발·QA 트래픽.</td></tr>
-<tr><td>역채점</td><td>Q12·Q15(역문항): 6 − 원점수. 표·차트의 "역채점" 값 기준.</td></tr>
-<tr><td>합성점수</td><td>Q8~18(11문항) 역채점 후 개인 평균. Cronbach α=0.64.</td></tr>
-<tr><td>문헌 기준값</td><td>WASP-6 b Rp/R* ≈ 0.146 (NASA Exoplanet Archive). 앱 Step 5 비교 기준과 동일.</td></tr>
-<tr><td>예상답변 프레임</td><td>『EASWA_탐구질문_예상답변_v1.md』(2026-07-16, main@619b054 기준) — 문항 타당화용 사전 예상. Step 4~6 수치는 WASP-121 b 통제 실측 기준(시연은 WASP-6 b — 구조 동일, 수치 상이).</td></tr>
-<tr><td>한계</td><td>N=12 소표본(통계적 일반화 불가), 단일 시연 맥락, 자기보고, "학생 어려움"은 교사 예상치(실제 학생 아님), 예비교사 코호트 미수집.</td></tr>
-</table></div>
+<!-- 9 -->
+<section>
+  <div class="sechead">
+    <div class="tile"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></div>
+    <div><h2>9. 앱이 남긴 기록</h2>
+      <p>익명 제출 로그 · 설문과 별개로 앱이 직접 저장한 값이다</p></div>
+  </div>
+  <div class="secbody">
+    <h3>참여</h3>
+    <table>
+      <tr><td class="q">전체 로그</td><td class="r num">51행</td><td class="r dist">테스트·프로브·개발 제외 후 29행</td></tr>
+      <tr class="hi"><td class="q">시연 당일(7/24)</td><td class="r num">20행</td><td class="r dist">고유 참여자 18명</td></tr>
+      <tr><td class="q">그 외 날짜 (리허설 등)</td><td class="r num">9행</td><td class="r dist">7/18: 5 · 7/20: 2 · 7/22: 2</td></tr>
+    </table>
+
+    <h3>대상별 제출 (7/24)</h3>
+    <div class="bars">
+      <div class="bar top"><div class="t">WASP-6 b<span class="track"><span class="fill" style="width:100%"></span></span></div><div class="c">14</div></div>
+      <div class="bar"><div class="t">WASP-151 b<span class="track"><span class="fill" style="width:21%"></span></span></div><div class="c">3</div></div>
+      <div class="bar"><div class="t">WASP-23 b<span class="track"><span class="fill" style="width:7%"></span></span></div><div class="c">1</div></div>
+      <div class="bar"><div class="t">WASP-140 b<span class="track"><span class="fill" style="width:7%"></span></span></div><div class="c">1</div></div>
+      <div class="bar"><div class="t">WASP-164 b<span class="track"><span class="fill" style="width:7%"></span></span></div><div class="c">1</div></div>
+    </div>
+
+    <h3>WASP-6 b 산출값 (적합 완료 14건)</h3>
+    <table>
+      <tr class="hi"><td class="q">Rp/R* 중앙값</td><td class="r num">0.1457</td><td class="r dist">평균 0.1389</td></tr>
+      <tr class="hi"><td class="q">Rp/R* 범위</td><td class="r num">0.0318 ~ 0.1594</td><td class="r dist">이탈값 2건</td></tr>
+      <tr class="hi"><td class="q">문헌값(NASA EA ~0.146)과의 차이</td><td class="r num">0.0003</td><td class="r dist">중앙값 기준 절대차</td></tr>
+      <tr class="hi"><td class="q">0.146 ± 0.01 이내</td><td class="r num">12/14건</td><td class="r dist"></td></tr>
+      <tr><td class="q">χ²_red</td><td class="r num">중앙값 0.90</td><td class="r dist">범위 0.57~4.49</td></tr>
+    </table>
+    <div class="star">
+      <p class="lead">중앙값이 문헌값과 0.0003 차이다 — 초록에 실리는 수치.</p>
+      <p>학습용으로 간략하게 만든 분석이 전문 분석 결과를 따라간다는 뜻이다.</p>
+    </div>
+    <div class="star">
+      <p class="lead">그런데 개인별 값은 0.0318에서 0.1594까지 퍼져 있다. 이쪽이 더 중요할 수 있다.</p>
+      <p>같은 자료를 받고도 결과가 갈렸다는 뜻이고, 곧 <b>구경과 비교성을 어떻게 정했느냐가 결과를 바꿨다</b>는 실측이다.
+         결과가 미리 정해진 확인형 활동이라면 이렇게 갈릴 이유가 없다. 논문 2.3절의 탐구 수준 논의를 뒷받침한다.
+         이탈값 2건도 잘못된 값이 아니라 이 분포의 양 끝이다.</p>
+    </div>
+
+    <h3>생각해보기 (자기점검)</h3>
+    <table>
+      <tr class="hi"><td class="q">정답률</td><td class="r num">36 / 37 = 97%</td><td class="r dist">응답한 제출 15건</td></tr>
+    </table>
+    <div class="star">
+      <p class="lead">이 수치로는 «학생들이 잘 이해했다»고 말할 수 없다.</p>
+      <p>37문항 중 36개를 맞혔다면 <b>문항이 응답자를 가려내지 못한 것</b>이다. 너무 쉽거나 답이 화면에 보인다는 뜻이다.
+         Q23-12 의 자기진단 UI 지적과 함께 <b>보완 대상</b>으로 다뤄야 한다.</p>
+    </div>
+
+    <h3>Step 6 해석 기록</h3>
+    <table>
+      <tr><td class="q">식현상이 보였는가</td><td class="r num">clear 9건</td><td class="r dist"></td></tr>
+    </table>
+    <div class="bars" style="margin-top:14px">
+      <div class="bar top"><div class="t">비교성이 적다 <span style="color:var(--muted);font-size:13.5px">few_comparisons</span><span class="track"><span class="fill" style="width:100%"></span></span></div><div class="c">10</div></div>
+      <div class="bar"><div class="t">주변 별빛이 섞인다 <span style="color:var(--muted);font-size:13.5px">blended_field</span><span class="track"><span class="fill" style="width:70%"></span></span></div><div class="c">7</div></div>
+      <div class="bar"><div class="t">곡선에 잡음이 많다 <span style="color:var(--muted);font-size:13.5px">noisy_curve</span><span class="track"><span class="fill" style="width:60%"></span></span></div><div class="c">6</div></div>
+      <div class="bar"><div class="t">영역이 좁다 <span style="color:var(--muted);font-size:13.5px">field_too_small</span><span class="track"><span class="fill" style="width:60%"></span></span></div><div class="c">6</div></div>
+    </div>
+    <div class="star">
+      <p class="lead">학습자가 스스로 짚은 문제 1위가 «비교성이 적다»(10건)이다.</p>
+      <p>교사들이 Q20-1 서술에 적은 차이 원인과 겹친다. <b>미리 알려주지 않아도 학습자가 도달한다</b>는 증거다.</p>
+    </div>
+
+    <h3>사이트 별점</h3>
+    <table>
+      <tr><td class="q">평균 (미응답 제외)</td><td class="r num">5.00</td><td class="r dist">응답 4건 · 전부 5점</td></tr>
+    </table>
+    <div class="quotes" style="margin-top:14px">
+      <div class="qt"><div class="no">—</div><div class="tx">학생들을 대상으로 해당 컨텐츠를 활용한다면, 컨텐츠를 활용하는 동기에 대한 설명이 선행되었으면 더 좋았을 것 같다는 생각이 듭니다. (식현상을 활용해 외계행성을 탐구하는 방법, 차등 측광에 대한 개념, 레퍼런스를 활용했다면 레퍼런스에서 활용한 모델 및 적합 기준을 설정한 식 등)</div></div>
+    </div>
+    <p style="margin-top:14px;font-size:14.5px;color:var(--muted)">응답이 4건뿐이라 평균 5.00 은 참고값으로만 본다.</p>
+  </div>
 </section>
+
+<div class="foot">
+  <p style="margin:0 0 10px"><b style="color:var(--head)">자료 명세</b></p>
+  <p style="margin:0 0 6px">구글폼 설문 · 2026-07-24 16:05~16:18 · N=12 (현직 지구과학교사 9, 과학교육 전공자 2, 현직 생명과학교사 1)</p>
+  <p style="margin:0 0 6px">앱 익명제출 로그 · 2026-07-24 15:24~16:07 · 20건 / 고유 18명 · 앱 버전 문자열 <code>render</code></p>
+  <p style="margin:0 0 6px">배포 커밋 <code>2956d24</code> (2026-07-24 14:20:11) · 첫 참여 기록보다 64분 앞서므로 참여자 전원이 같은 빌드를 사용했다</p>
+  <p style="margin:0 0 6px">원자료 <code>docs/survey/RESULTS_2026-07-24_교사시연.md</code> · 동일성 근거 <code>docs/DEMO_VERSION_RECORD.md</code></p>
+  <p style="margin:16px 0 0">예비교사 코호트는 아직 수집 전이다. 두 코호트를 합친 분석은 그 자료가 들어온 뒤에 만든다.</p>
+</div>
 
 </div>
-<script>
-document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>{
-document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on'));
-document.querySelectorAll('section').forEach(x=>x.classList.remove('on'));
-b.classList.add('on');document.getElementById(b.dataset.t).classList.add('on');
-}));
-</script></body></html>
+</body></html>
