@@ -570,6 +570,25 @@ export const kmtnetModule: ExplorationModuleConfig = {
     { ko: '혼잡한 별밭에서 차분측광으로 밝기 변화를 측정하는 이유를 설명한다.', en: 'Explain why difference-image photometry is used to measure brightness changes in crowded fields.' },
   ],
   steps: createCommonInquirySteps({
+    // 이 override 가 없어서 공통 문구('이 탐구에서 관측 자료로 설명하려는 현상은
+    // 무엇인가?')가 홈 카드의 대표 탐구 질문 자리에 그대로 노출되고 있었다.
+    // 다른 두 모듈과 같은 꼴로 세운다 — [관측된 자료]만으로 [천체의 물리량]을 어디까지
+    // 알 수 있을까. 여기서 자료는 증광 곡선이고, 얻으려는 값은 보이지 않는 렌즈 천체의
+    // 질량·거리, 그리고 곡선 위 이상신호가 행성인지 여부다(Lab 에서 u₀·tE 를 적합한다).
+    step0_intro: {
+      questions: [
+        makePrompt(
+          'kmt_intro_lens',
+          '별이 잠깐 밝아졌다 어두워진 곡선 하나만으로, 보이지 않는 렌즈 천체의 질량과 거리를 어디까지 알 수 있을까?',
+          'From a single curve of a star brightening and fading, how far can we determine the mass and distance of an unseen lens object?',
+        ),
+        makePrompt(
+          'kmt_intro_anomaly',
+          '매끄러운 증광 곡선 위의 짧은 이상신호를 행성의 증거로 인정하려면 무엇을 확인해야 할까?',
+          'What has to be checked before a brief anomaly on a smooth magnification curve counts as evidence of a planet?',
+        ),
+      ],
+    },
     step1_select: {
       questions: [
         makePrompt('kmt_event_reason', '어떤 미시중력렌즈 이벤트(광도곡선)를 먼저 살펴볼 것인가?', 'Which microlensing event (light curve) will you inspect first?'),
