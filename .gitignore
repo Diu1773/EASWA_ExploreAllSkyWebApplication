@@ -53,3 +53,6 @@ backend/submissions/
 backend/bundled_cutouts/*
 !backend/bundled_cutouts/wasp_6_b__wasp_6_b_sector_0002__s0002__50px.fits
 _scratch_bundle/
+
+# 캡처 사본 (원본은 docs/screens_live/ 에 추적됨)
+docs/캡처_*/
