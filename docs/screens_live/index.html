@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EASWA 캡처 목록</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{--bg:#12161e;--bg2:#0e131b;--line:#1f2937;--head:#f2f5f9;--body:#c3ccd9;--muted:#98a4b5;--ink:#14b8a6;
+      --ui:'Pretendard',system-ui,sans-serif;--mono:'IBM Plex Mono',Consolas,monospace}
+*{box-sizing:border-box} html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--body);font-family:var(--ui);font-size:16px;line-height:1.7}
+.page{max-width:1400px;margin:0 auto;padding:48px 26px 90px}
+h1{margin:0 0 10px;font-size:30px;font-weight:700;color:var(--head);letter-spacing:-.02em}
+.sub{margin:0;color:var(--muted);font-size:15.5px;max-width:92ch}
+.sub code{font-family:var(--mono);font-size:.9em;color:var(--body)}
+.where{margin:24px 0 0;padding:18px 22px;background:var(--bg2);border-radius:10px;font-size:15px;color:var(--muted)}
+.where b{color:var(--head)} .where code{font-family:var(--mono);color:var(--body)}
+.where table{width:100%;border-collapse:collapse;margin-top:10px}
+.where td{padding:7px 0;border-bottom:1px solid var(--line)}
+.where tr:last-child td{border-bottom:0}
+.where td:last-child{text-align:right;font-family:var(--mono);color:var(--body)}
+h2{margin:56px 0 4px;font-size:21px;font-weight:600;color:var(--head)}
+.note{margin:0 0 20px;font-size:15px;color:var(--muted)}
+.note code{font-family:var(--mono);color:var(--body)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:22px}
+.card{display:block;text-decoration:none;color:inherit;border-radius:10px;overflow:hidden;background:var(--bg2);
+      border:1px solid var(--line);transition:border-color .15s}
+.card:hover{border-color:#3a4658}
+.card.star{border-color:rgba(20,184,166,.45)}
+.shot{height:190px;overflow:hidden;background:#080b11;display:flex;align-items:flex-start;justify-content:center}
+.shot img{width:100%;height:auto;display:block}
+.meta{padding:12px 14px}
+.nm{font-size:14.5px;color:var(--head);line-height:1.45}
+.sz{margin-top:5px;font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.card.star .nm::after{content:' ★';color:var(--ink)}
+</style></head><body><div class="page">
+
+<h1>EASWA 캡처 목록</h1>
+<p class="sub">2026-08-11 · 라이브 <code>easwa-webapp.onrender.com</code> · 촬영 시점에 로컬 main · 라이브 ·
+현장 전문가 검토 빌드(<code>2956d24</code>)가 셋 다 일치. 썸네일을 누르면 원본이 열린다.</p>
+
+<div class="where">
+  <b>파일 위치</b> — 모두 <code>docs/screens_live/</code> 아래에 있다.
+  <table>
+    <tr><td><code>screens_live/*.png</code> — 각 화면의 진입 상태 (폭 1440)</td><td>9장</td></tr>
+    <tr><td><code>screens_live/w1920/*.png</code> — 위와 같은 화면, 폭 1920</td><td>9장</td></tr>
+    <tr><td><code>screens_live/flow/*.png</code> — 탐구 흐름 Step 0~6 (폭 1440)</td><td>11장</td></tr>
+  </table>
+  <p style="margin:12px 0 0">폴더별 설명은 각 폴더의 <code>README.md</code> 에 있다.
+  이 페이지는 <code>screens_live/index.html</code>.</p>
+</div>
+
+<h2>1. 각 화면의 진입 상태</h2>
+<p class="note">폭 1440 · 내용 전체 높이. 같은 9장의 1920 폭 판은 <code>w1920/</code> 에 있다.</p>
+<div class="grid">
+    <a class="card" href="01_home.png" target="_blank">
+      <div class="shot"><img src="01_home.png" alt="홈 · 모듈 선택" loading="lazy"></div>
+      <div class="meta">
+        <div class="nm">홈 · 모듈 선택</div>
+        <div class="sz">01_home.png · 1440×2337 · 1393KB</div>
+      </div>
+    </a>
+
+    <a class="card" href="02_transit_step0.png" target="_blank">
+      <div class="shot"><img src="02_transit_step0.png" alt="외계행성 식현상 · Step 0" loading="lazy"></div>
+      <div class="meta">
+        <div class="nm">외계행성 식현상 · Step 0</div>
+        <div class="sz">02_transit_step0.png · 1440×2419 · 353KB</div>
+      </div>
+    </a>
+
+    <a class="card" href="03_cluster_step0.png" target="_blank">
+      <div class="shot"><img src="03_cluster_step0.png" alt="성단 색등급도 · Step 0" loading="lazy"></div>
+      <div class="meta">
+        <div class="nm">성단 색등급도 · Step 0</div>
+        <div class="sz">03_cluster_step0.png · 1440×1786 · 405KB</div>
+      </div>
+    </a>
+
+    <a class="card" href="04_kmtnet_step0.png" target="_blank">
+      <div class="shot"><img src="04_kmtnet_step0.png" alt="미시중력렌즈 · Step 0" loading="lazy"></div>
+      <div class="meta">
+        <div class="nm">미시중력렌즈 · Step 0</div>
+        <div class="sz">04_kmtnet_step0.png · 1440×2398 · 1997KB</div>
+      </div>
+    </a>
+
+    <a class="card" href="05_kmtnet_intro.png" target="_blank">
+      <div class="shot"><img src="05_kmtnet_intro.png" alt="KMTNet 소개" loading="lazy"></div>
+      <div class="meta">
+        <div class="nm">KMTNet 소개</div>
+        <div class="sz">05_kmtnet_intro.png · 1440×2888 · 1480KB</div>
+      </div>
+    </a>
+
+    <a class="card" href="06_kmtnet_sites.png" target="_blank">
+      <div class="shot"><img src="06_kmtnet_sites.png" alt="KMTNet 관측소 선택" loading="lazy"></div>
+      <div class="meta">
+        <div class="nm">KMTNet 관측소 선택</div>
+        <div class="sz">06_kmtnet_sites.png · 1440×1078 · 607KB</div>
+      </div>
+    </a>
+
+    <a class="card" href="07_explorer.png" target="_blank">
+      <div class="shot"><img src="07_explorer.png" alt="전천 탐색 (Aladin)" loading="lazy"></div>
+      <div class="meta">
+        <div class="nm">전천 탐색 (Aladin)</div>
+        <div class="sz">07_explorer.png · 1440×924 · 1401KB</div>
+      </div>
+    </a>
+
+    <a class="card" href="08_my.png" target="_blank">
+      <div class="shot"><img src="08_my.png" alt="내 분석 기록 (로그아웃 상태)" loading="lazy"></div>
+      <div class="meta">
+        <div class="nm">내 분석 기록 (로그아웃 상태)</div>
+        <div class="sz">08_my.png · 1440×924 · 58KB</div>
+      </div>
+    </a>
+
+    <a class="card" href="09_settings.png" target="_blank">
+      <div class="shot"><img src="09_settings.png" alt="설정 (로그아웃 상태)" loading="lazy"></div>
+      <div class="meta">
+        <div class="nm">설정 (로그아웃 상태)</div>
+        <div class="sz">09_settings.png · 1440×924 · 58KB</div>
+      </div>
+    </a>
+</div>
+
+<h2>2. 탐구 흐름 — 외계행성 식현상</h2>
+<p class="note">Step 0 → 6 전체. 차등측광(1,229 프레임)과 모델 적합을 <b>실제로 돌려서</b> Step 5·6 을 열었다.
+산출값 Rp/R* = 0.1453 · χ²_red = 0.96 — 교사 시연 14건 중앙값(0.1457)과 0.0004 차이.</p>
+<div class="grid">
+    <a class="card" href="flow/10_transit_step0.png" target="_blank">
+      <div class="shot"><img src="flow/10_transit_step0.png" alt="Step 0 · 주제 소개" loading="lazy"></div>
+      <div class="meta">
+        <div class="nm">Step 0 · 주제 소개</div>
+        <div class="sz">10_transit_step0.png · 1440×2419 · 353KB</div>
+      </div>
+    </a>
+
+    <a class="card" href="flow/11_transit_step1.png" target="_blank">
+      <div class="shot"><img src="flow/11_transit_step1.png" alt="Step 1 · 대상 선택" loading="lazy"></div>
+      <div class="meta">
+        <div class="nm">Step 1 · 대상 선택</div>
+        <div class="sz">11_transit_step1.png · 1440×1330 · 666KB</div>
+      </div>
+    </a>
+
+    <a class="card" href="flow/12_transit_step2.png" target="_blank">
+      <div class="shot"><img src="flow/12_transit_step2.png" alt="Step 2 · 자료 확인" loading="lazy"></div>
+      <div class="meta">
+        <div class="nm">Step 2 · 자료 확인</div>
+        <div class="sz">12_transit_step2.png · 1440×2038 · 357KB</div>
+      </div>
+    </a>
+
+    <a class="card" href="flow/13_transit_step3.png" target="_blank">
+      <div class="shot"><img src="flow/13_transit_step3.png" alt="Step 3 · 분석 준비" loading="lazy"></div>
+      <div class="meta">
+        <div class="nm">Step 3 · 분석 준비</div>
+        <div class="sz">13_transit_step3.png · 1440×2350 · 417KB</div>
+      </div>
+    </a>
+
+    <a class="card" href="flow/14_transit_step4.png" target="_blank">
+      <div class="shot"><img src="flow/14_transit_step4.png" alt="Step 4 · 진입 직후" loading="lazy"></div>
+      <div class="meta">
+        <div class="nm">Step 4 · 진입 직후</div>
+        <div class="sz">14_transit_step4.png · 1440×2046 · 300KB</div>
+      </div>
+    </a>
+
+    <a class="card" href="flow/15_transit_step4_ready.png" target="_blank">
+      <div class="shot"><img src="flow/15_transit_step4_ready.png" alt="Step 4 · 컷아웃 + 비교성 8개 선택" loading="lazy"></div>
+      <div class="meta">
+        <div class="nm">Step 4 · 컷아웃 + 비교성 8개 선택</div>
+        <div class="sz">15_transit_step4_ready.png · 1440×1231 · 158KB</div>
+      </div>
+    </a>
+
+    <a class="card" href="flow/16_lab_photometry_done.png" target="_blank">
+      <div class="shot"><img src="flow/16_lab_photometry_done.png" alt="Lab · 차등측광 완료 (1,229 프레임)" loading="lazy"></div>
+      <div class="meta">
+        <div class="nm">Lab · 차등측광 완료 (1,229 프레임)</div>
+        <div class="sz">16_lab_photometry_done.png · 1440×925 · 98KB</div>
+      </div>
+    </a>
+
+    <a class="card" href="flow/17_lab_fit_setup.png" target="_blank">
+      <div class="shot"><img src="flow/17_lab_fit_setup.png" alt="Lab · 적합 구간 설정" loading="lazy"></div>
+      <div class="meta">
+        <div class="nm">Lab · 적합 구간 설정</div>
+        <div class="sz">17_lab_fit_setup.png · 1440×925 · 61KB</div>
+      </div>
+    </a>
+
+    <a class="card" href="flow/18_lab_fit_running.png" target="_blank">
+      <div class="shot"><img src="flow/18_lab_fit_running.png" alt="Lab · 모델 적합 진행 중" loading="lazy"></div>
+      <div class="meta">
+        <div class="nm">Lab · 모델 적합 진행 중</div>
+        <div class="sz">18_lab_fit_running.png · 1440×924 · 54KB</div>
+      </div>
+    </a>
+
+    <a class="card star" href="flow/19_transit_step5.png" target="_blank">
+      <div class="shot"><img src="flow/19_transit_step5.png" alt="Step 5 · 기준값 비교 ★" loading="lazy"></div>
+      <div class="meta">
+        <div class="nm">Step 5 · 기준값 비교</div>
+        <div class="sz">19_transit_step5.png · 1440×2454 · 289KB</div>
+      </div>
+    </a>
+
+    <a class="card star" href="flow/20_transit_step6.png" target="_blank">
+      <div class="shot"><img src="flow/20_transit_step6.png" alt="Step 6 · 해석·기록 ★" loading="lazy"></div>
+      <div class="meta">
+        <div class="nm">Step 6 · 해석·기록</div>
+        <div class="sz">20_transit_step6.png · 1440×1748 · 217KB</div>
+      </div>
+    </a>
+</div>
+
+</div></body></html>

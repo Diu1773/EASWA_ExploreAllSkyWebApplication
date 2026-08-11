@@ -1,5 +1,7 @@
 # EASWA 라이브 전체 화면 캡처 (정본)
 
+> **한눈에 보려면 → [`index.html`](index.html)** — 세 폴더의 캡처 20장을 썸네일로 모아둔 목록.
+
 > 촬영 2026-08-11 · 대상 https://easwa-webapp.onrender.com
 
 ## 이게 왜 «정본»인가
