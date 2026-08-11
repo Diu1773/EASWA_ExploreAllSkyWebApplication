@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>장식 단계 비교 — 얼마나 덜어낼까</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --bg:#12161e; --bg2:#0e131b; --line:#1f2937;
+  --head:#f2f5f9; --body:#c3ccd9; --muted:#98a4b5;
+  --ink:#14b8a6; --tint:rgba(20,184,166,.10);
+  --ui:'Pretendard',system-ui,-apple-system,sans-serif;
+  --mono:'IBM Plex Mono',Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:#0a0d13;color:var(--body);font-family:var(--ui);font-size:17px;line-height:1.7}
+.page{max-width:1080px;margin:0 auto;padding:48px 26px 100px}
+
+h1{margin:0 0 10px;font-size:28px;font-weight:700;color:var(--head);letter-spacing:-.02em}
+.intro{margin:0 0 8px;font-size:16px;color:var(--muted);line-height:1.75;max-width:88ch}
+.intro b{color:var(--body)}
+.diag{margin:22px 0 0;padding:18px 22px;background:var(--bg2);border-radius:10px;font-size:15.5px;line-height:1.75;color:var(--muted)}
+.diag b{color:var(--head)}
+.diag table{width:100%;border-collapse:collapse;margin-top:12px;font-size:15px}
+.diag td{padding:7px 0;border-bottom:1px solid var(--line)}
+.diag tr:last-child td{border-bottom:0}
+.diag td:last-child{text-align:right;font-family:var(--mono);color:var(--body)}
+
+/* 단계 밴드 */
+.band{margin:52px 0 0;border-radius:12px;overflow:hidden;background:var(--bg)}
+.bandhead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
+  padding:18px 30px;background:var(--bg2);border-bottom:1px solid var(--line)}
+.bandhead .lv{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--head)}
+.bandhead .nm{font-size:17px;font-weight:600;color:var(--head)}
+.bandhead .ct{margin-left:auto;font-family:var(--mono);font-size:13.5px;color:var(--muted)}
+.bandnote{padding:14px 30px 0;font-size:14.5px;color:var(--muted);line-height:1.7}
+.bandnote b{color:var(--body)}
+.sample{padding:26px 30px 34px}
+
+/* ══ 공통 본문 요소 ══ */
+.s-h{margin:0;font-size:24px;font-weight:700;color:var(--head);letter-spacing:-.02em;line-height:1.35}
+.s-sub{margin:8px 0 0;font-size:15.5px;color:var(--muted)}
+.rows{margin-top:22px}
+.row{display:grid;grid-template-columns:1fr 44px;gap:16px;align-items:center;
+  padding:11px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row .t{font-size:15.5px;color:var(--body)}
+.row .c{font-family:var(--mono);font-size:16px;color:var(--muted);text-align:right}
+.row.hi .t{color:var(--head)}
+.row.hi .c{color:var(--head);font-weight:600}
+.track{display:block;height:4px;margin-top:8px;background:#2b3444;border-radius:2px;overflow:hidden}
+.fill{display:block;height:100%;background:var(--ink);opacity:.55;border-radius:2px}
+.row.hi .fill{opacity:1}
+
+/* A 전용 */
+.a-head{display:grid;grid-template-columns:48px 1fr;gap:20px;align-items:start}
+.a-tile{width:48px;height:48px;border-radius:12px;background:var(--tint);
+  display:flex;align-items:center;justify-content:center}
+.a-tile svg{width:22px;height:22px;stroke:var(--ink);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.a-star{margin:26px 0 0;padding:20px 24px;background:var(--bg2);border-left:2px solid var(--ink);
+  border-radius:0 12px 12px 0;font-size:15.5px;line-height:1.75}
+.a-star::before{content:'★';color:var(--ink);font-size:13px;margin-right:8px;vertical-align:1px}
+.a-star .ld{color:var(--head);font-weight:600}
+.a-star p{margin:0;color:var(--muted)}
+.a-star p+p{margin-top:10px}
+
+/* B 전용 */
+.b-star{margin:26px 0 0;padding-left:18px;border-left:2px solid var(--line);font-size:15.5px;line-height:1.75}
+.b-star .ld{color:var(--head);font-weight:600;display:block;margin-bottom:6px}
+.b-star p{margin:0;color:var(--muted)}
+
+/* C 전용 */
+.c-star{margin:24px 0 0;font-size:15.5px;line-height:1.75;color:var(--muted);max-width:74ch}
+.c-star b{color:var(--head);font-weight:600}
+
+/* 표 예시 */
+table.d{width:100%;border-collapse:collapse;font-size:15.5px;margin-top:22px}
+table.d th{text-align:left;font-size:13px;font-weight:600;color:var(--muted);padding:0 0 10px;border-bottom:1px solid var(--line)}
+table.d th.r,table.d td.r{text-align:right}
+table.d td{padding:12px 0;border-bottom:1px solid var(--line);color:var(--body)}
+table.d tr:last-child td{border-bottom:0}
+table.d td.n{font-family:var(--mono);color:var(--head)}
+table.d tr.hi td{color:var(--head)}
+table.d tr.hi td.n{font-weight:600}
+.mk{font-weight:700;margin-right:6px}
+.mk.u{color:#4ade80}.mk.d{color:#f0a35e}
+
+.verdict{margin:56px 0 0;padding:22px 26px;background:var(--bg2);border-radius:12px;
+  font-size:16px;line-height:1.8;color:var(--muted)}
+.verdict h2{margin:0 0 12px;font-size:19px;font-weight:600;color:var(--head)}
+.verdict b{color:var(--body)}
+.verdict p{margin:0 0 12px}
+.verdict p:last-child{margin-bottom:0}
+</style>
+</head><body>
+<div class="page">
+
+<h1>장식을 얼마나 덜어낼까 — 같은 내용, 세 단계</h1>
+<p class="intro">
+  «디자인이 너무 구조적으로 잘 짜여 있어 내용이 안 들어온다»는 지적을 눈으로 판단하기 위한 비교다.
+  <b>세 단계 모두 글과 수치가 완전히 같다.</b> 다른 것은 장식의 양과 강조색이 하는 일의 개수뿐이다.
+  «너무 많이 덜지는 말라»는 방침이 있으므로, C는 권고안이 아니라 <b>척도의 반대쪽 끝</b>으로 둔 것이다.
+</p>
+
+<div class="diag">
+  <b>지금 리포트의 상태 (계측값)</b>
+  <table>
+    <tr><td>강조색이 맡은 역할</td><td>11가지</td></tr>
+    <tr><td>아이콘 타일</td><td>10개</td></tr>
+    <tr><td>★ 콜아웃 상자</td><td>13개</td></tr>
+    <tr><td>막대</td><td>13벌</td></tr>
+    <tr><td>강조 인용 · 요약 번호</td><td>14개</td></tr>
+  </table>
+  <p style="margin:14px 0 0">한 문서에서 장식 요소가 <b>50개</b>이고 강조색이 <b>11가지 일</b>을 한다.
+  모든 절이 똑같이 잘 차려입으면 어느 절도 두드러지지 않는다 — 그게 «디자인만 보인다»의 정체다.</p>
+</div>
+
+<!-- ══════════ A ══════════ -->
+<div class="band">
+  <div class="bandhead"><span class="lv">A</span><span class="nm">지금 그대로</span>
+    <span class="ct">타일 1 · 막대 8 · 콜아웃 상자 1 · 강조색 4곳</span></div>
+  <p class="bandnote">모든 항목에 막대가 붙고, 절마다 아이콘 타일이 서고, 해설은 배경이 다른 상자에 들어간다.</p>
+  <div class="sample">
+    <div class="a-head">
+      <div class="a-tile"><svg viewBox="0 0 24 24"><path d="M4 4h16v5H4zM4 15h16v5H4z"/><path d="M9 9v6"/></svg></div>
+      <div><h2 class="s-h">기존 서비스의 장벽</h2>
+        <p class="s-sub">Q5 · 복수선택 · EASWA 를 보기 전, 기존 공공 천문자료 서비스에 대해</p></div>
+    </div>
+    <div class="rows">
+      <div class="row hi"><div class="t">학생 수준에 맞게 자료를 재구성하기 어려울 것 같음<span class="track"><span class="fill" style="width:100%"></span></span></div><div class="c">10</div></div>
+      <div class="row hi"><div class="t">영어 인터페이스와 전문 용어가 부담될 것 같음<span class="track"><span class="fill" style="width:90%"></span></span></div><div class="c">9</div></div>
+      <div class="row hi"><div class="t">수업 시간 안에서 활용하기 어려울 것 같음<span class="track"><span class="fill" style="width:80%"></span></span></div><div class="c">8</div></div>
+      <div class="row"><div class="t">좌표와 메타데이터 이해가 어려울 것 같음<span class="track"><span class="fill" style="width:70%"></span></span></div><div class="c">7</div></div>
+      <div class="row"><div class="t">자료 검색 절차가 복잡할 것 같음<span class="track"><span class="fill" style="width:50%"></span></span></div><div class="c">5</div></div>
+      <div class="row"><div class="t">코딩 또는 별도 분석 프로그램 사용이 필요할 것 같음<span class="track"><span class="fill" style="width:50%"></span></span></div><div class="c">5</div></div>
+      <div class="row"><div class="t">그래프 또는 분석 결과를 해석하기 어려울 것 같음<span class="track"><span class="fill" style="width:20%"></span></span></div><div class="c">2</div></div>
+      <div class="row"><div class="t">파일 형식과 다운로드 과정이 부담될 것 같음<span class="track"><span class="fill" style="width:20%"></span></span></div><div class="c">2</div></div>
+    </div>
+    <div class="a-star">
+      <span class="ld">가장 많이 꼽힌 셋이 전부 앱 바깥의 문제다.</span>
+      <p>학생 수준에 맞게 자료를 다시 짜는 일, 영어와 전문 용어, 수업 시간. 반대로 코딩(5)과 그래프 해석(2)은 적게 나왔다.
+         EASWA 가 없앨 수 있는 장벽과 없앨 수 없는 장벽이 여기서 갈린다.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ B ══════════ -->
+<div class="band">
+  <div class="bandhead"><span class="lv">B</span><span class="nm">절반으로</span>
+    <span class="ct">타일 0 · 막대 3 · 콜아웃 선만 · 강조색 1곳</span></div>
+  <p class="bandnote">아이콘 타일을 빼고 <b>막대는 상위 3개에만</b> 남겼다. 나머지는 수치만으로 충분히 읽힌다.
+    해설은 배경 상자 대신 왼쪽 선 하나로 구분한다.</p>
+  <div class="sample">
+    <h2 class="s-h">기존 서비스의 장벽</h2>
+    <p class="s-sub">Q5 · 복수선택 · EASWA 를 보기 전, 기존 공공 천문자료 서비스에 대해</p>
+    <div class="rows">
+      <div class="row hi"><div class="t">학생 수준에 맞게 자료를 재구성하기 어려울 것 같음<span class="track"><span class="fill" style="width:100%"></span></span></div><div class="c">10</div></div>
+      <div class="row hi"><div class="t">영어 인터페이스와 전문 용어가 부담될 것 같음<span class="track"><span class="fill" style="width:90%"></span></span></div><div class="c">9</div></div>
+      <div class="row hi"><div class="t">수업 시간 안에서 활용하기 어려울 것 같음<span class="track"><span class="fill" style="width:80%"></span></span></div><div class="c">8</div></div>
+      <div class="row"><div class="t">좌표와 메타데이터 이해가 어려울 것 같음</div><div class="c">7</div></div>
+      <div class="row"><div class="t">자료 검색 절차가 복잡할 것 같음</div><div class="c">5</div></div>
+      <div class="row"><div class="t">코딩 또는 별도 분석 프로그램 사용이 필요할 것 같음</div><div class="c">5</div></div>
+      <div class="row"><div class="t">그래프 또는 분석 결과를 해석하기 어려울 것 같음</div><div class="c">2</div></div>
+      <div class="row"><div class="t">파일 형식과 다운로드 과정이 부담될 것 같음</div><div class="c">2</div></div>
+    </div>
+    <div class="b-star">
+      <span class="ld">가장 많이 꼽힌 셋이 전부 앱 바깥의 문제다.</span>
+      <p>학생 수준에 맞게 자료를 다시 짜는 일, 영어와 전문 용어, 수업 시간. 반대로 코딩(5)과 그래프 해석(2)은 적게 나왔다.
+         EASWA 가 없앨 수 있는 장벽과 없앨 수 없는 장벽이 여기서 갈린다.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ C ══════════ -->
+<div class="band">
+  <div class="bandhead"><span class="lv">C</span><span class="nm">최소 — 척도의 반대쪽 끝</span>
+    <span class="ct">타일 0 · 막대 0 · 콜아웃 없음 · 강조색 0곳</span></div>
+  <p class="bandnote">장식을 전부 뺀 상태. 읽히기는 하지만 <b>어디가 중요한지 눈이 먼저 잡지 못한다.</b>
+    권고안이 아니라 «여기까지 가면 과하게 던 것»을 보기 위한 기준점이다.</p>
+  <div class="sample">
+    <h2 class="s-h">기존 서비스의 장벽</h2>
+    <p class="s-sub">Q5 · 복수선택 · EASWA 를 보기 전, 기존 공공 천문자료 서비스에 대해</p>
+    <div class="rows">
+      <div class="row"><div class="t">학생 수준에 맞게 자료를 재구성하기 어려울 것 같음</div><div class="c">10</div></div>
+      <div class="row"><div class="t">영어 인터페이스와 전문 용어가 부담될 것 같음</div><div class="c">9</div></div>
+      <div class="row"><div class="t">수업 시간 안에서 활용하기 어려울 것 같음</div><div class="c">8</div></div>
+      <div class="row"><div class="t">좌표와 메타데이터 이해가 어려울 것 같음</div><div class="c">7</div></div>
+      <div class="row"><div class="t">자료 검색 절차가 복잡할 것 같음</div><div class="c">5</div></div>
+      <div class="row"><div class="t">코딩 또는 별도 분석 프로그램 사용이 필요할 것 같음</div><div class="c">5</div></div>
+      <div class="row"><div class="t">그래프 또는 분석 결과를 해석하기 어려울 것 같음</div><div class="c">2</div></div>
+      <div class="row"><div class="t">파일 형식과 다운로드 과정이 부담될 것 같음</div><div class="c">2</div></div>
+    </div>
+    <p class="c-star"><b>가장 많이 꼽힌 셋이 전부 앱 바깥의 문제다.</b> 학생 수준에 맞게 자료를 다시 짜는 일,
+      영어와 전문 용어, 수업 시간. 반대로 코딩(5)과 그래프 해석(2)은 적게 나왔다.
+      EASWA 가 없앨 수 있는 장벽과 없앨 수 없는 장벽이 여기서 갈린다.</p>
+  </div>
+</div>
+
+<!-- ══════════ 표가 있는 절도 같은 방식으로 ══════════ -->
+<div class="band">
+  <div class="bandhead"><span class="lv">B</span><span class="nm">표가 있는 절에 적용하면 (반응척도)</span>
+    <span class="ct">▲▼ 는 남기고 나머지 강조는 뺌</span></div>
+  <p class="bandnote">표는 원래 장식이 적다. 여기서 필요한 강조는 <b>가장 높은 둘과 가장 낮은 둘</b>을 가리키는 표시뿐이다.</p>
+  <div class="sample">
+    <h2 class="s-h">반응척도</h2>
+    <p class="s-sub">Q8~18 · 1~5점 · N=12 · 12번과 15번은 역문항이라 역채점했다</p>
+    <table class="d">
+      <tr><th>문항</th><th class="r">원평균</th><th class="r">역채점</th><th class="r">SD</th></tr>
+      <tr><td>8. 천체명·자료 검색보다 탐구 주제와 질문에서 출발한다</td><td class="r n">4.08</td><td class="r n">4.08</td><td class="r n">0.67</td></tr>
+      <tr class="hi"><td><span class="mk u">▲</span>9. 별도의 코딩 환경 없이 분석 과정을 수행할 수 있다</td><td class="r n">4.50</td><td class="r n">4.50</td><td class="r n">0.52</td></tr>
+      <tr><td>10. 자료의 출처와 관측 정보를 확인할 수 있다</td><td class="r n">4.42</td><td class="r n">4.42</td><td class="r n">0.79</td></tr>
+      <tr><td>11. 분석 조건을 직접 조정할 수 있다</td><td class="r n">4.42</td><td class="r n">4.42</td><td class="r n">0.67</td></tr>
+      <tr class="hi"><td><span class="mk d">▼</span>12. <i>화면 구성이 복잡하여</i> 탐구 흐름을 파악하기 어렵다</td><td class="r n">2.50</td><td class="r n">3.50</td><td class="r n">1.24</td></tr>
+      <tr><td>13. STEP별 질문과 생각해보기가 각 단계에서 도움이 된다</td><td class="r n">4.00</td><td class="r n">4.00</td><td class="r n">0.74</td></tr>
+      <tr class="hi"><td><span class="mk u">▲</span>14. 광도곡선과 모델 적합 결과를 해석할 수 있게 제시한다</td><td class="r n">4.50</td><td class="r n">4.50</td><td class="r n">0.67</td></tr>
+      <tr class="hi"><td><span class="mk d">▼</span>15. <i>기준값 비교 화면은</i> 무엇을 해석해야 하는지 파악하기 어렵다</td><td class="r n">2.58</td><td class="r n">3.42</td><td class="r n">1.16</td></tr>
+    </table>
+    <div class="b-star">
+      <span class="ld">가장 높은 두 문항이 자동화와 해석 지원이고, 가장 낮은 두 문항이 역문항 둘이다.</span>
+      <p>남은 약점은 화면 복잡도(3.50)와 기준값 비교 화면(3.42)이다. 두 문항은 표준편차도 1.24·1.16 으로
+         나머지(0.5~0.9)보다 넓어, 평균이 낮다기보다 응답이 갈렸다.</p>
+    </div>
+  </div>
+</div>
+
+<div class="verdict">
+  <h2>제 판단</h2>
+  <p><b>B 쯤이 맞다고 봅니다.</b> 장식을 없애는 게 아니라 <b>쓰는 자리를 줄이는</b> 겁니다.
+     막대를 8개 전부에 붙이면 «10과 2의 차이»가 아니라 «막대 여덟 줄»이 보이는데,
+     상위 3개에만 남기면 그 셋이 곧바로 눈에 들어옵니다. 나머지는 숫자만으로 충분히 읽힙니다.</p>
+  <p><b>강조색은 11가지 일에서 2~3가지로.</b> 지금은 눈썹 문구·아이콘·막대·콜아웃 테두리·★·인용 배경·
+     번호까지 전부 같은 청록입니다. 이걸 «정말 중요한 수치»와 «절 표시» 정도로 줄이면
+     그 색이 나올 때 의미가 생깁니다.</p>
+  <p><b>아이콘 타일은 10개에서 2~3개로.</b> zoviz 원본도 여섯 섹션 중 둘에만 씁니다.
+     전 절에 붙이면 절의 시작을 알리는 기능을 잃습니다.</p>
+  <p><b>표는 지금도 괜찮습니다.</b> 위 네 번째 예시처럼 ▲▼ 만으로 충분하고, 더 뺄 것이 없습니다.
+     즉 «전부 덜자»가 아니라 <b>막대·타일·콜아웃 상자 세 가지만 줄이면</b> 되는 문제입니다.</p>
+</div>
+
+</div>
+</body></html>
