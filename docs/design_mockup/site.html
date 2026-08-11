@@ -1,0 +1,790 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EASWA 탐구 화면 — 0~6단계 수정안</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   zoviz 언어 — landing/zoviz 실측 규칙만 쓴다
+   · 배경 단색, 그룹을 테두리 상자로 감싸지 않는다
+   · 구조는 아이콘 타일 + 여백이 만든다
+   · 그룹 사이 48 · 아이콘↔글 20 · 제목↔본문 8 · 표 행 여백 16
+   · 화면 제목 32/700 · 그룹 제목 20/600 · 본문 16/1.7
+   ══════════════════════════════════════════════════════════════════ */
+:root{
+  --ink:#e8722a; --tint:rgba(232,114,42,.13);
+  --bg:#161d2b; --shell:#0f1420; --rail:#0c111b;
+  --head:#eef2f8; --muted:#9aa6bd; --dim:#69748a; --line:#28324a;
+  --font-ui:'Pretendard',system-ui,-apple-system,sans-serif;
+  --font-mono:'IBM Plex Mono',Consolas,monospace;
+}
+:root[data-theme="blue"]{ --ink:#6499cf; --tint:rgba(100,153,207,.13); }
+:root[data-theme="teal"]{ --ink:#14b8a6; --tint:rgba(20,184,166,.10);
+  --bg:#12161e; --shell:#0d1119; --rail:#0a0e15; --head:#f2f5f9; --muted:#98a4b5; --line:#1f2937; }
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--shell);color:var(--muted);font-family:var(--font-ui);
+  font-size:16px;line-height:1.7;word-break:keep-all;-webkit-font-smoothing:antialiased}
+
+/* ── 상단 바 ───────────────────────────────────────────────────── */
+.bar{display:flex;align-items:center;gap:18px;padding:0 26px;height:60px;
+  border-bottom:1px solid var(--line);background:var(--rail);position:sticky;top:0;z-index:20}
+.brand{display:flex;align-items:baseline;gap:10px;font-weight:700;color:var(--head);
+  font-size:17px;letter-spacing:-.01em;text-decoration:none}
+.brand em{font-style:normal;font-weight:400;font-size:14px;color:var(--dim)}
+.crumb{font-size:14.5px;color:var(--muted)}
+.crumb b{color:var(--head);font-weight:600}
+.bar .sp{margin-left:auto}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{appearance:none;border:0;background:transparent;color:var(--dim);font-family:inherit;
+  font-size:13px;padding:7px 13px;cursor:pointer;border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button.on{background:var(--tint);color:var(--ink);font-weight:600}
+.seglab{font-size:12.5px;color:var(--dim);letter-spacing:.02em}
+.homelink{font-size:14px;color:var(--muted);text-decoration:none;border-bottom:1px solid transparent}
+.homelink:hover{color:var(--head);border-bottom-color:var(--line)}
+
+/* ── 좌측 단계 레일 ─────────────────────────────────────────────── */
+.shell{display:grid;grid-template-columns:296px minmax(0,1fr);align-items:start;min-height:calc(100% - 60px)}
+.rail{position:sticky;top:60px;padding:30px 20px 60px;background:var(--rail);
+  border-right:1px solid var(--line);min-height:calc(100vh - 60px)}
+.railcap{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--dim);padding:0 12px 14px}
+.step{display:grid;grid-template-columns:26px 1fr;gap:12px;align-items:start;width:100%;
+  text-align:left;appearance:none;border:0;background:transparent;font-family:inherit;
+  padding:11px 12px;border-radius:10px;cursor:pointer;color:var(--muted);line-height:1.45}
+.step:hover{background:rgba(255,255,255,.03)}
+.step .no{font-family:var(--font-mono);font-size:13px;color:var(--dim);padding-top:2px}
+.step .tt{font-size:14.5px}
+.step.on{background:var(--tint)}
+.step.on .no{color:var(--ink)}
+.step.on .tt{color:var(--head);font-weight:600}
+.railnote{margin:22px 12px 0;padding-top:16px;border-top:1px solid var(--line);
+  font-size:12.5px;line-height:1.65;color:var(--dim)}
+
+/* ── 화면 ──────────────────────────────────────────────────────── */
+.stage{padding:0 34px 90px;background:var(--shell)}
+.screen{display:none;max-width:1000px;margin:0 auto;background:var(--bg);
+  border-radius:12px;padding:46px 44px 52px;margin-top:34px}
+.screen.on{display:block}
+.h{margin:0;font-size:32px;font-weight:700;color:var(--head);letter-spacing:-.02em;line-height:1.25}
+.hsub{margin:10px 0 0;font-size:17px;color:var(--muted);line-height:1.65}
+
+.grp{margin-top:48px;display:grid;grid-template-columns:48px 1fr;gap:20px;align-items:start}
+.tile{width:48px;height:48px;border-radius:12px;background:var(--tint);
+  display:flex;align-items:center;justify-content:center}
+.tile svg{width:22px;height:22px;stroke:var(--ink);fill:none;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
+.gtrow{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.gt{margin:0;font-size:20px;font-weight:600;color:var(--head);line-height:1.4}
+.gp{margin:8px 0 0;font-size:16px;color:var(--muted);line-height:1.7}
+.body{margin-top:18px}
+.note-under{margin:14px 0 0;font-size:14px;color:var(--dim);line-height:1.7}
+
+/* 용어 툴팁 — 라벨 안에 풀어쓰지 않는다 (TERMS_KO §1-0) */
+.term{position:relative;cursor:help}
+.term .i{display:inline-block;width:15px;height:15px;border-radius:50%;background:var(--tint);
+  color:var(--ink);font-size:10.5px;font-weight:700;text-align:center;line-height:15px;
+  margin-left:5px;vertical-align:1.5px}
+.tip{display:none;position:absolute;left:-6px;top:calc(100% + 9px);z-index:12;width:270px;
+  padding:11px 13px;border-radius:10px;background:#080c12;border:1px solid var(--line);
+  font-size:13.5px;line-height:1.65;color:var(--muted);box-shadow:0 10px 28px rgba(0,0,0,.55)}
+.tip b{color:var(--head);font-weight:600}
+.tip::before{content:"";position:absolute;left:14px;top:-5px;width:9px;height:9px;background:#080c12;
+  border-left:1px solid var(--line);border-top:1px solid var(--line);transform:rotate(45deg)}
+.term:hover .tip{display:block}
+
+/* 표 — 상자 대신 얇은 구분선 */
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.04em;
+  padding:0 0 12px;border-bottom:1px solid var(--line)}
+th.r,td.r{text-align:right}
+td{padding:16px 0;border-bottom:1px solid var(--line);font-family:var(--font-mono);
+  font-size:17px;color:var(--head)}
+td.lab{font-family:var(--font-ui);font-size:16px;color:var(--muted)}
+td.ref{color:var(--muted)}
+td.d{color:var(--ink);font-weight:600}
+td.d .rel{color:var(--muted);font-weight:400;font-size:15px}
+tr:last-child td{border-bottom:0}
+
+/* 설정 목록 */
+.set{display:grid;gap:0}
+.set .r{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:baseline;
+  padding:14px 0;border-bottom:1px solid var(--line)}
+.set .r:last-child{border-bottom:0}
+.set .k{font-size:16px;color:var(--muted)}
+.set .k em{font-style:normal;color:var(--head)}
+.set .v{font-family:var(--font-mono);font-size:16px;color:var(--head);white-space:nowrap}
+.set .v.hot{color:var(--ink)}
+.set .v.soft{font-family:var(--font-ui);color:var(--muted)}
+.badge{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;
+  padding:3px 9px;border-radius:4px;background:var(--tint);color:var(--ink);margin-left:10px;vertical-align:2px}
+
+/* 큰 수치 */
+.sig{display:flex;align-items:baseline;gap:18px;margin-top:4px}
+.sig .n{font-family:var(--font-mono);font-size:44px;font-weight:600;color:var(--ink);
+  line-height:1;letter-spacing:-.02em;white-space:nowrap;flex:0 0 auto}
+.sig p{margin:0;font-size:16px;color:var(--muted);line-height:1.7}
+.sig p b{color:var(--head);font-weight:600}
+
+/* 그래프 자리 */
+.plot{height:170px;border-radius:12px;background:#0b101a;display:flex;align-items:center;
+  justify-content:center;color:var(--dim);font-size:14px;text-align:center;line-height:1.6;padding:0 20px}
+.plot.tall{height:230px}
+.plot.short{height:120px}
+
+/* 대상 목록 */
+.pick{display:grid;gap:0}
+.pick .row{display:grid;grid-template-columns:22px 1fr auto;gap:16px;align-items:center;
+  padding:16px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.pick .row:last-child{border-bottom:0}
+.pick .dot{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--line);position:relative}
+.pick .row.on .dot{border-color:var(--ink)}
+.pick .row.on .dot::after{content:"";position:absolute;inset:3.5px;border-radius:50%;background:var(--ink)}
+.pick .nm{display:block;font-size:17px;color:var(--head);font-weight:600;line-height:1.4}
+.pick .row.on .nm{color:var(--ink)}
+.pick .ds{display:block;font-size:14.5px;color:var(--muted);margin-top:4px;line-height:1.55}
+.pick .mt{font-family:var(--font-mono);font-size:14.5px;color:var(--muted);text-align:right;white-space:nowrap;line-height:1.65}
+.pick .mt.soft{font-family:var(--font-ui);color:var(--dim);font-size:13.5px}
+
+/* 질문 묶음 — SDSS Voyages 관례: 언제 쓰는 질문인지 제목에 있다 */
+.qs{margin:0;padding:0;list-style:none;display:grid;gap:0}
+.qs li{padding:16px 0;border-bottom:1px solid var(--line);font-size:17px;color:var(--head);line-height:1.6}
+.qs li:last-child{border-bottom:0}
+.qs li .hint{display:block;margin-top:7px;font-size:14.5px;color:var(--muted);line-height:1.65}
+.noans{margin:14px 0 0;font-size:14px;color:var(--dim);line-height:1.7}
+.qblock{padding-top:20px;border-top:1px solid var(--line);margin-top:20px}
+.qblock:first-of-type{border-top:0;padding-top:0}
+.qblock .q{margin:0;font-size:17px;color:var(--head);line-height:1.6}
+.qblock .qh{margin:7px 0 12px;font-size:14.5px;color:var(--muted);line-height:1.65}
+
+/* 목표 목록 */
+.goals{margin:0;padding-left:20px;color:var(--muted);font-size:16px;line-height:1.9}
+.goals li::marker{color:var(--ink)}
+.goals b{color:var(--head);font-weight:500}
+
+/* 입력 */
+textarea{width:100%;min-height:104px;resize:vertical;margin-top:4px;padding:14px 16px;
+  font-family:var(--font-ui);font-size:16px;line-height:1.65;color:var(--head);background:#0b101a;
+  border:1px solid var(--line);border-radius:12px}
+textarea::placeholder{color:#5f6b7d}
+.opt2{display:grid;gap:10px}
+.opt2 label{display:flex;align-items:center;gap:11px;padding:12px 15px;border-radius:10px;
+  background:#0b101a;font-size:16px;color:var(--muted);cursor:pointer}
+.opt2 label.on{color:var(--head);background:var(--tint)}
+.opt2 input{accent-color:var(--ink);width:16px;height:16px}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:16px;flex-wrap:wrap}
+.hint{font-size:14px;color:var(--dim)}
+.btn{appearance:none;border:1px solid rgba(255,255,255,.24);background:#0b101a;color:#fff;
+  font-family:inherit;font-size:15px;font-weight:600;padding:12px 24px;border-radius:8px;cursor:pointer}
+.btn.go{border-color:var(--ink);background:var(--tint);color:var(--ink)}
+
+/* 5단계 값 이어받기 */
+.carry{border-radius:12px;background:#0b101a;padding:6px 18px 8px;margin-bottom:16px}
+.carry .cap{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--dim);padding:14px 0 4px}
+.carry .r{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:baseline;
+  padding:11px 0;border-bottom:1px solid var(--line)}
+.carry .r:last-child{border-bottom:0}
+.carry .k{font-size:15px;color:var(--muted)}
+.carry .v{font-family:var(--font-mono);font-size:15px;color:var(--head)}
+.carry .v.hot{color:var(--ink)}
+
+/* 하단 이동 */
+.nav{display:flex;justify-content:space-between;gap:16px;max-width:1000px;margin:22px auto 0}
+.nav button{appearance:none;border:1px solid var(--line);background:var(--bg);color:var(--muted);
+  font-family:inherit;font-size:15px;padding:13px 22px;border-radius:10px;cursor:pointer}
+.nav button:hover:not(:disabled){color:var(--head);border-color:var(--ink)}
+.nav button:disabled{opacity:.35;cursor:default}
+
+/* 바뀐 곳 표시 */
+.newmark{display:none;flex:0 0 auto;font-size:11px;font-weight:600;letter-spacing:.2px;
+  padding:3px 9px;border-radius:999px;background:rgba(74,222,128,.14);color:#4ade80;white-space:nowrap}
+body.diff .newmark{display:inline-block}
+.was{display:none;margin:40px 0 0;padding:18px 20px;border-radius:10px;
+  background:rgba(74,222,128,.055);border-left:3px solid rgba(74,222,128,.5);
+  font-size:14.5px;line-height:1.75;color:var(--muted)}
+body.diff .was{display:block}
+.was b{color:#4ade80;font-weight:600}
+.was code{font-family:var(--font-mono);font-size:.92em;color:var(--head)}
+.was p{margin:0 0 8px}
+.was p:last-child{margin:0}
+
+@media (max-width:1080px){
+  .shell{grid-template-columns:1fr}
+  .rail{position:static;min-height:0;border-right:0;border-bottom:1px solid var(--line);
+    display:flex;gap:6px;overflow-x:auto;padding:14px 16px}
+  .railcap,.railnote{display:none}
+  .step{grid-template-columns:1fr;white-space:nowrap;padding:9px 14px}
+  .step .no{display:none}
+  .stage{padding:0 16px 60px}
+  .screen{padding:32px 22px 40px}
+  .h{font-size:26px}
+}
+</style>
+</head><body>
+
+<header class="bar">
+  <a class="brand" href="landing_theme_preview.html#top">EASWA <em>전천 탐구 웹앱</em></a>
+  <span class="crumb">TESS 식현상 탐구 · <b>WASP-121 b</b></span>
+  <span class="sp"></span>
+  <span class="seglab">강조색</span>
+  <div class="seg" id="themeSeg">
+    <button data-t="orange" class="on">주황</button>
+    <button data-t="blue">청</button>
+    <button data-t="teal">틸</button>
+  </div>
+  <div class="seg">
+    <button id="diffBtn">바뀐 곳 표시</button>
+  </div>
+  <a class="homelink" href="landing_theme_preview.html#top">홈으로</a>
+</header>
+
+<div class="shell">
+
+<nav class="rail" id="rail">
+  <div class="railcap">탐구 단계</div>
+  <button class="step on" data-s="0"><span class="no">0</span><span class="tt">탐구 질문과 학습 목표 확인하기</span></button>
+  <button class="step" data-s="1"><span class="no">1</span><span class="tt">탐구 질문에 맞는 대상 선택하기</span></button>
+  <button class="step" data-s="2"><span class="no">2</span><span class="tt">자료의 출처와 관측 조건 확인하기</span></button>
+  <button class="step" data-s="3"><span class="no">3</span><span class="tt">분석 설정과 모델 가정 확인하기</span></button>
+  <button class="step" data-s="4"><span class="no">4</span><span class="tt">분석 실행하고 결과 그래프 확인하기</span></button>
+  <button class="step" data-s="5"><span class="no">5</span><span class="tt">측정한 값을 문헌값과 비교하기</span></button>
+  <button class="step" data-s="6"><span class="no">6</span><span class="tt">차이의 원인을 설명하고 기록하기</span></button>
+  <p class="railnote">세 탐구활동(TESS 식현상 · KMTNet 미시중력렌즈 · Gaia 성단 색등급도)이 같은 0~6단계를 씁니다.
+  화면 안 수치는 논문 §4.7.1 표 4-15 의 WASP-121 b 실측값입니다.</p>
+</nav>
+
+<main class="stage">
+
+<!-- ══════════════ 0 ══════════════ -->
+<section class="screen on" data-s="0">
+  <h2 class="h">탐구 질문과 학습 목표 확인하기</h2>
+  <p class="hsub">NASA TESS 광도곡선 · WASP-121 b</p>
+
+  <div class="grp">
+    <div class="tile"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.2 9a2.9 2.9 0 0 1 5.6 1c0 2-2.8 2.5-2.8 4"/><path d="M12 17.5h.01"/></svg></div>
+    <div>
+      <div class="gtrow"><h3 class="gt">탐구 질문</h3></div>
+      <p class="gp">이 별에 식현상이 나타나는지, 밝기 감소의 크기에서 얻은 반지름비는 얼마인지 알아봅니다.
+      그리고 그 값이 문헌에 실린 값과 왜 다른지 설명합니다.</p>
+    </div>
+  </div>
+
+  <div class="grp">
+    <div class="tile"><svg viewBox="0 0 24 24"><path d="M4 19.5V6a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 1.5z"/><path d="M8 8h7M8 12h7"/></svg></div>
+    <div>
+      <div class="gtrow"><h3 class="gt">학습 목표</h3></div>
+      <div class="body">
+        <ul class="goals">
+          <li><b>광도곡선에서 식현상에 의한 밝기 감소를 찾아 설명한다.</b></li>
+          <li><b>차등측광으로 얻은 식 깊이에서 반지름비를 구한다.</b></li>
+          <li><b>측정값과 문헌값의 차이를 자료 품질과 분석 조건으로 설명한다.</b></li>
+        </ul>
+        <p class="note-under">학습 목표는 2022 개정 교육과정 성취기준과 같은 «~한다» 꼴로 적습니다.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <div class="tile"><svg viewBox="0 0 24 24"><path d="M14 3v5h5"/><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M9 13h6M9 17h4"/></svg></div>
+    <div>
+      <div class="gtrow"><h3 class="gt">이 차시에 남기는 것</h3></div>
+      <p class="gp">마지막 단계에서 탐구 기록 한 편을 저장합니다. 자료 출처와 분석 조건, 모델이 세운 가정이 기록에 함께 담깁니다.</p>
+    </div>
+  </div>
+
+  <div class="grp">
+    <div class="tile"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+    <div>
+      <div class="gtrow"><h3 class="gt">시작하기 전에 생각할 질문</h3><span class="newmark">묶음에 이름이 붙습니다</span></div>
+      <div class="body">
+        <ul class="qs">
+          <li>이 탐구에서 관측 자료로 설명하려는 현상은 무엇인가?</li>
+        </ul>
+        <p class="noans">정답이 정해진 질문이 아닙니다. 지금 생각한 대로 답하고, 마지막 단계에서 다시 봅니다.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="was">
+    <p><b>지금</b> 제목이 <code>탐구 주제 소개 및 학습 목표</code> 입니다. «소개 및 목표»는 목차 항목 이름이지 활동 이름이 아닙니다.
+    교과서 탐구활동 제목은 7건 모두 «~하기» 꼴입니다(논문 표 3-3).</p>
+    <p><b>질문 묶음에 이름을 붙였습니다.</b> SDSS Voyages는 문항을 그냥 나열하지 않고 «Questions to Consider While
+    Selecting a Cluster» 처럼 <b>언제 쓰는 질문인지</b>를 제목에 적습니다. 그리고 «정답은 없다»를 화면에 밝힙니다.</p>
+  </div>
+</section>
+
+<!-- ══════════════ 1 ══════════════ -->
+<section class="screen" data-s="1">
+  <h2 class="h">탐구 질문에 맞는 대상 선택하기</h2>
+  <p class="hsub">밝고 식이 깊은 별일수록 밝기 감소를 눈으로 확인하기 쉽습니다</p>
+
+  <div class="grp">
+    <div class="tile"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg></div>
+    <div>
+      <div class="gtrow"><h3 class="gt">탐구할 별</h3></div>
+      <p class="gp">아래 목록에서 하나를 선택합니다. 선택한 별의 광도곡선을 MAST에서 바로 불러옵니다.</p>
+      <div class="body pick">
+        <div class="row on"><span class="dot"></span>
+          <span><span class="nm">WASP-121 b</span><span class="ds">밝은 F형 별 · 식이 깊고 주기가 짧아 한 차시 안에 여러 번 관측됩니다</span></span>
+          <span class="mt">주기 1.27493 d<br>문헌 식 깊이 1.5510 %</span></div>
+        <div class="row"><span class="dot"></span>
+          <span><span class="nm">HD 209458 b</span><span class="ds">처음으로 식현상이 관측된 외계행성입니다</span></span>
+          <span class="mt soft">목업 자리표시</span></div>
+        <div class="row"><span class="dot"></span>
+          <span><span class="nm">WASP-18 b</span><span class="ds">아주 밝은 별이라 잡음이 작습니다</span></span>
+          <span class="mt soft">목업 자리표시</span></div>
+      </div>
+      <p class="note-under">이 목업에서 수치가 적힌 행은 WASP-121 b 하나입니다. 나머지 두 행은 자리표시이고, 실제 화면에서는 아카이브 값이 들어갑니다.</p>
+    </div>
+  </div>
+
+  <div class="grp">
+    <div class="tile"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 8l7-5 7 5"/><path d="M5 16l7 5 7-5"/></svg></div>
+    <div>
+      <div class="gtrow"><h3 class="gt">분석 범위</h3></div>
+      <div class="body set">
+        <div class="r"><div class="k"><span class="term"><em>섹터</em><span class="i">i</span><span class="tip"><b>섹터</b> — TESS는 하늘을 여러 구역으로 나눠 한 구역씩 약 27일 동안 관측합니다. 그 한 구역이 섹터입니다.</span></span> · 직접 선택</div><div class="v">1개 · 약 27일</div></div>
+        <div class="r"><div class="k"><span class="term"><em>관측 주기</em><span class="i">i</span><span class="tip"><b>관측 주기</b> — 밝기를 몇 분마다 한 번씩 기록했는지를 말합니다. 짧을수록 식이 시작되고 끝나는 순간을 더 촘촘히 볼 수 있습니다.</span></span></div><div class="v">2분</div></div>
+        <div class="r"><div class="k"><em>접어서 볼 구간</em> · 직접 선택</div><div class="v">식 전후 ±0.1 위상</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <div class="tile"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+    <div>
+      <div class="gtrow"><h3 class="gt">대상을 선택하기 전에 생각할 질문</h3><span class="newmark">묶음에 이름이 붙습니다</span></div>
+      <div class="body">
+        <ul class="qs">
+          <li>이 대상 또는 자료가 탐구 질문에 적합하다고 판단한 근거는 무엇인가?</li>
+        </ul>
+        <p class="noans">선택한 이유가 서로 달라도 됩니다. 무엇을 보고 선택했는지가 이 질문의 핵심입니다.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="was">
+    <p><b>지금</b> 제목이 <code>탐구 대상 또는 자료 선택</code> 입니다. 무엇을 기준으로 선택하는지가 빠져 있어
+    «탐구 질문에 맞는»을 제목에 넣었습니다.</p>
+    <p><b>영문 용어를 한국어로 바꿨습니다.</b> <code>sector</code> → 섹터(뜻은 툴팁), <code>cadence</code> → 관측 주기.
+    라벨 안에 풀어쓰지 않고 짚으면 뜨게 했습니다.</p>
+  </div>
+</section>
+
+<!-- ══════════════ 2 ══════════════ -->
+<section class="screen" data-s="2">
+  <h2 class="h">자료의 출처와 관측 조건 확인하기</h2>
+  <p class="hsub">이 자료가 어디서 왔고, 어떤 조건에서 찍힌 것인지 먼저 봅니다</p>
+
+  <div class="grp">
+    <div class="tile"><svg viewBox="0 0 24 24"><path d="M3 7l9-4 9 4-9 4z"/><path d="M3 12l9 4 9-4M3 17l9 4 9-4"/></svg></div>
+    <div>
+      <div class="gtrow"><h3 class="gt">자료 출처</h3></div>
+      <p class="gp">NASA TESS가 관측해 공개한 광도곡선을 MAST에서 받아 옵니다. 비교 기준값은 NASA Exoplanet Archive에서 가져옵니다.</p>
+      <div class="body set">
+        <div class="r"><div class="k"><em>관측</em></div><div class="v soft">NASA TESS</div></div>
+        <div class="r"><div class="k"><em>내려받은 곳</em></div><div class="v soft">MAST 공개 자료실</div></div>
+        <div class="r"><div class="k"><em>비교 기준</em></div><div class="v soft">NASA Exoplanet Archive</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <div class="tile"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 9v12"/></svg></div>
+    <div>
+      <div class="gtrow"><h3 class="gt">관측 조건</h3></div>
+      <div class="body set">
+        <div class="r"><div class="k"><em>한 픽셀이 담는 하늘 크기</em></div><div class="v">21″</div></div>
+        <div class="r"><div class="k"><em>관측 주기</em></div><div class="v">2분</div></div>
+        <div class="r"><div class="k"><em>관측 기간</em></div><div class="v">약 27일 · 섹터 1개</div></div>
+        <div class="r"><div class="k"><em>품질 표시가 붙은 점</em></div><div class="v">자동 제외</div></div>
+      </div>
+      <p class="note-under">한 픽셀이 21″를 담기 때문에, 가까이 있는 다른 별의 빛이 같은 픽셀에 섞여 들어올 수 있습니다.</p>
+    </div>
+  </div>
+
+  <div class="grp">
+    <div class="tile"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><circle cx="18.4" cy="7.6" r="1.6"/><circle cx="6.6" cy="16.4" r="1.2"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg></div>
+    <div>
+      <div class="gtrow"><h3 class="gt">주변에 있는 별</h3></div>
+      <p class="gp">아래 <span class="term">컷아웃<span class="i">i</span><span class="tip"><b>컷아웃</b> — 하늘 전체 사진에서 목표별 주변만 잘라낸 작은 이미지입니다.</span></span>에서 목표별과 이웃별의 거리를 확인합니다.</p>
+      <div class="body"><div class="plot">목표별을 가운데 둔 컷아웃 · 구경 원 · 이웃별 표시</div></div>
+      <div class="body set">
+        <div class="r"><div class="k"><em>목표별</em></div><div class="v">WASP-121</div></div>
+        <div class="r"><div class="k"><em>가장 가까운 이웃별</em></div><div class="v hot">T = 11.63 · 43.8″ 떨어짐</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <div class="tile"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+    <div>
+      <div class="gtrow"><h3 class="gt">해석하기 전에 확인할 질문</h3><span class="newmark">묶음에 이름이 붙습니다</span></div>
+      <div class="body">
+        <ul class="qs">
+          <li>이 자료의 출처와 관측 조건은 결과 해석에 어떤 제한을 만들 수 있는가?
+            <span class="hint">위 항목을 다 외울 필요는 없습니다. 결과를 흔들 수 있는 것 한두 개만 골라 봅시다. 예를 들면 픽셀 크기, 관측 주기, 이웃별의 거리입니다.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="was">
+    <p><b>지금</b> 제목이 <code>자료 확인 — 자료 출처와 관측 정보</code> 입니다. 한국어 문장 안의 대시는 영어 습관이고,
+    대시 앞뒤가 같은 말의 반복이라 뒤쪽만 남겼습니다(규칙 ⑤).</p>
+    <p><b>도움말 문구를 다시 썼습니다.</b> <code>노출·필터·구성원 선별 기준</code> 처럼 이 화면에 없는 항목을 예로 들던 것을
+    실제로 화면에 있는 것으로 바꿨습니다.</p>
+  </div>
+</section>
+
+<!-- ══════════════ 3 ══════════════ -->
+<section class="screen" data-s="3">
+  <h2 class="h">분석 설정과 모델 가정 확인하기</h2>
+  <p class="hsub">계산은 자동으로 하지만, 어떤 조건으로 하는지는 감추지 않습니다</p>
+
+  <div class="grp">
+    <div class="tile"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg></div>
+    <div>
+      <div class="gtrow"><h3 class="gt">직접 정하는 것</h3></div>
+      <p class="gp">아래 값은 바꿀 수 있습니다. 바꾸면 결과도 달라집니다.</p>
+      <div class="body set">
+        <div class="r"><div class="k"><span class="term"><em>구경</em><span class="i">i</span><span class="tip"><b>구경</b> — 별빛을 얼마나 넓게 모아 셀지 정하는 원입니다. 너무 작으면 별빛을 놓치고, 너무 크면 이웃별과 배경이 함께 들어옵니다.</span></span></div><div class="v">반지름 2.5 px · 52.5″</div></div>
+        <div class="r"><div class="k"><em>비교성</em></div><div class="v">3개 · 산포 1,425 ppm</div></div>
+        <div class="r"><div class="k"><span class="term"><em>관심영역</em><span class="i">i</span><span class="tip"><b>관심영역</b>(ROI) — 컷아웃 안에서 실제로 분석에 쓸 구역입니다. 좁히면 계산은 빨라지지만 쓸 만한 비교성이 줄어듭니다.</span></span></div><div class="v">11 × 11 px</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <div class="tile"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 3v9h9"/></svg></div>
+    <div>
+      <div class="gtrow"><h3 class="gt">모델이 미리 정해 둔 것</h3></div>
+      <p class="gp">아래 값은 이번 탐구에서 고정입니다. 무엇을 고정했는지 알아야 결과의 한계도 말할 수 있습니다.</p>
+      <div class="body set">
+        <div class="r"><div class="k"><span class="term"><em>주연감광 계수</em><span class="i">i</span><span class="tip"><b>주연감광</b> — 별은 한가운데가 가장 밝고 가장자리로 갈수록 어둡게 보입니다. 식이 진행되는 동안 밝기가 얼마나 완만하게 줄어드는지를 좌우합니다.</span></span></div><div class="v soft">모델이 정해 둔 값</div></div>
+        <div class="r"><div class="k"><span class="term"><em>기준선·이상치 처리</em><span class="i">i</span><span class="tip">밝기가 유난히 크게 튄 점은 자동으로 빼고 적합합니다.</span></span></div><div class="v soft">기본값 사용</div></div>
+        <div class="r"><div class="k"><em>궤도 모양</em></div><div class="v soft">원 궤도로 가정</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <div class="tile"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+    <div>
+      <div class="gtrow"><h3 class="gt">실행하기 전에 생각할 질문</h3><span class="newmark">묶음에 이름이 붙습니다</span></div>
+      <div class="body">
+        <ul class="qs">
+          <li>분석 조건 중 결과에 가장 큰 영향을 줄 수 있는 항목은 무엇인가?
+            <span class="hint">조건을 나열만 하지 말고 «이걸 바꾸면 결과가 어떻게 달라질까»를 한 가지만 예상해 봅시다. 예를 들면 구경이나 관심영역입니다.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="was">
+    <p><b>지금</b> 제목이 <code>분석 준비 — 분석 설정과 모델 가정 확인</code> 입니다. 대시를 없애고, «준비»와 «확인»이
+    겹치던 것을 정리했습니다.</p>
+    <p><b>두 묶음으로 갈랐습니다.</b> 지금은 한 목록에 섞여 있어 무엇을 바꿀 수 있는지 알기 어렵습니다.
+    논문 §2.3 이 «학습자 직접 수행»과 «플랫폼 가시화»를 나눠 놓았으므로 화면도 그대로 나눴습니다.</p>
+    <p><b>영문 용어</b> <code>aperture</code> → 구경, <code>ROI</code> → 관심영역. 뜻은 툴팁으로 붙였습니다.</p>
+  </div>
+</section>
+
+<!-- ══════════════ 4 ══════════════ -->
+<section class="screen" data-s="4">
+  <h2 class="h">분석 실행하고 결과 그래프 확인하기</h2>
+  <p class="hsub">차등측광으로 그린 광도곡선과 적합 결과입니다</p>
+
+  <div class="grp">
+    <div class="tile"><svg viewBox="0 0 24 24"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg></div>
+    <div>
+      <div class="gtrow"><h3 class="gt">광도곡선</h3></div>
+      <p class="gp">목표별의 밝기를 비교성으로 나눈 결과입니다. 두 별이 함께 겪은 변화는 나눗셈에서 상쇄되고, 목표별에만 있는 변화가 남습니다.</p>
+      <div class="body"><div class="plot tall">시간에 따른 밝기 · 식이 지나간 구간 표시</div></div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <div class="tile"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 16 0"/><path d="M4 12a8 8 0 0 0 16 0"/><circle cx="12" cy="12" r="2"/></svg></div>
+    <div>
+      <div class="gtrow"><h3 class="gt">위상을 접은 그래프와 적합</h3></div>
+      <p class="gp">주기마다 되풀이되는 식을 하나로 겹쳐 그렸습니다. 아래 잔차는 모델이 자료를 얼마나 잘 따라갔는지 보여줍니다.</p>
+      <div class="body"><div class="plot tall">위상을 접은 관측점 · 맞춘 모델 곡선</div></div>
+      <div class="body"><div class="plot short">잔차</div></div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <div class="tile"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h10M7 17h6"/></svg></div>
+    <div>
+      <div class="gtrow"><h3 class="gt">이번 분석에서 나온 값</h3></div>
+      <div class="body">
+        <table>
+          <tr><th>항목</th><th class="r">값</th><th class="r">뜻</th></tr>
+          <tr><td class="lab">식 깊이</td><td class="r">1.2000 %</td>
+              <td class="r ref" style="font-family:var(--font-ui);font-size:15px">식이 지날 때 밝기가 줄어든 정도</td></tr>
+          <tr><td class="lab">반지름비</td><td class="r">0.1100</td>
+              <td class="r ref" style="font-family:var(--font-ui);font-size:15px">행성 반지름 ÷ 별 반지름</td></tr>
+          <tr><td class="lab">잔차 χ²<sub>red</sub></td><td class="r">0.98</td>
+              <td class="r ref" style="font-family:var(--font-ui);font-size:15px">1에 가까우면 모델이 자료를 잘 따라간 것</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <div class="tile"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+    <div>
+      <div class="gtrow"><h3 class="gt">결과를 보며 확인할 질문</h3><span class="newmark">묶음에 이름이 붙습니다</span></div>
+      <div class="body">
+        <ul class="qs">
+          <li>시각화 결과에서 현상을 뒷받침하는 근거는 어디에 보이는가?</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="was">
+    <p><b>지금</b> 제목이 <code>분석 실행 및 시각화 결과 확인</code> 입니다. «및»으로 두 동작을 붙인 명사구를
+    연결어미로 풀었고, «시각화 결과»는 학습자에게는 «그래프»입니다.</p>
+    <p><b>값의 뜻을 옆에 적었습니다.</b> 지금은 숫자만 나와서 <code>χ²_red</code> 가 무엇인지 모르면 읽을 수 없습니다.</p>
+  </div>
+</section>
+
+<!-- ══════════════ 5 ══════════════ -->
+<section class="screen" data-s="5">
+  <h2 class="h">측정한 값을 문헌값과 비교하기</h2>
+  <p class="hsub">WASP-121 b · NASA Exoplanet Archive 문헌값과 나란히 놓습니다</p>
+
+  <div class="grp">
+    <div class="tile"><svg viewBox="0 0 24 24"><path d="M4 7h7M4 12h7M4 17h7"/><path d="M15 5v14M20 5v14"/></svg></div>
+    <div>
+      <div class="gtrow"><h3 class="gt">측정한 값과 문헌값 비교</h3></div>
+      <p class="gp">여기 문헌값은 NASA 아카이브에서 가져온 값입니다. 측정한 값과 얼마나 차이나는지 비교해보고, 그 원인을 설명해봅시다.</p>
+      <div class="body"><div class="plot">위상을 접은 관측점 · 맞춘 모델 · 카탈로그대로라면 나왔을 모델 · 잔차</div></div>
+      <div class="body">
+        <table>
+          <tr><th>항목</th><th class="r">측정값</th><th class="r">문헌값</th><th class="r">차이</th></tr>
+          <tr><td class="lab">식 깊이</td><td class="r">1.2000</td><td class="r ref">1.5510</td>
+              <td class="r d">−0.3510%p <span class="rel">(−22.6%)</span></td></tr>
+          <tr><td class="lab">반지름비</td><td class="r">0.1100</td><td class="r ref">0.1249</td>
+              <td class="r d">−0.0149 <span class="rel">(−11.9%)</span></td></tr>
+          <tr><td class="lab">공전 주기</td><td class="r">—</td><td class="r ref">1.27493 d</td>
+              <td class="r ref" style="font-family:var(--font-ui);font-size:15px">NASA 아카이브 문헌값</td></tr>
+        </table>
+        <p class="note-under">문헌 반지름비는 아카이브의 식 깊이에서 거꾸로 구한 값이라, 논문이 직접 발표한 값과는 원래 조금 다릅니다.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <div class="tile"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+    <div>
+      <div class="gtrow"><h3 class="gt">차이와 측정 오차 비교</h3><span class="newmark">여기가 새로 붙습니다</span></div>
+      <p class="gp">−11.9%라는 숫자만으로는 이 차이가 큰지 알 수 없습니다. 측정 오차와 비교해 봅시다.</p>
+      <div class="body sig">
+        <div class="n">7.4 σ</div>
+        <p>반지름비 차이 0.0149는 측정 오차 ±0.002의 <b>약 7배</b>입니다.<br>오차 때문에 우연히 이만큼 벌어지기는 어렵습니다. 적합 잔차 χ²<sub>red</sub>가 0.98이니 모델이 자료를 못 맞춘 것도 아닙니다.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <div class="tile"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg></div>
+    <div>
+      <div class="gtrow"><h3 class="gt">분석에 쓴 조건</h3><span class="newmark">여기가 새로 붙습니다</span></div>
+      <p class="gp">아래는 탐구활동에서 직접 설정한 조건과, 이번 분석에서 고정된 값입니다.</p>
+      <div class="body set">
+        <div class="r"><div class="k"><em>구경</em> · 직접 설정<span class="badge">3단계</span></div><div class="v">반지름 2.5 px · 52.5″</div></div>
+        <div class="r"><div class="k"><em>구경에 들어온 이웃별</em><span class="badge">2단계</span></div><div class="v hot">1개 · T = 11.63 · 43.8″</div></div>
+        <div class="r"><div class="k"><em>비교성</em> · 직접 선택</div><div class="v">3개 · 산포 1,425 ppm</div></div>
+        <div class="r"><div class="k"><span class="term"><em>주연감광 계수</em><span class="i">i</span><span class="tip"><b>주연감광</b> — 별은 한가운데가 가장 밝고 가장자리로 갈수록 어둡게 보입니다. 식이 진행되는 동안 밝기가 얼마나 완만하게 줄어드는지를 좌우합니다.</span></span></div><div class="v soft">모델이 정해 둔 값</div></div>
+        <div class="r"><div class="k"><span class="term"><em>기준선·이상치 처리</em><span class="i">i</span><span class="tip">밝기가 유난히 크게 튄 점은 자동으로 빼고 적합합니다.</span></span></div><div class="v soft">기본값 사용</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <div class="tile"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></div>
+    <div>
+      <div class="gtrow"><h3 class="gt">차이가 왜 생겼을까</h3></div>
+      <p class="gp">위 조건이 결과에 구체적으로 어떻게 영향을 줬을지 적어봅시다.</p>
+      <div class="body">
+        <textarea placeholder="예: 구경 안에 이웃별이 들어와 있어서…"></textarea>
+        <div class="foot"><span class="hint">여기 쓴 내용은 6단계 기록으로 넘어갑니다.</span><button class="btn">설명 제출</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="was">
+    <p><b>지금</b> 제목이 <code>기준값 또는 비교 자료와 비교</code> 입니다. 같은 말이 두 번 나오고, 무엇을 무엇과
+    비교하는지가 없습니다. 교과서 꼴은 「색등급도를 이용하여 성단의 나이 <b>비교하기</b>」처럼 둘 다 적습니다.</p>
+    <p><b>차이가 큰지 판정할 근거를 붙였습니다.</b> 지금 화면은 «−11.9%»에서 끝나는데, 이 숫자만으로는
+    큰 차이인지 알 수 없습니다. 교사 반응 최저점이 이 자리(F3 · 3.42)였습니다.</p>
+  </div>
+</section>
+
+<!-- ══════════════ 6 ══════════════ -->
+<section class="screen" data-s="6">
+  <h2 class="h">차이의 원인을 설명하고 기록하기</h2>
+  <p class="hsub">WASP-121 b · 여기 적은 내용이 탐구 기록으로 저장됩니다</p>
+
+  <div class="grp">
+    <div class="tile"><svg viewBox="0 0 24 24"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg></div>
+    <div>
+      <div class="gtrow"><h3 class="gt">광도곡선에서 밝기 감소가 보였나요</h3></div>
+      <div class="body opt2">
+        <label class="on"><input type="radio" name="b1" checked> 뚜렷하게 보였습니다</label>
+        <label><input type="radio" name="b1"> 그런 것도 같습니다</label>
+        <label><input type="radio" name="b1"> 잡음이 많아 잘 모르겠습니다</label>
+        <label><input type="radio" name="b1"> 보이지 않았습니다</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <div class="tile"><svg viewBox="0 0 24 24"><path d="M10.3 3.2 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.2a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></div>
+    <div>
+      <div class="gtrow"><h3 class="gt">분석하면서 걸린 문제를 골라 봅시다</h3></div>
+      <div class="body opt2">
+        <label class="on"><input type="checkbox" checked> 쓸 만한 비교성이 부족했습니다</label>
+        <label><input type="checkbox"> 주변 별빛이 섞였습니다</label>
+        <label><input type="checkbox"> 광도곡선 잡음이 컸습니다</label>
+        <label><input type="checkbox"> 분석 시야가 좁았습니다</label>
+        <label><input type="checkbox"> 별다른 문제는 없었습니다</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <div class="tile"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></div>
+    <div>
+      <div class="gtrow"><h3 class="gt">측정값이 문헌값과 얼마나 다른지, 왜 그런지 적어 봅시다</h3>
+        <span class="newmark">여기가 새로 붙습니다</span></div>
+      <p class="gp">5단계에서 확인한 값을 그대로 가져왔습니다. 이 수치를 근거로 들어 설명하면 됩니다.</p>
+      <div class="body">
+        <div class="carry">
+          <div class="cap">5단계에서 넘어온 값</div>
+          <div class="r"><div class="k">반지름비 차이</div><div class="v hot">−0.0149 (−11.9%) · 오차의 약 7배</div></div>
+          <div class="r"><div class="k">식 깊이 차이</div><div class="v">−0.3510%p (−22.6%)</div></div>
+          <div class="r"><div class="k">구경</div><div class="v">반지름 2.5 px · 52.5″</div></div>
+          <div class="r"><div class="k">구경에 들어온 이웃별</div><div class="v hot">1개 · T = 11.63 · 43.8″</div></div>
+          <div class="r"><div class="k">비교성</div><div class="v">3개 · 산포 1,425 ppm</div></div>
+        </div>
+        <textarea placeholder="예: 구경 안에 이웃별이 들어와 있어서 별빛이 섞였고, 그만큼 식이 얕게 측정된 것 같습니다."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <div class="tile"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9"/><polyline points="3 3 3 9 9 9"/></svg></div>
+    <div>
+      <div class="gtrow"><h3 class="gt">되돌아보는 질문</h3><span class="newmark">묶음에 이름이 붙습니다</span></div>
+      <div class="body qblock">
+        <p class="q">이번 결과를 어떤 주장으로 정리할 수 있으며, 그 주장의 한계는 무엇인가?</p>
+        <p class="qh">주장할 수 있는 것과 주장할 수 없는 것을 각각 한 줄로 나눠 적어 봅시다.</p>
+        <textarea placeholder="예: 이 별에 식현상이 있다고는 말할 수 있지만, 반지름비를 문헌값 수준으로 정확히 쟀다고는 말하기 어렵습니다."></textarea>
+      </div>
+      <div class="body qblock">
+        <p class="q">다시 분석한다면 무엇을 바꾸겠는가?</p>
+        <p class="qh">예를 들면 시야를 넓히거나, 비교성을 바꾸거나, 다른 섹터를 골라 볼 수 있습니다.</p>
+        <textarea placeholder="바꾸고 싶은 것과 그 이유를 적어 봅시다."></textarea>
+      </div>
+      <div class="foot">
+        <span class="hint">저장하면 출처와 분석 조건이 함께 기록됩니다.</span>
+        <button class="btn go">기록 저장</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="was">
+    <p><b>지금</b> 제목이 <code>결과 해석 및 탐구 기록 작성</code> 입니다. 무엇을 해석하는지가 빠져 있어,
+    논문 §2.3 이 학습자 몫으로 규정한 «기준값과의 차이 설명»을 제목에 드러냈습니다.</p>
+    <p><b>5단계 수치를 끌어왔습니다.</b> 지금은 «비교성 품질·별빛 오염·구경 크기·ROI·잡음·모델 가정을 근거로
+    설명하세요»라는 <b>문장</b>만 있고 정작 그 값들은 앞 단계에 있어 되돌아가야 합니다.</p>
+    <p><b>반말 3건을 고쳤습니다.</b> <code>…설명해보자</code>·<code>…생각해보자</code>·<code>…적어보자</code> 는
+    앱에서 유일하게 반말이 나오는 자리였습니다.</p>
+  </div>
+</section>
+
+<div class="nav">
+  <button id="prev">← 이전 단계</button>
+  <button id="next" class="go">다음 단계 →</button>
+</div>
+
+</main>
+</div>
+
+<script>
+(function(){
+  var steps = [].slice.call(document.querySelectorAll('.step'));
+  var screens = [].slice.call(document.querySelectorAll('.screen'));
+  var cur = 0;
+
+  function show(i){
+    cur = Math.max(0, Math.min(steps.length - 1, i));
+    steps.forEach(function(b, k){ b.classList.toggle('on', k === cur); });
+    screens.forEach(function(s, k){ s.classList.toggle('on', k === cur); });
+    document.getElementById('prev').disabled = (cur === 0);
+    document.getElementById('next').disabled = (cur === steps.length - 1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    try { location.hash = 'step' + cur; } catch (e) {}
+  }
+  steps.forEach(function(b, k){ b.addEventListener('click', function(){ show(k); }); });
+  document.getElementById('prev').addEventListener('click', function(){ show(cur - 1); });
+  document.getElementById('next').addEventListener('click', function(){ show(cur + 1); });
+
+  // 강조색 — 앱에서는 설정에 두고 사용자가 고르게 할 자리
+  var seg = document.getElementById('themeSeg');
+  seg.addEventListener('click', function(e){
+    var b = e.target.closest('button'); if (!b) return;
+    [].slice.call(seg.children).forEach(function(x){ x.classList.remove('on'); });
+    b.classList.add('on');
+    var v = b.dataset.t;
+    if (v === 'orange') document.documentElement.removeAttribute('data-theme');
+    else document.documentElement.setAttribute('data-theme', v);
+    try { localStorage.setItem('easwa-theme', v); } catch (err) {}
+  });
+  try {
+    var saved = localStorage.getItem('easwa-theme');
+    if (saved) {
+      var btn = seg.querySelector('[data-t="' + saved + '"]');
+      if (btn) btn.click();
+    }
+  } catch (err) {}
+
+  // 바뀐 곳 표시
+  var db = document.getElementById('diffBtn');
+  if (location.search.indexOf('diff') >= 0) { document.body.classList.add('diff'); db.classList.add('on'); }
+  db.addEventListener('click', function(){
+    document.body.classList.toggle('diff');
+    db.classList.toggle('on', document.body.classList.contains('diff'));
+  });
+
+  // 선택 상태만 흉내내는 조작 (목업)
+  document.querySelectorAll('.pick .row').forEach(function(r){
+    r.addEventListener('click', function(){
+      r.parentNode.querySelectorAll('.row').forEach(function(x){ x.classList.remove('on'); });
+      r.classList.add('on');
+    });
+  });
+  document.querySelectorAll('.opt2 label').forEach(function(l){
+    l.addEventListener('click', function(){
+      var inp = l.querySelector('input');
+      if (inp && inp.type === 'radio') {
+        l.parentNode.querySelectorAll('label').forEach(function(x){ x.classList.remove('on'); });
+        l.classList.add('on');
+      } else {
+        setTimeout(function(){ l.classList.toggle('on', inp.checked); }, 0);
+      }
+    });
+  });
+
+  var m = /^#step(\d)$/.exec(location.hash);
+  show(m ? parseInt(m[1], 10) : 0);
+})();
+</script>
+</body></html>
