@@ -51,7 +51,7 @@ const ALL_SITES = ['ctio', 'saao', 'sso'];
 type ExtractionMode = 'quick' | 'detailed';
 
 function extractionModeLabel(mode: ExtractionMode): string {
-  return mode === 'detailed' ? 'Detailed sampled extraction' : 'Quick sampled extraction';
+  return mode === 'detailed' ? '정밀 표본 추출' : '빠른 표본 추출';
 }
 
 function buildPreviewBundleTargetIndices(
@@ -86,28 +86,28 @@ function buildPreviewBundleTargetIndices(
 const KMT_GUIDES: Record<'field' | 'align' | 'difference' | 'extract' | 'merge' | 'fit', GuideQuestion[]> = {
   field: [
     { type: 'ox', id: 'kmt_field_q1', text: '단일 관측소 하나만으로 KMTNet 이벤트를 놓치지 않고 24시간 관측할 수 있다.', correct: 'X', explanation: '지상 망원경은 낮 동안 관측이 불가능합니다. 단일 관측소는 하루 약 8시간의 공백이 생겨 결정적인 피크 순간을 놓칠 수 있습니다.' },
-    { type: 'choice', id: 'kmt_field_q2', text: '원본 KMTNet 은하벌지 영상에서 측광이 어려운 가장 큰 이유는?', options: ['별이 너무 빽빽하게 섞여 있다', '노출 시간이 너무 짧다', '모든 별이 너무 어둡다', '색지수 정보가 없다'], correct: '별이 너무 빽빽하게 섞여 있다', explanation: '은하벌지 방향은 별 밀도가 높아 한 픽셀 근처에 여러 별의 광도가 겹칩니다. 그래서 단순 aperture photometry만으로는 변하는 소스를 분리하기 어렵습니다.' },
-    { type: 'open', id: 'kmt_field_q3', text: '선택한 관측소의 원본 frame에서, 이벤트 위치를 그냥 눈으로 바로 찾기 어려운 이유를 적어보자.' },
+    { type: 'choice', id: 'kmt_field_q2', text: '원본 KMTNet 은하벌지 영상에서 측광이 어려운 가장 큰 이유는?', options: ['별이 너무 빽빽하게 섞여 있다', '노출 시간이 너무 짧다', '모든 별이 너무 어둡다', '색지수 정보가 없다'], correct: '별이 너무 빽빽하게 섞여 있다', explanation: '은하벌지 방향은 별 밀도가 높아 한 픽셀 근처에 여러 별의 광도가 겹칩니다. 그래서 단순 구경 측광만으로는 변하는 별을 따로 떼어내기 어렵습니다.' },
+    { type: 'open', id: 'kmt_field_q3', text: '선택한 관측소의 원본 프레임에서, 이벤트 위치를 눈으로 바로 찾기 어려운 이유를 적어보자.' },
   ],
   align: [
-    { type: 'ox', id: 'kmt_align_q1', text: 'KMT 원본 frame들은 항상 완벽하게 같은 픽셀 위치에 정렬되어 있으므로 추가 정렬이 필요 없다.', correct: 'X', explanation: '실제 관측 프레임은 pointing과 WCS 오차 때문에 미세하게 어긋납니다. reference에 맞춰 등록해야 차분 품질이 좋아집니다.' },
-    { type: 'choice', id: 'kmt_align_q2', text: '정렬 이후 가장 먼저 확인해야 할 것은?', options: ['별상이 reference와 얼마나 겹치는가', '전체 프레임이 reference보다 밝아졌는가', 'HJD가 커졌는가', '노출시간이 같아졌는가'], correct: '별상이 reference와 얼마나 겹치는가', explanation: '정렬의 목적은 기준 프레임과 현재 프레임의 별상을 같은 위치에 맞추는 것입니다.' },
+    { type: 'ox', id: 'kmt_align_q1', text: '원본 프레임들은 항상 완벽하게 같은 픽셀 위치에 맞춰져 있어 추가 정렬이 필요 없다.', correct: 'X', explanation: '실제 관측 프레임은 망원경이 겨눈 방향과 좌표계(WCS) 오차 때문에 미세하게 어긋납니다. 기준 영상에 맞춰 정렬해야 차분 품질이 좋아집니다.' },
+    { type: 'choice', id: 'kmt_align_q2', text: '정렬 이후 가장 먼저 확인해야 할 것은?', options: ['별상이 기준 영상과 얼마나 겹치는가', '전체 프레임이 기준 영상보다 밝아졌는가', 'HJD가 커졌는가', '노출시간이 같아졌는가'], correct: '별상이 기준 영상과 얼마나 겹치는가', explanation: '정렬의 목적은 기준 프레임과 현재 프레임의 별상을 같은 위치에 맞추는 것입니다.' },
     { type: 'open', id: 'kmt_align_q3', text: '정렬 전후 이미지를 비교해서 별 위치가 어떻게 달라지는지 적어보자.' },
   ],
   difference: [
-    { type: 'ox', id: 'kmt_diff_q1', text: '차분영상에서는 기준영상과 변하지 않는 별빛이 대부분 제거되고, 시간에 따라 변한 성분만 남는다.', correct: 'O', explanation: 'reference를 빼면 거의 일정한 별은 상쇄되고, 해당 시점에 밝기 변화가 생긴 위치만 residual로 남습니다.' },
-    { type: 'choice', id: 'kmt_diff_q2', text: 'Difference image에서 밝은 잔차가 의미하는 것은?', options: ['기준영상보다 현재 프레임에서 더 밝아졌다', '현재 프레임에서 소스가 사라졌다', '배경 하늘 밝기가 증가했다', '좌표 보정이 실패했다'], correct: '기준영상보다 현재 프레임에서 더 밝아졌다', explanation: '현재 시점의 광도가 기준영상보다 크면 positive residual이 남습니다. 미시중력렌즈 피크 부근이 여기에 해당합니다.' },
-    { type: 'open', id: 'kmt_diff_q3', text: 'frame 슬라이더를 움직이며 residual이 가장 강하게 보이는 구간을 찾고, 그때 HJD가 왜 중요한지 설명해보자.' },
+    { type: 'ox', id: 'kmt_diff_q1', text: '차분영상에서는 기준영상과 변하지 않는 별빛이 대부분 제거되고, 시간에 따라 변한 성분만 남는다.', correct: 'O', explanation: '기준 영상을 빼면 거의 일정한 별은 상쇄되고, 그 시점에 밝기가 변한 위치만 잔차로 남습니다.' },
+    { type: 'choice', id: 'kmt_diff_q2', text: '차분영상에서 밝은 잔차가 의미하는 것은?', options: ['기준영상보다 현재 프레임에서 더 밝아졌다', '현재 프레임에서 소스가 사라졌다', '배경 하늘 밝기가 증가했다', '좌표 보정이 실패했다'], correct: '기준영상보다 현재 프레임에서 더 밝아졌다', explanation: '현재 시점의 밝기가 기준영상보다 크면 밝아진 잔차(+)가 남습니다. 미시중력렌즈 피크 부근이 여기에 해당합니다.' },
+    { type: 'open', id: 'kmt_diff_q3', text: '프레임 슬라이더를 움직이며 잔차가 가장 강하게 보이는 구간을 찾고, 그때 관측 시각(HJD)이 왜 중요한지 설명해보자.' },
   ],
   extract: [
-    { type: 'ox', id: 'kmt_extract_q1', text: 'single-site 곡선은 선택한 관측소 데이터만으로 만들어진다.', correct: 'O', explanation: '먼저 단일 관측소에서 difference flux를 추출해 기초적인 이벤트 형태를 확인합니다.' },
-    { type: 'choice', id: 'kmt_extract_q2', text: 'single-site 곡선을 먼저 보는 이유는?', options: ['관측소별 데이터 품질과 공백을 먼저 확인하려고', '한 관측소 곡선이 병합 곡선보다 정확해서', '모든 미중렌 이벤트는 단일 관측소만으로 충분해서', '행성 이벤트는 merge가 불가능해서'], correct: '관측소별 데이터 품질과 공백을 먼저 확인하려고', explanation: '단일 관측소 곡선을 먼저 보면 공백, 잡음, 피크 포착 여부를 개별적으로 판단할 수 있습니다.' },
+    { type: 'ox', id: 'kmt_extract_q1', text: '한 관측소 곡선은 선택한 관측소 자료만으로 만들어진다.', correct: 'O', explanation: '먼저 한 관측소의 차분 밝기를 뽑아 이벤트의 기본 형태를 확인합니다.' },
+    { type: 'choice', id: 'kmt_extract_q2', text: '한 관측소 곡선을 먼저 보는 이유는?', options: ['관측소별 데이터 품질과 공백을 먼저 확인하려고', '한 관측소 곡선이 이어 붙인 곡선보다 정확해서', '모든 미시중력렌즈 이벤트는 한 관측소만으로 충분해서', '행성 이벤트는 이어 붙일 수 없어서'], correct: '관측소별 데이터 품질과 공백을 먼저 확인하려고', explanation: '단일 관측소 곡선을 먼저 보면 공백, 잡음, 피크 포착 여부를 개별적으로 판단할 수 있습니다.' },
     { type: 'open', id: 'kmt_extract_q3', text: '선택한 관측소의 곡선만 봤을 때 남는 공백이나 한계를 적어보자.' },
   ],
   merge: [
     { type: 'ox', id: 'kmt_merge_q1', text: 'CTIO · SAAO · SSO는 경도 약 120° 간격으로 배치되어 24시간 연속 감시에 가깝게 운용된다.', correct: 'O', explanation: '경도 120° 간격으로 배치된 3개 관측소가 각자의 낮 시간 공백을 서로 메워 연속 감시에 가까운 커버리지를 제공합니다.' },
-    { type: 'choice', id: 'kmt_merge_q2', text: 'single-site 곡선과 network-merged 곡선을 비교할 때 가장 먼저 봐야 할 것은?', options: ['피크와 공백 구간이 얼마나 채워지는가', '관측소별 밝기 영점이 서로 맞는가', '피크 최대 밝기가 관측소마다 같은가', '단일 관측소만으로도 이상신호가 보이는가'], correct: '피크와 공백 구간이 얼마나 채워지는가', explanation: 'KMTNet의 강점은 네트워크 병합으로 피크와 anomaly를 놓치지 않는 것입니다. 공백이 얼마나 줄어드는지가 핵심입니다.' },
-    { type: 'open', id: 'kmt_merge_q3', text: 'single-site 결과와 3-site merged 결과를 비교해서, 어떤 정보가 추가로 보이는지 적어보자.' },
+    { type: 'choice', id: 'kmt_merge_q2', text: '한 관측소 곡선과 세 관측소를 이어 붙인 곡선을 비교할 때 가장 먼저 봐야 할 것은?', options: ['피크와 공백 구간이 얼마나 채워지는가', '관측소별 밝기 영점이 서로 맞는가', '피크 최대 밝기가 관측소마다 같은가', '단일 관측소만으로도 이상신호가 보이는가'], correct: '피크와 공백 구간이 얼마나 채워지는가', explanation: 'KMTNet의 강점은 세 관측소를 이어 붙여 피크와 이상신호를 놓치지 않는 것입니다. 공백이 얼마나 줄어드는지가 핵심입니다.' },
+    { type: 'open', id: 'kmt_merge_q3', text: '한 관측소 결과와 세 관측소를 이어 붙인 결과를 비교해서, 어떤 정보가 더 보이는지 적어보자.' },
   ],
   fit: [
     { type: 'ox', id: 'kmt_fit_q1', text: 'u₀(충격 파라미터)가 작을수록 미시중력렌즈 최대 증폭은 커진다.', correct: 'O', explanation: 'u₀가 작을수록 렌즈와 광원이 더 잘 정렬되어 증폭이 커집니다. u₀가 0에 가까울수록 아인슈타인 링 조건에 접근합니다.' },
@@ -132,12 +132,12 @@ function StepBar({ current, hasSingleSiteCurve, hasMergedCurve, hasFitResult }: 
   hasFitResult: boolean;
 }) {
   const steps = [
-    { id: 'field' as const, number: 1, label: 'Field' },
-    { id: 'align' as const, number: 2, label: 'Align' },
-    { id: 'difference' as const, number: 3, label: 'Difference' },
-    { id: 'extract' as const, number: 4, label: 'Extract' },
-    { id: 'merge' as const, number: 5, label: 'Merge' },
-    { id: 'fit' as const, number: 6, label: 'Fit' },
+    { id: 'field' as const, number: 1, label: '시야 확인' },
+    { id: 'align' as const, number: 2, label: '프레임 정렬' },
+    { id: 'difference' as const, number: 3, label: '차분영상' },
+    { id: 'extract' as const, number: 4, label: '곡선 추출' },
+    { id: 'merge' as const, number: 5, label: '이어 붙이기' },
+    { id: 'fit' as const, number: 6, label: '모델 적합' },
     { id: 'record' as const, number: 7, label: '결과 저장' },
   ];
   const stepOrder: KmtnetWorkflowStep[] = ['field', 'align', 'difference', 'extract', 'merge', 'fit', 'record'];
@@ -335,7 +335,7 @@ function RawFieldCard({
             <strong>{lang === 'ko' ? '원본 프레임' : 'Raw Frame'}</strong>
             <span>
               {lang === 'ko'
-                ? `${siteLabel}의 동일한 하늘 stamp · 현재 관측 시점 원본`
+                ? `${siteLabel}의 같은 하늘 조각 · 현재 관측 시점 원본`
                 : `Same sky stamp from ${siteLabel} · current epoch original`}
             </span>
           </div>
@@ -401,7 +401,7 @@ function AlignmentPanel({
       <div className="ml-preview-head">
         <div>
           <span className="ml-preview-kicker">{lang === 'ko' ? '프레임 정렬' : 'Frame Registration'}</span>
-          <h4>{lang === 'ko' ? '동일한 stamp의 정렬 전 / 후 비교' : 'Before and after registration of the same stamp'}</h4>
+          <h4>{lang === 'ko' ? '같은 하늘 조각의 정렬 전 / 후 비교' : 'Before and after registration of the same stamp'}</h4>
         </div>
         <div className="ml-preview-stats">
           <span>Δx {preview.registration_dx_px >= 0 ? '+' : ''}{preview.registration_dx_px.toFixed(2)} px</span>
@@ -437,7 +437,7 @@ function AlignmentPanel({
         <article className="ml-preview-card">
           <div className="ml-preview-card-head">
             <strong>{lang === 'ko' ? '원본 프레임' : 'Raw Frame'}</strong>
-            <span>{lang === 'ko' ? '현재 관측 시점의 동일한 하늘 stamp' : 'Same sky stamp at the current epoch'}</span>
+            <span>{lang === 'ko' ? '현재 관측 시점의 같은 하늘 조각' : 'Same sky stamp at the current epoch'}</span>
           </div>
           <div className="ml-preview-stage">
             <img src={preview.raw_image_data_url} alt="Raw frame" className="ml-preview-image" />
@@ -447,7 +447,7 @@ function AlignmentPanel({
         <article className="ml-preview-card">
           <div className="ml-preview-card-head">
             <strong>{lang === 'ko' ? '정렬된 프레임' : 'Aligned Frame'}</strong>
-            <span>{lang === 'ko' ? '동일한 stamp를 기준 프레임에 맞춰 이동' : 'Same stamp shifted to match the reference'}</span>
+            <span>{lang === 'ko' ? '같은 조각을 기준 프레임에 맞춰 이동' : 'Same stamp shifted to match the reference'}</span>
           </div>
           <div className="ml-preview-stage">
             <img src={preview.aligned_image_data_url} alt="Aligned frame" className="ml-preview-image" />
@@ -462,7 +462,7 @@ function AlignmentPanel({
 
       <div className="ml-preview-note">
         <span>
-          {lang === 'ko' ? '현재 관측 시점의 stamp를 기준 stamp에 맞춰 ' : 'The current-epoch stamp was shifted by '}
+          {lang === 'ko' ? '현재 관측 시점의 조각을 기준 조각에 맞춰 ' : 'The current-epoch stamp was shifted by '}
           <strong>x {preview.registration_dx_px >= 0 ? '+' : ''}{preview.registration_dx_px.toFixed(2)} px</strong>,
           <strong> y {preview.registration_dy_px >= 0 ? '+' : ''}{preview.registration_dy_px.toFixed(2)} px</strong>
           {lang === 'ko' ? '만큼 이동했습니다. 정렬 점수는 ' : '. The registration score is '}
@@ -471,7 +471,7 @@ function AlignmentPanel({
         <span>
           {lang === 'ko' ? (
             <>
-              프레임 전체가 아니라 <strong>타깃 주변의 동일한 하늘 stamp를 관측 시점별로 맞추는 단계</strong>입니다.
+              프레임 전체가 아니라 <strong>목표별 주변의 같은 하늘 조각을 관측 시점별로 맞추는 단계</strong>입니다.
               정렬이 정확할수록 별상이 기준 프레임과 더 잘 겹치고, 다음 차분영상에서 잔차가 더 깔끔하게 남습니다.
             </>
           ) : (
@@ -894,7 +894,7 @@ export function KmtnetLab({
         if (cancelled) return;
         console.error('Failed to load KMT preview', loadError);
         setPreviewError(
-          loadError instanceof Error ? loadError.message : 'KMT preview를 불러오지 못했습니다.',
+          loadError instanceof Error ? loadError.message : 'KMT 미리보기를 불러오지 못했습니다.',
         );
       })
       .finally(() => {
@@ -993,7 +993,7 @@ export function KmtnetLab({
       });
       setMergedCurve(data);
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : 'KMT network 곡선을 불러오지 못했습니다.');
+      setError(loadError instanceof Error ? loadError.message : '이어 붙인 광도곡선을 불러오지 못했습니다.');
     } finally {
       setMergedLoading(false);
     }
@@ -1066,7 +1066,7 @@ export function KmtnetLab({
             단계별 안내를 따라 세 관측소 자료와 추출 조건을 비교하며 사건 해석의 근거를 점검합니다.
           </strong>
         </div>
-        <p>권장 45~90분 · 결과물: 관측소 비교, 병합 곡선 근거, 모델 해석 기록</p>
+        <p>권장 45~90분 · 결과물: 관측소 비교, 이어 붙인 곡선 근거, 모델 해석 기록</p>
       </div>
       {draftId && draftStatusLabel && (
         <div className={`transit-draft-bar ${draftSaveStatus}`}>
@@ -1146,7 +1146,7 @@ export function KmtnetLab({
 
           <div className="ml-step-nav">
             <button className="btn-primary" onClick={() => goTo('align')}>
-              다음: Frame 정렬 보기 →
+              다음: 프레임 정렬 보기 →
             </button>
           </div>
         </div>
@@ -1218,7 +1218,7 @@ export function KmtnetLab({
           <div className="ml-step-nav">
             <button className="btn-secondary" onClick={() => goTo('field')}>← 이전</button>
             <button className="btn-primary" onClick={() => goTo('difference')}>
-              다음: Difference image 보기 →
+              다음: 차분영상 보기 →
             </button>
           </div>
         </div>
@@ -1229,7 +1229,7 @@ export function KmtnetLab({
         <div className="ml-step-content">
           <div className="ml-step-header">
             <span className="ml-step-chip">Step 3</span>
-            <h3>Difference image 해석</h3>
+            <h3>차분영상 해석</h3>
             <p>
               기준 frame과 현재 frame을 비교해, 실제로 밝기가 변한 위치만 남기는 KMT식 차분영상을 확인합니다.
             </p>
@@ -1260,7 +1260,7 @@ export function KmtnetLab({
           <div className="ml-step-nav">
             <button className="btn-secondary" onClick={() => goTo('align')}>← 이전</button>
             <button className="btn-primary" onClick={() => goTo('extract')}>
-              다음: Single-site 추출 →
+              다음: 한 관측소 곡선 추출 →
             </button>
           </div>
         </div>
@@ -1271,7 +1271,7 @@ export function KmtnetLab({
         <div className="ml-step-content">
           <div className="ml-step-header">
             <span className="ml-step-chip">Step 4</span>
-            <h3>{siteLabel} single-site curve 추출</h3>
+            <h3>{siteLabel} 한 관측소 곡선 추출</h3>
             <p>
               선택한 관측소의 sampled 실제 FITS cutout만 사용해, 단일 관측소 곡선을 먼저 생성합니다.
             </p>
@@ -1290,7 +1290,7 @@ export function KmtnetLab({
                   checked={extractionMode === 'quick'}
                   onChange={() => setExtractionMode('quick')}
                 />
-                <span>안내형 · Quick sampled extraction</span>
+                <span>안내형 · 빠른 표본 추출</span>
               </label>
               <label className="record-choice-row">
                 <input
@@ -1299,20 +1299,20 @@ export function KmtnetLab({
                   checked={extractionMode === 'detailed'}
                   onChange={() => setExtractionMode('detailed')}
                 />
-                <span>심화형 · Detailed sampled extraction</span>
+                <span>심화형 · 정밀 표본 추출</span>
               </label>
             </div>
             <p className="hint">
               현재 모드: <strong>{extractionModeLabel(extractionMode)}</strong>.
               {' '}
-              Quick은 빠르게, Detailed는 더 촘촘하게 sampled frame을 사용합니다.
+              빠른 추출은 프레임을 성기게, 정밀 추출은 더 촘촘하게 뽑아 씁니다.
             </p>
           </div>
 
           {singleSiteLoading && (
             <div className="ml-lightcurve-card">
               <div className="ml-lightcurve-card-head">
-                <strong>{siteLabel} single-site curve 추출 중</strong>
+                <strong>{siteLabel} 한 관측소 곡선 추출 중</strong>
                 <span>정렬 후 차분 flux를 이용해 선택한 관측소 곡선을 계산하고 있습니다.</span>
               </div>
               <p className="hint">KMTNet 원본 FITS를 내려받아 sampled 실제 광도곡선을 만들고 있습니다.</p>
@@ -1326,7 +1326,7 @@ export function KmtnetLab({
           {!singleSiteCurve && !singleSiteLoading && (
             <div className="ml-lightcurve-card">
               <div className="ml-lightcurve-card-head">
-                  <strong>single-site extraction</strong>
+                  <strong>한 관측소 곡선 추출</strong>
                   <span>먼저 선택한 관측소의 곡선을 생성합니다.</span>
                 </div>
                 <p className="hint">
@@ -1356,7 +1356,7 @@ export function KmtnetLab({
 
               <div className="ml-lightcurve-card">
                 <div className="ml-lightcurve-card-head">
-                  <strong>Single-site curve</strong>
+                  <strong>한 관측소 곡선</strong>
                   <span>{siteLabel} cutout에서 추출한 실제 sampled 곡선</span>
                 </div>
                 {singleSiteCurve.warnings.length > 0 && (
@@ -1420,7 +1420,7 @@ export function KmtnetLab({
                   checked={extractionMode === 'quick'}
                   onChange={() => setExtractionMode('quick')}
                 />
-                <span>안내형 · Quick sampled extraction</span>
+                <span>안내형 · 빠른 표본 추출</span>
               </label>
               <label className="record-choice-row">
                 <input
@@ -1429,7 +1429,7 @@ export function KmtnetLab({
                   checked={extractionMode === 'detailed'}
                   onChange={() => setExtractionMode('detailed')}
                 />
-                <span>심화형 · Detailed sampled extraction</span>
+                <span>심화형 · 정밀 표본 추출</span>
               </label>
             </div>
             <p className="hint">
@@ -1447,14 +1447,14 @@ export function KmtnetLab({
                 <strong>KMT network curve 생성 중</strong>
                 <span>CTIO · SAAO · SSO를 순서대로 불러와 병합하고 있습니다.</span>
               </div>
-              <p className="hint">network merge는 single-site보다 시간이 더 걸릴 수 있습니다.</p>
+              <p className="hint">이어 붙이기는 한 관측소 곡선보다 시간이 더 걸릴 수 있습니다.</p>
             </div>
           )}
 
           {!mergedCurve && singleSiteCurve && !mergedLoading && (
             <div className="ml-lightcurve-card">
               <div className="ml-lightcurve-card-head">
-                <strong>network merge</strong>
+                <strong>이어 붙이기</strong>
                 <span>이 단계에서 세 관측소의 곡선을 합칩니다.</span>
               </div>
               <p className="hint">
@@ -1504,7 +1504,7 @@ export function KmtnetLab({
               <div className="ml-lightcurve-stack">
                 <div className="ml-lightcurve-card">
                   <div className="ml-lightcurve-card-head">
-                    <strong>Single-site curve</strong>
+                    <strong>한 관측소 곡선</strong>
                     <span>{siteLabel} sampled curve</span>
                   </div>
                   <PlotPanel
@@ -1578,7 +1578,7 @@ export function KmtnetLab({
               />
             </>
           ) : (
-            <p className="hint">Step 5에서 network-merged curve를 먼저 생성해야 적합을 실행할 수 있습니다.</p>
+            <p className="hint">Step 5에서 이어 붙인 곡선을 먼저 만들어야 적합을 실행할 수 있습니다.</p>
           )}
 
           <div className="ml-fit-controls">
