@@ -91,7 +91,7 @@ const KMT_GUIDES: Record<'field' | 'align' | 'difference' | 'extract' | 'merge' 
   ],
   align: [
     { type: 'ox', id: 'kmt_align_q1', text: 'KMT 원본 frame들은 항상 완벽하게 같은 픽셀 위치에 정렬되어 있으므로 추가 정렬이 필요 없다.', correct: 'X', explanation: '실제 관측 프레임은 pointing과 WCS 오차 때문에 미세하게 어긋납니다. reference에 맞춰 등록해야 차분 품질이 좋아집니다.' },
-    { type: 'choice', id: 'kmt_align_q2', text: '정렬 이후 가장 먼저 확인해야 할 것은?', options: ['별상이 reference와 얼마나 겹치는가', '배경색이 더 예쁜가', 'HJD가 커졌는가', '노출시간이 같아졌는가'], correct: '별상이 reference와 얼마나 겹치는가', explanation: '정렬의 목적은 기준 프레임과 현재 프레임의 별상을 같은 위치에 맞추는 것입니다.' },
+    { type: 'choice', id: 'kmt_align_q2', text: '정렬 이후 가장 먼저 확인해야 할 것은?', options: ['별상이 reference와 얼마나 겹치는가', '전체 프레임이 reference보다 밝아졌는가', 'HJD가 커졌는가', '노출시간이 같아졌는가'], correct: '별상이 reference와 얼마나 겹치는가', explanation: '정렬의 목적은 기준 프레임과 현재 프레임의 별상을 같은 위치에 맞추는 것입니다.' },
     { type: 'open', id: 'kmt_align_q3', text: '정렬 전후 이미지를 비교해서 별 위치가 어떻게 달라지는지 적어보자.' },
   ],
   difference: [
@@ -101,12 +101,12 @@ const KMT_GUIDES: Record<'field' | 'align' | 'difference' | 'extract' | 'merge' 
   ],
   extract: [
     { type: 'ox', id: 'kmt_extract_q1', text: 'single-site 곡선은 선택한 관측소 데이터만으로 만들어진다.', correct: 'O', explanation: '먼저 단일 관측소에서 difference flux를 추출해 기초적인 이벤트 형태를 확인합니다.' },
-    { type: 'choice', id: 'kmt_extract_q2', text: 'single-site 곡선을 먼저 보는 이유는?', options: ['관측소별 데이터 품질과 공백을 먼저 확인하려고', '세 관측소를 합치면 그래프가 너무 길어서', '모든 미중렌 이벤트는 단일 관측소만으로 충분해서', '행성 이벤트는 merge가 불가능해서'], correct: '관측소별 데이터 품질과 공백을 먼저 확인하려고', explanation: '단일 관측소 곡선을 먼저 보면 공백, 잡음, 피크 포착 여부를 개별적으로 판단할 수 있습니다.' },
+    { type: 'choice', id: 'kmt_extract_q2', text: 'single-site 곡선을 먼저 보는 이유는?', options: ['관측소별 데이터 품질과 공백을 먼저 확인하려고', '한 관측소 곡선이 병합 곡선보다 정확해서', '모든 미중렌 이벤트는 단일 관측소만으로 충분해서', '행성 이벤트는 merge가 불가능해서'], correct: '관측소별 데이터 품질과 공백을 먼저 확인하려고', explanation: '단일 관측소 곡선을 먼저 보면 공백, 잡음, 피크 포착 여부를 개별적으로 판단할 수 있습니다.' },
     { type: 'open', id: 'kmt_extract_q3', text: '선택한 관측소의 곡선만 봤을 때 남는 공백이나 한계를 적어보자.' },
   ],
   merge: [
     { type: 'ox', id: 'kmt_merge_q1', text: 'CTIO · SAAO · SSO는 경도 약 120° 간격으로 배치되어 24시간 연속 감시에 가깝게 운용된다.', correct: 'O', explanation: '경도 120° 간격으로 배치된 3개 관측소가 각자의 낮 시간 공백을 서로 메워 연속 감시에 가까운 커버리지를 제공합니다.' },
-    { type: 'choice', id: 'kmt_merge_q2', text: 'single-site 곡선과 network-merged 곡선을 비교할 때 가장 먼저 봐야 할 것은?', options: ['피크와 공백 구간이 얼마나 채워지는가', '그래프 배경색', '오차막대의 색상', '별자리 이름'], correct: '피크와 공백 구간이 얼마나 채워지는가', explanation: 'KMTNet의 강점은 네트워크 병합으로 피크와 anomaly를 놓치지 않는 것입니다. 공백이 얼마나 줄어드는지가 핵심입니다.' },
+    { type: 'choice', id: 'kmt_merge_q2', text: 'single-site 곡선과 network-merged 곡선을 비교할 때 가장 먼저 봐야 할 것은?', options: ['피크와 공백 구간이 얼마나 채워지는가', '관측소별 밝기 영점이 서로 맞는가', '피크 최대 밝기가 관측소마다 같은가', '단일 관측소만으로도 이상신호가 보이는가'], correct: '피크와 공백 구간이 얼마나 채워지는가', explanation: 'KMTNet의 강점은 네트워크 병합으로 피크와 anomaly를 놓치지 않는 것입니다. 공백이 얼마나 줄어드는지가 핵심입니다.' },
     { type: 'open', id: 'kmt_merge_q3', text: 'single-site 결과와 3-site merged 결과를 비교해서, 어떤 정보가 추가로 보이는지 적어보자.' },
   ],
   fit: [

@@ -211,7 +211,7 @@ const STEP_GUIDES: Record<TransitStep, GuideQuestion[]> = {
   record: [
     {
       type: 'ox', id: 'rec_q1',
-      text: { ko: '측정한 Rp/R* 값이 출판된 논문값과 완전히 일치할 것이다.', en: 'The measured Rp/R* value will perfectly match the published literature value.' },
+      text: { ko: '측정한 Rp/R* 값은 출판된 논문값과 일치한다.', en: 'The measured Rp/R* value will perfectly match the published literature value.' },
       correct: 'X',
       explanation: { ko: 'TESS 데이터 노이즈, 비교성 선택, 구경 설정 등 여러 요인으로 측정값에는 항상 불확실성이 있습니다. 오차 범위 내에 있으면 좋은 결과입니다.', en: 'TESS data noise, comparison star selection, and aperture settings all introduce uncertainty. Being within the error range is a good result.' },
     },
@@ -2983,7 +2983,7 @@ export function TransitLab({
                         transit is gone and only this star's own wobble shows. */}
                     <div className="transit-qc-guide">
                       {lang === 'ko'
-                        ? '좋은 비교성은 스스로 밝기가 안 변하는 별이에요. 아래 곡선(이 별 ÷ 다른 비교성들)이 평평하면 안정적, 혼자 출렁이면 이 별에 문제가 있는 거예요. 하나로 단정하긴 어려우니 여러 개를 함께 씁니다.'
+                        ? '좋은 비교성은 스스로 밝기가 안 변하는 별입니다. 아래 곡선(이 별 ÷ 다른 비교성들)이 평평하면 안정적이고, 혼자 출렁이면 이 별에 문제가 있는 것입니다. 하나로 단정하긴 어려우니 여러 개를 함께 씁니다.'
                         : "A good comparison star doesn't vary on its own. If the curve below (this star ÷ the other comparisons) is flat, it's steady; if it wobbles alone, this star is the problem. One star is never certain, so several are used together."}
                     </div>
 
@@ -3060,8 +3060,8 @@ export function TransitLab({
                       {selectedComparisonDiagnosticData.checked_against_peers === false && (
                         <p className="transit-qc-nocheck">
                           {lang === 'ko'
-                            ? '⚠ 비교성이 하나뿐이라 다른 별과 상호 검증할 수 없습니다. 이 곡선에는 목표별의 식현상이 섞여 있을 수 있어요.'
-                            : '⚠ Only one comparison, so it cannot be cross-checked against a peer. This curve may include the target’s transit.'}
+                            ? '비교성이 하나뿐이라 다른 별과 상호 검증할 수 없습니다. 이 곡선에는 목표별의 식현상이 섞여 있을 수 있습니다.'
+                            : 'Only one comparison, so it cannot be cross-checked against a peer. This curve may include the target’s transit.'}
                         </p>
                       )}
 

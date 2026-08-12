@@ -479,7 +479,7 @@ export function ApertureSandbox() {
         <p className="inquiry-aperture-hint">{hint}</p>
         <p className="inquiry-aperture-note">
           {ko
-            ? `실전 요령: 구경 반지름은 대개 별 퍼짐(FWHM ≈ ${FWHM.toFixed(1)}px)의 1.5~2배(약 ${Math.round(FWHM * 1.5)}~${Math.round(FWHM * 2)}px)로 잡고, 배경 고리는 그 바깥 별이 없는 깨끗한 하늘에 둡니다. 고리 구간 프로파일이 솟아 있으면 별이 배경을 오염시키는 중입니다. 참고: 여기서는 별 하나의 구경 측광만 다룹니다 — 실제 분석(다음 단계)은 여러 비교성과의 차등측광이고, 거기서도 구경을 직접 조절할 수 있어요.`
+            ? `실전 요령: 구경 반지름은 대개 별 퍼짐(FWHM ≈ ${FWHM.toFixed(1)}px)의 1.5~2배(약 ${Math.round(FWHM * 1.5)}~${Math.round(FWHM * 2)}px)로 잡고, 배경 고리는 그 바깥 별이 없는 깨끗한 하늘에 둡니다. 고리 구간 프로파일이 솟아 있으면 별이 배경을 오염시키는 중입니다. 참고: 여기서는 별 하나의 구경 측광만 다룹니다 — 실제 분석(다음 단계)은 여러 비교성과의 차등측광이고, 거기서도 구경을 직접 조절할 수 있습니다.`
             : `Rule of thumb: set the aperture radius to about 1.5–2 × the stellar FWHM (≈ ${Math.round(FWHM * 1.5)}–${Math.round(FWHM * 2)}px here) and place the annulus on clean, starless sky beyond it. A bump in the annulus band means a star is contaminating the background. Note: this is single-star aperture photometry — the real analysis (next step) is differential photometry against comparison stars, where you can also tune the aperture.`}
         </p>
       </div>

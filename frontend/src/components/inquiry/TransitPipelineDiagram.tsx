@@ -138,7 +138,7 @@ export function TransitPipelineDiagram() {
       <span className="inquiry-panel-kicker">{ko ? '분석은 이렇게 흘러갑니다' : 'How the analysis flows'}</span>
       <p className="transit-pipeline-intro">
         {ko
-          ? '대부분은 플랫폼이 자동으로 처리합니다. 여러분이 직접 하는 건 아래에서 주황으로 표시된 단계 — 비교성·구경 같은 설정과 마지막 해석이에요. 각 단계가 왜 필요한지 먼저 보고 시작하세요.'
+          ? '대부분은 플랫폼이 자동으로 처리합니다. 여러분이 직접 하는 건 아래에서 주황으로 표시된 단계 — 비교성·구경 같은 설정과 마지막 해석입니다. 각 단계가 왜 필요한지 먼저 보고 시작하세요.'
           : 'The platform handles most steps automatically. The steps marked in orange below are yours — settings like comparisons and aperture, and the final interpretation. See why each step matters before you start.'}
       </p>
       <ol className="transit-pipeline-flow">

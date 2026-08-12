@@ -25,7 +25,7 @@ export function SiteFeedbackPanel({ rating, feedback, onRating, onFeedback }: Si
       <summary>{ko ? '이 도구는 어땠나요? (선택)' : 'How was this tool? (optional)'}</summary>
       <p className="site-feedback-note">
         {ko
-          ? '여러분의 의견은 이 웹앱을 고치는 데만 쓰입니다. 위 탐구 기록과는 별개예요.'
+          ? '여러분의 의견은 이 웹앱을 고치는 데만 쓰입니다. 위 탐구 기록과는 별개입니다.'
           : 'Your feedback is used only to improve this web app — separate from the inquiry record above.'}
       </p>
       <div className="site-feedback-stars" role="radiogroup" aria-label={ko ? '만족도' : 'Rating'}>
