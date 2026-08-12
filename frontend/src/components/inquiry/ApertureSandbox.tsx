@@ -185,17 +185,17 @@ export function ApertureSandbox() {
   const hint = useMemo(() => {
     if (stats.enclosed < 82) {
       return ko
-        ? '구경이 작거나 빗나가서 목표별 빛을 놓치고 있어요 → 등급이 어두워짐(값 커짐). 요령: 구경 반지름은 대개 FWHM의 1.5~2배로 잡습니다.'
+        ? '구경이 작거나 빗나가면 목표별 빛을 놓쳐서 등급이 어두워집니다(값이 커집니다). 구경 반지름은 보통 FWHM의 1.5~2배로 잡습니다.'
         : 'The aperture is missing target light (too small or off-center) → the magnitude gets fainter. Rule of thumb: set r to 1.5–2 × FWHM.';
     }
     if (stats.bgEst - BG > 1.5 || stats.annNeighborPerPix > 1.5) {
       return ko
-        ? '별이 배경 고리(annulus)에 들어가 배경이 과대추정됐어요 → 별빛을 너무 많이 빼서 어두워집니다. 고리를 별이 없는 곳으로 옮기세요. 실제 파이프라인은 중앙값·시그마클리핑으로 이런 오염을 완화해요.'
+        ? '별이 배경 고리(annulus)에 들어가면 배경이 부풀려져서, 별빛을 너무 많이 빼 어두워집니다. 고리를 별이 없는 곳으로 옮깁니다. 실제 파이프라인은 중앙값·시그마클리핑으로 이런 오염을 줄입니다.'
         : 'A star sits inside the sky annulus, inflating the background estimate → too much gets subtracted. Move the ring to clean sky. Real pipelines use clipped medians to resist this.';
     }
     if (stats.contamination > 5) {
       return ko
-        ? '이웃별 빛이 구경 안으로 섞여 들어옵니다(blending) → 밝기가 과대측정되고 식 깊이는 얕아져요.'
+        ? '이웃별 빛이 구경 안으로 섞여 들어옵니다(blending). 그러면 밝기가 실제보다 크게 측정되고, 식 깊이는 얕아집니다.'
         : 'Neighboring starlight is blending into the aperture → flux is overestimated and transit depth gets diluted.';
     }
     if (ap.r > 16) {
@@ -204,7 +204,7 @@ export function ApertureSandbox() {
         : 'Far beyond 2 × FWHM the aperture adds mostly background noise, lowering the SNR.';
     }
     return ko
-      ? `적절한 설정입니다 (r ≈ ${(ap.r / FWHM).toFixed(1)}×FWHM) — 구경은 목표별 빛을 담고, 배경 고리는 별이 없는 깨끗한 하늘을 재고 있어요.`
+      ? `적절한 설정입니다 (r ≈ ${(ap.r / FWHM).toFixed(1)}×FWHM) — 구경은 목표별 빛을 담고, 배경 고리는 별이 없는 깨끗한 하늘을 잽니다.`
       : `Good setup (r ≈ ${(ap.r / FWHM).toFixed(1)} × FWHM) — the aperture holds the target and the annulus samples clean sky.`;
   }, [stats, ap.r, ko]);
 

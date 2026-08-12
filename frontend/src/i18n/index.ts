@@ -106,7 +106,7 @@ export const strings: Record<Lang, Record<string, string>> = {
     'btn.confirm': '확인',
 
     // 탐구 활동 (StepGuide)
-    'guide.toggle': '🤔 생각해보기',
+    'guide.toggle': '생각해보기',
     'guide.type.ox': 'O/X',
     'guide.type.choice': '객관식',
     'guide.type.open': '서술',
@@ -226,7 +226,7 @@ export const strings: Record<Lang, Record<string, string>> = {
     'btn.confirm': 'Confirm',
 
     // Step guide
-    'guide.toggle': '🤔 Think About It',
+    'guide.toggle': 'Think About It',
     'guide.type.ox': 'True/False',
     'guide.type.choice': 'Multiple Choice',
     'guide.type.open': 'Open Answer',

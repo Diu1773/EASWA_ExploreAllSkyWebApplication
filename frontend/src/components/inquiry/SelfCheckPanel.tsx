@@ -25,7 +25,7 @@ export function SelfCheckPanel({ items, scope, answers, onAnswer }: SelfCheckPan
 
   return (
     <section className="inquiry-selfcheck">
-      <span className="inquiry-panel-kicker">{lang === 'ko' ? '🤔 생각해보기' : '🤔 Check Yourself'}</span>
+      <span className="inquiry-panel-kicker">{lang === 'ko' ? '생각해보기' : 'Check Yourself'}</span>
       {items.map((item) => {
         const key = `${scope}:${item.id}`;
         const answer = answers[key];

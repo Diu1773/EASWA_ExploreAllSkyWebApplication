@@ -100,7 +100,7 @@ const STEP_GUIDES: Record<TransitStep, GuideQuestion[]> = {
       type: 'ox', id: 'select_q1',
       text: { ko: '비교성은 목표 별보다 밝을수록 좋다.', en: 'A comparison star should be as bright as possible — the brighter the better.' },
       correct: 'X',
-      explanation: { ko: '비교성은 목표 별과 비슷한 밝기여야 측정 오차가 최소화됩니다. 너무 밝거나 어두우면 검출기의 선형 범위를 벗어나 오차가 커집니다.', en: 'A comparison star should have similar brightness to the target. Too bright or too faint pushes the detector out of its linear range and increases errors.' },
+      explanation: { ko: '비교성은 목표 별과 밝기가 비슷할수록 오차가 작습니다. 너무 밝거나 어두우면 검출기가 밝기를 제대로 못 재서 오차가 커집니다.', en: 'A comparison star should have similar brightness to the target. Too bright or too faint pushes the detector out of its linear range and increases errors.' },
     },
     {
       type: 'choice', id: 'select_q2',
@@ -215,18 +215,10 @@ const STEP_GUIDES: Record<TransitStep, GuideQuestion[]> = {
       correct: 'X',
       explanation: { ko: 'TESS 데이터 노이즈, 비교성 선택, 구경 설정 등 여러 요인으로 측정값에는 항상 불확실성이 있습니다. 오차 범위 내에 있으면 좋은 결과입니다.', en: 'TESS data noise, comparison star selection, and aperture settings all introduce uncertainty. Being within the error range is a good result.' },
     },
-    {
-      type: 'choice', id: 'rec_q2',
-      text: { ko: '이번 분석에서 측정 오차의 주요 원인은 무엇이라고 생각하는가?', en: 'What do you think is the main source of measurement error in this analysis?' },
-      options: [
-        { ko: '비교성 수 부족', en: 'Too few comparison stars' },
-        { ko: '대기 불안정', en: 'Atmospheric instability' },
-        { ko: '구경 크기 설정', en: 'Aperture size setting' },
-        { ko: '데이터 품질(TESS 노이즈)', en: 'Data quality (TESS noise)' },
-      ],
-      correct: '데이터 품질(TESS 노이즈)',
-      explanation: { ko: '지상 관측과 달리 TESS는 우주 망원경이라 대기 영향은 없지만, TESS 자체의 픽셀 크기(21"/px)로 인한 오염(contamination)이 주요 오차 원인입니다.', en: 'Unlike ground-based observations, TESS avoids atmospheric effects as a space telescope. However, its large pixel scale (21\"/px) causes flux contamination, which is the main error source.' },
-    },
+    // 예전엔 '무엇이라고 생각하는가?'로 묻고 한 보기('데이터 품질')만 정답 처리했다.
+    // ① 의견을 묻는 척 정답을 강요했고 ② 정답 보기(노이즈)와 해설(오염)이 서로 달랐다
+    // — 노이즈와 오염은 다른 현상이다. 자기 결과를 근거로 설명하는 열린 질문으로 바꾼다.
+    { type: 'open', id: 'rec_q2', text: { ko: '이번 분석에서 측정 오차의 주요 원인은 무엇이었다고 보는가? 화면에서 확인한 값(비교성 산포, 구경, 주변 별빛 등)을 근거로 설명해보자.', en: 'What was the main source of measurement error in your analysis? Explain using values you saw on screen (comparison scatter, aperture, nearby-star blending, …).' } },
     { type: 'open', id: 'rec_q3', text: { ko: '이번 탐구에서 가장 흥미로웠던 점이나 추가로 알고 싶은 것을 적어보자.', en: 'Write down the most interesting aspect of this investigation, or what you would like to explore further.' } },
   ],
 };
@@ -349,7 +341,7 @@ function StepGuide({
     onAnswersChange?.(next);
   };
 
-  const toggleLabel = lang === 'ko' ? '🤔 생각해보기' : '🤔 Think About It';
+  const toggleLabel = lang === 'ko' ? '생각해보기' : 'Think About It';
   const placeholderText = lang === 'ko' ? '여기에 생각을 적어보세요...' : 'Write your thoughts here…';
   const correctLabel = lang === 'ko' ? '정답!' : 'Correct!';
   const wrongLabel = lang === 'ko' ? '오답 — 정답:' : 'Incorrect — Answer:';
