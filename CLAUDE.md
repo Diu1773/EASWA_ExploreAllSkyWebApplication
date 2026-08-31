@@ -89,3 +89,18 @@ cd frontend && npm run dev
 - 새 컴포넌트 추가 시 데이터 fetch 로직은 custom hook으로 분리
 - 백엔드 수정 후 관련 pytest 테스트도 업데이트
 - 프론트엔드 수정 후 항상 `npm run build`로 빌드 확인
+
+## Research OS 세션 브리지
+
+연구 질문이나 실험 방향을 새로 잡을 때는 제어층 하네스를 먼저 동기화한다.
+컨텍스트에 `SESSION_SYNC_V1`이 없으면 작업 전에 한 번 실행한다.
+
+```text
+python -X utf8 C:/Users/bmffr/Desktop/Main/scripts/session_sync.py --cwd .
+```
+
+원시 아이디어는 `C:/Users/bmffr/Desktop/Main/RESEARCH_INBOX.md`에 남길 수 있다.
+하네스는 먼저 질문 후보만 확장하며, 논문 검색·novelty 판정·승인·프로젝트 파일 변경은
+사람이 선택한 다음 단계에서만 한다.
+ResearchCandidate 검토용 또는 승인된 theory/experiment handoff는 이 프로젝트의
+`.research-os/handoff/`에 JSON으로 도착한다. 새 작업 전 최신 파일과 이 문서의 기존 테스트를 읽고, 자동 실행하지 않는다.

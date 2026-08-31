@@ -154,3 +154,17 @@ Stop hook (`Main/scripts/hook_track_freshness.py`) 이 이걸 검사한다. 차�
   논문 §3.1이 코호트 간 동일 산출물을 주장하므로, 손대면 논문 문구도 바꿔야 한다.
 - 발표 자료는 `발표_빌드/build.js`로만 만든다. pptx 직접 수정 금지.
 - 배포 기준본은 `2956d24`. `docs/DEMO_VERSION_RECORD.md` 참조.
+
+## Research OS 세션 브리지
+
+연구 질문이나 실험 방향을 새로 잡을 때는 Main의 Research OS 제어층을 먼저 동기화한다.
+컨텍스트에 `SESSION_SYNC_V1`이 없으면 작업 전에 한 번 실행한다.
+
+```text
+python -X utf8 C:/Users/bmffr/Desktop/Main/scripts/session_sync.py --cwd .
+```
+
+원시 아이디어는 `C:/Users/bmffr/Desktop/Main/RESEARCH_INBOX.md`에 남긴다.
+하네스는 질문 후보 확장·문헌 검색·독립 비평·사람 승인을 분리한다. 자동으로 결론을 확정하거나
+이 레포의 파일을 바꾸지 않는다. `ResearchCandidate` 검토용 또는 승인된 theory/experiment
+handoff는 `.research-os/handoff/`의 최신 JSON을 먼저 읽는다.
