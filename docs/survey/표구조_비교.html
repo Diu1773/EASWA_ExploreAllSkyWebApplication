@@ -1,0 +1,169 @@
+<title>표 구조 비교 — 현직/예비 코호트</title>
+<meta charset="utf-8">
+<style>
+  :root{
+    --bg:#0e1116; --panel:#161b22; --panel2:#1b222c; --line:#2a323d;
+    --tx:#e6edf3; --tx2:#9aa5b1; --tx3:#6b7480;
+    --accent:#e8843c; --accent-soft:#e8843c33;
+    --good:#3fb950; --warn:#d29922;
+    --done:#c9d1d9; --pending:#4a525c;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--tx);
+    font-family:-apple-system,"Segoe UI","Malgun Gothic",sans-serif;
+    font-size:15px;line-height:1.6;padding:32px 28px 80px}
+  .wrap{max-width:1180px;margin:0 auto}
+  h1{font-size:22px;font-weight:650;margin:0 0 6px;letter-spacing:-.01em}
+  .sub{color:var(--tx2);font-size:14px;margin:0 0 28px}
+  .sub b{color:var(--tx);font-weight:600}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:22px 24px;margin:0 0 22px}
+  .tag{display:inline-block;font-size:12px;font-weight:600;letter-spacing:.02em;
+    padding:3px 10px;border-radius:20px;margin-bottom:2px}
+  .t-now{background:#3a2a1a;color:#e8a565;border:1px solid #5a3f28}
+  .t-1{background:#1a2e1f;color:#5fce74;border:1px solid #2c5236}
+  .t-2{background:#2a2416;color:#d6b24e;border:1px solid #4a4020}
+  h2{font-size:17px;font-weight:620;margin:10px 0 4px}
+  .verdict{font-size:13.5px;color:var(--tx2);margin:0 0 18px}
+  .verdict .read{color:#e0a878}
+  table{border-collapse:collapse;width:100%;font-size:13px;margin:6px 0 4px}
+  th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:middle}
+  thead th{background:var(--panel2);color:var(--tx);font-weight:600;font-size:12.5px}
+  td.q{color:var(--tx2);font-size:12px;max-width:340px}
+  td.num{text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap}
+  td.dist{text-align:center;color:var(--tx2);font-variant-numeric:tabular-nums;font-size:12px}
+  .pending{color:var(--pending);font-style:italic;text-align:center}
+  .rev{color:var(--tx3)}
+  .col-cur{background:#161b22}
+  .col-hyu{position:relative}
+  .col-pre{position:relative}
+  /* 문제 열 강조: 비교표처럼 읽히는 예비 열 */
+  th.flag{color:#e8a565;border-bottom:2px solid var(--accent)}
+  td.flag{border-left:1px solid var(--accent-soft);border-right:1px solid var(--accent-soft)}
+  .note{font-size:12px;color:var(--tx3);margin:8px 0 0}
+  .split{display:flex;gap:16px;flex-wrap:wrap;margin-top:4px}
+  .split>div{flex:1;min-width:300px}
+  .mini-h{font-size:12.5px;font-weight:600;color:var(--tx2);margin:0 0 6px;
+    padding:4px 0;border-bottom:1px solid var(--line)}
+  .mini-h.a{color:#8bd49a}.mini-h.b{color:#e0a878}
+  .arrow{color:var(--tx3);text-align:center;font-size:12px;margin:10px 0;letter-spacing:.1em}
+  .legend{display:flex;gap:20px;flex-wrap:wrap;font-size:12px;color:var(--tx3);margin:2px 0 24px}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .sw{width:22px;height:12px;border-radius:3px;display:inline-block}
+  .callout{background:var(--panel2);border-left:3px solid var(--accent);
+    padding:12px 16px;border-radius:0 8px 8px 0;font-size:13.5px;color:var(--tx);margin:0 0 26px}
+  .callout b{color:var(--accent)}
+  .foot{color:var(--tx3);font-size:12px;border-top:1px solid var(--line);padding-top:14px;margin-top:8px}
+  code{background:#20262e;padding:1px 6px;border-radius:4px;font-size:12px;color:#d6b24e}
+</style>
+<div class="wrap">
+  <h1>표 4-9 반응척도 — 현재 구조와 두 대안</h1>
+  <p class="sub">현직 <b>N=12</b> 실측(원고 v11 그대로). 예비 코호트는 <b>보완된 다른 빌드</b>를 볼 예정이므로 아직 <b>[예정]</b>.
+    핵심 질문 하나: <b>같은 표에 나란히 둘 것인가?</b></p>
+
+  <div class="legend">
+    <span><span class="sw" style="background:#c9d1d9"></span> 현직 실측(확정)</span>
+    <span><span class="sw" style="background:#4a525c"></span> 예비 [예정]</span>
+    <span><span class="sw" style="background:var(--accent)"></span> 비교표로 오해되는 지점</span>
+  </div>
+
+  <!-- ===== 현재 ===== -->
+  <div class="card">
+    <span class="tag t-now">현재 (v11 그대로)</span>
+    <h2>한 표에 현직·예비 열을 나란히</h2>
+    <p class="verdict">심사자가 읽는 법: <span class="read">"두 집단이 같은 산출물을 평가한 비교표"</span> → "다른 빌드인데 왜 한 표에?", "비교하려면 왜 검정을 안 했나?"</p>
+    <table>
+      <thead><tr>
+        <th>설계 원리·영역</th><th>현직 평균</th><th>SD</th><th>응답 분포(1·2·3·4·5)</th>
+        <th class="flag">예비 평균(SD)</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="q">탐구 주제 중심 접근</td><td class="num">4.08</td><td class="num">0.67</td><td class="dist">0·0·2·7·3</td><td class="flag pending">[예정]</td></tr>
+        <tr><td class="q">기술 실행 부담 완화</td><td class="num">4.50</td><td class="num">0.52</td><td class="dist">0·0·0·6·6</td><td class="flag pending">[예정]</td></tr>
+        <tr><td class="q">가시화(정보 제시)</td><td class="num">4.42</td><td class="num">0.79</td><td class="dist">0·0·2·3·7</td><td class="flag pending">[예정]</td></tr>
+        <tr><td class="q">가시화(조건 조절)</td><td class="num">4.42</td><td class="num">0.67</td><td class="dist">0·0·1·5·6</td><td class="flag pending">[예정]</td></tr>
+        <tr><td class="q">사용 부담(역문항, 화면 복잡성)</td><td class="num">3.50*</td><td class="num">1.24</td><td class="dist">3·3·4·1·1</td><td class="flag pending">[예정]</td></tr>
+        <tr><td class="q">STEP별 스캐폴딩</td><td class="num">4.00</td><td class="num">0.74</td><td class="dist">0·0·3·6·3</td><td class="flag pending">[예정]</td></tr>
+        <tr><td class="q">가시화(시각화 해석)</td><td class="num">4.50</td><td class="num">0.67</td><td class="dist">0·0·1·4·7</td><td class="flag pending">[예정]</td></tr>
+        <tr><td class="q">사용 부담(역문항, 해석 난이도)</td><td class="num">3.42*</td><td class="num">1.16</td><td class="dist">1·7·1·2·1</td><td class="flag pending">[예정]</td></tr>
+        <tr><td class="q">결과 해석의 학습자 수행</td><td class="num">3.75</td><td class="num">0.87</td><td class="dist">0·1·3·6·2</td><td class="flag pending">[예정]</td></tr>
+        <tr><td class="q">수업 적용 가능성 지원</td><td class="num">4.08</td><td class="num">0.67</td><td class="dist">0·0·2·7·3</td><td class="flag pending">[예정]</td></tr>
+        <tr><td class="q">종합 적절성</td><td class="num">4.33</td><td class="num">0.49</td><td class="dist">0·0·0·8·4</td><td class="flag pending">[예정]</td></tr>
+      </tbody>
+    </table>
+    <p class="note">* 역문항 역채점 평균. 합성 평균 4.09(SD 0.37). — 오른쪽 오렌지 열이 "같은 걸 비교한다"는 오해를 만든다.</p>
+  </div>
+
+  <!-- ===== 안1 ===== -->
+  <div class="card">
+    <span class="tag t-1">안 1 — 절 분리 (권장)</span>
+    <h2>4.5는 현직만. 예비는 보완(4.6) 뒤 별도 절에서</h2>
+    <p class="verdict">심사자가 읽는 법: <span style="color:#8bd49a">"검토 → 보완 → 재평가 순서가 표에서도 보인다"</span> → 원고 3.1의 선언과 표가 일치. 비교표 오해가 원천 소거.</p>
+    <div class="split">
+      <div>
+        <div class="mini-h a">4.5 표 4-9 · 현직 코호트 (보완 전 빌드)</div>
+        <table>
+          <thead><tr><th>영역</th><th>평균</th><th>SD</th><th>분포</th></tr></thead>
+          <tbody>
+            <tr><td class="q">탐구 주제 중심</td><td class="num">4.08</td><td class="num">0.67</td><td class="dist">0·0·2·7·3</td></tr>
+            <tr><td class="q">기술 부담 완화</td><td class="num">4.50</td><td class="num">0.52</td><td class="dist">0·0·0·6·6</td></tr>
+            <tr><td class="q">가시화(정보)</td><td class="num">4.42</td><td class="num">0.79</td><td class="dist">0·0·2·3·7</td></tr>
+            <tr><td class="q">사용 부담(복잡성)</td><td class="num">3.50*</td><td class="num">1.24</td><td class="dist">3·3·4·1·1</td></tr>
+            <tr><td class="q">해석 학습자 수행</td><td class="num">3.75</td><td class="num">0.87</td><td class="dist">0·1·3·6·2</td></tr>
+            <tr><td class="rev" colspan="4" style="text-align:center;color:var(--tx3)">…(11문항 전체)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="mini-h b">4.7(신설) 표 4-1x · 예비 코호트 (보완 후 빌드)</div>
+        <table>
+          <thead><tr><th>영역</th><th>평균</th><th>SD</th><th>분포</th></tr></thead>
+          <tbody>
+            <tr><td class="q">탐구 주제 중심</td><td class="pending">[예정]</td><td class="pending">·</td><td class="pending">·</td></tr>
+            <tr><td class="q">기술 부담 완화</td><td class="pending">[예정]</td><td class="pending">·</td><td class="pending">·</td></tr>
+            <tr><td class="q">가시화(정보)</td><td class="pending">[예정]</td><td class="pending">·</td><td class="pending">·</td></tr>
+            <tr><td class="q">사용 부담(복잡성)</td><td class="pending">[예정]</td><td class="pending">·</td><td class="pending">·</td></tr>
+            <tr><td class="q">해석 학습자 수행</td><td class="pending">[예정]</td><td class="pending">·</td><td class="pending">·</td></tr>
+            <tr><td class="rev" colspan="4" style="text-align:center;color:var(--tx3)">보완본 조사 후 채움</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p class="note">두 표가 <b>물리적으로 분리</b>돼 있어 "다른 빌드"라는 사실이 자명해진다. 예비 표는 재평가 절에서 <b>보완 전후 대조</b>로 읽힌다.</p>
+  </div>
+
+  <!-- ===== 안2 ===== -->
+  <div class="card">
+    <span class="tag t-2">안 2 — 열 이름만 정직하게</span>
+    <h2>한 표 유지 · 열 제목에 빌드·단계 명시 + 각주</h2>
+    <p class="verdict">심사자가 읽는 법: <span style="color:#d6b24e">"전후 단계를 한 표에 모아 보여준다"</span> → 오해는 줄지만, 한 표에 나란히 있는 한 "왜 비교 안 했나" 질문이 완전히 사라지진 않음.</p>
+    <table>
+      <thead><tr>
+        <th>설계 원리·영역</th>
+        <th class="col-pre">현직 코호트<br><span style="font-weight:400;color:var(--tx3);font-size:11px">보완 전 빌드 · N=12</span></th>
+        <th>SD</th><th>분포</th>
+        <th class="flag">예비 코호트<br><span style="font-weight:400;color:#c98a4a;font-size:11px">보완 후 빌드 · N=[예정]</span></th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="q">탐구 주제 중심 접근</td><td class="num">4.08</td><td class="num">0.67</td><td class="dist">0·0·2·7·3</td><td class="flag pending">[예정]</td></tr>
+        <tr><td class="q">기술 실행 부담 완화</td><td class="num">4.50</td><td class="num">0.52</td><td class="dist">0·0·0·6·6</td><td class="flag pending">[예정]</td></tr>
+        <tr><td class="q">가시화(정보 제시)</td><td class="num">4.42</td><td class="num">0.79</td><td class="dist">0·0·2·3·7</td><td class="flag pending">[예정]</td></tr>
+        <tr><td class="q">사용 부담(역문항, 복잡성)</td><td class="num">3.50*</td><td class="num">1.24</td><td class="dist">3·3·4·1·1</td><td class="flag pending">[예정]</td></tr>
+        <tr><td class="q">결과 해석의 학습자 수행</td><td class="num">3.75</td><td class="num">0.87</td><td class="dist">0·1·3·6·2</td><td class="flag pending">[예정]</td></tr>
+        <tr><td class="rev" colspan="5" style="text-align:center;color:var(--tx3)">…(11문항 전체)</td></tr>
+      </tbody>
+    </table>
+    <p class="note">각주 필수: <span class="rev">"두 열은 서로 다른 빌드에 대한 응답이며 통계적 비교가 아니라 보완 방향 확인을 위해 함께 제시함."</span> 편집 비용은 가장 작다(열 제목·각주만).</p>
+  </div>
+
+  <div class="callout">
+    <b>같이 걸리는 문항 3개</b> — 어느 안이든 예비 코호트엔 이 셋이 안 맞습니다.
+    <code>21-2 차시</code>(예비는 운영 경험 없음) · <code>19번 격자의 "학생 예상"</code>(가르친 적 없음) · <code>문항 2 배경 경험</code>(낮게 쏠려 배경차와 빌드차가 섞임).
+    안1이면 예비 절에서 이 셋을 <b>빼거나 문구 교체</b>가 자연스럽고, 안2면 같은 표 안에서 빈칸/각주로 처리해야 합니다.
+  </div>
+
+  <p class="foot">
+    출처: <code>EASWA_논문_전체수정본_v11.md</code> 표 4-9(현직 N=12 실측) · 문항 근거 <code>docs/survey/easwa_teacher_survey.gs</code>.
+    이 파일은 의사결정용 시안이며 배포·산출물 아님.
+  </p>
+</div>
