@@ -328,7 +328,18 @@ export function TransitComparison({ fit, target }: TransitComparisonProps) {
       )}
 
       <div className="transit-compare-quality">
-        {lang === 'ko' ? '적합 품질' : 'Fit quality'} · χ²_red <b>{fmt(fit.reducedChiSquared, 2)}</b>
+        {lang === 'ko' ? '적합 품질' : 'Fit quality'} ·{' '}
+        <span
+          title={
+            lang === 'ko'
+              ? '환산 카이제곱. 모델 곡선이 관측점에서 벗어난 정도를 측정 오차로 나눠 평균한 값으로, 1에 가까울수록 모델이 자료를 잘 설명한다.'
+              : 'Reduced chi-square: average model-to-data mismatch scaled by measurement error; closer to 1 means the model explains the data well.'
+          }
+        >
+          χ²_red
+        </span>{' '}
+        <b>{fmt(fit.reducedChiSquared, 2)}</b>
+        {lang === 'ko' ? ' (모델이 자료에 맞는 정도, 1에 가까울수록 좋음)' : ' (model fit; closer to 1 is better)'}
         <span className="hint">
           {lang === 'ko' ? '— 단독 판정값이 아니라 해석 근거입니다.' : '— an interpretation cue, not a verdict on its own.'}
         </span>

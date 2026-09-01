@@ -81,8 +81,20 @@ export function TransitResultSummary({ fit, targetName, target }: TransitResultS
           <span className="metric-sub">{lang === 'ko' ? '측정값 아님 (위상 접기에 사용)' : 'not measured (used to phase-fold)'}</span>
         </div>
         <div className="transit-result-metric">
-          <span className="metric-label">χ²_red</span>
+          <span
+            className="metric-label"
+            title={
+              lang === 'ko'
+                ? '환산 카이제곱. 모델 곡선이 관측점에서 얼마나 벗어났는지를 측정 오차로 나눠 평균한 값.'
+                : 'Reduced chi-square: average model-to-data mismatch scaled by the measurement error.'
+            }
+          >
+            χ²_red
+          </span>
           <span className="metric-value">{fmt(fit.reducedChiSquared, 2)}</span>
+          <span className="metric-sub">
+            {lang === 'ko' ? '모델이 자료에 얼마나 맞는지 (1에 가까울수록 잘 맞음)' : 'model-to-data agreement (closer to 1 is better)'}
+          </span>
         </div>
       </div>
       <p className="transit-result-note">

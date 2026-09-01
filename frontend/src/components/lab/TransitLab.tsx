@@ -2322,6 +2322,11 @@ export function TransitLab({
                   patch({ fitDisplayXAxis: 'btjd' });
                 }}
                 type="button"
+                title={
+                  lang === 'ko'
+                    ? 'BTJD — TESS가 쓰는 관측 시각. 일(day) 단위로, 시간축을 실제 관측 날짜 그대로 봅니다.'
+                    : 'BTJD — the time stamp TESS uses, in days. Shows the axis as the actual observation time.'
+                }
               >
                 X: BTJD
               </button>

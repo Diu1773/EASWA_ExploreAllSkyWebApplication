@@ -128,6 +128,29 @@ const GLOSSARY: { term: string; def: { ko: string; en: string } }[] = [
       en: 'Region of Interest — the slice of the light curve (around the transit) the model is fit to.',
     },
   },
+  // 현장 전문가 검토(2026-07)에서 한글 풀이를 요구받은 세 용어. 이 목록은 미리 보기용이고,
+  // 실제로 값이 나오는 Step 4·5 화면에는 같은 뜻의 짧은 설명을 그 자리에 함께 둔다.
+  {
+    term: 'BTJD (시간축)',
+    def: {
+      ko: 'TESS가 쓰는 관측 시각. 일(day) 단위로 세며, 그래프의 가로축이 된다.',
+      en: 'The time stamp TESS uses, counted in days; it becomes the graph’s horizontal axis.',
+    },
+  },
+  {
+    term: 'Rp/R* (반지름비)',
+    def: {
+      ko: '행성 반지름을 별 반지름으로 나눈 값. 별빛이 가려진 깊이에서 나오며, 이 탐구의 주요 산출값이다.',
+      en: 'Planet radius divided by star radius — read off the transit depth; the main value this inquiry produces.',
+    },
+  },
+  {
+    term: 'χ²_red (적합 품질)',
+    def: {
+      ko: '모델 곡선이 관측점에서 벗어난 정도를 측정 오차로 나눠 평균한 값. 1에 가까울수록 모델이 자료를 잘 설명한다.',
+      en: 'Average model-to-data mismatch scaled by measurement error; closer to 1 means the model explains the data well.',
+    },
+  },
 ];
 
 export function TransitPipelineDiagram() {
