@@ -11326,6 +11326,15 @@ body {
 .transit-compare-values b { color: var(--text-heading); }
 .transit-compare-values span { color: var(--text-secondary); }
 .transit-compare-values.period { flex-direction: row; gap: 14px; align-items: baseline; }
+/* 차이 원인을 따질 때 근거가 되는 «내가 쓴 분석 조건». 답을 주지 않고 재료만 둔다.
+   배경 블럭으로 칠하지 않고 왼쪽 선 하나로만 묶는다(선택·강조 표현 규칙). */
+.transit-compare-conditions { margin-top: 12px; padding-left: 12px; border-left: 2px solid var(--border); }
+.transit-compare-conditions .cap { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
+.transit-compare-conditions ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.transit-compare-conditions li { font-size: 14px; color: var(--text-secondary); }
+.transit-compare-conditions b { color: var(--text-heading); font-family: var(--font-mono, monospace); }
+.transit-compare-conditions .hint { font-size: 13.5px; color: var(--text-muted); margin: 6px 0 0; line-height: 1.55; }
+
 .transit-compare-quality { margin-top: 12px; font-size: 14.5px; color: var(--text-secondary); }
 .transit-compare-quality b { color: var(--accent); font-family: var(--font-mono, monospace); }
 .transit-compare-quality .hint { color: var(--text-muted); margin-left: 4px; }

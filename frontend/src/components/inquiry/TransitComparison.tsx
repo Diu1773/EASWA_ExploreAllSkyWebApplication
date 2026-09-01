@@ -18,13 +18,24 @@ const fmt = (value: number, digits = 4) => (Number.isFinite(value) ? value.toFix
  * 상대차만 주면 기준값이 작을 때 과장된다. 둘 다 보여주고 판단은 학습자가 한다.
  * unit이 '%p'인 이유: 두 백분율(식 깊이)의 차는 퍼센트가 아니라 퍼센트포인트다.
  */
-function diffOf(measured: number, reference: number | null | undefined, digits: number) {
+function diffOf(
+  measured: number,
+  reference: number | null | undefined,
+  digits: number,
+  /** 이 측정의 1σ 불확도. 주면 «차이가 오차의 몇 배인가»를 함께 낸다. */
+  sigma?: number | null,
+) {
   if (reference == null || !Number.isFinite(reference) || !Number.isFinite(measured)) return null;
   const d = measured - reference;
   const sign = d >= 0 ? '+' : '-';
   const abs = `${sign}${fmt(Math.abs(d), digits)}`;
   const rel = reference !== 0 ? `${sign}${Math.abs((d / reference) * 100).toFixed(1)}%` : null;
-  return { abs, rel };
+  // σ 배수. 절대차·상대차만으로는 «이 차이가 큰가»를 판단할 잣대가 없다.
+  // 측정 오차의 몇 배인지가 그 잣대다 — 1σ 안이면 오차로 설명되고,
+  // 3σ를 넘으면 우연으로 보기 어려워 원인을 찾아야 한다.
+  const nSigma =
+    sigma != null && Number.isFinite(sigma) && sigma > 0 ? Math.abs(d) / sigma : null;
+  return { abs, rel, nSigma };
 }
 
 /** 한 줄 = 항목 · 내 측정 · 문헌값 · 차이. */
@@ -34,7 +45,7 @@ function CompareRow({
   label: string;
   measured: string;
   reference: string;
-  diff: { abs: string; rel: string | null } | null;
+  diff: { abs: string; rel: string | null; nSigma: number | null } | null;
   diffUnit: string;
   lang: 'ko' | 'en';
 }) {
@@ -55,6 +66,18 @@ function CompareRow({
           <span>
             <b>{diff.abs}{diffUnit}</b>
             {diff.rel && <span className="rel"> ({diff.rel})</span>}
+            {diff.nSigma != null && (
+              <span
+                className="rel"
+                title={
+                  lang === 'ko'
+                    ? '차이를 이 측정의 오차(1σ)로 나눈 값. 1보다 작으면 측정 오차만으로 설명되고, 3을 넘으면 오차로는 설명이 안 되어 원인을 찾아야 한다.'
+                    : 'The difference divided by this measurement’s 1σ error. Below 1 the gap is within measurement error; above 3 it needs an explanation.'
+                }
+              >
+                {' '}· 오차의 <b>{diff.nSigma.toFixed(1)}배</b>
+              </span>
+            )}
           </span>
         ) : (
           <span className="ref">—</span>
@@ -279,7 +302,7 @@ export function TransitComparison({ fit, target }: TransitComparisonProps) {
           label="Rp/R*"
           measured={fmt(fit.rpRs)}
           reference={archiveRpRs != null ? fmt(archiveRpRs) : '—'}
-          diff={diffOf(fit.rpRs, archiveRpRs, 4)}
+          diff={diffOf(fit.rpRs, archiveRpRs, 4, fit.rpRsErr)}
           diffUnit=""
           lang={lang}
         />
@@ -323,6 +346,57 @@ export function TransitComparison({ fit, target }: TransitComparisonProps) {
             {lang === 'ko'
               ? '주기는 측정한 값이 아니라 NASA Exoplanet Archive에서 가져온 값입니다. 이 분석은 이 주기로 광도곡선을 위상 접기 했습니다. 단일 관측에는 식이 한 번뿐이라 주기를 직접 구할 수 없고 — 주기는 식과 식 사이 간격에서 나옵니다 — 여러 번의 식을 관측해야 측정할 수 있습니다.'
               : 'The period is not a measured value — it is taken from the NASA Exoplanet Archive and used to phase-fold this light curve. A single observation shows only one transit, so the period cannot be derived from it: period comes from the spacing between transits, which needs several observed transits.'}
+          </p>
+        </div>
+      )}
+
+      {/* 현장 전문가 검토(2026-07) 최저점 문항: "기준값 비교 화면은 무엇을 해석해야
+          하는지 파악하기 어렵다"(역채점 3.42). 차이 수치는 위에 있었지만 «왜 차이가
+          나는가»를 따질 재료가 화면에 없어서, 학습자가 원인을 상상으로 적어야 했다.
+          여기서는 답을 주지 않고, 이 학습자가 실제로 쓴 분석 조건만 모아 보여준다.
+          해석은 다음 단계(기록)에서 학습자가 한다 — 설계 원리 4. */}
+      {fit.validationStats && (
+        <div className="transit-compare-conditions">
+          <span className="cap">
+            {lang === 'ko' ? '내가 쓴 분석 조건 — 차이를 설명할 때 근거로 삼을 것' : 'My analysis settings — evidence for explaining the gap'}
+          </span>
+          <ul>
+            <li>
+              {lang === 'ko' ? '비교성' : 'Comparison stars'}{' '}
+              <b>{fit.validationStats.comparisonQuality.comparisonCount}</b>
+              {lang === 'ko' ? '개' : ''}
+              {fit.validationStats.comparisonQuality.medianRms != null && (
+                <>
+                  {' · '}
+                  {lang === 'ko' ? '산포 중앙값' : 'median scatter'}{' '}
+                  <b>{(fit.validationStats.comparisonQuality.medianRms * 1e6).toFixed(0)} ppm</b>
+                </>
+              )}
+            </li>
+            {fit.validationStats.residuals.rms != null && (
+              <li>
+                {lang === 'ko' ? '적합 후 남은 흔들림(잔차 RMS)' : 'Residual RMS after fit'}{' '}
+                <b>{(fit.validationStats.residuals.rms * 1e6).toFixed(0)} ppm</b>
+              </li>
+            )}
+            <li>
+              {lang === 'ko' ? '분석에 쓴 점' : 'Points used'}{' '}
+              <b>{fit.validationStats.sample.retainedPoints}</b>
+              {lang === 'ko' ? '개' : ''}
+              {fit.validationStats.sample.clippedPoints > 0 && (
+                <>
+                  {' · '}
+                  {lang === 'ko' ? '튀어서 제외' : 'clipped'}{' '}
+                  <b>{fit.validationStats.sample.clippedPoints}</b>
+                  {lang === 'ko' ? '개' : ''}
+                </>
+              )}
+            </li>
+          </ul>
+          <p className="hint">
+            {lang === 'ko'
+              ? '비교성이 적거나 산포가 크면 측정이 흔들리고, 제외된 점이 많으면 곡선 모양이 달라질 수 있습니다. 위 차이가 오차의 몇 배인지와 함께 보면 원인을 좁힐 수 있습니다.'
+              : 'Few or noisy comparison stars make the measurement wobble; many clipped points can reshape the curve. Read these together with how many σ the difference is.'}
           </p>
         </div>
       )}
