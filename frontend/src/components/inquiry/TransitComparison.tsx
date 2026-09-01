@@ -71,8 +71,8 @@ function CompareRow({
                 className="rel"
                 title={
                   lang === 'ko'
-                    ? '차이를 이 측정의 오차(1σ)로 나눈 값. 1보다 작으면 측정 오차만으로 설명되고, 3을 넘으면 오차로는 설명이 안 되어 원인을 찾아야 한다.'
-                    : 'The difference divided by this measurement’s 1σ error. Below 1 the gap is within measurement error; above 3 it needs an explanation.'
+                    ? '차이를 이 측정의 오차(1σ)로 나눈 값이다. 이 배수가 클수록 측정 오차만으로는 설명하기 어려운 차이가 된다.'
+                    : 'The difference divided by this measurement’s 1σ error; the larger the multiple, the harder it is to attribute the gap to measurement error alone.'
                 }
               >
                 {' '}· 오차의 <b>{diff.nSigma.toFixed(1)}배</b>
@@ -395,8 +395,8 @@ export function TransitComparison({ fit, target }: TransitComparisonProps) {
           </ul>
           <p className="hint">
             {lang === 'ko'
-              ? '비교성이 적거나 산포가 크면 측정이 흔들리고, 제외된 점이 많으면 곡선 모양이 달라질 수 있습니다. 위 차이가 오차의 몇 배인지와 함께 보면 원인을 좁힐 수 있습니다.'
-              : 'Few or noisy comparison stars make the measurement wobble; many clipped points can reshape the curve. Read these together with how many σ the difference is.'}
+              ? '이 값들과 위의 차이(오차의 몇 배인지)를 함께 보고, 차이가 어디에서 왔을지 생각해보기와 기록 단계에서 설명해 보세요.'
+              : 'Read these together with the σ figure above, then explain where the gap came from in the self-check and record steps.'}
           </p>
         </div>
       )}

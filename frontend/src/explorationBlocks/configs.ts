@@ -99,6 +99,46 @@ export const exoplanetTransitModule: ExplorationModuleConfig = {
         },
       ],
     },
+    // Step 5 는 원래 생각해보기가 없었다. 현장 전문가 검토 최저점(역채점 3.42)이
+    // 이 화면이었고 보완 요구도 1위였는데, 그 요구를 "화면이 원인을 설명해 준다"로
+    // 풀면 결과 해석의 학습자 수행(원리 4)을 침범한다 — 도움을 늘릴수록 학습이
+    // 얕아지는 도움의 딜레마(Koedinger & Aleven, 2007). 그래서 인과는 화면에서
+    // 빼고 여기로 옮겼다. 학습자가 먼저 답한 뒤에 해설이 열린다.
+    step5_compare: {
+      selfChecks: [
+        {
+          id: 'tr_cmp_sc1',
+          type: 'ox',
+          question: {
+            ko: '측정값과 문헌값의 차이가 측정 오차(1σ)보다 작으면, 그 차이는 오차 범위 안에 있다고 볼 수 있다.',
+            en: 'If the gap between your value and the reference is smaller than the 1σ error, it lies within the measurement error.',
+          },
+          correct: 'O',
+          explanation: {
+            ko: '그래서 화면은 차이를 "오차의 몇 배"로 함께 보여 줍니다. 1배 안쪽이면 오차로 설명되고, 3배를 넘으면 오차만으로는 설명이 안 되어 원인을 따로 찾아야 합니다.',
+            en: 'That is why the screen also shows the gap in units of σ. Within 1σ it is explained by error; beyond 3σ it needs a separate explanation.',
+          },
+        },
+        {
+          id: 'tr_cmp_sc2',
+          type: 'choice',
+          question: {
+            ko: '비교성이 적거나 비교성들의 산포가 크면 측정 결과는 어떻게 될 가능성이 높은가?',
+            en: 'If there are few comparison stars, or their scatter is large, what is likely to happen to the measurement?',
+          },
+          options: [
+            { ko: '밝기 기준이 흔들려 측정값의 오차가 커진다', en: 'The brightness baseline wobbles, so the measurement error grows' },
+            { ko: '식 깊이가 항상 실제보다 깊게 나온다', en: 'The transit depth always comes out deeper than it really is' },
+            { ko: '공전 주기가 짧게 계산된다', en: 'The orbital period is computed as shorter' },
+          ],
+          correctIndex: 0,
+          explanation: {
+            ko: '비교성은 밝기의 기준선 역할을 합니다. 수가 적거나 각자 흔들리면 기준선 자체가 흔들려 측정 오차가 커집니다. 방향이 한쪽으로 치우치는 것이 아니라 산포가 커지는 것이라, 깊이가 늘 깊어지거나 주기가 달라지는 것은 아닙니다. 화면의 "내가 쓴 분석 조건"에서 본인 값을 확인해 보세요.',
+            en: 'Comparison stars set the brightness baseline. Fewer or noisier ones make that baseline wobble, so the error grows — it scatters rather than biasing one way, so depth does not always deepen and the period is unaffected. Check your own values in "My analysis settings".',
+          },
+        },
+      ],
+    },
     // Step 4 embeds the Lab, and the Lab's own StepGuide already asks about the
     // fit (fit_q1~3 in TransitLab). A block-level ROI self-check here rendered a
     // second 생각해보기 on the same screen — the duplicate the user flagged. The
