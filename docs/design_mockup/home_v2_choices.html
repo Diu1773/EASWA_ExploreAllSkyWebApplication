@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>EASWA 홈 v2 — 정할 것 두 가지</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{--mono:"SFMono-Regular",Consolas,monospace}
+body{margin:0;font-family:Pretendard,system-ui,sans-serif;background:#16181d;color:#c3cad6}
+.wrap{padding:32px;max-width:1240px;margin:0 auto}
+h1{font-size:22px;color:#eceff4;margin:0 0 32px}
+h2{font-size:16px;color:#eceff4;margin:0 0 4px}
+.note{font-size:14px;color:#9aa3b0;margin:0 0 24px;line-height:1.7;max-width:64em}
+section{border-top:1px solid #2e3848;padding:24px 0 32px}
+
+/* 로고 묶음 */
+.locks{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.lockcell{border:1px solid #2e3848;border-radius:8px;overflow:hidden}
+.lockcell .top{background:#fff;padding:20px 24px;display:flex;align-items:center;gap:8px}
+.lockcell .bot{background:#0b0e14;padding:20px 24px;display:flex;align-items:center;gap:8px}
+.lockcell .cap{padding:12px 16px;font-size:13px;color:#9aa3b0;border-top:1px solid #2e3848}
+.lockcell .cap b{display:block;color:#eceff4;font-size:14px;margin-bottom:4px}
+.wm{font-size:17px;font-weight:700;letter-spacing:.10em}
+.top .wm{color:#101722} .bot .wm{color:#eceff4}
+.top svg{color:#101722} .bot svg{color:#eceff4}
+
+/* 제목 3안 */
+.titles{display:grid;gap:16px}
+.tcell{position:relative;isolation:isolate;border-radius:8px;overflow:hidden;
+       background:#05070c;padding:40px 40px 32px}
+.tcell img{position:absolute;inset:0;z-index:-2;width:100%;height:100%;object-fit:cover}
+.tcell .scrim{position:absolute;inset:0;z-index:-1;background:rgba(5,7,12,.62)}
+.tcell .kick{font-family:var(--mono);font-size:12px;color:#aab4c2;margin:0 0 12px}
+.tcell h3{font-size:38px;line-height:1.24;font-weight:700;letter-spacing:-.02em;
+          color:#f7f9fb;margin:0 0 12px;max-width:17em}
+.tcell p{font-size:16px;line-height:1.7;color:#e2e8f0;margin:0;max-width:36em}
+.tcell .tag{position:absolute;right:20px;top:16px;font-family:var(--mono);
+            font-size:11px;color:#aab4c2}
+.why{font-size:13px;color:#98a2b3;margin:8px 0 0;line-height:1.7}
+.why b{color:#e2e8f0;font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>홈 v2 — 정할 것 두 가지</h1>
+
+<section>
+  <h2>1. 글자 묶음 — 마크가 E 를 맡을까</h2>
+  <p class="note">마크 자체가 E 이므로 옆에 «EASWA» 를 또 쓰면 E 가 두 번입니다.
+     다만 마크를 로고로만 보는 사람에게는 «ASWA» 가 낯설게 읽힐 수 있습니다.</p>
+  <div class="locks">
+
+    <div class="lockcell">
+      <div class="top"><svg width="30" height="30" viewBox="0 0 640 640" aria-hidden="true"><use href="#m"/></svg><span class="wm">ASWA</span></div>
+      <div class="bot"><svg width="30" height="30" viewBox="0 0 640 640" aria-hidden="true"><use href="#m"/></svg><span class="wm">ASWA</span></div>
+      <div class="cap"><b>가 — 마크 + ASWA</b>마크가 E 를 맡습니다. 읽으면 EASWA</div>
+    </div>
+
+    <div class="lockcell">
+      <div class="top"><svg width="30" height="30" viewBox="0 0 640 640" aria-hidden="true"><use href="#m"/></svg><span class="wm">EASWA</span></div>
+      <div class="bot"><svg width="30" height="30" viewBox="0 0 640 640" aria-hidden="true"><use href="#m"/></svg><span class="wm">EASWA</span></div>
+      <div class="cap"><b>나 — 마크 + EASWA</b>E 가 두 번이지만 이름이 또렷합니다</div>
+    </div>
+
+    <div class="lockcell">
+      <div class="top"><svg width="34" height="34" viewBox="0 0 640 640" aria-hidden="true"><use href="#m"/></svg></div>
+      <div class="bot"><svg width="34" height="34" viewBox="0 0 640 640" aria-hidden="true"><use href="#m"/></svg></div>
+      <div class="cap"><b>다 — 마크만</b>이름은 제목·주소가 대신합니다</div>
+    </div>
+
+  </div>
+</section>
+
+<section>
+  <h2>2. 홈 제목</h2>
+  <p class="note">「AI 스럽다」는 지적의 원인은 좌측정렬이 아니라 문장입니다.
+     원래 문구는 <b style="color:#e2e8f0">「측정하고 · 비교하고 · 기록합니다」 세 마디를 나란히 늘어놓은 대구</b>이고,
+     제목과 본문에 <b style="color:#e2e8f0">「직접」이 두 번</b> 나오며, 형태가 제품 소개 문구입니다.
+     한국어 문구 규칙 §1 이 이미 잡아 둔 패턴입니다 — 대구·자기소개형 선언은 번역투 신호입니다.</p>
+  <div class="titles">
+
+    <div class="tcell">
+      <img src="../../landing/zoviz/img/hero-udf.jpg" alt=""><div class="scrim"></div>
+      <span class="tag">가 · 지금 v2</span>
+      <p class="kick">NASA TESS · ESA Gaia DR3 · KASI KMTNet</p>
+      <h3>관측자료만으로 어디까지 알 수 있을까</h3>
+      <p>천문대가 공개한 관측자료를 브라우저에서 바로 다룹니다.
+         측정한 값은 문헌 기준값 옆에 놓고 비교합니다.</p>
+    </div>
+    <p class="why"><b>가</b> — 세 탐구블럭의 대표 질문이 모두 「…어디까지 알 수 있을까」로 끝납니다.
+       앱이 이미 쓰는 말을 그대로 올린 것이라 새로 지어낸 문구가 아닙니다.</p>
+
+    <div class="tcell">
+      <img src="../../landing/zoviz/img/hero-udf.jpg" alt=""><div class="scrim"></div>
+      <span class="tag">나</span>
+      <p class="kick">NASA TESS · ESA Gaia DR3 · KASI KMTNet</p>
+      <h3>천문대가 공개한 자료를 학교 탐구로</h3>
+      <p>TESS 광도곡선과 Gaia 측광표를 브라우저에서 그대로 엽니다.
+         측정한 값은 문헌 기준값 옆에 놓고 비교합니다.</p>
+    </div>
+    <p class="why"><b>나</b> — 질문 대신 무엇을 하는 곳인지 한 줄로 말합니다.
+       처음 들어온 교사에게는 이쪽이 빠릅니다.</p>
+
+    <div class="tcell">
+      <img src="../../landing/zoviz/img/hero-udf.jpg" alt=""><div class="scrim"></div>
+      <span class="tag">다 · 앞서 만든 v1</span>
+      <p class="kick">공공 천문자료 탐구 플랫폼</p>
+      <h3>공공 천문자료로 외계행성과 성단을 직접 분석합니다</h3>
+      <p>관측자료를 직접 측정하고, 문헌 기준값과 비교하고, 그 차이를 설명해 기록합니다.
+         설치도 코딩도 필요 없습니다.</p>
+    </div>
+    <p class="why"><b>다</b> — 대구 세 마디와 「직접」 반복이 여기 있습니다. 비교용으로만 둡니다.</p>
+
+  </div>
+</section>
+
+</div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="m" viewBox="0 0 640 640">
+  <ellipse cx="318.0" cy="322.0" rx="348.0" ry="108.0" transform="rotate(-20.0 318.0 322.0)"
+           fill="none" stroke="currentColor" stroke-width="12"/>
+  <path fill="currentColor" d="M196.0 120.0L480.0 120.0L480.0 198.0L251.5 198.0L249.7 204.4L247.9 210.8L246.2 217.2L244.6 223.5L243.0 229.9L241.6 236.3L240.2 242.7L239.0 249.1L237.8 255.5L236.7 261.8L235.8 268.2L234.9 274.6L234.1 281.0L430.0 281.0L430.0 359.0L234.1 359.0L234.9 365.4L235.8 371.8L236.7 378.2L237.8 384.5L239.0 390.9L240.2 397.3L241.6 403.7L243.0 410.1L244.6 416.5L246.2 422.8L247.9 429.2L249.7 435.6L251.5 442.0L480.0 442.0L480.0 520.0L196.0 520.0L193.8 513.9L191.6 507.9L189.5 501.8L187.3 495.8L185.2 489.7L183.0 483.6L181.0 477.6L178.9 471.5L176.9 465.5L174.9 459.4L173.0 453.3L171.1 447.3L169.3 441.2L167.6 435.2L165.9 429.1L164.3 423.0L162.7 417.0L161.2 410.9L159.8 404.8L158.5 398.8L157.3 392.7L156.2 386.7L155.1 380.6L154.2 374.5L153.3 368.5L152.5 362.4L151.9 356.4L151.3 350.3L150.8 344.2L150.5 338.2L150.2 332.1L150.1 326.1L150.0 320.0L150.1 313.9L150.2 307.9L150.5 301.8L150.8 295.8L151.3 289.7L151.9 283.6L152.5 277.6L153.3 271.5L154.2 265.5L155.1 259.4L156.2 253.3L157.3 247.3L158.5 241.2L159.8 235.2L161.2 229.1L162.7 223.0L164.3 217.0L165.9 210.9L167.6 204.8L169.3 198.8L171.1 192.7L173.0 186.7L174.9 180.6L176.9 174.5L178.9 168.5L181.0 162.4L183.0 156.4L185.2 150.3L187.3 144.2L189.5 138.2L191.6 132.1L193.8 126.1L196.0 120.0Z"/>
+  <circle cx="544.8" cy="165.6" r="27" fill="currentColor"/>
+</symbol>
+</defs></svg>
+</body>
+</html>

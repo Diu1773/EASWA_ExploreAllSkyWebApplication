@@ -67,7 +67,7 @@ if re.search(r"reveal|animate-on-scroll|IntersectionObserver", src): fails.appen
 
 # 7) 화면 문구의 영문 대문자 라벨 (고유명사 제외)
 PROPER = {"EASWA","NASA","ESA","TESS","MAST","KASI","KMTNet","DR3","STScI","AURA",
-          "CMD","Gaia","Hubble","Google","App","Exploring","All","Sky","Web","Archive",
+          "CMD","Gaia","Hubble","Google","App","Exploring","All","Sky","Web","Archive","ASWA",
           "Caltech","English"}
 caps = []
 for t in re.findall(r">([^<>{}]{2,60})<", src):
