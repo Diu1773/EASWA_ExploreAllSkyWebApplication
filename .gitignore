@@ -56,3 +56,6 @@ _scratch_bundle/
 
 # 캡처 사본 (원본은 docs/screens_live/ 에 추적됨)
 docs/캡처_*/
+
+# 시트 원자료 내보내기 (익명이지만 UA 문자열 포함 - 커밋하지 않음)
+docs/survey/data/
