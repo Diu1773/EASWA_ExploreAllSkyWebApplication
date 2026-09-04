@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EASWA — 공공 천문자료 탐구</title>
+<meta name="description" content="공개 천문자료를 학교 과학탐구 흐름으로 재구성한 EASWA 홈페이지 프로토타입">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --navy:#07111d;
+  --navy-2:#0b1724;
+  --ink:#101722;
+  --body:#3e4856;
+  --muted:#737f8e;
+  --paper:#f5f7f9;
+  --white:#fff;
+  --line:#d7dde5;
+  --line-strong:#aeb8c4;
+  --blue:#175fcb;
+  --blue-weak:#eaf1fb;
+  --good:#2d7a4d;
+  --warn:#9b6a1e;
+  --ui:"Pretendard",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",monospace;
+  --wrap:1180px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--body);font-family:var(--ui);font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased}
+img{display:block;max-width:100%}
+a{color:inherit}
+.wrap{width:min(var(--wrap),calc(100% - 64px));margin:0 auto}
+
+/* Header */
+.header{height:68px;background:var(--navy);border-bottom:1px solid #1d2a3a;color:#eaf0f6}
+.header .wrap{height:100%;display:flex;align-items:center}
+.brand{display:flex;align-items:center;gap:13px;text-decoration:none}
+.brand img{width:126px;height:42px;object-fit:contain;object-position:left center}
+.nav{margin-left:auto;display:flex;align-items:center;gap:28px}
+.nav a{font-size:14px;color:#c5cfda;text-decoration:none}
+.nav a:hover{color:#fff}
+.nav .login{padding-left:24px;border-left:1px solid #26364a;color:#fff}
+
+/* Hero */
+.hero{background:var(--navy);color:#fff;border-bottom:1px solid #182638}
+.hero-grid{min-height:406px;display:grid;grid-template-columns:46% 54%;align-items:stretch}
+.hero-copy{padding:62px 52px 52px max(0px,calc((100vw - var(--wrap))/2));display:flex;flex-direction:column;justify-content:center}
+.hero h1{margin:0 0 17px;font-size:48px;line-height:1.17;letter-spacing:-.035em;font-weight:760}
+.hero p{margin:0 0 27px;max-width:34em;color:#cbd4df;font-size:17px}
+.hero-actions{display:flex;align-items:center;gap:22px}
+.btn-primary{display:inline-flex;align-items:center;height:44px;padding:0 18px;background:#eef3f8;color:#09131f;border:1px solid #eef3f8;border-radius:4px;text-decoration:none;font-size:14px;font-weight:720}
+.link{font-size:14px;color:#d0dae5;text-decoration:underline;text-underline-offset:4px}
+.hero-source{margin-top:38px;padding-top:13px;border-top:1px solid #243244;color:#8795a5;font-family:var(--mono);font-size:11px}
+.hero-media{position:relative;min-height:406px;overflow:hidden}
+.hero-media img{width:100%;height:100%;object-fit:cover}
+.hero-media::before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,rgba(7,17,29,.52),rgba(7,17,29,0) 22%)}
+.credit{position:absolute;right:12px;bottom:10px;z-index:2;background:rgba(0,0,0,.67);color:#fff;padding:3px 6px;font-size:10px}
+
+/* Inquiry spine */
+.spine{background:#fff;border-bottom:1px solid var(--line)}
+.spine .wrap{padding:34px 0 30px}
+.spine-top{display:flex;align-items:baseline;justify-content:space-between;gap:28px;margin-bottom:20px}
+.spine h2{margin:0;font-size:19px;color:var(--ink);letter-spacing:-.015em}
+.spine-note{font-size:12px;color:var(--muted);font-family:var(--mono)}
+.steps{display:grid;grid-template-columns:repeat(6,1fr);position:relative}
+.steps::before{content:"";position:absolute;left:11px;right:11px;top:10px;border-top:1px solid #bbc5d0}
+.step{position:relative;padding-right:18px}
+.step-dot{position:relative;z-index:2;width:21px;height:21px;border-radius:50%;border:1px solid #aab6c3;background:#fff;color:var(--blue);display:grid;place-items:center;font:10px/1 var(--mono);margin-bottom:9px}
+.step strong{display:block;font-size:13px;color:var(--ink)}
+.step span{display:block;margin-top:2px;font-size:11px;line-height:1.45;color:var(--muted);max-width:14em}
+
+/* Shared section */
+.section{padding:84px 0;border-bottom:1px solid var(--line)}
+.section.white{background:#fff}
+.section-head{display:flex;align-items:end;justify-content:space-between;gap:40px;margin-bottom:40px}
+.section-head h2{margin:0;font-size:31px;letter-spacing:-.025em;color:var(--ink)}
+.section-head p{margin:8px 0 0;font-size:15px;color:var(--muted)}
+.section-code{font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+/* Modules */
+.modules{display:flex;flex-direction:column;gap:68px}
+.module{display:grid;grid-template-columns:78px 1.02fr 1.22fr;gap:28px;align-items:start;padding-bottom:68px;border-bottom:1px solid #cbd3dc}
+.module:last-child{padding-bottom:0;border-bottom:0}
+.module-no{font:12px/1 var(--mono);color:var(--blue);padding-top:5px}
+.module-copy h3{margin:0 0 9px;font-size:25px;line-height:1.25;letter-spacing:-.02em;color:var(--ink)}
+.module-copy .summary{margin:0 0 22px;font-size:15px;max-width:43em}
+.data-table{width:100%;border-collapse:collapse;margin:0 0 20px;font-size:12px}
+.data-table th,.data-table td{padding:7px 0;border-top:1px solid #dce2e8;text-align:left;vertical-align:top}
+.data-table th{width:92px;color:var(--muted);font:10px var(--mono);font-weight:400}
+.data-table td{color:#273342}
+.module-action{display:flex;align-items:center;gap:14px}
+.module-action a{display:inline-flex;align-items:center;height:38px;padding:0 14px;border:1px solid #aeb8c4;border-radius:4px;background:#fff;color:#152231;text-decoration:none;font-size:13px;font-weight:680}
+.state{font-size:11px;color:var(--muted)}
+.state::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--good);margin-right:6px}
+.state.dev::before{background:var(--warn)}
+.module-visual{min-height:252px;border:1px solid #bdc7d2;background:#fff;display:grid;grid-template-rows:1fr auto}
+.visual-main{min-height:206px;overflow:hidden;background:#eef2f6;position:relative}
+.visual-main img{width:100%;height:100%;object-fit:cover}
+.visual-main.tess img{object-fit:contain;background:#0b1724}
+.visual-foot{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #d6dde5;background:#fafbfc}
+.visual-foot div{padding:10px 12px}
+.visual-foot div+div{border-left:1px solid #d6dde5}
+.visual-foot b{display:block;color:var(--ink);font:10px var(--mono);font-weight:500}
+.visual-foot span{display:block;margin-top:3px;font-size:11px;color:var(--muted)}
+.mini-cmd{position:absolute;right:14px;bottom:14px;width:132px;height:94px;background:rgba(255,255,255,.95);border:1px solid #d0d7df}
+.mini-cmd svg{width:100%;height:100%}
+.mini-cmd .axis{stroke:#748194;stroke-width:1}
+.mini-cmd .pt{fill:#345e9a;opacity:.35}
+
+/* Product evidence */
+.product-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:54px;align-items:start}
+.screen-stack{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.screen{border:1px solid #bfc9d4;background:#fff}
+.screen img{width:100%;aspect-ratio:16/10;object-fit:cover;object-position:top}
+.screen figcaption{padding:9px 10px;border-top:1px solid #d6dde5;font-size:11px;color:#677383;font-family:var(--mono)}
+.product-copy h2{margin:0 0 14px;font-size:29px;letter-spacing:-.025em;color:var(--ink)}
+.product-copy p{margin:0 0 22px;font-size:15px}
+.principles{border-top:1px solid #aeb8c4}
+.principles div{display:grid;grid-template-columns:84px 1fr;gap:18px;padding:13px 0;border-bottom:1px solid var(--line)}
+.principles b{font:10px var(--mono);color:var(--blue)}
+.principles span{font-size:13px;color:#344152}
+
+/* Teacher */
+.teacher{display:grid;grid-template-columns:1fr 1fr;gap:60px}
+.teacher h2{margin:0 0 10px;color:var(--ink);font-size:27px}
+.teacher p{margin:0;font-size:15px;max-width:44em}
+.teacher-list{border-top:1px solid #aeb8c4}
+.teacher-list a{display:flex;justify-content:space-between;gap:20px;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink);font-size:14px}
+.teacher-list a span:last-child{color:var(--muted);font-family:var(--mono);font-size:11px}
+
+/* Sources */
+.sources{background:#edf1f4;padding:36px 0}
+.sources-grid{display:grid;grid-template-columns:150px 1fr;gap:28px}
+.sources h2{margin:0;color:var(--ink);font-size:16px}
+.sources p{margin:0;color:#586473;font-size:12px;line-height:1.85}
+.sources a{color:#30475f;text-underline-offset:3px}
+
+/* Footer */
+.footer{background:var(--navy);color:#aeb8c4;padding:28px 0}
+.footer .wrap{display:flex;align-items:center;gap:18px}
+.footer img{width:104px;height:35px;object-fit:contain}
+.footer small{margin-left:auto;font-size:11px}
+.footer a{font-size:11px;color:#aeb8c4;text-decoration:none}
+
+@media(max-width:920px){
+  .wrap{width:min(var(--wrap),calc(100% - 40px))}
+  .nav{gap:16px}
+  .nav a:nth-child(3),.nav a:nth-child(4){display:none}
+  .hero-grid{grid-template-columns:1fr}
+  .hero-copy{padding:52px 20px 34px}
+  .hero-media{min-height:270px}
+  .steps{grid-template-columns:repeat(3,1fr);gap:22px 8px}
+  .steps::before{display:none}
+  .module{grid-template-columns:52px 1fr}
+  .module-visual{grid-column:2}
+  .product-grid,.teacher{grid-template-columns:1fr}
+}
+@media(max-width:620px){
+  .wrap{width:calc(100% - 28px)}
+  .brand img{width:108px}
+  .nav a:not(.login){display:none}
+  .hero h1{font-size:38px}
+  .section{padding:64px 0}
+  .section-head{display:block}
+  .section-code{margin-top:10px}
+  .steps{grid-template-columns:repeat(2,1fr)}
+  .module{grid-template-columns:1fr;gap:16px;padding-bottom:52px}
+  .module-no,.module-visual{grid-column:1}
+  .screen-stack{grid-template-columns:1fr}
+  .sources-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="wrap">
+    <a class="brand" href="#" aria-label="EASWA 홈">
+      <img src="easwa-logo-full.png" alt="EASWA">
+    </a>
+    <nav class="nav" aria-label="주요 메뉴">
+      <a href="#modules">탐구 모듈</a>
+      <a href="#process">탐구 과정</a>
+      <a href="#teacher">교사용</a>
+      <a href="#sources">자료 출처</a>
+      <a class="login" href="#">로그인</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <h1>공공 천문자료를 활용한<br>천문탐구</h1>
+        <p>TESS·Gaia·KMTNet의 관측자료를 확인하고 분석 조건을 조절해 결과를 시각화한 뒤, 기준값과 비교하고 해석·기록합니다.</p>
+        <div class="hero-actions">
+          <a class="btn-primary" href="#modules">탐구 모듈 보기</a>
+          <a class="link" href="#process">탐구 과정 확인</a>
+        </div>
+        <div class="hero-source">NASA TESS / MAST · ESA Gaia DR3 · KASI KMTNet</div>
+      </div>
+      <div class="hero-media">
+        <img src="https://cdn.esahubble.org/archives/images/screen/heic0406a.jpg" alt="Hubble Ultra Deep Field" referrerpolicy="no-referrer">
+        <span class="credit">ESA/Hubble · NASA — Hubble Ultra Deep Field</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="spine" id="process">
+    <div class="wrap">
+      <div class="spine-top">
+        <h2>EASWA 공통 탐구 흐름</h2>
+        <div class="spine-note">same inquiry spine across modules</div>
+      </div>
+      <div class="steps">
+        <div class="step"><div class="step-dot">01</div><strong>자료 확인</strong><span>대상·출처·관측 조건 확인</span></div>
+        <div class="step"><div class="step-dot">02</div><strong>분석 조건 조절</strong><span>구경·ROI·선별 기준 설정</span></div>
+        <div class="step"><div class="step-dot">03</div><strong>분석·시각화</strong><span>광도곡선·CMD 등 결과 확인</span></div>
+        <div class="step"><div class="step-dot">04</div><strong>기준값 비교</strong><span>아카이브·문헌값과 비교</span></div>
+        <div class="step"><div class="step-dot">05</div><strong>해석</strong><span>차이를 자료와 조건으로 설명</span></div>
+        <div class="step"><div class="step-dot">06</div><strong>기록</strong><span>판단과 근거를 정리해 저장</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="modules">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <h2>탐구 모듈</h2>
+          <p>모듈이 늘어나도 같은 목록 구조에서 탐구 주제와 데이터 출처를 비교할 수 있습니다.</p>
+        </div>
+        <div class="section-code">MODULE CATALOGUE / 03</div>
+      </div>
+
+      <div class="modules">
+
+        <article class="module">
+          <div class="module-no">01 / TESS</div>
+          <div class="module-copy">
+            <h3>외계행성 식현상</h3>
+            <p class="summary">TESS 공개 관측자료에서 밝기 감소를 측정하고 차등측광·식현상 모델 적합을 거쳐 NASA Exoplanet Archive 기준값과 비교합니다.</p>
+            <table class="data-table">
+              <tr><th>DATA</th><td>NASA TESS / MAST</td></tr>
+              <tr><th>ANALYSIS</th><td>차등측광 · Transit fit</td></tr>
+              <tr><th>COMPARE</th><td>NASA Exoplanet Archive</td></tr>
+              <tr><th>CLASS</th><td>45–90분 · 고등학교 심화 / 대학 교양</td></tr>
+            </table>
+            <div class="module-action">
+              <a href="/modules/exoplanet-transit">외계행성 탐구 시작</a>
+              <span class="state">현재 구현</span>
+            </div>
+          </div>
+          <div class="module-visual">
+            <div class="visual-main tess">
+              <img src="https://raw.githubusercontent.com/Diu1773/EASWA_ExploreAllSkyWebApplication/main/frontend/src/assets/tess-nasa-preview.png" alt="NASA TESS 이미지">
+            </div>
+            <div class="visual-foot">
+              <div><b>PROVENANCE</b><span>NASA · STScI MAST</span></div>
+              <div><b>OUTPUT</b><span>Light curve · Rp/R* · depth</span></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="module">
+          <div class="module-no">02 / GAIA</div>
+          <div class="module-copy">
+            <h3>성단 색-등급도(CMD)</h3>
+            <p class="summary">Gaia DR3 측광자료에서 성단 구성원을 선별하고 색-등급도를 그려 주계열·전향점·거리 단서를 해석합니다.</p>
+            <table class="data-table">
+              <tr><th>DATA</th><td>ESA Gaia DR3</td></tr>
+              <tr><th>ANALYSIS</th><td>구성원 선별 · BP−RP / G CMD</td></tr>
+              <tr><th>COMPARE</th><td>등시선 또는 문헌 CMD</td></tr>
+              <tr><th>CLASS</th><td>45분 · 중등 심화~고등</td></tr>
+            </table>
+            <div class="module-action">
+              <a href="/modules/cluster-cmd">성단 CMD 탐구 시작</a>
+              <span class="state">현재 구현</span>
+            </div>
+          </div>
+          <div class="module-visual">
+            <div class="visual-main">
+              <img src="https://raw.githubusercontent.com/Diu1773/EASWA_ExploreAllSkyWebApplication/main/frontend/src/assets/cluster-m45-pleiades.jpg" alt="플레이아데스 성단">
+              <div class="mini-cmd" aria-hidden="true">
+                <svg viewBox="0 0 132 94">
+                  <line class="axis" x1="20" y1="9" x2="20" y2="78"/>
+                  <line class="axis" x1="20" y1="78" x2="123" y2="78"/>
+                  <g>
+                    <circle class="pt" cx="29" cy="18" r="1.5"/><circle class="pt" cx="34" cy="21" r="1.5"/>
+                    <circle class="pt" cx="38" cy="24" r="1.5"/><circle class="pt" cx="42" cy="28" r="1.5"/>
+                    <circle class="pt" cx="47" cy="31" r="1.5"/><circle class="pt" cx="51" cy="35" r="1.5"/>
+                    <circle class="pt" cx="55" cy="39" r="1.5"/><circle class="pt" cx="61" cy="43" r="1.5"/>
+                    <circle class="pt" cx="67" cy="47" r="1.5"/><circle class="pt" cx="73" cy="52" r="1.5"/>
+                    <circle class="pt" cx="80" cy="56" r="1.5"/><circle class="pt" cx="88" cy="61" r="1.5"/>
+                    <circle class="pt" cx="96" cy="65" r="1.5"/><circle class="pt" cx="105" cy="69" r="1.5"/>
+                  </g>
+                </svg>
+              </div>
+              <span class="credit">NASA/ESA/AURA·Caltech</span>
+            </div>
+            <div class="visual-foot">
+              <div><b>PROVENANCE</b><span>ESA Gaia · gaiadr3.gaia_source</span></div>
+              <div><b>OUTPUT</b><span>CMD · turn-off · distance clue</span></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="module">
+          <div class="module-no">03 / KMT</div>
+          <div class="module-copy">
+            <h3>KMTNet 미시중력렌즈</h3>
+            <p class="summary">CTIO·SAAO·SSO의 다지점 광도곡선을 결합해 미시중력렌즈 증광을 확인하고, 단일렌즈 곡선에서 벗어나는 짧은 아노말리를 탐색합니다.</p>
+            <table class="data-table">
+              <tr><th>DATA</th><td>KASI KMTNet</td></tr>
+              <tr><th>ANALYSIS</th><td>차분측광 · Paczyński fit · anomaly 확인</td></tr>
+              <tr><th>SITES</th><td>CTIO · SAAO · SSO</td></tr>
+              <tr><th>STATUS</th><td>실제 이벤트 adapter / 수업용 sample set 연결 준비</td></tr>
+            </table>
+            <div class="module-action">
+              <a href="/modules/kmtnet">KMTNet 탐구 보기</a>
+              <span class="state dev">데이터 연결 준비 중</span>
+            </div>
+          </div>
+          <div class="module-visual">
+            <div class="visual-main">
+              <img src="https://raw.githubusercontent.com/Diu1773/EASWA_ExploreAllSkyWebApplication/main/frontend/src/assets/kmt-microlensing-nasa.jpg" alt="KMTNet 미시중력렌즈 관련 이미지">
+              <span class="credit">NASA / KMTNet related visualization</span>
+            </div>
+            <div class="visual-foot">
+              <div><b>NETWORK</b><span>Chile · South Africa · Australia</span></div>
+              <div><b>OUTPUT</b><span>Light curve · t0 · u0 · tE · residual</span></div>
+            </div>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="section white">
+    <div class="wrap product-grid">
+      <div class="screen-stack">
+        <figure class="screen">
+          <img src="https://raw.githubusercontent.com/Diu1773/EASWA_ExploreAllSkyWebApplication/main/landing/zoviz/img/step4.jpg" alt="EASWA 분석 및 시각화 화면">
+          <figcaption>STEP 04 · 분석 및 시각화 화면</figcaption>
+        </figure>
+        <figure class="screen">
+          <img src="https://raw.githubusercontent.com/Diu1773/EASWA_ExploreAllSkyWebApplication/main/landing/zoviz/img/step5.jpg" alt="EASWA 기준값 비교 화면">
+          <figcaption>STEP 05 · 기준값 비교 화면</figcaption>
+        </figure>
+      </div>
+      <div class="product-copy">
+        <h2>결과만 보여주지 않습니다.</h2>
+        <p>같은 자료라도 어떤 조건으로 분석했는지, 측정값이 기준값과 얼마나 다른지, 그 차이를 어떻게 설명했는지를 탐구 과정 안에 남깁니다.</p>
+        <div class="principles">
+          <div><b>DATA</b><span>대상·관측자료·출처와 분석 조건을 확인</span></div>
+          <div><b>MEASURE</b><span>학생이 조건을 조절하고 결과 변화를 확인</span></div>
+          <div><b>COMPARE</b><span>측정값과 아카이브·문헌 기준값을 같은 화면에서 비교</span></div>
+          <div><b>INTERPRET</b><span>차이를 데이터 품질·분석 조건·모델 가정으로 해석</span></div>
+          <div><b>RECORD</b><span>판단과 근거를 기록으로 저장</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="teacher">
+    <div class="wrap teacher">
+      <div>
+        <h2>수업에서 사용할 때</h2>
+        <p>탐구 모듈은 분석 도구와 함께 학습 목표, 단계별 질문, 자기점검, 해석·기록 항목을 제공합니다. 교사는 계산 결과보다 학생이 자료와 분석 조건을 근거로 설명하는 과정을 확인할 수 있습니다.</p>
+      </div>
+      <div class="teacher-list">
+        <a href="#"><span>탐구 모듈별 수업 활용 안내</span><span>GUIDE</span></a>
+        <a href="#"><span>학습 목표와 단계별 질문</span><span>STEPS</span></a>
+        <a href="#"><span>학생 기록 및 결과 확인</span><span>RECORD</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="sources" id="sources">
+    <div class="wrap sources-grid">
+      <h2>자료 출처</h2>
+      <p>
+        Hero: <a href="https://esahubble.org/images/heic0406a/" target="_blank" rel="noreferrer">ESA/Hubble — Hubble Ultra Deep Field</a><br>
+        Exoplanet: NASA TESS / <a href="https://mast.stsci.edu/" target="_blank" rel="noreferrer">STScI MAST</a> · NASA Exoplanet Archive<br>
+        Cluster: ESA Gaia DR3 · module image credit NASA/ESA/AURA·Caltech<br>
+        Microlensing: KASI KMTNet. KMTNet module is marked as data-adapter work in progress in the current repository.
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <img src="easwa-logo-full.png" alt="EASWA">
+    <a href="#modules">탐구 모듈</a>
+    <a href="#sources">자료 출처</a>
+    <small>Public astronomy data · inquiry workflow · interpretation & record</small>
+  </div>
+</footer>
+
+</body>
+</html>
