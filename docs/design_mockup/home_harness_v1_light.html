@@ -3,16 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>EASWA 홈 — 하네스 적용안 v1</title>
+<title>EASWA 홈 — 하네스 적용안 v1 (흰 바탕)</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
 /* ── 고정 토큰 (docs/DESIGN_HARNESS_EASWA.md §1) ───────────────── */
 :root{
-  --bg:#0b0e14; --bg-2:#12161e; --bg-card:#1a2030;
-  --border:#252d3a; --border-lit:#2e3848;
-  --heading:#eceff4; --body:#d4dae5; --sec:#9aa3b0; --muted:#98a2b3;
-  --accent:#e8722a;
+  /* 흰 바탕판. 명암비를 다시 계산해서 주황을 낮췄다 —
+     #e8722a 는 흰 바탕에서 3.06 이라 글자·버튼으로 못 쓴다. */
+  --bg:#ffffff; --bg-2:#f5f7f9; --bg-card:#f5f7f9;
+  --border:#e3e7ec; --border-lit:#8796a9;
+  --heading:#101722; --body:#3e4856; --sec:#5b6673; --muted:#69727d;
+  --accent:#b95314;
   --ui:"Pretendard",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"SFMono-Regular",Consolas,"Liberation Mono",monospace;
   --wrap:1200px;
