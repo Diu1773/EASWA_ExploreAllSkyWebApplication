@@ -103,24 +103,10 @@ _MAX_COMPARISON_DIAGNOSTIC_POINTS = 1500
 # still reuse the same cutout in step 2 instead of re-downloading it. Cheap now
 # that datasets are lazy (~KB in RAM; the FITS stays on disk).
 _PREVIEW_DATASET_TOKEN_TTL_SECONDS = 30 * 60
-# 한 학급이 동시에 프리뷰를 열면 학습자마다 토큰이 하나씩 발급된다. 상한이 4였을 때는
-# 30명 수업에서 26명의 토큰이 즉시 밀려나 이어지는 측광이 토큰 없이 데이터셋을 다시
-# 해석해야 했다. 토큰은 CutoutDataset 을 '참조'만 하므로(사본이 아니다) 같은 대상을 보는
-# 학급에서는 항목이 늘어도 메모리가 사실상 늘지 않는다.
-# 근거: docs/LOAD_TEST_2026-07.md 10절 (동시 30명, 프리뷰 중앙 24.0초 / 측광 최대 105.5초).
-_PREVIEW_DATASET_TOKEN_MAX_ITEMS = 64
-
-# 같은 (대상·관측·크기·프레임) 프리뷰는 누가 요청해도 결과가 같다. 그런데 매 요청마다
-# 큐브 전체를 훑어(_scan_finite_stats) 최적 프레임을 고르고 PNG 를 다시 인코딩했다.
-# 학급 30명이면 같은 계산을 30번 한 셈이다. 결과를 캐시하고 dataset_token 만 새로 발급한다.
-# 키별 락을 두어, 동시에 미스가 나도 한 명만 계산하고 나머지는 그 결과를 기다린다.
-_PREVIEW_RESPONSE_CACHE_MAX_ITEMS = 32
+_PREVIEW_DATASET_TOKEN_MAX_ITEMS = 4
 
 
 _cutout_cache_lock = Lock()
-_preview_response_lock = Lock()
-_preview_response_cache: "OrderedDict[tuple[str, str, int, int | None], Any]" = OrderedDict()
-_preview_response_key_locks: "dict[tuple[str, str, int, int | None], Lock]" = {}
 _cutout_cache: "OrderedDict[tuple[str, str, int, int], CutoutDataset]" = OrderedDict()
 _hot_cutout_cache: "OrderedDict[tuple[str, str, int, int], tuple[float, CutoutDataset]]" = (
     OrderedDict()
@@ -680,46 +666,6 @@ def _is_viable_tic_star(
     return inner_peak > background_level + (_TIC_MIN_SIGNAL_SIGMA * background_sigma)
 
 
-def _preview_key_lock(key) -> Lock:
-    """키별 락. 같은 프리뷰에 동시에 미스가 나도 한 번만 계산하게 한다."""
-    with _preview_response_lock:
-        lock = _preview_response_key_locks.get(key)
-        if lock is None:
-            lock = Lock()
-            _preview_response_key_locks[key] = lock
-        return lock
-
-
-def _cached_preview_entry(key):
-    with _preview_response_lock:
-        entry = _preview_response_cache.get(key)
-        if entry is not None:
-            _preview_response_cache.move_to_end(key)
-        return entry
-
-
-def _store_cached_preview(key, response, dataset) -> None:
-    with _preview_response_lock:
-        _preview_response_cache[key] = (response, dataset)
-        _preview_response_cache.move_to_end(key)
-        while len(_preview_response_cache) > _PREVIEW_RESPONSE_CACHE_MAX_ITEMS:
-            stale_key, _ = _preview_response_cache.popitem(last=False)
-            _preview_response_key_locks.pop(stale_key, None)
-
-
-def _preview_with_fresh_token(
-    response: TransitCutoutPreviewResponse, dataset: CutoutDataset
-) -> TransitCutoutPreviewResponse:
-    """캐시된 응답을 그대로 주되 dataset_token 만 새로 발급한다.
-
-    토큰은 학습자마다 따로 있어야 TTL 이 각자의 요청 시각부터 흐른다. 토큰이 가리키는
-    CutoutDataset 은 같은 객체라 사본이 생기지 않는다.
-    """
-    return response.model_copy(
-        update={"dataset_token": _store_preview_dataset_token(dataset)}
-    )
-
-
 def get_cutout_preview(
     target_id: str,
     observation_id: str,
@@ -727,41 +673,6 @@ def get_cutout_preview(
     frame_index: int | None = None,
     progress_callback: Callable[[float, str], None] | None = None,
 ) -> TransitCutoutPreviewResponse:
-    """프리뷰를 돌려준다. 같은 (대상·관측·크기·프레임)이면 계산 결과를 재사용한다.
-
-    한 학급이 같은 대상을 동시에 열 때 큐브 훑기와 PNG 인코딩이 인원수만큼 반복되던 것을
-    한 번으로 줄인다. 근거: docs/LOAD_TEST_2026-07.md 10절.
-    """
-    cache_key = (target_id, observation_id, _normalize_cutout_size(size_px), frame_index)
-
-    entry = _cached_preview_entry(cache_key)
-    if entry is not None:
-        _notify_progress(progress_callback, 1.0, "Transit cutout preview ready.")
-        return _preview_with_fresh_token(*entry)
-
-    with _preview_key_lock(cache_key):
-        entry = _cached_preview_entry(cache_key)
-        if entry is not None:
-            _notify_progress(progress_callback, 1.0, "Transit cutout preview ready.")
-            return _preview_with_fresh_token(*entry)
-        response, dataset = _build_cutout_preview(
-            target_id,
-            observation_id,
-            size_px=size_px,
-            frame_index=frame_index,
-            progress_callback=progress_callback,
-        )
-        _store_cached_preview(cache_key, response, dataset)
-        return response
-
-
-def _build_cutout_preview(
-    target_id: str,
-    observation_id: str,
-    size_px: int = _DEFAULT_CUTOUT_SIZE_PX,
-    frame_index: int | None = None,
-    progress_callback: Callable[[float, str], None] | None = None,
-) -> "tuple[TransitCutoutPreviewResponse, CutoutDataset]":
     target = _require_target(target_id)
     observation = _require_observation(target_id, observation_id)
     normalized_size_px = _normalize_cutout_size(size_px)
@@ -820,7 +731,7 @@ def _build_cutout_preview(
     _notify_progress(progress_callback, 1.0, "Transit cutout preview ready.")
     dataset_token = _store_preview_dataset_token(dataset)
 
-    response = TransitCutoutPreviewResponse(
+    return TransitCutoutPreviewResponse(
         target_id=target_id,
         observation_id=observation_id,
         sector=dataset.sector,
@@ -843,7 +754,6 @@ def _build_cutout_preview(
         dataset_token=dataset_token,
         tic_stars=tic_stars,
     )
-    return response, dataset
 
 
 def get_observation_frame_count(
