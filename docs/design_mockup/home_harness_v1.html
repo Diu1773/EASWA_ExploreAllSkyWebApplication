@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EASWA 홈 — 하네스 적용안 v1</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+/* ── 고정 토큰 (docs/DESIGN_HARNESS_EASWA.md §1) ───────────────── */
+:root{
+  --bg:#0b0e14; --bg-2:#12161e; --bg-card:#1a2030;
+  --border:#252d3a; --border-lit:#2e3848;
+  --heading:#eceff4; --body:#d4dae5; --sec:#9aa3b0; --muted:#98a2b3;
+  --accent:#e8722a;
+  --ui:"Pretendard",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",monospace;
+  --wrap:1200px;
+  --r-sm:6px; --r-md:8px; --r-lg:12px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--body);
+     font-family:var(--ui);font-size:16px;line-height:1.7;
+     -webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums;
+     word-break:keep-all;overflow-wrap:break-word}
+img{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+h1,h2,h3{color:var(--heading);margin:0}
+.wrap{width:min(var(--wrap),calc(100% - 48px));margin:0 auto}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ── 머리 ─────────────────────────────────────────────────────── */
+.hd{height:64px;border-bottom:1px solid var(--border);background:var(--bg)}
+.hd .wrap{height:100%;display:flex;align-items:center;gap:32px}
+.brand{display:flex;align-items:center;gap:8px}
+.brand-name{font-size:16px;font-weight:700;color:var(--heading);letter-spacing:.02em}
+.brand-sub{font-size:11px;color:var(--muted);font-family:var(--mono)}
+.hd nav{display:flex;gap:24px;font-size:14px;color:var(--sec)}
+.hd nav a{white-space:nowrap}
+.hd nav a:hover{color:var(--heading)}
+.hd-right{margin-left:auto;display:flex;align-items:center;gap:16px;
+          font-size:13px;color:var(--sec)}
+.hd-login{border:1px solid var(--border-lit);border-radius:var(--r-sm);
+          padding:8px 12px;color:var(--body)}
+
+/* ── 히어로 — 높이 424px (하네스 360~460) ─────────────────────── */
+.hero{border-bottom:1px solid var(--border)}
+.hero .wrap{display:grid;grid-template-columns:1fr 480px;gap:48px;
+            min-height:400px;align-items:center;padding:32px 0}
+.kicker{font-size:13px;color:var(--sec);letter-spacing:.02em;margin:0 0 8px}
+.hero h1{font-size:44px;line-height:1.2;font-weight:700;letter-spacing:-.02em;
+         margin:0 0 12px}
+.hero p{font-size:17px;line-height:1.7;color:var(--body);max-width:36em;margin:0 0 16px}
+.acts{display:flex;align-items:center;gap:24px;margin-bottom:24px}
+.btn{border:0;font:inherit;font-size:15px;font-weight:600;cursor:pointer;
+     border-radius:var(--r-md);padding:12px 24px}
+.btn-primary{background:var(--accent);color:#fff}          /* 주황 2/4 */
+.btn-quiet{color:var(--sec);font-size:15px;border-bottom:1px solid var(--border-lit);
+           padding-bottom:4px}
+.sources{border-top:1px solid var(--border);padding-top:16px}
+.sources dt{font-size:12px;color:var(--muted);margin-bottom:8px}
+.sources dd{margin:0;font-family:var(--mono);font-size:13px;color:var(--sec);
+            line-height:1.8}
+.hero-fig figcaption{font-size:12px;color:var(--muted);margin-top:8px;text-align:right}
+.hero-fig img{border:1px solid var(--border);border-radius:var(--r-lg);
+              height:320px;width:100%;object-fit:cover}
+
+/* ── 공통 탐구 흐름 띠 ────────────────────────────────────────── */
+.flow{background:var(--bg-2);border-bottom:1px solid var(--border);padding:40px 0}
+.flow h2{font-size:16px;font-weight:600;margin:0 0 4px}
+.flow-lead{font-size:14px;color:var(--sec);margin:0 0 24px}
+.flow-steps{display:grid;grid-template-columns:repeat(7,1fr);gap:16px;
+            list-style:none;margin:0;padding:0}
+.flow-steps li{border-top:1px solid var(--border-lit);padding-top:12px}
+.flow-n{font-family:var(--mono);font-size:11px;color:var(--muted);display:block;
+        margin-bottom:4px}
+.flow-t{font-size:14px;font-weight:600;color:var(--heading);display:block;
+        line-height:1.4}
+
+/* ── 탐구 모듈 목록 ───────────────────────────────────────────── */
+.mods{padding:80px 0}
+.mods-head{display:flex;align-items:flex-end;gap:24px;margin-bottom:48px}
+.mods-head h2{font-size:30px;font-weight:700;letter-spacing:-.01em}
+.mods-head p{margin:4px 0 0;font-size:15px;color:var(--sec)}
+.mods-filter{margin-left:auto;text-align:right;font-size:13px;color:var(--muted);
+             line-height:1.6}
+.mods-filter b{display:block;color:var(--sec);font-weight:600;font-size:13px}
+
+.mod{display:grid;grid-template-columns:1fr 440px;gap:48px;
+     padding-bottom:48px;margin-bottom:48px;border-bottom:1px solid var(--border)}
+.mod:last-child{border-bottom:0;margin-bottom:0;padding-bottom:0}
+.mod.flip .mod-body{order:2}
+.mod.flip .mod-fig{order:1}
+.mod-no{font-family:var(--mono);font-size:12px;color:var(--muted);
+        display:block;margin-bottom:8px}
+.mod h3{font-size:22px;font-weight:650;line-height:1.35;margin:0 0 8px}
+.mod-sub{font-size:16px;color:var(--body);margin:0 0 24px;max-width:38em}
+
+.q{border-top:1px solid var(--border);padding-top:16px;margin-bottom:24px}
+.q dt{font-size:12px;color:var(--muted);margin-bottom:8px}
+.q dd{margin:0;font-size:17px;font-weight:600;color:var(--heading);line-height:1.6}
+
+.spec{width:100%;border-collapse:collapse;margin-bottom:24px;font-size:14px}
+.spec th{text-align:left;font-weight:400;color:var(--muted);width:88px;
+         padding:12px 16px 12px 0;vertical-align:top;
+         border-top:1px solid var(--border)}
+.spec td{padding:12px 0;color:var(--body);border-top:1px solid var(--border)}
+.spec tr:last-child th,.spec tr:last-child td{border-bottom:1px solid var(--border)}
+
+.mod-go{display:inline-block;border:1px solid var(--border-lit);
+        border-radius:var(--r-md);padding:12px 24px;font-size:15px;font-weight:600;
+        color:var(--heading)}
+.mod-note{font-size:13px;color:var(--muted);margin:12px 0 0}
+.mod-fig{display:flex;flex-direction:column}
+.mod-fig img{border:1px solid var(--border);border-radius:var(--r-lg);
+             width:100%;flex:1;min-height:280px;object-fit:cover;background:var(--bg-2)}
+.mod-fig figcaption{font-size:12px;color:var(--muted);margin-top:8px}
+/* 사진은 채우고, 도해는 자르지 않는다 */
+.mod-fig.diagram img{object-fit:contain;padding:24px;background:var(--bg-2)}
+
+/* ── 수업에서 쓸 때 ───────────────────────────────────────────── */
+.teach{background:var(--bg-2);border-top:1px solid var(--border);
+       border-bottom:1px solid var(--border);padding:64px 0}
+.teach .wrap{display:grid;grid-template-columns:1fr 1fr;gap:48px}
+.teach h2{font-size:30px;font-weight:700;margin:0 0 16px;letter-spacing:-.01em}
+.teach p{font-size:16px;color:var(--body);margin:0;max-width:32em}
+.teach ul{list-style:none;margin:0;padding:0}
+.teach li{border-top:1px solid var(--border);padding:16px 0}
+.teach li:last-child{border-bottom:1px solid var(--border)}
+.teach li b{display:block;font-size:16px;font-weight:600;color:var(--heading)}
+.teach li span{font-size:14px;color:var(--sec)}
+
+/* ── 자료 출처 · 꼬리 ─────────────────────────────────────────── */
+.prov{padding:48px 0}
+.prov .wrap{display:grid;grid-template-columns:160px 1fr;gap:48px}
+.prov h2{font-size:16px;font-weight:600}
+.prov ul{list-style:none;margin:0;padding:0;font-size:14px;color:var(--sec);
+         line-height:2}
+.prov u{text-decoration:none;border-bottom:1px solid var(--border-lit);color:var(--body)}
+.ft{border-top:1px solid var(--border);padding:24px 0;font-size:13px;color:var(--muted)}
+.ft .wrap{display:flex;align-items:center;gap:24px}
+.ft-right{margin-left:auto}
+
+@media (max-width:960px){
+  .wrap{width:calc(100% - 32px)}
+  .hd{height:auto;padding:12px 0}
+  .hd .wrap{flex-wrap:wrap;gap:12px 24px}
+  .brand-sub{display:none}
+  .hd nav{gap:16px;font-size:13px;flex-wrap:wrap}
+  .hd-right{width:100%;margin-left:0;justify-content:space-between}
+  .hero .wrap,.mod,.teach .wrap,.prov .wrap{grid-template-columns:1fr;gap:32px}
+  .hero .wrap{min-height:0;padding:32px 0}
+  .mod.flip .mod-fig{order:0}
+  .mod.flip .mod-body{order:0}
+  .flow-steps{grid-template-columns:repeat(2,1fr)}
+  .hero h1{font-size:28px}
+  .hero-fig img{height:200px}
+  .mod-fig img{min-height:200px}
+  .mods{padding:48px 0}
+  .mods-head{flex-direction:column;align-items:flex-start}
+  .mods-filter{margin-left:0;text-align:left}
+  .spec th{width:72px}
+}
+</style>
+</head>
+<body>
+
+<!-- 머리 -->
+<header class="hd">
+  <div class="wrap">
+    <div class="brand">
+      <svg width="28" height="28" viewBox="0 0 56 56" aria-hidden="true">
+        <circle cx="28" cy="28" r="24" fill="none" stroke="#3d4756" stroke-width="1.4"/>
+        <ellipse cx="28" cy="28" rx="24" ry="8.5" fill="none" stroke="#2e3848" stroke-width="1"/>
+        <circle cx="28" cy="28" r="7" fill="#e8722a"/><!-- 주황 1/4 -->
+        <path d="M7,42 L20,42 C23,42 24,42 25,45 L28,49 L31,45 C32,42 33,42 36,42 L49,42"
+              fill="none" stroke="#8b95a5" stroke-width="1.8" stroke-linejoin="round"/>
+        <circle cx="38" cy="20" r="2.6" fill="#0b0e14" stroke="#8b95a5" stroke-width="1.2"/>
+      </svg>
+      <span class="brand-name">EASWA</span>
+      <span class="brand-sub">Exploring All-Sky Web App</span>
+    </div>
+    <nav>
+      <a href="#mods">탐구 모듈</a>
+      <a href="#flow">탐구 흐름</a>
+      <a href="#teach">수업에서 쓸 때</a>
+      <a href="#prov">자료 출처</a>
+    </nav>
+    <div class="hd-right">
+      <span>한국어 · English</span>
+      <a class="hd-login" href="#">Google 계정으로 로그인</a>
+    </div>
+  </div>
+</header>
+
+<!-- 히어로 -->
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <p class="kicker">공공 천문자료 탐구 플랫폼</p>
+      <h1>공공 천문자료로<br>외계행성과 성단을 직접 분석합니다</h1>
+      <p>관측자료를 직접 측정하고, 문헌 기준값과 비교하고, 그 차이를 설명해 기록합니다.
+         설치도 코딩도 필요 없습니다.</p>
+      <div class="acts">
+        <button type="button" class="btn btn-primary">탐구 모듈 보기</button>
+        <a class="btn-quiet" href="#teach">수업에서 쓰는 법</a>
+      </div>
+      <dl class="sources">
+        <dt>쓰는 자료</dt>
+        <dd>NASA TESS / MAST · ESA Gaia DR3 · KASI KMTNet · NASA Exoplanet Archive</dd>
+      </dl>
+    </div>
+    <figure class="hero-fig" style="margin:0">
+      <img src="../../landing/zoviz/img/hero-udf.jpg" alt="허블 우주망원경이 촬영한 초심층 영역">
+      <figcaption>사진: ESA/Hubble · NASA — 허블 초심층 영역</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- 공통 탐구 흐름 -->
+<section class="flow" id="flow">
+  <div class="wrap">
+    <h2>공통 탐구 흐름</h2>
+    <p class="flow-lead">탐구블럭이 몇 개로 늘어나든 학습자가 밟는 단계는 같습니다.</p>
+    <ol class="flow-steps">
+      <li><span class="flow-n">00</span><span class="flow-t">주제와 목표</span></li>
+      <li><span class="flow-n">01</span><span class="flow-t">대상 선택</span></li>
+      <li><span class="flow-n">02</span><span class="flow-t">자료 확인</span></li>
+      <li><span class="flow-n">03</span><span class="flow-t">분석 준비</span></li>
+      <li><span class="flow-n">04</span><span class="flow-t">분석과 시각화</span></li>
+      <li><span class="flow-n">05</span><span class="flow-t">기준값 비교</span></li>
+      <li><span class="flow-n">06</span><span class="flow-t">해석과 기록</span></li>
+    </ol>
+  </div>
+</section>
+
+<!-- 탐구 모듈 -->
+<section class="mods" id="mods">
+  <div class="wrap">
+    <div class="mods-head">
+      <div>
+        <h2>탐구 모듈</h2>
+        <p>모듈이 늘어나도 같은 목록 구조로 자료원과 탐구 주제를 견줄 수 있습니다.</p>
+      </div>
+      <div class="mods-filter">
+        <b>지금 3개</b>
+        자료원·수업 단계로 거르기는 모듈이 여섯 개를 넘으면 켭니다.
+      </div>
+    </div>
+
+    <!-- 01 -->
+    <article class="mod">
+      <div class="mod-body">
+        <span class="mod-no">01 · NASA TESS</span>
+        <h3>외계행성 식현상 탐구블럭</h3>
+        <p class="mod-sub">TESS 공개 관측자료로 밝기 감소를 측정하고 NASA 기준값과 비교합니다.</p>
+        <dl class="q">
+          <dt>대표 탐구 질문</dt>
+          <dd>별빛 감소만으로 행성의 상대적 크기를 얼마나 신뢰성 있게 추정할 수 있을까?</dd>
+        </dl>
+        <table class="spec">
+          <tr><th>자료</th><td>NASA TESS / MAST</td></tr>
+          <tr><th>분석</th><td>차등측광 · 식현상 모델 적합</td></tr>
+          <tr><th>비교 기준</th><td>NASA Exoplanet Archive</td></tr>
+          <tr><th>수업</th><td>고등학교 심화 / 대학 교양 / 시민과학 입문</td></tr>
+        </table>
+        <a class="mod-go" href="#">외계행성 탐구 시작</a>
+      </div>
+      <figure class="mod-fig diagram" style="margin:0">
+        <img src="../../frontend/src/assets/tess-nasa-preview.png" alt="TESS 우주망원경">
+        <figcaption>그림: NASA · STScI MAST</figcaption>
+      </figure>
+    </article>
+
+    <!-- 02 — 좌우 교대 -->
+    <article class="mod flip">
+      <div class="mod-body">
+        <span class="mod-no">02 · ESA Gaia DR3</span>
+        <h3>성단 색등급도 탐구블럭</h3>
+        <p class="mod-sub">측광표에서 색지수와 등급을 계산해 성단의 나이와 거리 단서를 해석합니다.</p>
+        <dl class="q">
+          <dt>대표 탐구 질문</dt>
+          <dd>성단의 별들이 거의 같은 시기에 태어났다면, 색등급도(CMD)의 모양만으로
+              나이와 거리를 어디까지 알 수 있을까?</dd>
+        </dl>
+        <table class="spec">
+          <tr><th>자료</th><td>ESA Gaia DR3 측광 카탈로그</td></tr>
+          <tr><th>분석</th><td>구성원 선별 · 색등급도 작도 · 등연령곡선 맞추기</td></tr>
+          <tr><th>비교 기준</th><td>Gaia 시차 거리 · 문헌 색등급도</td></tr>
+          <tr><th>수업</th><td>중등 심화 ~ 고등</td></tr>
+        </table>
+        <a class="mod-go" href="#">성단 색등급도 탐구 시작</a>
+      </div>
+      <figure class="mod-fig" style="margin:0">
+        <img src="../../frontend/src/assets/cluster-m45-pleiades.jpg" alt="플레이아데스 성단 M45">
+        <figcaption>사진: NASA/ESA/AURA·Caltech</figcaption>
+      </figure>
+    </article>
+
+    <!-- 03 -->
+    <article class="mod">
+      <div class="mod-body">
+        <span class="mod-no">03 · KASI KMTNet</span>
+        <h3>KMTNet 미시중력렌즈 탐구블럭</h3>
+        <p class="mod-sub">세 관측소의 광도곡선을 이어 붙여 미시중력렌즈 증광을 확인하고,
+           단일렌즈 곡선에서 벗어난 구간을 찾습니다.</p>
+        <dl class="q">
+          <dt>대표 탐구 질문</dt>
+          <dd>별이 잠깐 밝아졌다 어두워진 곡선 하나만으로, 보이지 않는 렌즈 천체의
+              질량과 거리를 어디까지 알 수 있을까?</dd>
+        </dl>
+        <table class="spec">
+          <tr><th>자료</th><td>KASI KMTNet 미시중력렌즈 광도곡선</td></tr>
+          <tr><th>분석</th><td>차분측광 · 단일렌즈 곡선 적합 · 벗어난 구간 확인</td></tr>
+          <tr><th>비교 기준</th><td>관측소별 밝기 영점 · 단일렌즈 모델</td></tr>
+          <tr><th>수업</th><td>고등학교 탐구 / 시민과학 외계행성 탐사</td></tr>
+        </table>
+        <a class="mod-go" href="#">미시중력렌즈 탐구 시작</a>
+        <p class="mod-note">칠레·남아프리카·호주 세 관측소 실자료를 붙이는 중입니다.
+           지금은 저장된 사건으로 같은 흐름을 끝까지 해볼 수 있습니다.</p>
+      </div>
+      <figure class="mod-fig diagram" style="margin:0">
+        <img src="../../frontend/src/assets/kmtnet.png" alt="KMTNet 세 관측소 위치">
+        <figcaption>그림: KASI KMTNet</figcaption>
+      </figure>
+    </article>
+  </div>
+</section>
+
+<!-- 수업에서 쓸 때 -->
+<section class="teach" id="teach">
+  <div class="wrap">
+    <div>
+      <h2>수업에서 쓸 때</h2>
+      <p>탐구블럭마다 학습 목표와 단계별 질문, 자기점검, 해석과 기록 항목이 함께 들어 있습니다.
+         교사는 계산 결과가 아니라 학생이 자료와 분석 조건을 근거로 설명하는 과정을 볼 수 있습니다.</p>
+    </div>
+    <ul>
+      <li><b>모듈별 수업 활용 안내</b><span>차시 배분과 준비물, 자주 나오는 질문</span></li>
+      <li><b>학습 목표와 단계별 질문</b><span>단계마다 무엇을 판단하게 하는지</span></li>
+      <li><b>학생 기록 확인</b><span>학생이 남긴 판단과 근거를 모아서 보기</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- 자료 출처 -->
+<section class="prov" id="prov">
+  <div class="wrap">
+    <h2>자료 출처</h2>
+    <ul>
+      <li>배경 사진 — <u>ESA/Hubble · NASA, 허블 초심층 영역</u></li>
+      <li>외계행성 — NASA TESS, <u>STScI MAST</u> 배포. 기준값은 NASA Exoplanet Archive</li>
+      <li>성단 — ESA Gaia DR3 측광 카탈로그(gaiadr3.gaia_source). 사진 NASA/ESA/AURA·Caltech</li>
+      <li>미시중력렌즈 — KASI KMTNet. 관측소별 실자료 연결은 진행 중</li>
+    </ul>
+  </div>
+</section>
+
+<footer class="ft">
+  <div class="wrap">
+    <span>EASWA · 공공 천문자료를 학교 탐구 흐름으로 재구성한 과학탐구 환경</span>
+    <span class="ft-right">한국교원대학교</span>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,91 @@
+# -*- coding: utf-8 -*-
+"""DESIGN_HARNESS_EASWA.md §2 — 기계로 재는 항목만 검사한다."""
+import re, sys, colorsys, pathlib
+
+SCALE = {0,1,2,4,8,12,16,24,32,40,48,64,80,96}
+# 너비·높이·글자크기·행간은 간격 규칙 대상이 아니다
+SIZE_PROPS = re.compile(r"(width|height|max-width|min-width|max-height|min-height|"
+                        r"font-size|line-height|letter-spacing|flex-basis|top|left|right|bottom)\s*:", re.I)
+
+def rgb(h):
+    h = h.lstrip("#")
+    if len(h) == 3: h = "".join(c*2 for c in h)
+    return tuple(int(h[i:i+2],16) for i in (0,2,4))
+
+def lum(c):
+    def f(v):
+        v /= 255
+        return v/12.92 if v <= .03928 else ((v+.055)/1.055)**2.4
+    r,g,b = c
+    return .2126*f(r)+.7152*f(g)+.0722*f(b)
+
+def ratio(a,b):
+    la,lb = lum(rgb(a)), lum(rgb(b))
+    hi,lo = max(la,lb), min(la,lb)
+    return (hi+.05)/(lo+.05)
+
+src = pathlib.Path(sys.argv[1]).read_text(encoding="utf-8")
+fails, notes = [], []
+
+# 1) 간격 스케일
+off = []
+for m in re.finditer(r"([a-z-]+)\s*:\s*([^;{}]*?)(?=[;}])", src, re.I):
+    prop, val = m.group(1), m.group(2)
+    if SIZE_PROPS.match(prop + ":"): continue
+    if not re.search(r"(margin|padding|gap|inset)", prop, re.I): continue
+    for px in re.findall(r"(\d+)px", val):
+        if int(px) not in SCALE: off.append(f"{prop}:{val.strip()}")
+if off: fails.append(f"간격 스케일 밖: {sorted(set(off))}")
+
+# 2) 그라디언트 / 그림자 / 글로우
+g = re.findall(r"(linear|radial|conic)-gradient", src)
+if g: fails.append(f"그라디언트 {len(g)}개")
+sh = [s for s in re.findall(r"box-shadow\s*:\s*([^;}]+)", src) if "none" not in s]
+if sh: fails.append(f"그림자 {len(sh)}개: {sh}")
+glow = re.findall(r"box-shadow\s*:[^;}]*?0\s+0\s+[1-9]\d*px", src)
+if glow: fails.append(f"글로우 {len(glow)}개")
+
+# 3) 모서리 종류
+tokens_px = dict(re.findall(r"--([\w-]+)\s*:\s*(\d+)px", src))
+def resolve(v):
+    return re.sub(r"var\(--([\w-]+)\)", lambda m: tokens_px.get(m.group(1), m.group(0)) + "px"
+                  if m.group(1) in tokens_px else m.group(0), v)
+rad_raw = [resolve(v) for v in re.findall(r"border-radius\s*:\s*([^;}]+)", src)]
+rad = sorted({int(x) for v in rad_raw for x in re.findall(r"(\d+)px", v)})
+if len(rad) > 4: fails.append(f"모서리 {len(rad)}종: {rad}")
+else: notes.append(f"모서리 {rad or '없음'} + 원형/알약 별도")
+
+# 4) 이모지
+emo = re.findall(r"[\U0001F300-\U0001FAFF☀-➿]", src)
+if emo: fails.append(f"이모지 {len(emo)}개: {set(emo)}")
+
+# 5) 감속 모션 선언
+if "prefers-reduced-motion" not in src: fails.append("prefers-reduced-motion 없음")
+
+# 6) 스크롤 등장
+if re.search(r"reveal|animate-on-scroll|IntersectionObserver", src): fails.append("스크롤 등장 흔적")
+
+# 7) 화면 문구의 영문 대문자 라벨 (고유명사 제외)
+PROPER = {"EASWA","NASA","ESA","TESS","MAST","KASI","KMTNet","DR3","STScI","AURA",
+          "CMD","Gaia","Hubble","Google","App","Exploring","All","Sky","Web","Archive",
+          "Caltech","English"}
+caps = []
+for t in re.findall(r">([^<>{}]{2,60})<", src):
+    for w in re.findall(r"\b[A-Z]{3,}\b", t):
+        if w not in PROPER: caps.append(w)
+if caps: fails.append(f"영문 대문자 라벨: {sorted(set(caps))}")
+
+# 8) 명암비 — :root 토큰끼리
+tok = dict(re.findall(r"--([\w-]+)\s*:\s*(#[0-9a-fA-F]{3,6})", src))
+if "bg" in tok:
+    for name in ("body","sec","muted","heading"):
+        if name in tok:
+            r = ratio(tok[name], tok["bg"])
+            (notes if r >= 4.5 else fails).append(f"명암비 {name}/bg = {r:.2f}")
+
+print("="*62)
+print("통과 못 한 항목" if fails else "§2 전 항목 통과")
+for f in fails: print("  [불통과]", f)
+for n in notes: print("  [기록]  ", n)
+print("="*62)
+sys.exit(1 if fails else 0)
