@@ -79,7 +79,14 @@ function doPost(e) {
   // 빠질 수 있어 락으로 직렬화한다.
   var lock = LockService.getScriptLock();
   try {
-    lock.waitLock(20000);
+    // 20초였다. 2026-09-05 동시 30명 실측에서 최대 19.7초가 걸려 한도의 98.5%까지
+    // 찼고, 그 측정은 1인 1회 쓰기였다. 실제 수업은 4초 디바운스로 1인 5~10회
+    // 갱신하므로 경합이 더 심하다. 넘기면 화면은 정상인데 기록만 조용히 사라진다
+    // (여기서 던지면 'busy, retry' 를 돌려주고 앱이 6초 뒤 한 번만 재시도한다).
+    // 느려지는 것은 감수하고 유실을 막는다 — 45초.
+    // 더 늘리지 않는 이유: Apps Script 는 사용자당 동시 실행 30개가 상한이라,
+    // 대기를 길게 잡을수록 실행이 오래 열려 그 상한을 먼저 채운다.
+    lock.waitLock(45000);
   } catch (err) {
     return jsonResponse_({ ok: false, error: 'busy, retry' });
   }
