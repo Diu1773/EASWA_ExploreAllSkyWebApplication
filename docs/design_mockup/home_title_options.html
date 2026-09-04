@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>홈 제목 — 다섯 갈래</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{--mono:"SFMono-Regular",Consolas,monospace}
+body{margin:0;font-family:Pretendard,system-ui,sans-serif;background:#16181d;color:#c3cad6}
+.wrap{padding:32px;max-width:1180px;margin:0 auto}
+h1{font-size:20px;color:#eceff4;margin:0 0 24px}
+.cell{position:relative;isolation:isolate;border-radius:8px;overflow:hidden;
+      background:#05070c;padding:40px;margin-bottom:12px;min-height:210px;
+      display:flex;flex-direction:column;justify-content:center}
+.cell img{position:absolute;inset:0;z-index:-2;width:100%;height:100%;object-fit:cover}
+.cell .scrim{position:absolute;inset:0;z-index:-1;background:rgba(5,7,12,.62)}
+.tag{position:absolute;left:16px;top:14px;font-family:var(--mono);font-size:11px;
+     color:#8b95a5}
+.kick{font-family:var(--mono);font-size:12px;color:#aab4c2;margin:0 0 12px}
+h2{font-size:40px;line-height:1.24;font-weight:700;letter-spacing:-.02em;
+   color:#f7f9fb;margin:0 0 12px;max-width:18em}
+.lead{font-size:16px;line-height:1.7;color:#e2e8f0;margin:0;max-width:36em}
+.mark{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.mark span{font-size:34px;font-weight:700;letter-spacing:.10em;color:#f7f9fb}
+.sub{font-size:17px;color:#e2e8f0;margin:0}
+.rowlist{margin:0;padding:0;list-style:none;display:grid;
+         grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,255,255,.16)}
+.rowlist li{background:#0b0e14;padding:16px 20px}
+.rowlist b{display:block;font-size:15px;font-weight:600;color:#f2f5f9;margin-bottom:4px}
+.rowlist small{font-size:12px;color:#aab4c2;font-family:var(--mono)}
+.ask{font-size:14px;color:#9aa3b0;margin:24px 0 0;line-height:1.8}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>홈 제목 — 다섯 갈래</h1>
+
+<!-- 가 -->
+<div class="cell" style="padding:0;min-height:0">
+  <img src="../../landing/zoviz/img/hero-udf.jpg" alt=""><div class="scrim"></div>
+  <span class="tag">가 · 제목을 안 쓴다</span>
+  <div style="padding:56px 40px 24px">
+    <p class="kick">NASA TESS · ESA Gaia DR3 · KASI KMTNet</p>
+    <p class="sub" style="font-size:19px;max-width:34em;margin:0 0 24px">천문대가 공개한
+      관측자료를 브라우저에서 분석합니다.</p>
+  </div>
+  <ul class="rowlist">
+    <li><b>외계행성 식현상</b><small>NASA TESS</small></li>
+    <li><b>성단 색등급도</b><small>ESA Gaia DR3</small></li>
+    <li><b>미시중력렌즈</b><small>KASI KMTNet</small></li>
+  </ul>
+</div>
+
+<!-- 나 -->
+<div class="cell">
+  <img src="../../landing/zoviz/img/hero-udf.jpg" alt=""><div class="scrim"></div>
+  <span class="tag">나 · 이름을 쓴다</span>
+  <div class="mark">
+    <svg width="46" height="46" viewBox="0 0 640 640" style="color:#f7f9fb" aria-hidden="true"><use href="#m"/></svg>
+    <span>ASWA</span>
+  </div>
+  <p class="sub">전천 탐구 웹앱 · 공공 천문자료를 학교 탐구 흐름으로</p>
+</div>
+
+<!-- 다 -->
+<div class="cell">
+  <img src="../../landing/zoviz/img/hero-udf.jpg" alt=""><div class="scrim"></div>
+  <span class="tag">다 · 명사구</span>
+  <p class="kick">NASA TESS · ESA Gaia DR3 · KASI KMTNet</p>
+  <h2>공공 천문자료로 하는 과학탐구</h2>
+  <p class="lead">관측자료를 열고, 측정하고, 문헌 기준값과 비교합니다.</p>
+</div>
+
+<!-- 라 -->
+<div class="cell">
+  <img src="../../landing/zoviz/img/hero-udf.jpg" alt=""><div class="scrim"></div>
+  <span class="tag">라 · 대상을 박는다</span>
+  <h2 style="font-size:34px">TESS 광도곡선 · Gaia 측광표 · KMTNet 다지점 관측</h2>
+  <p class="lead">셋 다 브라우저에서 그대로 열립니다.</p>
+</div>
+
+<!-- 마 -->
+<div class="cell">
+  <img src="../../landing/zoviz/img/hero-udf.jpg" alt=""><div class="scrim"></div>
+  <span class="tag">마 · 지금 v2 (참고)</span>
+  <p class="kick">NASA TESS · ESA Gaia DR3 · KASI KMTNet</p>
+  <h2>관측자료만으로 어디까지 알 수 있을까</h2>
+  <p class="lead">천문대가 공개한 관측자료를 브라우저에서 바로 다룹니다.</p>
+</div>
+
+<p class="ask">고를 것이 없으면 한 줄 써 주시면 그대로 넣습니다.
+   제 판단으로 두 번 빗나갔으니 여기서는 추측을 더 안 쌓겠습니다.</p>
+</div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="m" viewBox="0 0 640 640">
+  <ellipse cx="318.0" cy="322.0" rx="348.0" ry="108.0" transform="rotate(-20.0 318.0 322.0)"
+           fill="none" stroke="currentColor" stroke-width="12"/>
+  <path fill="currentColor" d="M196.0 120.0L480.0 120.0L480.0 198.0L251.5 198.0L249.7 204.4L247.9 210.8L246.2 217.2L244.6 223.5L243.0 229.9L241.6 236.3L240.2 242.7L239.0 249.1L237.8 255.5L236.7 261.8L235.8 268.2L234.9 274.6L234.1 281.0L430.0 281.0L430.0 359.0L234.1 359.0L234.9 365.4L235.8 371.8L236.7 378.2L237.8 384.5L239.0 390.9L240.2 397.3L241.6 403.7L243.0 410.1L244.6 416.5L246.2 422.8L247.9 429.2L249.7 435.6L251.5 442.0L480.0 442.0L480.0 520.0L196.0 520.0L193.8 513.9L191.6 507.9L189.5 501.8L187.3 495.8L185.2 489.7L183.0 483.6L181.0 477.6L178.9 471.5L176.9 465.5L174.9 459.4L173.0 453.3L171.1 447.3L169.3 441.2L167.6 435.2L165.9 429.1L164.3 423.0L162.7 417.0L161.2 410.9L159.8 404.8L158.5 398.8L157.3 392.7L156.2 386.7L155.1 380.6L154.2 374.5L153.3 368.5L152.5 362.4L151.9 356.4L151.3 350.3L150.8 344.2L150.5 338.2L150.2 332.1L150.1 326.1L150.0 320.0L150.1 313.9L150.2 307.9L150.5 301.8L150.8 295.8L151.3 289.7L151.9 283.6L152.5 277.6L153.3 271.5L154.2 265.5L155.1 259.4L156.2 253.3L157.3 247.3L158.5 241.2L159.8 235.2L161.2 229.1L162.7 223.0L164.3 217.0L165.9 210.9L167.6 204.8L169.3 198.8L171.1 192.7L173.0 186.7L174.9 180.6L176.9 174.5L178.9 168.5L181.0 162.4L183.0 156.4L185.2 150.3L187.3 144.2L189.5 138.2L191.6 132.1L193.8 126.1L196.0 120.0Z"/>
+  <circle cx="544.8" cy="165.6" r="27" fill="currentColor"/>
+</symbol>
+</defs></svg>
+</body>
+</html>
