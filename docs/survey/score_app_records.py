@@ -65,6 +65,17 @@ def keep(r, dates):
     return d in dates
 
 
+def pick(d, field):
+    """steps_note_json 의 키는 'step6_reflect:transit_visible' 처럼 스텝 접두어가 붙는다.
+    접두어 유무를 모두 받는다."""
+    if field in d:
+        return d[field]
+    for k, v in d.items():
+        if k.rsplit(':', 1)[-1] == field:
+            return v
+    return None
+
+
 def jload(s, default):
     try:
         return json.loads(s) if s and s.strip() else default
@@ -166,14 +177,16 @@ def main(path, *dates):
         s = jload(r.get('steps_note_json'), {})
         if not isinstance(s, dict):
             continue
-        v = s.get('transit_visible')
+        v = pick(s, 'transit_visible')
         if v:
             vis[v] += 1
-        i = s.get('issues_observed')
+        i = pick(s, 'issues_observed')
+        if isinstance(i, str):
+            i = jload(i, i)          # 값이 JSON 문자열로 저장된 행이 있다
         for x in (i if isinstance(i, list) else ([i] if i else [])):
             iss[x] += 1
         for fld, bucket in (('reference_comparison', refc), ('next_step', nxt)):
-            t = s.get(fld)
+            t = pick(s, fld)
             if isinstance(t, str) and t.strip():
                 bucket.append((r['anon_id'][:8], t.strip()))
     P(f"- transit_visible: {dict(vis)}")
@@ -183,10 +196,17 @@ def main(path, *dates):
     # 5. 원문 덤프
     P("\n## 5. 서술 원문 (부호화용 — 사전 범주: 자료 품질 / 분석 조건 / 모델 가정 / 미귀속)")
     P("> 도움말에 있던 낱말(비교성 품질·별빛 오염·구경·ROI·잡음·모델 가정)만 되읊은 응답과 그 밖의 근거를 댄 응답을 갈라서 센다.")
+    HELPER = ['비교성', '별빛', '오염', '구경', 'ROI', '잡음', '모델', '가정',
+              '품질', '크기', '시야', 'Sector', '섹터', '변경', '확대', '분석']
     for title, bucket in (('reference_comparison', refc), ('next_step', nxt)):
         P(f"\n### {title}")
         for a, t in bucket:
-            P(f"- [{a}] {t}")
+            stripped = t
+            for w in HELPER:
+                stripped = stripped.replace(w, '')
+            own = len([c for c in stripped if c.isalnum()])
+            tag = '  ← **도움말 낱말 외 내용 거의 없음**' if own <= 3 else ''
+            P(f"- [{a}] {t}{tag}")
     for k in opens:
         P(f"\n### Lab {k}")
         for a, t in texts.get(k, []):
