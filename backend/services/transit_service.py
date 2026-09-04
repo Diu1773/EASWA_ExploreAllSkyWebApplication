@@ -113,14 +113,12 @@ _PREVIEW_DATASET_TOKEN_MAX_ITEMS = 64
 # 같은 (대상·관측·크기·프레임) 프리뷰는 누가 요청해도 결과가 같다. 그런데 매 요청마다
 # 큐브 전체를 훑어(_scan_finite_stats) 최적 프레임을 고르고 PNG 를 다시 인코딩했다.
 # 학급 30명이면 같은 계산을 30번 한 셈이다. 결과를 캐시하고 dataset_token 만 새로 발급한다.
-# 키별 락을 두어, 동시에 미스가 나도 한 명만 계산하고 나머지는 그 결과를 기다린다.
 _PREVIEW_RESPONSE_CACHE_MAX_ITEMS = 32
 
 
 _cutout_cache_lock = Lock()
 _preview_response_lock = Lock()
 _preview_response_cache: "OrderedDict[tuple[str, str, int, int | None], Any]" = OrderedDict()
-_preview_response_key_locks: "dict[tuple[str, str, int, int | None], Lock]" = {}
 _cutout_cache: "OrderedDict[tuple[str, str, int, int], CutoutDataset]" = OrderedDict()
 _hot_cutout_cache: "OrderedDict[tuple[str, str, int, int], tuple[float, CutoutDataset]]" = (
     OrderedDict()
@@ -680,16 +678,6 @@ def _is_viable_tic_star(
     return inner_peak > background_level + (_TIC_MIN_SIGNAL_SIGMA * background_sigma)
 
 
-def _preview_key_lock(key) -> Lock:
-    """키별 락. 같은 프리뷰에 동시에 미스가 나도 한 번만 계산하게 한다."""
-    with _preview_response_lock:
-        lock = _preview_response_key_locks.get(key)
-        if lock is None:
-            lock = Lock()
-            _preview_response_key_locks[key] = lock
-        return lock
-
-
 def _cached_preview_entry(key):
     with _preview_response_lock:
         entry = _preview_response_cache.get(key)
@@ -703,8 +691,7 @@ def _store_cached_preview(key, response, dataset) -> None:
         _preview_response_cache[key] = (response, dataset)
         _preview_response_cache.move_to_end(key)
         while len(_preview_response_cache) > _PREVIEW_RESPONSE_CACHE_MAX_ITEMS:
-            stale_key, _ = _preview_response_cache.popitem(last=False)
-            _preview_response_key_locks.pop(stale_key, None)
+            _preview_response_cache.popitem(last=False)
 
 
 def _preview_with_fresh_token(
@@ -739,20 +726,21 @@ def get_cutout_preview(
         _notify_progress(progress_callback, 1.0, "Transit cutout preview ready.")
         return _preview_with_fresh_token(*entry)
 
-    with _preview_key_lock(cache_key):
-        entry = _cached_preview_entry(cache_key)
-        if entry is not None:
-            _notify_progress(progress_callback, 1.0, "Transit cutout preview ready.")
-            return _preview_with_fresh_token(*entry)
-        response, dataset = _build_cutout_preview(
-            target_id,
-            observation_id,
-            size_px=size_px,
-            frame_index=frame_index,
-            progress_callback=progress_callback,
-        )
-        _store_cached_preview(cache_key, response, dataset)
-        return response
+    # 미스면 각자 계산한다. 여기서 락으로 한 명만 계산하게 만들면 나머지가 락을 붙든 채
+    # 스레드풀 자리를 차지한다 — 이 엔드포인트는 동기 함수라 FastAPI 가 스레드풀에서
+    # 돌리기 때문이다. 2026-09-05 측정에서 그 구성이 프리뷰와 무관한 /api/targets 까지
+    # 1.3초 -> 50.4초로 밀어 버렸다(docs/LOAD_TEST_2026-07.md 11절). 동시 미스 때의
+    # 중복 계산은 캐시 도입 이전과 같은 부하일 뿐이고, 수업 전 워밍업 1회로 캐시가
+    # 채워지면 실제 수업에서는 미스 자체가 나지 않는다.
+    response, dataset = _build_cutout_preview(
+        target_id,
+        observation_id,
+        size_px=size_px,
+        frame_index=frame_index,
+        progress_callback=progress_callback,
+    )
+    _store_cached_preview(cache_key, response, dataset)
+    return response
 
 
 def _build_cutout_preview(
