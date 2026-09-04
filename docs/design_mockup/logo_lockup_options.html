@@ -1,0 +1,50 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<title>로고 묶음 — 마크를 어느 글자에</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+body{margin:0;font-family:Pretendard,system-ui,sans-serif;background:#16181d;color:#c3cad6}
+.wrap{padding:32px;max-width:1180px;margin:0 auto}
+h1{font-size:20px;color:#eceff4;margin:0 0 8px}
+.note{font-size:14px;color:#9aa3b0;margin:0 0 32px;line-height:1.7}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px}
+.cell{border:1px solid #2e3848;border-radius:8px;overflow:hidden}
+.pane{padding:32px 24px;display:flex;align-items:center;justify-content:center}
+.dk{background:#000} .lt{background:#fff}
+.lock{display:flex;align-items:center;gap:8px}
+.lock span{font-size:40px;font-weight:700;letter-spacing:.12em}
+.dk .lock span{color:#f7f9fb} .dk .mk{color:#f7f9fb}
+.lt .lock span{color:#101722} .lt .mk{color:#101722}
+.cap{padding:16px 20px;font-size:13px;color:#9aa3b0;border-top:1px solid #2e3848;line-height:1.6}
+.cap b{display:block;color:#eceff4;font-size:15px;margin-bottom:4px}
+</style></head><body><div class="wrap">
+<h1>로고 묶음 — 마크를 어느 글자 자리에 놓을까</h1>
+<p class="note">마크는 단색이라 바탕에 따라 흰색·먹색으로 바뀝니다. 위가 검정, 아래가 흰 바탕입니다.</p>
+<div class="grid">
+<div class="cell">
+  <div class="pane dk"><div class="lock"><svg class="mk" width="54" height="54" viewBox="0 0 640 640" aria-hidden="true"><use href="#m"/></svg><span>ASWA</span></div></div>
+  <div class="pane lt"><div class="lock"><svg class="mk" width="54" height="54" viewBox="0 0 640 640" aria-hidden="true"><use href="#m"/></svg><span>ASWA</span></div></div>
+  <div class="cap"><b>가 · 마크가 E</b>지금 안. 마크가 첫 글자 E 를 맡습니다</div>
+</div>
+<div class="cell">
+  <div class="pane dk"><div class="lock"><span>E</span><svg class="mk" width="54" height="54" viewBox="0 0 640 640" aria-hidden="true"><use href="#m"/></svg><span>SWA</span></div></div>
+  <div class="pane lt"><div class="lock"><span>E</span><svg class="mk" width="54" height="54" viewBox="0 0 640 640" aria-hidden="true"><use href="#m"/></svg><span>SWA</span></div></div>
+  <div class="cap"><b>나 · 마크가 첫 A</b>E 다음 자리에 마크. 마크 모양이 E 라서 겹쳐 보일 수 있습니다</div>
+</div>
+<div class="cell">
+  <div class="pane dk"><div class="lock"><span>EASW</span><svg class="mk" width="54" height="54" viewBox="0 0 640 640" aria-hidden="true"><use href="#m"/></svg></div></div>
+  <div class="pane lt"><div class="lock"><span>EASW</span><svg class="mk" width="54" height="54" viewBox="0 0 640 640" aria-hidden="true"><use href="#m"/></svg></div></div>
+  <div class="cap"><b>다 · 마크가 끝 A</b>끝 글자 자리에 마크</div>
+</div>
+<div class="cell">
+  <div class="pane dk"><div class="lock"><svg class="mk" width="54" height="54" viewBox="0 0 640 640" aria-hidden="true"><use href="#m"/></svg><span>EASWA</span></div></div>
+  <div class="pane lt"><div class="lock"><svg class="mk" width="54" height="54" viewBox="0 0 640 640" aria-hidden="true"><use href="#m"/></svg><span>EASWA</span></div></div>
+  <div class="cap"><b>라 · 글자는 그대로</b>마크는 상징으로만 두고 이름은 온전히 씁니다</div>
+</div>
+</div></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="m" viewBox="0 0 640 640"><ellipse cx="318.0" cy="322.0" rx="348.0" ry="108.0" transform="rotate(-20.0 318.0 322.0)"
+           fill="none" stroke="currentColor" stroke-width="12"/>
+  <path fill="currentColor" d="M196.0 120.0L480.0 120.0L480.0 198.0L251.5 198.0L249.7 204.4L247.9 210.8L246.2 217.2L244.6 223.5L243.0 229.9L241.6 236.3L240.2 242.7L239.0 249.1L237.8 255.5L236.7 261.8L235.8 268.2L234.9 274.6L234.1 281.0L430.0 281.0L430.0 359.0L234.1 359.0L234.9 365.4L235.8 371.8L236.7 378.2L237.8 384.5L239.0 390.9L240.2 397.3L241.6 403.7L243.0 410.1L244.6 416.5L246.2 422.8L247.9 429.2L249.7 435.6L251.5 442.0L480.0 442.0L480.0 520.0L196.0 520.0L193.8 513.9L191.6 507.9L189.5 501.8L187.3 495.8L185.2 489.7L183.0 483.6L181.0 477.6L178.9 471.5L176.9 465.5L174.9 459.4L173.0 453.3L171.1 447.3L169.3 441.2L167.6 435.2L165.9 429.1L164.3 423.0L162.7 417.0L161.2 410.9L159.8 404.8L158.5 398.8L157.3 392.7L156.2 386.7L155.1 380.6L154.2 374.5L153.3 368.5L152.5 362.4L151.9 356.4L151.3 350.3L150.8 344.2L150.5 338.2L150.2 332.1L150.1 326.1L150.0 320.0L150.1 313.9L150.2 307.9L150.5 301.8L150.8 295.8L151.3 289.7L151.9 283.6L152.5 277.6L153.3 271.5L154.2 265.5L155.1 259.4L156.2 253.3L157.3 247.3L158.5 241.2L159.8 235.2L161.2 229.1L162.7 223.0L164.3 217.0L165.9 210.9L167.6 204.8L169.3 198.8L171.1 192.7L173.0 186.7L174.9 180.6L176.9 174.5L178.9 168.5L181.0 162.4L183.0 156.4L185.2 150.3L187.3 144.2L189.5 138.2L191.6 132.1L193.8 126.1L196.0 120.0Z"/>
+  <circle cx="544.8" cy="165.6" r="27" fill="currentColor"/></symbol>
+</defs></svg>
+</body></html>
