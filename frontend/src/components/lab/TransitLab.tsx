@@ -62,6 +62,7 @@ import {
 } from '../../workflows/transit/state';
 import { TransitCutoutViewer } from './TransitCutoutViewer';
 import { LightCurvePlot } from './LightCurvePlot';
+import { isAnswerFilled, isAnswerGateOn } from '../../utils/answerGate';
 
 interface TransitLabProps {
   target: Target;
@@ -301,6 +302,7 @@ function StepGuide({
   initialAnswers,
   onAnswersChange,
   defaultOpen = true,
+  forceOpen = false,
   storageKeySuffix = 'default',
 }: {
   step: TransitStep;
@@ -310,6 +312,10 @@ function StepGuide({
   initialAnswers?: GuideAnswers;
   onAnswersChange?: (answers: GuideAnswers) => void;
   defaultOpen?: boolean;
+  /** Keep the panel open while it is what blocks the next step. A collapsed
+   *  panel plus a disabled "다음" button is a dead end: the reason is hidden
+   *  inside the very thing the learner cannot see. */
+  forceOpen?: boolean;
   storageKeySuffix?: string;
 }) {
   const lang = useLangStore((s) => s.lang);
@@ -324,6 +330,7 @@ function StepGuide({
     }
   });
   const [answers, setAnswers] = useState<GuideAnswers>(() => initialAnswers ?? {});
+  const shown = open || forceOpen;
   const questions = STEP_GUIDES[step];
   if (!questions?.length) return null;
 
@@ -347,7 +354,7 @@ function StepGuide({
   const wrongLabel = lang === 'ko' ? '오답 — 정답:' : 'Incorrect — Answer:';
 
   return (
-    <div className={`transit-guide ${open ? 'open' : ''}`}>
+    <div className={`transit-guide ${shown ? 'open' : ''}`}>
       <button
         type="button"
         className="transit-guide-toggle"
@@ -358,19 +365,23 @@ function StepGuide({
         }}
       >
         <span>{toggleLabel}</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: shown ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>
           <polyline points="6 9 12 15 18 9" />
         </svg>
       </button>
-      {open && (
+      {shown && (
         <div className="transit-guide-questions">
           {/* O/X and choice answers lock on the first click — the feedback below
               names the correct answer, so live buttons let a learner switch to it
               and only the last answer was recorded. */}
           <p className="transit-guide-note">
             {lang === 'ko'
-              ? '처음 고른 답이 기록되고, 고른 뒤에는 바꿀 수 없습니다.'
-              : 'Your first choice is what gets recorded; it cannot be changed afterwards.'}
+              ? `처음 고른 답이 기록되고, 고른 뒤에는 바꿀 수 없습니다.${
+                  isAnswerGateOn() ? ' 이 화면의 문항에 모두 답해야 다음으로 넘어갑니다.' : ''
+                }`
+              : `Your first choice is what gets recorded; it cannot be changed afterwards.${
+                  isAnswerGateOn() ? ' Answer every question here to continue.' : ''
+                }`}
           </p>
           {questions.map((q) => (
             <div key={q.id} className="transit-guide-item">
@@ -1440,12 +1451,31 @@ export function TransitLab({
   };
 
   // Navigation
+  // 이 화면의 생각해보기를 다 답해야 다음으로 간다. 답은 무거운 Lab 을 매 클릭마다 다시
+  // 그리지 않으려고 ref 에 있으므로, 이미 있는 labDraftTick 으로만 다시 센다.
+  // 배포본에서만 켜진다 — utils/answerGate.
+  const labGateOn = isAnswerGateOn();
+  const unansweredGuide = useMemo(() => {
+    if (!labGateOn) return 0;
+    void labDraftTick;
+    return (STEP_GUIDES[step] ?? []).filter(
+      (q) => !isAnswerFilled(guideAnswersRef.current[q.id]),
+    ).length;
+  }, [labGateOn, step, labDraftTick]);
+  const guideBlockedHint =
+    unansweredGuide > 0
+      ? lang === 'ko'
+        ? `생각해보기에 아직 답하지 않은 문항이 ${unansweredGuide}개 있습니다. 모두 답해야 다음으로 넘어갑니다. 모르겠으면 「모르겠다」라고 적어도 됩니다.`
+        : `${unansweredGuide} question${unansweredGuide > 1 ? 's' : ''} in 생각해보기 still have no answer. Answer them all to continue — writing "I don't know" counts.`
+      : undefined;
+
   const canGoNext =
-    (step === 'select' && Boolean(preview) && comparisonStars.length > 0) ||
+    unansweredGuide === 0 &&
+    ((step === 'select' && Boolean(preview) && comparisonStars.length > 0) ||
     (step === 'run' && Boolean(result)) ||
     (step === 'comparisonqc' && Boolean(result) && !qcSelectionDirty) ||
     (step === 'lightcurve' && Boolean(result)) ||
-    (step === 'transitfit' && Boolean(result));
+    (step === 'transitfit' && Boolean(result)));
   const canGoPrevious = currentStepIndex > 0;
 
   const handleNext = () => {
@@ -2778,6 +2808,7 @@ export function TransitLab({
             <StepGuide
               step="select"
               initialAnswers={guideAnswersRef.current}
+              forceOpen={unansweredGuide > 0}
               onAnswersChange={handleGuideAnswers}
               defaultOpen={!isCompactTransitLayout}
               storageKeySuffix={isCompactTransitLayout ? 'mobile' : 'desktop'}
@@ -2788,7 +2819,7 @@ export function TransitLab({
                 {lang === 'ko' ? '초기화' : 'Reset'}
               </button>
               <div className="transit-step-nav-actions">
-                <button type="button" className="btn-primary" disabled={!canGoNext} onClick={handleNext}>
+                <button type="button" className="btn-primary" disabled={!canGoNext} title={guideBlockedHint} onClick={handleNext}>
                   {lang === 'ko' ? '다음: 차등측광 실행' : 'Next: Run Photometry'}
                 </button>
               </div>
@@ -2828,6 +2859,7 @@ export function TransitLab({
             <StepGuide
               step="run"
               initialAnswers={guideAnswersRef.current}
+              forceOpen={unansweredGuide > 0}
               onAnswersChange={handleGuideAnswers}
               defaultOpen={!isCompactTransitLayout}
               storageKeySuffix={isCompactTransitLayout ? 'mobile' : 'desktop'}
@@ -2938,7 +2970,7 @@ export function TransitLab({
                 <button type="button" className="btn-sm" onClick={handlePrevious}>
                    {lang === 'ko' ? '이전' : 'Previous'}
                 </button>
-                <button type="button" className="btn-primary" disabled={!canGoNext} onClick={handleNext}>
+                <button type="button" className="btn-primary" disabled={!canGoNext} title={guideBlockedHint} onClick={handleNext}>
                    {lang === 'ko' ? '다음: 비교성 품질 점검' : 'Next: Comparison QC'}
                 </button>
               </div>
@@ -2964,6 +2996,7 @@ export function TransitLab({
               <StepGuide
                 step="comparisonqc"
                 initialAnswers={guideAnswersRef.current}
+              forceOpen={unansweredGuide > 0}
               onAnswersChange={handleGuideAnswers}
                 defaultOpen={!isCompactTransitLayout}
                 storageKeySuffix={isCompactTransitLayout ? 'mobile' : 'desktop'}
@@ -3159,7 +3192,7 @@ export function TransitLab({
                 <button type="button" className="btn-sm" onClick={handlePrevious}>
                    {lang === 'ko' ? '이전' : 'Previous'}
                 </button>
-                <button type="button" className="btn-primary" disabled={!canGoNext} onClick={handleNext}>
+                <button type="button" className="btn-primary" disabled={!canGoNext} title={guideBlockedHint} onClick={handleNext}>
                    {lang === 'ko' ? '다음: 광도곡선' : 'Next: Light Curve'}
                 </button>
               </div>
@@ -3187,6 +3220,7 @@ export function TransitLab({
               <StepGuide
                 step="lightcurve"
                 initialAnswers={guideAnswersRef.current}
+              forceOpen={unansweredGuide > 0}
               onAnswersChange={handleGuideAnswers}
                 defaultOpen={!isCompactTransitLayout}
                 storageKeySuffix={isCompactTransitLayout ? 'mobile' : 'desktop'}
@@ -3235,7 +3269,7 @@ export function TransitLab({
                 <button type="button" className="btn-sm" onClick={handlePrevious}>
                    {lang === 'ko' ? '이전' : 'Previous'}
                 </button>
-                <button type="button" className="btn-primary" disabled={!canGoNext} onClick={handleNext}>
+                <button type="button" className="btn-primary" disabled={!canGoNext} title={guideBlockedHint} onClick={handleNext}>
                    {lang === 'ko' ? '다음: 식현상 모델 적합' : 'Next: Transit Fit'}
                 </button>
               </div>
@@ -3267,6 +3301,7 @@ export function TransitLab({
               <StepGuide
                 step="transitfit"
                 initialAnswers={guideAnswersRef.current}
+              forceOpen={unansweredGuide > 0}
               onAnswersChange={handleGuideAnswers}
                 defaultOpen={!isCompactTransitLayout}
                 storageKeySuffix={isCompactTransitLayout ? 'mobile' : 'desktop'}

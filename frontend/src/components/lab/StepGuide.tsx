@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useLangStore } from '../../i18n';
+import { isAnswerGateOn } from '../../utils/answerGate';
 
 export type GuideQuestion =
   | { type: 'open'; id: string; text: string }
@@ -58,8 +59,12 @@ export function StepGuide({ questions, storageKey, initialAnswers, onAnswersChan
         <div className="transit-guide-questions">
           <p className="transit-guide-note">
             {lang === 'ko'
-              ? '처음 고른 답이 기록되고, 고른 뒤에는 바꿀 수 없습니다.'
-              : 'Your first choice is what gets recorded; it cannot be changed afterwards.'}
+              ? `처음 고른 답이 기록되고, 고른 뒤에는 바꿀 수 없습니다.${
+                  isAnswerGateOn() ? ' 이 화면의 문항에 모두 답해야 다음으로 넘어갑니다.' : ''
+                }`
+              : `Your first choice is what gets recorded; it cannot be changed afterwards.${
+                  isAnswerGateOn() ? ' Answer every question here to continue.' : ''
+                }`}
           </p>
           {questions.map((q) => (
             <div key={q.id} className="transit-guide-item">

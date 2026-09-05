@@ -11,6 +11,7 @@ import { AnalysisControlPanel } from './AnalysisControlPanel';
 import { ComparisonPanel } from './ComparisonPanel';
 import { DataSourcePanel } from './DataSourcePanel';
 import { MetadataPanel } from './MetadataPanel';
+import { isAnswerFilled, isAnswerGateOn } from '../../utils/answerGate';
 import { ReflectionPanel } from './ReflectionPanel';
 import { AnonCollectionNotice } from './AnonCollectionNotice';
 import { SiteFeedbackPanel } from './SiteFeedbackPanel';
@@ -395,10 +396,8 @@ export function InquiryLayout<TContext = unknown>({
       return raw !== undefined && raw.trim() !== '' && raw !== '[]';
     });
 
-  const isFieldFilled = (step: (typeof module.steps)[number], fieldId: string) => {
-    const raw = notes[`${step.id}:${fieldId}`];
-    return raw !== undefined && raw.trim() !== '' && raw !== '[]';
-  };
+  const isFieldFilled = (step: (typeof module.steps)[number], fieldId: string) =>
+    isAnswerFilled(notes[`${step.id}:${fieldId}`]);
 
   /** Every 생각해보기 and every record field on this step, still blank. */
   const unansweredOnStep = (step: (typeof module.steps)[number]) => {
@@ -413,20 +412,7 @@ export function InquiryLayout<TContext = unknown>({
   // and the 5895 production build) every screen has to stay walkable while the
   // app is being built and checked, and filling every box on the way is not
   // that. Hostname, not import.meta.env.PROD: 5895 serves the production build.
-  // `?gate=1` turns it on locally so the behaviour can actually be checked
-  // before it ships; `?gate=0` turns it off on the deployed site if a session
-  // ever needs to walk past it.
-  const answerGateOn = (() => {
-    try {
-      const flag = new URLSearchParams(window.location.search).get('gate');
-      if (flag === '1') return true;
-      if (flag === '0') return false;
-      const host = window.location.hostname;
-      return !(host === 'localhost' || host === '127.0.0.1' || host === '::1' || host === '[::1]');
-    } catch {
-      return false;
-    }
-  })();
+  const answerGateOn = isAnswerGateOn();
   const unansweredHere = answerGateOn ? unansweredOnStep(activeStep) : 0;
 
   // The selection step now gates "다음 단계" directly on having a target — no
