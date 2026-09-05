@@ -6,8 +6,9 @@
     python -X utf8 docs/survey/score_app_records.py docs/survey/data/익명제출EASWA.csv 2026-09-06 2026-09-07
 
 - 시트는 「파일 → 다운로드 → CSV」로 내보낸 것(첫 행 = 헤더). gviz CSV도 같은 형식이다.
-- 필터(RESULTS_2026-07-24 와 동일): app_version == render · UA 에 HeadlessChrome/Claude 없음 ·
-  anon_id 에 DELETE-ME 없음 · target_id 가 '__' 로 시작하지 않음 · 지정한 날짜.
+- 필터(RESULTS_2026-07-24 와 동일): 식현상 모듈(옛 빈칸 포함) · app_version == render ·
+  UA 에 HeadlessChrome/Claude 없음 · anon_id 에 DELETE-ME 없음 ·
+  target_id 가 '__' 로 시작하지 않음 · 지정한 날짜.
 - 정답 키는 빌드에 따라 다르다. 2026-08-11 이전 기록은 7/24 빌드(2956d24) 키를 쓴다:
   Lab 채점 가능 12문항(OX 6 + 선택 6, rec_q2 가 선택형이었음). 이후는 11문항(rec_q2 서술형).
 - 수치는 만들지 않는다. 시트에 없는 것은 「없음」으로 찍힌다.
@@ -52,6 +53,12 @@ def day(s):
 
 
 def keep(r, dates):
+    # 이 스크립트의 문항 키와 Step 6 필드는 식현상 전용이다. 2026-09-06부터 같은
+    # 원자료 시트에 KMTNet·성단 CMD도 저장되므로, 그 행을 전체 수행 건수나 무응답으로
+    # 섞지 않는다. module 열이 생기기 전의 빈칸은 모두 식현상 기록이다.
+    module = (r.get('module') or 'exoplanet-transit').strip()
+    if module != 'exoplanet-transit':
+        return False
     ua = r.get('user_agent', '') or ''
     if (r.get('app_version') or '').strip() != 'render':
         return False
