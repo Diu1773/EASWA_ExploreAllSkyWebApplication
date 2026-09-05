@@ -1,0 +1,68 @@
+{
+  "status": "PASS",
+  "paper": "C:\\Users\\bmffr\\Desktop\\Me\\ERP2026_Cosmos\\EASWA_논문_전체수정본_v14.md",
+  "backup": "C:\\Users\\bmffr\\Desktop\\Me\\ERP2026_Cosmos\\원고_백업\\EASWA_논문_전체수정본_v14_결과절구조수정전_20260906_005746.md",
+  "table_map": {
+    "4-1": "4-1",
+    "4-2": "4-2",
+    "4-3": "4-3",
+    "4-4": "4-4",
+    "4-5": "4-5",
+    "4-6": "4-6",
+    "4-16": "4-7",
+    "4-7": "4-8",
+    "4-8": "4-9",
+    "4-9": "4-10",
+    "4-10": "4-11",
+    "4-11": "4-12",
+    "4-12": "4-13",
+    "4-13": "4-14",
+    "4-18": "4-15",
+    "4-14": "4-16"
+  },
+  "rq4_before": "4. 산출값–기준값 비교, 현장 전문가 검토, 보완 후 예비교사 조사를 통해 나타난 타당성과 보완 요구, 활용 가능성은 무엇인가?",
+  "rq4_after": "4. 현직 교사 검토에서 나타난 EASWA의 적절성과 보완 요구는 무엇이며, 이를 반영한 보완본에 대한 예비교사의 반응과 활용 가능성은 어떠한가?",
+  "chapter4_tables": 16,
+  "appendix_action_table": "A-1",
+  "unchanged_source_tables": 20,
+  "research_procedure_table": "Development check linked to RQ3 instead of RQ4",
+  "all_66_author_notes_preserved": true,
+  "references_unchanged": true,
+  "runtime_source": "docs/LOAD_TEST_2026-07.md, 2026-07-16 API load results",
+  "technical_numerical_comparison": "Existing source table retained; placement and interpretation scope revised, scientific analysis not rerun",
+  "sha256": "1ca848e31cd4d499134bc2cef5ee7afa3249a6f005e6e11e70e50105df793893",
+  "unchanged_tables_including_relocated_plan": 21,
+  "korean_particle_crossreferences_verified": true,
+  "original_checkbox_respondents": {
+    "해석": [
+      1,
+      4,
+      5,
+      7,
+      9,
+      10,
+      12
+    ],
+    "STEP": [
+      2,
+      5,
+      9,
+      12
+    ],
+    "활동지": [
+      1,
+      7,
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "direct_term_comment_respondents": [
+    2,
+    6,
+    10
+  ],
+  "generator_full_manuscript_idempotence": true,
+  "verification_script": "docs/verify_manuscript_results_structure.py"
+}

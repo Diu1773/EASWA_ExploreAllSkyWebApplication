@@ -41,10 +41,10 @@ def appendix_rows(reviews, notes):
     return lines
 
 
-def appendix(reviews,notes,action_number='4-18'):
+def appendix(reviews,notes,action_number='A-1',category_number='4-14',data=None):
     lines=[START,'','# 부록 A. 현직교사 서술형 응답별 판정표 — 연구자 검토용','',
-        '본문 표 4-13은 범주 요약이고, 이 부록은 원문 하나하나의 판정 기록이다. 한 답에 여러 요구가 있으면 의미 단위로 나누었다. ID의 Q는 문항, R은 원본 응답 순서, 마지막 숫자는 해당 답의 의미 단위를 뜻한다. 예: Q23/R09.1 = 문항 23, 응답자 9, 첫 번째 내용. 원본 셀 주소도 함께 적었다. 응답 순서는 개인 식별자가 아니다.','',
-        f'**연구자의 응답별 검토 의견을 반영하여 판정을 보정하였다.** 마지막 열은 연구자 의견의 요약이며 응답자의 원문과 구분한다. 최초 AI 판정과 연구자 검토 전문은 별도 분석 기록에 보존하였다. 개선 번호는 개별 해석 뒤 필요한 조치를 묶은 것으로 본문 표 {action_number}과 연결된다. 개선1~3은 시연 전 우선 검토·보완 후보, 개선4~9는 향후 과제이다. 어색한 문장은 눈에 띄는 부분부터 교정하되 전체 안내문 검수는 지속 과제로 둔다. 번호가 없는 응답도 장점·맥락·한계·논의·수행 자료로 분석에 포함되며 구현 완료와 구분한다.','',
+        f'본문의 범주 요약(표 {category_number})에 대응하는 응답별 판정 기록이다. 한 답에 여러 요구가 있으면 의미 단위로 나누었다. ID의 Q는 문항, R은 원본 응답 순서, 마지막 숫자는 해당 답의 의미 단위를 뜻한다. 예: Q23/R09.1 = 문항 23, 응답자 9, 첫 번째 내용. 원본 셀 주소도 함께 적었다. 응답 순서는 개인 식별자가 아니다.','',
+        f'**연구자의 응답별 검토 의견을 반영하여 판정을 보정하였다.** 마지막 열은 연구자 의견의 요약이며 응답자의 원문과 구분한다. 최초 AI 판정과 연구자 검토 전문은 별도 분석 기록에 보존하였다. 개선 번호는 개별 해석 뒤 필요한 조치를 묶은 것으로 표 {action_number}과 연결된다. 시연 전 보완 범위의 선정 근거는 본문 4.6.1에, 실제 반영 내역은 4.6.2에 제시한다. 개선1·3은 용어·정보 이해와 단계 수행 지원에 관한 우선 항목이며, 개선2는 실제 확인한 어색한 문장의 교정을 병행하는 항목이다. 전면 문체 정비와 개선4~9는 향후 과제이다. 번호가 없는 응답도 장점·맥락·한계·논의·수행 자료로 분석에 포함되며 구현 완료와 구분한다.','',
         '## A.1. 기존 12명 — 내용 있는 응답 42개','',
         '의견 문항 35개 + 차이 원인 설명 6개 + Q21 기타 직접 입력 1개다. 문항별 인원 합을 서로 다른 사람 수로 해석하지 않는다.','']
     for question in ('Q6','Q20','Q20-1','Q22','Q23','Q21 기타'):
@@ -64,6 +64,10 @@ def appendix(reviews,notes,action_number='4-18'):
     for status,label in [('blank','빈칸 17개'),('punctuation_only','마침표만 5개')]:
         ids=' · '.join(f"{r['id']} ({r['cell']})" for r in reviews if r['content_status']==status)
         lines.append(f'| {label} | {ids} | 분석 가능한 내용 없음 |')
+    if data is not None:
+        lines += ['','## A.4. 응답별 검토에서 도출한 전체 보완 계획','',
+            '전체 조치와 응답의 연결을 보존하기 위한 목록이다. 응답 빈도로 정렬한 시급성 순위가 아니며, 구체적인 반영 범위와 확인 상태는 본문 4.6에서 구분한다.','',
+            f'**표 {action_number}. 현직교사 응답에서 도출한 개선사항과 반영 계획**','',action_table(data),'']
     lines += ['',END,'']
     return '\n'.join(lines)
 
@@ -78,7 +82,7 @@ def action_table(data):
             if r['respondent']<=12 and any(aid in u['actions'] for u in r['units']):
                 scope='（기존 서비스 참고）' if r['domain']=='기존 서비스' else '（EASWA 보충）' if r['domain']=='EASWA 보충' else ''
                 refs.append(r['id']+scope)
-        timing=data['action_timing'].get(aid,'개선 필요성 채택. 구체 반영 순서는 응답별 검토 후 정하며, 실제 반영 내역은 표 4-14에 기록')
+        timing=data['action_timing'].get(aid,'개선 필요성 검토. 실제 반영 내역은 본문 4.6.2에 기록')
         rows.append('| '+' | '.join(cell(x) for x in (aid+' '+title,' · '.join(refs),action,timing))+' |')
     return '\n'.join(rows)
 
@@ -151,22 +155,16 @@ def main():
         text=before.rstrip()+'\n'
         text=re.sub(r'\n---\s*$','\n',text)
     before_refs=text.split('# 참고문헌',1)[1]
-    pattern=r'\*\*표 (4-\d+)\. (?:현직교사 응답에서 도출한 개선사항과 반영 계획|타당성 및 활용 가능성 검토에 기반한 개선 방향)\*\*[^\n]*\n\n\|.*?(?=\n\n[^|])'
-    match=re.search(pattern,text,re.S)
-    assert match,'Improvement plan table not found'
-    action_number=match[1]
-    caption=f'**표 {action_number}. 현직교사 응답에서 도출한 개선사항과 반영 계획**'
-    text=text[:match.start()]+caption+'\n\n'+action_table(data)+text[match.end():]
-    anchor='응답별 판정에서 도출한 개선사항을'
-    if anchor in text:
-        start=text.index(anchor);end=text.index('\n',start)
-        text=text[:start]+f'응답별 판정에서 도출한 개선사항을 표 {action_number}에 정리하였다. 용어·기본 표기, 어색한 안내 문장, 단계 안내와 이해 점검 질문을 시연 전 우선 보완 후보로 정하였다. 난이도·차시·선수 지식에 대한 일반적인 우려는 적용 조건과 한계로 논의하고, 구체적인 장기 제안은 향후 과제로 구분하였다. 긍정 평가와 탐구 수행 답변에는 별도 개선을 강제하지 않았다. 각 항목의 근거와 연구자 의견은 부록 A에 제시하며, 이 표의 계획과 실제 구현·배포 상태는 구분한다.'+text[end:]
+    category=re.search(r'\*\*표 (4-\d+)\. EASWA 관련 자유응답 범주화 결과',text)
+    assert category,'Category summary caption not found'
+    assert '## 4.7. 보완본에 대한 예비교사 재평가 결과' in text,'Apply results-structure migration before regenerating'
+    action_number='A-1'
     ref='개별 자유응답의 원문, 의미 단위별 판정, 개선 번호와 연구자 추가 의견란은 부록 A에 제시하였다.'
     if ref not in text:
-        anchor='**표 4-13. EASWA 관련 자유응답 범주화 결과 (현직 코호트, N=12)**'
+        anchor=f'**표 {category[1]}. EASWA 관련 자유응답 범주화 결과 (현직 코호트, N=12)**'
         assert anchor in text;text=text.replace(anchor,ref+'\n\n'+anchor,1)
     assert text.split('# 참고문헌',1)[1]==before_refs,'References changed'
-    text=text.rstrip()+'\n\n---\n\n'+appendix(data['individual_reviews'],notes,action_number)+suffix
+    text=text.rstrip()+'\n\n---\n\n'+appendix(data['individual_reviews'],notes,action_number,category[1],data).rstrip('\n')+(suffix or '\n')
     assert args.paper.read_bytes()==original,'Concurrent manuscript change; retry'
     backup=args.paper.parent/'원고_백업'/f'{args.paper.stem}_응답별부록삽입전_{datetime.datetime.now():%Y%m%d_%H%M%S}.md'
     backup.write_bytes(original)
