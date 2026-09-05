@@ -297,6 +297,15 @@ export function KmtnetModuleView({ module }: KmtnetModuleViewProps) {
                 : `Real KMTNet pySIS difference photometry · ${lc.points.length} pts · ${lc.included_sites.map((s) => s.toUpperCase()).join('·')}`}
               {lc.missing_sites.length > 0 && (ko ? ` · 누락: ${lc.missing_sites.map((s) => s.toUpperCase()).join('·')}` : ` · missing: ${lc.missing_sites.map((s) => s.toUpperCase()).join('·')}`)}
             </p>
+            {/* 병합은 플랫폼이 대신 하는 계산이다. 무엇을 했는지 적어 두지 않으면 학습자에게는
+                곡선이 그냥 나타난 것이 되고, 이 단계의 자가점검도 화면에서 확인할 수 없는 것을
+                묻게 된다(원리 3). 실제 처리는 kmtnet_lightcurve_service — 측광 오차 0.3등급 초과
+                제외(_MAX_MAG_ERR), 관측소별 밝기 영점을 공통 기준선에 맞춘 뒤 병합. */}
+            <p className="kmt-lc-meta kmt-lc-provenance">
+              {ko
+                ? '플랫폼이 한 처리: 측광 오차가 0.3등급을 넘는 점을 빼고, 관측소마다 다른 밝기 영점을 하나의 기준에 맞춘 뒤 시각 순으로 이어 붙였습니다.'
+                : 'What the platform did: dropped points with a photometric error above 0.3 mag, put each site onto one common brightness zero-point, then merged them in time order.'}
+            </p>
             <div className="kmt-fit-row">
               <button type="button" className="btn-primary" disabled={fitting} onClick={handleFit}>
                 {fitting ? (ko ? '적합 중…' : 'Fitting…') : ko ? '단일 렌즈(Paczyński) 모델 적합' : 'Fit single-lens (Paczyński) model'}

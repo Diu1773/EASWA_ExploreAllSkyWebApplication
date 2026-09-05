@@ -721,6 +721,39 @@ export const kmtnetModule: ExplorationModuleConfig = {
       questions: [
         makePrompt('kmt_anomaly_signal', '광도곡선에서 매끄러운 증광 위에 행성 아노말리(짧은 이상신호)는 어디에 나타나는가?', 'Where on the smooth magnification does a planetary anomaly (brief deviation) appear?'),
       ],
+      selfChecks: [
+        {
+          id: 'kmt_run_sc1',
+          type: 'choice',
+          question: {
+            ko: '세 관측소의 자료를 그대로 이어 붙이면 곡선에 무엇이 생기는가?',
+            en: 'If the three sites were simply concatenated as they are, what would appear in the curve?',
+          },
+          options: [
+            { ko: '관측소마다 밝기 기준이 달라 이어지는 자리에 계단이 생긴다', en: 'Each site has its own brightness reference, so steps appear where they join' },
+            { ko: '점의 개수가 세 배로 늘어 곡선이 두꺼워질 뿐이다', en: 'Only the point count triples, thickening the curve' },
+            { ko: '시간 순서가 뒤섞여 피크가 두 번 나타난다', en: 'The time order scrambles and the peak appears twice' },
+          ],
+          correctIndex: 0,
+          explanation: {
+            ko: '같은 별이라도 관측소마다 망원경과 측광 기준이 달라 밝기의 영점이 어긋나 있습니다. 그래서 화면의 「플랫폼이 한 처리」에 적힌 대로, 이어 붙이기 전에 각 관측소를 하나의 기준에 맞춥니다. 시간 순서는 원래 자료에 들어 있어 뒤섞이지 않습니다.',
+            en: 'The same star is measured against a different reference at each site, so the brightness zero-points disagree. That is why, as the "what the platform did" line says, each site is put onto one reference before merging. Time order comes with the data and does not scramble.',
+          },
+        },
+        {
+          id: 'kmt_run_sc2',
+          type: 'ox',
+          question: {
+            ko: '화면에 적힌 점의 개수는 원본 자료의 모든 점이 아니라, 측광 오차가 큰 점을 뺀 뒤의 개수다.',
+            en: 'The point count on the screen is not every point in the raw data, but what remains after the noisiest measurements are dropped.',
+          },
+          correct: 'O',
+          explanation: {
+            ko: '측광 오차가 0.3등급을 넘는 점은 빼고 셉니다. 오차가 큰 점을 남겨 두면 증광 곡선의 모양보다 잡음이 적합을 끌고 갑니다. 관측소를 켜고 끄며 점의 개수가 어떻게 변하는지도 확인해 보세요.',
+            en: 'Points with a photometric error above 0.3 mag are removed before counting. Leaving them in lets noise, rather than the shape of the magnification, drive the fit. Toggle the sites and watch the count change.',
+          },
+        },
+      ],
     },
     step5_compare: {
       selfChecks: [
