@@ -190,7 +190,24 @@ def _to_float(value) -> float | None:
         return None
 
 
+# How much wider than the recommended window the server fetches. Enough field
+# stars to make "loosen the criteria" visibly messy, not so many that the
+# payload or the Gaia query grows unreasonable.
+WIDEN_PARALLAX = 1.5
+WIDEN_PROPER_MOTION = 4.0
+
 _BUNDLE_DIR = Path(__file__).resolve().parent.parent / "bundled_clusters"
+
+
+def _bundled_fetched_on(cluster_id: str) -> str | None:
+    path = _BUNDLE_DIR / f"{cluster_id}.json"
+    if not path.is_file():
+        return None
+    try:
+        with path.open(encoding="utf-8") as handle:
+            return json.load(handle).get("fetched")
+    except (OSError, ValueError):
+        return None
 
 
 def _bundled_members(cluster_id: str) -> tuple | None:
@@ -227,51 +244,76 @@ def _query_gaia_members(cluster_id: str) -> tuple:
             "astroquery is not installed. Run: pip install -r backend/requirements.txt"
         ) from exc
 
-    pm_clause = ""
-    if raw.get("pm_tol") is not None:
-        tol = raw["pm_tol"]
-        pm_clause = (
-            f" AND pmra BETWEEN {raw['pmra_c'] - tol} AND {raw['pmra_c'] + tol}"
-            f" AND pmdec BETWEEN {raw['pmdec_c'] - tol} AND {raw['pmdec_c'] + tol}"
+    def build(plx_min: float, plx_max: float, tol: float | None, top: int) -> str:
+        pm = ""
+        if tol is not None:
+            pm = (
+                f" AND pmra BETWEEN {raw['pmra_c'] - tol} AND {raw['pmra_c'] + tol}"
+                f" AND pmdec BETWEEN {raw['pmdec_c'] - tol} AND {raw['pmdec_c'] + tol}"
+            )
+        return (
+            f"SELECT TOP {top} source_id, phot_g_mean_mag, bp_rp, parallax, pmra, pmdec, "
+            "parallax_error, phot_g_mean_flux_over_error "
+            "FROM gaiadr3.gaia_source "
+            "WHERE 1=CONTAINS(POINT('ICRS', ra, dec), "
+            f"CIRCLE('ICRS', {raw['ra']}, {raw['dec']}, {raw['search_radius_deg']})) "
+            f"AND parallax BETWEEN {plx_min} AND {plx_max} "
+            "AND bp_rp IS NOT NULL AND phot_g_mean_mag IS NOT NULL "
+            "AND ruwe < 1.4"
+            f"{pm}"
         )
 
-    adql = (
-        "SELECT TOP 3000 source_id, phot_g_mean_mag, bp_rp, parallax, pmra, pmdec "
-        "FROM gaiadr3.gaia_source "
-        "WHERE 1=CONTAINS(POINT('ICRS', ra, dec), "
-        f"CIRCLE('ICRS', {raw['ra']}, {raw['dec']}, {raw['search_radius_deg']})) "
-        f"AND parallax BETWEEN {raw['plx_min']} AND {raw['plx_max']} "
-        "AND bp_rp IS NOT NULL AND phot_g_mean_mag IS NOT NULL "
-        "AND ruwe < 1.4"
-        f"{pm_clause}"
-    )
+    # Two queries, not one. Step 3 needs field stars to show what loosening the
+    # criteria does, so the second query reaches well past the recommended
+    # window — but a single wide query hits the row cap in dense fields and the
+    # archive drops whatever it likes, which removed every real member of
+    # NGC 3532 and M7 (measured 2026-09-06). Asking for the recommended set
+    # first makes the cap fall only on field stars.
+    #
+    # ADQL ORDER BY would have been the tidier fix; the Gaia async endpoint
+    # answers 500 to any "SELECT TOP n … ORDER BY", with or without the
+    # expression, so ordering is not available here.
+    plx_span = raw["plx_max"] - raw["plx_min"]
+    queries = [
+        build(raw["plx_min"], raw["plx_max"], raw.get("pm_tol"), 4000),
+        build(
+            max(0.02, raw["plx_min"] - plx_span * WIDEN_PARALLAX),
+            raw["plx_max"] + plx_span * WIDEN_PARALLAX,
+            None if raw.get("pm_tol") is None else raw["pm_tol"] * WIDEN_PROPER_MOTION,
+            12000,
+        ),
+    ]
 
-    job = Gaia.launch_job_async(adql)
-    table = job.get_results()
-
-    # Gaia TAP may return column names in a different case than the query;
-    # resolve them case-insensitively.
-    colmap = {name.lower(): name for name in table.colnames}
-
-    def column(row, key):
-        actual = colmap.get(key)
-        return row[actual] if actual is not None else None
-
+    seen: set[str] = set()
     members: list[tuple] = []
-    for row in table:
-        source_id = column(row, "source_id")
-        g_mag = _to_float(column(row, "phot_g_mean_mag"))
-        bp_rp = _to_float(column(row, "bp_rp"))
-        if source_id is None or g_mag is None or bp_rp is None:
-            continue
-        members.append((
-            str(int(source_id)),
-            g_mag,
-            bp_rp,
-            _to_float(column(row, "parallax")),
-            _to_float(column(row, "pmra")),
-            _to_float(column(row, "pmdec")),
-        ))
+    for adql in queries:
+        table = Gaia.launch_job_async(adql).get_results()
+        colmap = {name.lower(): name for name in table.colnames}
+
+        def column(row, key):
+            actual = colmap.get(key)
+            return row[actual] if actual is not None else None
+
+        for row in table:
+            source_id = column(row, "source_id")
+            g_mag = _to_float(column(row, "phot_g_mean_mag"))
+            bp_rp = _to_float(column(row, "bp_rp"))
+            if source_id is None or g_mag is None or bp_rp is None:
+                continue
+            key = str(int(source_id))
+            if key in seen:
+                continue
+            seen.add(key)
+            members.append((
+                key,
+                g_mag,
+                bp_rp,
+                _to_float(column(row, "parallax")),
+                _to_float(column(row, "pmra")),
+                _to_float(column(row, "pmdec")),
+                _to_float(column(row, "parallax_error")),
+                _to_float(column(row, "phot_g_mean_flux_over_error")),
+            ))
     return tuple(members)
 
 
@@ -292,6 +334,8 @@ def get_cluster_cmd(cluster_id: str) -> ClusterCMDResponse:
             parallax=row[3],
             pmra=row[4],
             pmdec=row[5],
+            parallax_error=row[6] if len(row) > 6 else None,
+            g_flux_snr=row[7] if len(row) > 7 else None,
         )
         for row in rows
     ]
@@ -303,8 +347,8 @@ def get_cluster_cmd(cluster_id: str) -> ClusterCMDResponse:
         mag_label="Gaia G",
         members=members,
         data_source=(
-            "ESA Gaia DR3 (gaiadr3.gaia_source) via TAP · 2026-09-05 내려받아 앱에 포함"
-            if _bundled_members(key)
+            f"ESA Gaia DR3 (gaiadr3.gaia_source) via TAP · {fetched_on} 내려받아 앱에 포함"
+            if (fetched_on := _bundled_fetched_on(key))
             else "ESA Gaia DR3 (gaiadr3.gaia_source) via TAP · 지금 조회"
         ),
         selection_note_ko="시차·고유운동·측광 품질(RUWE<1.4) 기준의 천문측량 구성원 선별",

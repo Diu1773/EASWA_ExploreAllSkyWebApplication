@@ -376,7 +376,7 @@ export const clusterCmdModule: ExplorationModuleConfig = {
     step2_metadata: {
       questions: [
         makePrompt('cmd_meta_color', '색지수 정의(예: BP-RP)와 사용 필터는 무엇인가? 다른 필터를 쓰면 CMD가 어떻게 달라질까?', 'What is the color-index definition (e.g., BP-RP) and which filters are used? How would a different filter change the CMD?'),
-        makePrompt('cmd_meta_membership', '구성원을 어떤 기준(시차·고유운동 확률)으로 선별했는가? 배경별이 섞이면 CMD에 어떤 흔적이 남을까?', 'By what criteria (parallax, proper-motion probability) were members selected? What trace would contaminating field stars leave on the CMD?'),
+        makePrompt('cmd_meta_membership', '구성원을 어떤 기준(시차·고유운동)으로 선별했는가? 배경별이 섞이면 CMD에 어떤 흔적이 남을까?', 'By what criteria (parallax and proper motion) were members selected? What trace would contaminating field stars leave on the CMD?'),
       ],
       selfChecks: [
         {
@@ -397,7 +397,7 @@ export const clusterCmdModule: ExplorationModuleConfig = {
     },
     step3_analysis_conditions: {
       questions: [
-        makePrompt('cmd_cond_membership', '구성원 확률 기준을 높이거나 낮추면 주계열의 두께와 배경 산포가 어떻게 변할 것으로 예상하는가?', 'If you raise or lower the membership-probability cut, how do you expect the main-sequence width and background scatter to change?'),
+        makePrompt('cmd_cond_membership', '구성원 선별 기준을 엄격하게 또는 느슨하게 바꾸면 주계열의 두께와 배경 산포가 어떻게 변할 것으로 예상하는가?', 'If you make the membership test stricter or looser, how do you expect the main-sequence width and background scatter to change?'),
         makePrompt('cmd_cond_extinction', '성간 소광(적색화) 보정을 하지 않으면 CMD는 색·등급 방향으로 어느 쪽으로 이동하는가?', 'Without interstellar extinction (reddening) correction, in which color and magnitude direction does the CMD shift?'),
       ],
       selfChecks: [
@@ -411,7 +411,7 @@ export const clusterCmdModule: ExplorationModuleConfig = {
         {
           id: 'cmd_cond_sc2',
           type: 'choice',
-          question: { ko: '구성원 확률 기준을 높이면 CMD가 어떻게 변할까?', en: 'If you raise the membership-probability cut, how does the CMD change?' },
+          question: { ko: '구성원 선별 기준을 엄격하게 하면 CMD가 어떻게 변할까?', en: 'If you make the membership test stricter, how does the CMD change?' },
           options: [
             { ko: '주계열이 더 또렷해지지만 별 수는 줄어든다', en: 'The main sequence sharpens, but fewer stars remain' },
             { ko: '별 수가 늘어난다', en: 'More stars are included' },
@@ -554,7 +554,7 @@ export const clusterCmdModule: ExplorationModuleConfig = {
     ],
     qualitySignals: [
       { ko: '측광 오차', en: 'Photometric error' },
-      { ko: '구성원 확률', en: 'Membership probability' },
+      { ko: '구성원 선별 기준', en: 'Membership criteria' },
       { ko: 'outlier 비율', en: 'Outlier fraction' },
     ],
   },

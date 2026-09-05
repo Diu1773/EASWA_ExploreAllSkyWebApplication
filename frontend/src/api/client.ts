@@ -160,6 +160,8 @@ export interface ClusterMember {
   parallax: number | null;
   pmra: number | null;
   pmdec: number | null;
+  parallax_error: number | null;
+  g_flux_snr: number | null;
 }
 
 export interface ClusterCmdResponse {

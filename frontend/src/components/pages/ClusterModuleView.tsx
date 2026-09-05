@@ -9,6 +9,13 @@ import type { ExplorationModuleConfig } from '../../explorationBlocks/types';
 import { InquiryLayout } from '../inquiry';
 import { ClusterCmdVisualizer, type ClusterFitInfo } from '../lab/ClusterCmdVisualizer';
 import { ClusterDataPanel } from '../lab/ClusterDataPanel';
+import { ClusterMembershipSandbox } from '../lab/ClusterMembershipSandbox';
+import {
+  DEFAULT_MEMBERSHIP_LEVEL,
+  MEMBERSHIP_LABELS,
+  withMembership,
+  type MembershipLevel,
+} from '../../utils/clusterMembership';
 import { SkyExplorer } from '../sky/SkyExplorer';
 import { ClusterIntro } from '../sky/ClusterIntro';
 
@@ -32,6 +39,9 @@ export function ClusterModuleView({ module }: ClusterModuleViewProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fitInfo, setFitInfo] = useState<ClusterFitInfo | null>(null);
+  // Chosen in Step 3, applied everywhere downstream. The server sends a wider
+  // set than the published window so this can be loosened as well as tightened.
+  const [membershipLevel, setMembershipLevel] = useState<MembershipLevel>(DEFAULT_MEMBERSHIP_LEVEL);
 
   // Drive the embedded sky map (Step 1) to show open-cluster targets.
   useEffect(() => {
@@ -66,13 +76,18 @@ export function ClusterModuleView({ module }: ClusterModuleViewProps) {
     };
   }, [selectedId]);
 
-  const contextSlot = data ? (
+  const filtered = useMemo(
+    () => (data ? withMembership(data, membershipLevel).data : null),
+    [data, membershipLevel],
+  );
+
+  const contextSlot = filtered ? (
     <div className="inquiry-target-context">
       <div>
         <span className="inquiry-target-context-kicker">{lang === 'ko' ? '선택한 성단' : 'Selected cluster'}</span>
-        <strong>{lang === 'ko' ? data.cluster.name_ko : data.cluster.name}</strong>
+        <strong>{lang === 'ko' ? filtered.cluster.name_ko : filtered.cluster.name}</strong>
         <span className="inquiry-target-context-meta">
-          {`${data.member_count.toLocaleString()} ${lang === 'ko' ? '구성원' : 'members'}`}
+          {`${filtered.member_count.toLocaleString()} ${lang === 'ko' ? '구성원' : 'members'}`}
         </span>
       </div>
     </div>
@@ -114,17 +129,26 @@ export function ClusterModuleView({ module }: ClusterModuleViewProps) {
         </div>
       );
     }
-    if (data) {
-      return <ClusterCmdVisualizer data={data} onFitChange={setFitInfo} />;
+    if (filtered) {
+      return (
+        <>
+          <p className="cluster-membership-applied">
+            {lang === 'ko'
+              ? `구성원 선별: ${MEMBERSHIP_LABELS[membershipLevel].ko} · 별 ${filtered.member_count.toLocaleString()}개 (Step 3에서 바꿀 수 있습니다)`
+              : `Membership: ${MEMBERSHIP_LABELS[membershipLevel].en} · ${filtered.member_count.toLocaleString()} stars (change it in Step 3)`}
+          </p>
+          <ClusterCmdVisualizer data={filtered} onFitChange={setFitInfo} />
+        </>
+      );
     }
     return (
       <div className="inquiry-lab-handoff">
         <p>{lang === 'ko' ? '먼저 Step 1에서 성단을 선택하세요.' : 'Select a cluster in Step 1 first.'}</p>
       </div>
     );
-  }, [loading, error, data, lang]);
+  }, [loading, error, filtered, lang, membershipLevel]);
 
-  const context = useMemo(() => ({ clusterData: data }), [data]);
+  const context = useMemo(() => ({ clusterData: filtered }), [filtered]);
 
   // The comparison rows are built once and shown twice: in Step 5 as the
   // comparison table, and again in Step 6 where the learner writes the record.
@@ -260,9 +284,15 @@ export function ClusterModuleView({ module }: ClusterModuleViewProps) {
     </div>
   );
 
-  const metadataSlot = data ? (
-    <ClusterDataPanel data={data} />
+  const conditionsSlot = data ? (
+    <ClusterMembershipSandbox
+      data={data}
+      level={membershipLevel}
+      onLevelChange={setMembershipLevel}
+    />
   ) : undefined;
+
+  const metadataSlot = filtered ? <ClusterDataPanel data={filtered} /> : undefined;
 
   return (
     <InquiryLayout
@@ -278,6 +308,7 @@ export function ClusterModuleView({ module }: ClusterModuleViewProps) {
         hint: { ko: '먼저 지도에서 성단을 선택하세요.', en: 'Select a cluster on the map first.' },
       }}
       metadataSlot={metadataSlot}
+      conditionsSlot={conditionsSlot}
       analysisSlot={analysisSlot}
       comparisonSlot={comparisonSlot}
       resultSummarySlot={resultSummarySlot}

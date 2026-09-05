@@ -10,6 +10,8 @@ class ClusterMember(BaseModel):
     parallax: float | None = None
     pmra: float | None = None
     pmdec: float | None = None
+    parallax_error: float | None = None
+    g_flux_snr: float | None = None
 
 
 class ClusterInfo(BaseModel):

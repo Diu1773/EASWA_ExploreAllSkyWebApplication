@@ -104,6 +104,11 @@ export function ClusterCmdVisualizer({ data, onFitChange }: ClusterCmdVisualizer
   const [distanceModulus, setDistanceModulus] = useState(priorModulus);
   const [av, setAv] = useState(0);
   const [zIndex, setZIndex] = useState(SOLAR_Z_INDEX);
+  // 등시선을 하나만 그리면 «이게 맞나»를 견줄 데가 없다. 이웃 나이를 함께 켜서 전향점이
+  // 어느 쪽으로 움직이는지 보고, 문헌값 선을 겹쳐 자기 선과 어디서 갈리는지 본다.
+  // 문헌 선은 기본으로 꺼 둔다 — 켜 두면 맞추기가 베끼기가 된다.
+  const [showNeighbourAges, setShowNeighbourAges] = useState(false);
+  const [showLiterature, setShowLiterature] = useState(false);
 
   // Reset the fit whenever a new cluster loads.
   useEffect(() => {
@@ -205,6 +210,41 @@ export function ClusterCmdVisualizer({ data, onFitChange }: ClusterCmdVisualizer
       font: { family: 'IBM Plex Mono, monospace', color: '#cbd5e1', size: 11 },
     };
 
+    if (showNeighbourAges) {
+      for (const delta of [-0.5, 0.5]) {
+        const other = snapLogAge(logAge + delta);
+        if (other === snapLogAge(logAge)) continue;
+        const pts = isochroneFor(zIndex, other).filter((p) => p[2] <= 4);
+        if (!pts.length) continue;
+        traces.push({
+          x: pts.map((p) => p[0] + colorShift),
+          y: pts.map((p) => p[1] + magShift),
+          mode: 'lines',
+          type: 'scatter',
+          line: { color: 'rgba(251, 146, 60, 0.38)', width: 1.4 },
+          hoverinfo: 'skip',
+          name: `${lang === 'ko' ? '비교' : 'compare'} ${formatAge(other)}`,
+        });
+      }
+    }
+
+    if (showLiterature) {
+      const refPts = isochroneFor(SOLAR_Z_INDEX, data.cluster.ref_logage).filter((p) => p[2] <= 4);
+      if (refPts.length) {
+        const refColour = E_BPRP_PER_AV * data.cluster.ref_av;
+        const refMag = data.cluster.ref_distance_modulus + A_G_PER_AV * data.cluster.ref_av;
+        traces.push({
+          x: refPts.map((p) => p[0] + refColour),
+          y: refPts.map((p) => p[1] + refMag),
+          mode: 'lines',
+          type: 'scatter',
+          line: { color: '#7dd3fc', width: 1.8, dash: 'dashdot' },
+          hoverinfo: 'skip',
+          name: lang === 'ko' ? '문헌값 등시선' : 'Literature isochrone',
+        });
+      }
+    }
+
     plotly
       .react(node, traces, layout, { responsive: true, displayModeBar: false })
       .catch((error: unknown) => {
@@ -214,7 +254,7 @@ export function ClusterCmdVisualizer({ data, onFitChange }: ClusterCmdVisualizer
     return () => {
       plotly.purge(node);
     };
-  }, [points, data, lang, logAge, distanceModulus, av, zIndex]);
+  }, [points, data, lang, logAge, distanceModulus, av, zIndex, showNeighbourAges, showLiterature]);
 
   // Lift the fit up so the block's Step 5 can compare it with parallax and literature.
   useEffect(() => {
@@ -268,6 +308,8 @@ export function ClusterCmdVisualizer({ data, onFitChange }: ClusterCmdVisualizer
               setDistanceModulus(priorModulus);
               setAv(0);
               setZIndex(SOLAR_Z_INDEX);
+              setShowNeighbourAges(false);
+              setShowLiterature(false);
             }}
           >
             {ko ? '초기값' : 'Reset'}
@@ -376,9 +418,31 @@ export function ClusterCmdVisualizer({ data, onFitChange }: ClusterCmdVisualizer
           </div>
         </div>
 
+        <div className="cmd-fit-overlays">
+          <label>
+            <input
+              type="checkbox"
+              checked={showNeighbourAges}
+              onChange={(e) => setShowNeighbourAges(e.target.checked)}
+            />
+            {ko
+              ? `이웃 나이 함께 보기 (${formatAge(snapLogAge(logAge - 0.5))} · ${formatAge(snapLogAge(logAge + 0.5))})`
+              : `Show neighbouring ages (${formatAge(snapLogAge(logAge - 0.5))} · ${formatAge(snapLogAge(logAge + 0.5))})`}
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              checked={showLiterature}
+              onChange={(e) => setShowLiterature(e.target.checked)}
+            />
+            {ko
+              ? `문헌값 등시선 겹쳐 보기 (${formatAge(data.cluster.ref_logage)} · ${data.cluster.ref_distance_pc.toFixed(0)} pc)`
+              : `Overlay the literature isochrone (${formatAge(data.cluster.ref_logage)} · ${data.cluster.ref_distance_pc.toFixed(0)} pc)`}
+          </label>
+        </div>
         <p className="cmd-fit-hint">
           {ko
-            ? '실선은 주계열 이전과 주계열, 점선은 주계열을 떠난 별의 자리입니다. 거리는 곡선을 위아래로, 소광은 붉고 어두운 쪽으로 대각선으로, 나이는 전향점의 위치를, 금속함량은 주계열 전체의 색을 바꿉니다. 시차 거리는 출발점일 뿐이고, 맞춘 값은 Step 5에서 문헌값과 비교합니다.'
+            ? '실선은 주계열 이전과 주계열, 점선은 주계열을 떠난 별의 자리입니다. 거리는 곡선을 위아래로, 소광은 붉고 어두운 쪽으로 대각선으로, 나이는 전향점의 위치를, 금속함량은 주계열 전체의 색을 바꿉니다. 시차 거리는 출발점일 뿐이고, 맞춘 값은 Step 5에서 문헌값과 비교합니다. 맞추기가 막히면 이웃 나이를 함께 켜서 전향점이 어느 쪽으로 움직이는지 보고, 그래도 막히면 문헌값 선을 겹쳐 어디서 갈리는지 확인하세요.'
             : 'Solid: pre-main-sequence and main sequence; dotted: post-main-sequence. Distance moves the curve vertically, extinction diagonally toward red and faint, age moves the turn-off, and metallicity shifts the colour of the whole sequence. The parallax distance is only a starting point; Step 5 compares your fit with the literature.'}
         </p>
         <p className="cmd-fit-assumptions">

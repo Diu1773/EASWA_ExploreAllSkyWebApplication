@@ -11598,3 +11598,40 @@ body {
   border-bottom: 1px dotted var(--border-light);
   cursor: help;
 }
+
+/* Step 3 (분석 준비) — 구성원 선별 기준 바꿔 보기 */
+.cluster-membership-lead,
+.cluster-membership-note {
+  margin: 0; max-width: 860px; font-size: 13.5px; line-height: 1.6; color: var(--text-secondary);
+}
+.cluster-membership-note { color: var(--text-muted); }
+.cluster-membership-body {
+  display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; margin: 12px 0;
+}
+.cluster-membership-controls { flex: 1 1 320px; min-width: 280px; display: grid; gap: 12px; }
+.cluster-membership-figure { flex: 0 1 340px; min-width: 260px; margin: 0; }
+.cluster-membership-figure svg {
+  width: 100%; height: auto; display: block;
+  background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px;
+}
+.cluster-membership-figure figcaption {
+  margin-top: 6px; font-size: 12px; line-height: 1.5; color: var(--text-muted);
+}
+.cluster-membership-figure .cm-in { fill: var(--accent); opacity: 0.85; }
+.cluster-membership-figure .cm-out { fill: var(--text-muted); opacity: 0.25; }
+.cluster-membership-ticks {
+  display: flex; justify-content: space-between; margin-top: 4px;
+  font-size: 11px; color: var(--text-muted);
+}
+.cluster-membership-ticks .on { color: var(--accent); }
+.cluster-membership-applied {
+  margin: 0 0 10px; font-family: var(--font-mono); font-size: 13px; color: var(--text-secondary);
+}
+
+/* 등시선 겹쳐 보기 토글 (Step 4) */
+.cmd-fit-overlays { display: flex; flex-wrap: wrap; gap: 8px 24px; }
+.cmd-fit-overlays label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13.5px; color: var(--text-secondary); cursor: pointer;
+}
+.cmd-fit-overlays input[type='checkbox'] { accent-color: var(--accent); }
