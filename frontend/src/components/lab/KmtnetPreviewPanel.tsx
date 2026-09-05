@@ -25,6 +25,7 @@ function PreviewCard({
   markerPosition,
   accentClass = '',
 }: PreviewCardProps) {
+  const lang = useLangStore((state) => state.lang);
   const left = `${(markerPosition.x / preview.cutout_width_px) * 100}%`;
   const top = `${(markerPosition.y / preview.cutout_height_px) * 100}%`;
 
@@ -37,6 +38,13 @@ function PreviewCard({
       <div className="ml-preview-stage">
         <img src={imageUrl} alt={title} className="ml-preview-image" />
         <div className="ml-preview-marker" style={{ left, top }} aria-hidden="true" />
+        {/* 이 프레임은 KMTNet 원본 영상이 아니라 차분영상의 원리를 보이기 위해 생성한
+            그림이다(backend/adapters/kmtnet_archive.py). 구경 시뮬레이션·3D 화면에는
+            같은 표기가 이미 붙어 있었는데 여기만 빠져 있었고, 옆에 HJD·등급·노출시간이
+            함께 떠서 실제 관측처럼 읽혔다. 원고 4.4 도 이 표기가 있다고 적고 있다. */}
+        <span className="ml-preview-sim-tag">
+          {lang === 'ko' ? '개념 시연 · 실제 관측 영상 아님' : 'Concept demo · not an observation'}
+        </span>
       </div>
     </article>
   );
