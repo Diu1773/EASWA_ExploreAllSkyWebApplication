@@ -203,7 +203,8 @@ export function RecordDetail() {
             line — "← 내 분석 기록기록 #14". Same shape as the block header. */}
         <div className="inquiry-layout-header-copy">
           <Link to="/my" className="back-link">
-            &larr; {lang === 'ko' ? '내 분석 기록' : 'Back to My Analyses'}
+            <svg className="back-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
+            {lang === 'ko' ? '내 분석 기록' : 'Back to My Analyses'}
           </Link>
           <span className="analysis-record-kicker">
             {lang === 'ko' ? '기록' : 'Record'} #{record?.submission_id ?? numericRecordId}

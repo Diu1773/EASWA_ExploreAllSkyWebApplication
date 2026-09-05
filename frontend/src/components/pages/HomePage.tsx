@@ -36,7 +36,7 @@ const HERO = {
     ko: '코딩 없이 웹에서 바로 — MAST 기반 TESS 공개 관측자료로 외계행성 식현상을 확인하고, KMTNet 관측소 네트워크 자료로 미시중력렌즈 이벤트를 추적합니다. 학생과 시민이 공공 천문자료를 직접 보고 해석하는 과학 탐구 경험을 제공합니다.',
     en: 'Right in the browser, no coding — confirm exoplanet transits with light curves from the NASA TESS satellite, and track microlensing events through the KMTNet observatory network. A science inquiry experience where students and citizens view and interpret data themselves.',
   },
-  ctaStart: { ko: '탐구 바로 시작 →', en: 'Start exploring →' },
+  ctaStart: { ko: '탐구 바로 시작', en: 'Start exploring' },
   modulesLabel: { ko: '탐구 모듈 선택', en: 'Choose an inquiry module' },
 } as const;
 

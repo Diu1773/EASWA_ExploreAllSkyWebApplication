@@ -60,7 +60,7 @@ export function StepPanel({
           question — not the generic "탐구 기록" heading — is what the eye lands on. */}
       {step.recordFields.length > 0 && (
         <section className="inquiry-record-fields">
-          <span className="inquiry-panel-kicker">{lang === 'ko' ? '✍️ 탐구 기록' : '✍️ Inquiry Notes'}</span>
+          <span className="inquiry-panel-kicker">{lang === 'ko' ? '탐구 기록' : 'Inquiry Notes'}</span>
           {step.recordFields.map((field) => {
             const fieldId = `${step.id}:${field.id}`;
             const raw = notes[fieldId] ?? '';

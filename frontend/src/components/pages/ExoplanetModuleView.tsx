@@ -348,7 +348,7 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
         // 눌렀는데 갑자기 step1로 오더니 전천 깨짐"). A target id in the URL already
         // means one is selected; the object only fills the context header.
         ready: Boolean(targetId),
-        label: { ko: '이 대상으로 확인 →', en: 'Confirm this target →' },
+        label: { ko: '이 대상으로 확인', en: 'Confirm this target' },
         hint: { ko: '먼저 지도에서 대상을 선택하세요.', en: 'Select a target on the map first.' },
       }}
       metadataSlot={metadataSlot}

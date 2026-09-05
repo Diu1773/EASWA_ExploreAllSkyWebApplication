@@ -79,7 +79,8 @@ export function TargetDetail() {
     <div className="target-detail">
       <div className="detail-header">
         <Link to={backHref} className="back-link">
-          &larr; {backLabel}
+          <svg className="back-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
+          {backLabel}
         </Link>
         <div className="detail-overview">
           <div className="detail-summary">

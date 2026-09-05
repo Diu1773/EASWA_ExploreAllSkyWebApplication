@@ -40,7 +40,8 @@ export function ObservatorySelectPage() {
 
         <header className="edu-header">
           <Link to="/kmtnet" className="back-link">
-            &larr; {lang === 'ko' ? 'KMTNet 소개' : 'KMTNet Introduction'}
+            <svg className="back-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
+            {lang === 'ko' ? 'KMTNet 소개' : 'KMTNet Introduction'}
           </Link>
           <span className="page-chip">
             KMTNet · {lang === 'ko' ? '관측소 선택' : 'Observatory Selection'}

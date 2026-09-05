@@ -223,7 +223,12 @@ export function InquiryLayout<TContext = unknown>({
   );
   const activeStep = module.steps.find((step) => step.id === activeStepId) ?? module.steps[0];
   const stepIndex = module.steps.findIndex((step) => step.id === activeStep.id);
-  const maxUnlocked = maxUnlockedStepIndex ?? module.steps.length - 1;
+  // 사본 전용 — 디자인 검토·자동 캡처용으로 단계 잠김을 푼다.
+  // 이 분기는 worktree(worktree-design-tool-screens)에만 있고 main 에 넣지 않는다.
+  const previewUnlock = searchParams.get('unlock') === '1';
+  const maxUnlocked = previewUnlock
+    ? module.steps.length - 1
+    : (maxUnlockedStepIndex ?? module.steps.length - 1);
   const selectionStepIndex = module.steps.findIndex((step) => step.kind === 'selection');
 
   // A URL can point past the gate (stale bookmark, hand-edited ?blockStep=):
@@ -231,10 +236,11 @@ export function InquiryLayout<TContext = unknown>({
   // the fit that unlocks Steps 5–6 is read in a mount effect — clamping eagerly
   // would demote a legitimately unlocked learner during that first frame.
   useEffect(() => {
+    if (previewUnlock) return;
     if (stepIndex > maxUnlocked) {
       setActiveStepId(module.steps[Math.max(maxUnlocked, 0)].id, { replace: true });
     }
-  }, [stepIndex, maxUnlocked, module.steps]);
+  }, [previewUnlock, stepIndex, maxUnlocked, module.steps]);
 
   // No target, but sitting on a step past selection — the shape you land in when
   // back/forward drops ?target= from a deep step's URL (reported 2026-07-18:
@@ -242,6 +248,7 @@ export function InquiryLayout<TContext = unknown>({
   // learner back to the selection step so the state is coherent.
   const selectionReady = selectionConfirm ? selectionConfirm.ready : true;
   useEffect(() => {
+    if (previewUnlock) return;
     if (
       !selectionReady &&
       selectionStepIndex >= 0 &&
@@ -249,7 +256,7 @@ export function InquiryLayout<TContext = unknown>({
     ) {
       setActiveStepId(module.steps[selectionStepIndex].id, { replace: true });
     }
-  }, [selectionReady, selectionStepIndex, stepIndex, module.steps]);
+  }, [previewUnlock, selectionReady, selectionStepIndex, stepIndex, module.steps]);
   const goToStep = (delta: number) => {
     const next = module.steps[stepIndex + delta];
     if (next) setActiveStepId(next.id);
@@ -410,8 +417,8 @@ export function InquiryLayout<TContext = unknown>({
       (lang === 'ko' ? '먼저 지도에서 대상을 선택하세요.' : 'Select a target on the map first.')
     : !isStepAnswered(activeStep)
     ? lang === 'ko'
-      ? '다음 단계로 가려면 이 단계의 ✍️ 탐구 기록을 한 가지 이상 작성하세요.'
-      : 'Write at least one ✍️ inquiry note in this step to continue.'
+      ? '다음 단계로 가려면 이 단계의 탐구 기록을 한 가지 이상 작성하세요.'
+      : 'Write at least one inquiry note in this step to continue.'
     : stepIndex >= maxUnlocked
       ? activeStep.kind === 'visualization'
         ? lang === 'ko'
@@ -563,10 +570,14 @@ export function InquiryLayout<TContext = unknown>({
             (inline-flex) used to run together on one line — "← 홈모듈형 탐구블럭". */}
         <div className="inquiry-layout-header-copy">
           <Link to="/" className="back-link">
-            &larr; {lang === 'ko' ? '홈' : 'Home'}
+            <svg className="back-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
+            {lang === 'ko' ? '홈' : 'Home'}
           </Link>
           <h1>{localize(module.title, lang)}</h1>
-          <p>{localize(module.description, lang)}</p>
+          {/* 설명은 0단계에서만. 뒤 단계에서 매번 되풀이하면 한 화면의 덩어리가
+              늘고 자료가 밀린다 — 분석 단계 첫 화면에 그림이 0개였던 원인 중 하나.
+              근거: DESIGN_HARNESS_EASWA.md §4-1 규칙 2. */}
+          {stepIndex === 0 && <p>{localize(module.description, lang)}</p>}
         </div>
         {/* Hides itself when there is nothing saved for this target. */}
         <StartOverButton moduleId={module.id} targetId={draftTargetId} savedAt={savedAt} />
@@ -627,7 +638,7 @@ export function InquiryLayout<TContext = unknown>({
               disabled={stepIndex <= 0}
               onClick={() => goToStep(-1)}
             >
-              ← {lang === 'ko' ? '이전 단계' : 'Previous'}
+              {lang === 'ko' ? '이전 단계' : 'Previous'}
             </button>
             <span className="inquiry-step-progress">
               {activeStep.number} / {module.steps[module.steps.length - 1].number}
@@ -664,7 +675,7 @@ export function InquiryLayout<TContext = unknown>({
                 title={nextBlockedReason ?? undefined}
                 onClick={() => goToStep(1)}
               >
-                {lang === 'ko' ? '다음 단계' : 'Next'} →
+                {lang === 'ko' ? '다음 단계' : 'Next'}
               </button>
             ) : (
               <button

@@ -192,7 +192,7 @@ export function KmtnetIntroPage() {
 
         {/* 헤더 */}
         <header className="edu-header">
-          <Link to="/" className="back-link">&larr; {lang === 'ko' ? '홈' : 'Home'}</Link>
+          <Link to="/" className="back-link"><svg className="back-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>{lang === 'ko' ? '홈' : 'Home'}</Link>
           <span className="page-chip">KASI KMTNet · Gravitational Microlensing</span>
           <h1>
             {lang === 'ko'
@@ -341,7 +341,7 @@ export function KmtnetIntroPage() {
           </div>
           <div className="edu-cta-actions">
             <Link to="/kmtnet/sites" className="btn-primary">
-              {lang === 'ko' ? '관측소 선택 →' : 'Choose Observatory →'}
+              {lang === 'ko' ? '관측소 선택' : 'Choose Observatory'}
             </Link>
             <Link to="/" className="btn-secondary">
               {lang === 'ko' ? '홈으로' : 'Back to Home'}

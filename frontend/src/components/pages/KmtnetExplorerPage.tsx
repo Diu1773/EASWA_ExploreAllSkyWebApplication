@@ -69,7 +69,7 @@ function KmtnetEventPopup({ event, onGoto, onExplore, onClose }: PopupProps) {
           GoTo ↗
         </button>
         <button className="btn-primary" onClick={onExplore}>
-          {lang === 'ko' ? '탐구 시작 →' : 'Start Investigation →'}
+          {lang === 'ko' ? '탐구 시작' : 'Start Investigation'}
         </button>
       </div>
     </div>
@@ -139,7 +139,8 @@ export function KmtnetExplorerPage() {
 
         <header className="edu-header">
           <Link to="/kmtnet/sites" className="back-link">
-            &larr; {lang === 'ko' ? '관측소 선택' : 'Choose Observatory'}
+            <svg className="back-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
+            {lang === 'ko' ? '관측소 선택' : 'Choose Observatory'}
           </Link>
           <span className="page-chip">KMTNet · {siteLabel}</span>
           <h1>{lang === 'ko' ? '미시중력렌즈 이벤트 탐구' : 'Microlensing Event Investigation'}</h1>
@@ -303,7 +304,7 @@ export function KmtnetExplorerPage() {
                         className="btn-primary kmtnet-event-cta"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        {lang === 'ko' ? '탐구 시작 →' : 'Start Investigation →'}
+                        {lang === 'ko' ? '탐구 시작' : 'Start Investigation'}
                       </Link>
                     </div>
                   </article>
