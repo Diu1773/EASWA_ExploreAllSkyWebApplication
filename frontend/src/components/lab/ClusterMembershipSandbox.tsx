@@ -75,7 +75,7 @@ export function ClusterMembershipSandbox({
   return (
     <section className="inquiry-info-panel cluster-membership">
       <span className="inquiry-panel-kicker">
-        {ko ? '구성원 선별 기준 바꿔 보기' : 'Try changing the membership criteria'}
+        {ko ? '성단 구성원 선별 기준 바꿔 보기' : 'Try changing the membership criteria'}
       </span>
 
       <p className="cluster-membership-lead">
@@ -88,7 +88,7 @@ export function ClusterMembershipSandbox({
         <div className="cluster-membership-controls">
           <div className="param-row">
             <label>
-              {ko ? '선별 기준' : 'Selection'}:{' '}
+              {ko ? '성단 구성원 선별' : 'Selection'}:{' '}
               <strong>{MEMBERSHIP_LABELS[level][ko ? 'ko' : 'en']}</strong>
               {level === 2 && (
                 <span className="cmd-fit-sub">{ko ? '문헌이 쓴 기준' : 'the published window'}</span>

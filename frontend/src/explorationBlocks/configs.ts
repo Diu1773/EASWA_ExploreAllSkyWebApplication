@@ -545,7 +545,7 @@ export const clusterCmdModule: ExplorationModuleConfig = {
     ],
     parameters: [
       { id: 'color_index', label: { ko: '색지수', en: 'Color index' }, value: 'Gaia BP-RP', adjustable: false },
-      { id: 'membership_cut', label: { ko: '구성원 선별', en: 'Member selection' }, value: { ko: '시차·고유운동 기반', en: 'Parallax + proper motion' }, adjustable: false },
+      { id: 'membership_cut', label: { ko: '성단 구성원 선별', en: 'Cluster membership selection' }, value: { ko: '시차·고유운동 기반', en: 'Parallax + proper motion' }, adjustable: false },
       { id: 'extinction', label: { ko: '소광 보정', en: 'Extinction correction' }, value: { ko: '수동 확인', en: 'Manual review' }, adjustable: true },
     ],
     assumptions: [
@@ -554,7 +554,7 @@ export const clusterCmdModule: ExplorationModuleConfig = {
     ],
     qualitySignals: [
       { ko: '측광 오차', en: 'Photometric error' },
-      { ko: '구성원 선별 기준', en: 'Membership criteria' },
+      { ko: '성단 구성원 선별 기준', en: 'Cluster membership criteria' },
       { ko: 'outlier 비율', en: 'Outlier fraction' },
     ],
   },

@@ -12,7 +12,6 @@ import { ClusterDataPanel } from '../lab/ClusterDataPanel';
 import { ClusterMembershipSandbox } from '../lab/ClusterMembershipSandbox';
 import {
   DEFAULT_MEMBERSHIP_LEVEL,
-  MEMBERSHIP_LABELS,
   withMembership,
   type MembershipLevel,
 } from '../../utils/clusterMembership';
@@ -132,12 +131,12 @@ export function ClusterModuleView({ module }: ClusterModuleViewProps) {
     if (filtered) {
       return (
         <>
-          <p className="cluster-membership-applied">
-            {lang === 'ko'
-              ? `구성원 선별: ${MEMBERSHIP_LABELS[membershipLevel].ko} · 별 ${filtered.member_count.toLocaleString()}개 (Step 3에서 바꿀 수 있습니다)`
-              : `Membership: ${MEMBERSHIP_LABELS[membershipLevel].en} · ${filtered.member_count.toLocaleString()} stars (change it in Step 3)`}
-          </p>
-          <ClusterCmdVisualizer data={filtered} onFitChange={setFitInfo} />
+          <ClusterCmdVisualizer
+            data={filtered}
+            onFitChange={setFitInfo}
+            membershipLevel={membershipLevel}
+            onMembershipLevelChange={setMembershipLevel}
+          />
         </>
       );
     }

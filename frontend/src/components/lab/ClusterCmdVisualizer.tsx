@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import PlotlyModule from 'plotly.js-dist-min';
 import { useLangStore } from '../../i18n';
 import type { ClusterCmdResponse } from '../../api/client';
+import { MEMBERSHIP_LABELS, type MembershipLevel } from '../../utils/clusterMembership';
 import parsecGridJson from '../../data/parsecGaiaIsochrones.json';
 
 const plotly = (PlotlyModule as any).default ?? (PlotlyModule as any);
@@ -75,18 +76,34 @@ export interface ClusterFitInfo {
 interface ClusterCmdVisualizerProps {
   data: ClusterCmdResponse;
   onFitChange?: (info: ClusterFitInfo) => void;
+  /** Set in Step 3; repeated here so the analysis screen can adjust it without
+   *  walking back a step. */
+  membershipLevel?: MembershipLevel;
+  onMembershipLevelChange?: (level: MembershipLevel) => void;
 }
 
-export function ClusterCmdVisualizer({ data, onFitChange }: ClusterCmdVisualizerProps) {
+export function ClusterCmdVisualizer({
+  data,
+  onFitChange,
+  membershipLevel,
+  onMembershipLevelChange,
+}: ClusterCmdVisualizerProps) {
   const lang = useLangStore((state) => state.lang);
   const plotRef = useRef<HTMLDivElement>(null);
+
+  // 측광이 얼마나 확실한 별만 볼지. Gaia 의 밝기 신호대잡음(phot_g_mean_flux_over_error)로
+  // 거른다 — 어두운 별일수록 값이 작고, 올리면 아래쪽 산포가 먼저 걷힌다.
+  const [snrFloor, setSnrFloor] = useState(0);
 
   const points = useMemo(
     () =>
       data.members.filter(
-        (member) => Number.isFinite(member.bp_rp) && Number.isFinite(member.g_mag),
+        (member) =>
+          Number.isFinite(member.bp_rp) &&
+          Number.isFinite(member.g_mag) &&
+          (snrFloor <= 0 || (member.g_flux_snr ?? 0) >= snrFloor),
       ),
-    [data.members],
+    [data.members, snrFloor],
   );
 
   // Prior: distance modulus from the median parallax (a starting guess only).
@@ -206,7 +223,8 @@ export function ClusterCmdVisualizer({ data, onFitChange }: ClusterCmdVisualizer
       height: 430,
       paper_bgcolor: 'rgba(0,0,0,0)',
       plot_bgcolor: 'rgba(5, 10, 18, 0.72)',
-      showlegend: false,
+      showlegend: true,
+      legend: { orientation: 'h', y: -0.22, font: { color: '#cbd5e1', size: 11 } },
       font: { family: 'IBM Plex Mono, monospace', color: '#cbd5e1', size: 11 },
     };
 
@@ -282,6 +300,42 @@ export function ClusterCmdVisualizer({ data, onFitChange }: ClusterCmdVisualizer
     <div className="cluster-cmd-visualizer">
       <div ref={plotRef} style={{ width: '100%', minHeight: 430 }} />
 
+      {membershipLevel !== undefined && onMembershipLevelChange && (
+        <div className="cluster-cmd-filters">
+          <label>
+            {ko ? '성단 구성원 선별' : 'Cluster membership'}
+            <select
+              value={membershipLevel}
+              onChange={(e) => onMembershipLevelChange(Number(e.target.value) as MembershipLevel)}
+            >
+              {([0, 1, 2, 3, 4] as MembershipLevel[]).map((l) => (
+                <option key={l} value={l}>
+                  {MEMBERSHIP_LABELS[l][ko ? 'ko' : 'en']}
+                  {l === 2 ? (ko ? ' (문헌 기준)' : ' (published)') : ''}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label
+            title={
+              ko
+                ? '측광 신호대잡음: 별빛을 얼마나 확실하게 쟀는지. 어두운 별일수록 값이 작아, 문턱을 올리면 아래쪽 산포부터 걷힙니다.'
+                : 'Photometric signal-to-noise: how firmly the brightness was measured. Fainter stars score lower, so raising the floor clears the scatter at the bottom first.'
+            }
+          >
+            {ko ? '측광 신호대잡음' : 'Photometric S/N'}
+            <select value={snrFloor} onChange={(e) => setSnrFloor(Number(e.target.value))}>
+              <option value={0}>{ko ? '전체' : 'All'}</option>
+              <option value={200}>≥ 200</option>
+              <option value={500}>≥ 500</option>
+              <option value={1000}>≥ 1000</option>
+            </select>
+          </label>
+          <span className="count">
+            {ko ? `별 ${points.length.toLocaleString()}개` : `${points.length.toLocaleString()} stars`}
+          </span>
+        </div>
+      )}
       <div className="cmd-fit">
         <div className="cmd-fit-head">
           {/* 「등시선」은 교육과정 밖 용어다. 표기 규칙(docs/TERMS_KO.md §1-0)에 따라
@@ -318,8 +372,8 @@ export function ClusterCmdVisualizer({ data, onFitChange }: ClusterCmdVisualizer
 
         <p className="cmd-fit-gloss">
           {ko
-            ? '등시선은 같은 시기에 태어나 조성이 같은 별들이 이 그림에서 이루는 선입니다. 나이가 많을수록 무거운 별부터 주계열을 떠나므로 선의 모양이 달라집니다. 아래 네 값을 움직여 이 선을 별들에 겹쳐 보세요.'
-            : 'An isochrone is the line stars of one age and composition trace on this diagram. As age grows the massive stars leave the main sequence first, so the line changes shape. Move the four controls below to lay it over the stars.'}
+            ? '등시선은 같은 시기에 태어나 조성이 같은 별들이 이 그림에서 이루는 선입니다. 네 값을 움직여 별들에 겹쳐 보세요.'
+            : 'An isochrone is the line stars of one age and composition trace here. Move the four controls to lay it over the stars.'}
         </p>
 
         <div className="cmd-fit-grid">
@@ -373,7 +427,7 @@ export function ClusterCmdVisualizer({ data, onFitChange }: ClusterCmdVisualizer
               </span>
               : <strong>{av.toFixed(2)}</strong>
               <span className="cmd-fit-sub">
-                {ko ? '별빛을 가려 어둡고 붉게 · ' : 'dims and reddens · '}E(BP-RP) {(E_BPRP_PER_AV * av).toFixed(2)}
+E(BP-RP) {(E_BPRP_PER_AV * av).toFixed(2)}
               </span>
             </label>
             <input
@@ -402,9 +456,7 @@ export function ClusterCmdVisualizer({ data, onFitChange }: ClusterCmdVisualizer
                 {MH_VALUES[zIndex].toFixed(2)}
               </strong>
               <span className="cmd-fit-sub">
-                {ko
-                  ? `무거운 원소의 양, 태양이 0 · Z ${Z_KEYS[zIndex]}`
-                  : `heavy-element content, Sun = 0 · Z ${Z_KEYS[zIndex]}`}
+{ko ? `태양 대비 · Z ${Z_KEYS[zIndex]}` : `vs the Sun · Z ${Z_KEYS[zIndex]}`}
               </span>
             </label>
             <input
@@ -440,16 +492,14 @@ export function ClusterCmdVisualizer({ data, onFitChange }: ClusterCmdVisualizer
               : `Overlay the literature isochrone (${formatAge(data.cluster.ref_logage)} · ${data.cluster.ref_distance_pc.toFixed(0)} pc)`}
           </label>
         </div>
-        <p className="cmd-fit-hint">
-          {ko
-            ? '실선은 주계열 이전과 주계열, 점선은 주계열을 떠난 별의 자리입니다. 거리는 곡선을 위아래로, 소광은 붉고 어두운 쪽으로 대각선으로, 나이는 전향점의 위치를, 금속함량은 주계열 전체의 색을 바꿉니다. 시차 거리는 출발점일 뿐이고, 맞춘 값은 Step 5에서 문헌값과 비교합니다. 맞추기가 막히면 이웃 나이를 함께 켜서 전향점이 어느 쪽으로 움직이는지 보고, 그래도 막히면 문헌값 선을 겹쳐 어디서 갈리는지 확인하세요.'
-            : 'Solid: pre-main-sequence and main sequence; dotted: post-main-sequence. Distance moves the curve vertically, extinction diagonally toward red and faint, age moves the turn-off, and metallicity shifts the colour of the whole sequence. The parallax distance is only a starting point; Step 5 compares your fit with the literature.'}
-        </p>
-        <p className="cmd-fit-assumptions">
-          {ko
-            ? '모델 가정: PARSEC v1.2S 등시선, Kroupa 초기질량함수, 소광 계수 A_G/A_V 0.806과 E(BP-RP)/A_V 0.429 (Wang & Chen 2019). 쌍성과 자전은 고려하지 않습니다. 네 값은 서로 바꿔 맞출 수 있으므로 겹침이 좋다고 해서 각 값이 맞다는 뜻은 아닙니다.'
-            : 'Model assumptions: PARSEC v1.2S isochrones, Kroupa IMF, extinction coefficients A_G/A_V 0.806 and E(BP-RP)/A_V 0.429 (Wang & Chen 2019). Binaries and rotation are not modelled. The four controls trade off against each other, so a good overlay does not mean each value is right.'}
-        </p>
+        <details className="cmd-fit-assumptions">
+          <summary>{ko ? '모델 가정' : 'Model assumptions'}</summary>
+          <p>
+            {ko
+              ? '모델 가정: PARSEC v1.2S 등시선, Kroupa 초기질량함수, 소광 계수 A_G/A_V 0.806과 E(BP-RP)/A_V 0.429 (Wang & Chen 2019). 쌍성과 자전은 고려하지 않습니다. 네 값은 서로 바꿔 맞출 수 있으므로 겹침이 좋다고 해서 각 값이 맞다는 뜻은 아닙니다.'
+              : 'Model assumptions: PARSEC v1.2S isochrones, Kroupa IMF, extinction coefficients A_G/A_V 0.806 and E(BP-RP)/A_V 0.429 (Wang & Chen 2019). Binaries and rotation are not modelled. The four controls trade off against each other, so a good overlay does not mean each value is right.'}
+          </p>
+        </details>
       </div>
 
       <p style={{ fontSize: 14.5, color: '#94a3b8', margin: '8px 0 0' }}>

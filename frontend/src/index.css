@@ -11524,14 +11524,15 @@ body {
 /* Cluster CMD Step 4: isochrone-fit controls. Mirrors the transit 측광 설정
    panel (.param-row) so the two analysis screens share one control idiom.
    Three sliders side by side, each capped at 280px; no box inside the slot. */
-.cmd-fit { margin-top: 12px; display: grid; gap: 12px; }
+.cmd-fit { margin-top: 12px; display: grid; gap: 12px; min-width: 0; }
 .cmd-fit-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
 .cmd-fit-head > strong { color: var(--text-heading); font-size: 14.5px; }
 .cmd-fit-summary { flex: 1 1 auto; font-family: var(--font-mono); font-size: 13.5px; color: var(--text-secondary); }
 .cmd-fit-head .btn-sm { margin-left: auto; }
 /* 슬라이더가 셋일 때 3열로 고정해 뒀는데 금속함량이 넷째로 들어오며 혼자 다음 줄로
    떨어졌다. 폭에 맞춰 열 수가 정해지도록 바꾼다. */
-.cmd-fit-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px 24px; max-width: 1180px; }
+.cmd-fit-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+  gap: 12px 24px; max-width: 1180px; width: 100%; min-width: 0; }
 .cmd-fit-grid .param-row { margin-bottom: 0; }
 .cmd-fit-sub { margin-left: 8px; font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); }
 .cmd-fit-hint { margin: 0; max-width: 860px; font-size: 13.5px; line-height: 1.5; color: var(--text-secondary); }
@@ -11635,3 +11636,22 @@ body {
   font-size: 13.5px; color: var(--text-secondary); cursor: pointer;
 }
 .cmd-fit-overlays input[type='checkbox'] { accent-color: var(--accent); }
+
+/* 좁은 칸에서 슬라이더 격자가 칸보다 넓어져 잘리던 것 — 부모가 줄어들 수 있게 한다. */
+.cluster-cmd-visualizer { min-width: 0; }
+.cmd-fit-grid .param-row { min-width: 0; }
+.cluster-cmd-filters {
+  display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center;
+  margin: 0 0 10px; font-size: 13.5px; color: var(--text-secondary);
+}
+.cluster-cmd-filters label { display: flex; align-items: center; gap: 6px; }
+.cluster-cmd-filters select {
+  padding: 3px 6px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--bg-secondary); color: var(--text-heading);
+  font-family: var(--font-mono); font-size: 13px;
+}
+.cluster-cmd-filters .count { font-family: var(--font-mono); color: var(--text-muted); }
+.cmd-fit-assumptions summary {
+  cursor: pointer; font-size: 12px; color: var(--text-muted); list-style: revert;
+}
+.cmd-fit-assumptions p { margin: 6px 0 0; font-size: 12px; line-height: 1.5; color: var(--text-muted); }
