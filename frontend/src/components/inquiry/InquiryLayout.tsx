@@ -395,12 +395,46 @@ export function InquiryLayout<TContext = unknown>({
       return raw !== undefined && raw.trim() !== '' && raw !== '[]';
     });
 
+  const isFieldFilled = (step: (typeof module.steps)[number], fieldId: string) => {
+    const raw = notes[`${step.id}:${fieldId}`];
+    return raw !== undefined && raw.trim() !== '' && raw !== '[]';
+  };
+
+  /** Every 생각해보기 and every record field on this step, still blank. */
+  const unansweredOnStep = (step: (typeof module.steps)[number]) => {
+    const checks = (step.selfChecks ?? []).filter(
+      (item) => selfCheckAnswers[`${step.id}:${item.id}`] === undefined,
+    ).length;
+    const fields = step.recordFields.filter((field) => !isFieldFilled(step, field.id)).length;
+    return checks + fields;
+  };
+
+  // The full-completion gate runs on the deployed site only. Locally (5173 dev
+  // and the 5895 production build) every screen has to stay walkable while the
+  // app is being built and checked, and filling every box on the way is not
+  // that. Hostname, not import.meta.env.PROD: 5895 serves the production build.
+  // `?gate=1` turns it on locally so the behaviour can actually be checked
+  // before it ships; `?gate=0` turns it off on the deployed site if a session
+  // ever needs to walk past it.
+  const answerGateOn = (() => {
+    try {
+      const flag = new URLSearchParams(window.location.search).get('gate');
+      if (flag === '1') return true;
+      if (flag === '0') return false;
+      const host = window.location.hostname;
+      return !(host === 'localhost' || host === '127.0.0.1' || host === '::1' || host === '[::1]');
+    } catch {
+      return false;
+    }
+  })();
+  const unansweredHere = answerGateOn ? unansweredOnStep(activeStep) : 0;
+
   // The selection step now gates "다음 단계" directly on having a target — no
   // separate "이 대상으로 확인" button. Picking a target on the map (which pops
   // its info panel showing it as selected) is the confirmation.
   const selectionUnmet =
     activeStep.kind === 'selection' && Boolean(selectionConfirm) && !selectionConfirm?.ready;
-  const gateBlocked = !isStepAnswered(activeStep) || selectionUnmet;
+  const gateBlocked = !isStepAnswered(activeStep) || selectionUnmet || unansweredHere > 0;
 
   // Why "다음 단계" is unavailable, or null when it is. Never hide the button:
   // a missing control reads as a broken page (the learner finished the Lab fit
@@ -408,6 +442,10 @@ export function InquiryLayout<TContext = unknown>({
   const nextBlockedReason: string | null = selectionUnmet
     ? selectionConfirm?.hint[lang] ??
       (lang === 'ko' ? '먼저 지도에서 대상을 선택하세요.' : 'Select a target on the map first.')
+    : unansweredHere > 0
+    ? lang === 'ko'
+      ? `이 단계에 아직 답하지 않은 문항이 ${unansweredHere}개 있습니다. 모두 답해야 다음 단계로 넘어갑니다. 답을 모르겠으면 「모르겠다」라고 적어도 됩니다.`
+      : `${unansweredHere} item${unansweredHere > 1 ? 's' : ''} on this step still have no answer. Answer them all to continue — writing "I don't know" counts.`
     : !isStepAnswered(activeStep)
     ? lang === 'ko'
       ? '다음 단계로 가려면 이 단계의 탐구 기록을 한 가지 이상 작성하세요.'
