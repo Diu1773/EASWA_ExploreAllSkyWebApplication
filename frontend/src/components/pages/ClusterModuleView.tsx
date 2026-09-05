@@ -125,50 +125,97 @@ export function ClusterModuleView({ module }: ClusterModuleViewProps) {
 
   const context = useMemo(() => ({ clusterData: data }), [data]);
 
-  const comparisonSlot = fitInfo && data ? (
-    <section className="inquiry-info-panel">
-      <span className="inquiry-panel-kicker">
-        {lang === 'ko' ? '맞춘 거리 ↔ 시차 거리 (Gaia)' : 'Fitted distance ↔ parallax (Gaia)'}
-      </span>
-      <h3>{lang === 'ko' ? data.cluster.name_ko : data.cluster.name}</h3>
-      <table className="inquiry-compare-table">
-        <thead>
-          <tr>
-            <th>{lang === 'ko' ? '항목' : 'Quantity'}</th>
-            <th>{lang === 'ko' ? '주계열 맞춤(내 추정)' : 'MS fit (yours)'}</th>
-            <th>{lang === 'ko' ? '시차 기반(Gaia)' : 'Parallax (Gaia)'}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>{lang === 'ko' ? '거리 (pc)' : 'Distance (pc)'}</td>
-            <td>{fitInfo.distancePc.toFixed(0)}</td>
-            <td>{fitInfo.priorDistancePc.toFixed(0)}</td>
-          </tr>
-          <tr>
-            <td>{lang === 'ko' ? '거리계수 m-M' : 'Distance modulus'}</td>
-            <td>{fitInfo.distanceModulus.toFixed(2)}</td>
-            <td>{fitInfo.priorModulus.toFixed(2)}</td>
-          </tr>
-          <tr>
-            <td>{lang === 'ko' ? '적색화 E(B-V)' : 'Reddening E(B-V)'}</td>
-            <td>{fitInfo.reddening.toFixed(2)}</td>
-            <td>—</td>
-          </tr>
-        </tbody>
-      </table>
-      <div className="inquiry-callout">
-        {lang === 'ko'
-          ? '두 거리가 다르다면 소광 보정·구성원 오염·표준 주계열 가정 중 무엇으로 설명할 수 있나요? 시차는 직접 측정값이고, 맞춘 거리는 표준 주계열 가정에 의존합니다.'
-          : 'If the two differ, what explains it — extinction, member contamination, or the standard-sequence assumption? Parallax is a direct measurement; the fit depends on the assumed sequence.'}
-      </div>
-    </section>
-  ) : (
+  const comparisonSlot = fitInfo && data ? (() => {
+    const ko = lang === 'ko';
+    const ref = data.cluster;
+    const pct = (mine: number, lit: number) => (lit ? `${(((mine - lit) / lit) * 100).toFixed(0)}%` : '—');
+    const signed = (v: number, digits: number) => `${v >= 0 ? '+' : ''}${v.toFixed(digits)}`;
+    const refAgeGyr = ref.ref_age_gyr;
+    const rows: Array<{ label: string; mine: string; parallax: string; lit: string; diff: string }> = [
+      {
+        label: ko ? '거리 (pc)' : 'Distance (pc)',
+        mine: fitInfo.distancePc.toFixed(0),
+        parallax: fitInfo.priorDistancePc.toFixed(0),
+        lit: ref.ref_distance_pc.toFixed(0),
+        diff: pct(fitInfo.distancePc, ref.ref_distance_pc),
+      },
+      {
+        label: ko ? '거리계수 m-M' : 'Distance modulus m-M',
+        mine: fitInfo.distanceModulus.toFixed(2),
+        parallax: fitInfo.priorModulus.toFixed(2),
+        lit: ref.ref_distance_modulus.toFixed(2),
+        diff: `${signed(fitInfo.distanceModulus - ref.ref_distance_modulus, 2)} mag`,
+      },
+      {
+        label: ko ? '나이 (Gyr)' : 'Age (Gyr)',
+        mine: fitInfo.ageGyr.toFixed(2),
+        parallax: '—',
+        lit: refAgeGyr.toFixed(2),
+        diff: pct(fitInfo.ageGyr, refAgeGyr),
+      },
+      {
+        label: ko ? '나이 log(t/yr)' : 'Age log(t/yr)',
+        mine: fitInfo.logAge.toFixed(1),
+        parallax: '—',
+        lit: ref.ref_logage.toFixed(2),
+        diff: signed(fitInfo.logAge - ref.ref_logage, 2),
+      },
+      {
+        label: ko ? '소광 A_V (mag)' : 'Extinction A_V (mag)',
+        mine: fitInfo.av.toFixed(2),
+        parallax: '—',
+        lit: ref.ref_av.toFixed(2),
+        diff: `${signed(fitInfo.av - ref.ref_av, 2)} mag`,
+      },
+    ];
+    return (
+      <section className="inquiry-info-panel">
+        <span className="inquiry-panel-kicker">
+          {ko ? '내가 맞춘 값, Gaia 시차, 문헌값' : 'Your fit, Gaia parallax, literature'}
+        </span>
+        <h3>{ko ? ref.name_ko : ref.name}</h3>
+        <table className="inquiry-compare-table">
+          <thead>
+            <tr>
+              <th>{ko ? '항목' : 'Quantity'}</th>
+              <th>{ko ? '내 등시선 맞춤' : 'My isochrone fit'}</th>
+              <th>{ko ? '시차 기반 (Gaia)' : 'Parallax (Gaia)'}</th>
+              <th>{ko ? '문헌값' : 'Literature'}</th>
+              <th>{ko ? '내 값과 문헌값의 차이' : 'Fit minus literature'}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.label}>
+                <td>{row.label}</td>
+                <td>{row.mine}</td>
+                <td>{row.parallax}</td>
+                <td>{row.lit}</td>
+                <td>{row.diff}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="inquiry-compare-source">
+          {ko ? '문헌값 출처: ' : 'Literature source: '}
+          {ref.reference}
+          {ko
+            ? '. 문헌 거리는 Gaia 시차 기반이고, 나이와 소광은 그 논문의 신경망 추정값입니다.'
+            : '. The literature distance is parallax-based; age and extinction are that paper\'s neural-network estimates.'}
+        </p>
+        <div className="inquiry-callout">
+          {ko
+            ? '세 값 중 문헌과 가장 많이 어긋난 것은 무엇입니까. 그 차이를 소광 보정, 구성원 오염, 등시선 모델 가정(금속함량 고정, 쌍성 미고려) 중 무엇으로 설명할 수 있습니까. 거리와 소광은 서로 바꿔 맞출 수 있으므로, 한쪽을 문헌값에 두고 다른 쪽을 다시 맞춰 보십시오.'
+            : 'Which of the three values departs most from the literature? Can extinction, member contamination, or the isochrone assumptions (fixed metallicity, no binaries) explain it? Distance and extinction trade off, so fix one at the literature value and refit the other.'}
+        </div>
+      </section>
+    );
+  })() : (
     <div className="inquiry-lab-handoff">
       <p>
         {lang === 'ko'
-          ? 'Step 4에서 주계열을 맞춘 뒤, 그 거리를 시차 거리와 비교합니다.'
-          : 'Fit the main sequence in Step 4, then compare that distance with the parallax distance here.'}
+          ? 'Step 4에서 등시선을 맞춘 뒤, 그 나이·거리·소광을 시차 거리와 문헌값과 비교합니다.'
+          : 'Fit the isochrone in Step 4, then compare its age, distance and extinction with the parallax distance and the literature here.'}
       </p>
     </div>
   );

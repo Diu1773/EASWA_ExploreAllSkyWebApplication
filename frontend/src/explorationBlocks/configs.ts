@@ -426,13 +426,46 @@ export const clusterCmdModule: ExplorationModuleConfig = {
     step5_compare: {
       questions: [
         makePrompt('cmd_cmp_age', '두 성단의 전향점 위치를 비교하라. 전향점이 더 어두운 성단이 더 늙은 성단인 이유를 질량-수명 관계로 설명하고, 문헌 나이값과 네 판단이 일치하는지 확인하라.', 'Compare the turn-off positions of the two clusters. Using the mass-lifetime relation, explain why the cluster with the fainter turn-off is older, and check whether your judgment agrees with literature ages.'),
-        makePrompt('cmd_cmp_distance', '관측 주계열을 표준 주계열(절대등급)에 맞췄을 때의 등급 차이(거리계수 m-M)로 거리를 구하고(r = 10^((m-M+5)/5)), 문헌 거리와 비교하라.', 'Fit the observed main sequence to the standard main sequence (absolute magnitude); from the magnitude offset (distance modulus m-M) compute the distance (r = 10^((m-M+5)/5)) and compare with the literature value.'),
+        makePrompt('cmd_cmp_distance', '등시선을 별들에 겹쳤을 때의 거리계수 m-M으로 거리를 구하고(r = 10^((m-M+5)/5)), Gaia 시차 거리와 문헌 거리에 각각 얼마나 가까운지 확인하라. 소광 A_V를 올리면 같은 겹침을 더 작은 m-M으로도 만들 수 있다. 어느 쪽이 맞는지 무엇으로 가르겠는가?', 'From the distance modulus m-M of your isochrone overlay compute the distance (r = 10^((m-M+5)/5)) and check how close it is to the Gaia parallax distance and to the literature value. Raising A_V lets a smaller m-M produce the same overlay. What would tell the two apart?'),
+      ],
+      selfChecks: [
+        {
+          id: 'cmd_cmp_sc1',
+          type: 'ox',
+          question: {
+            ko: '등시선의 나이를 늘리면 주계열 전향점은 더 어둡고 붉은 쪽으로 내려간다.',
+            en: 'Increasing the isochrone age moves the main-sequence turn-off fainter and redder.',
+          },
+          correct: 'O',
+          explanation: {
+            ko: '무거운 별이 먼저 주계열을 떠나므로, 나이가 들수록 주계열에 남은 가장 밝은 별이 점점 어둡고 붉은 별로 바뀝니다. 전향점의 위치가 곧 나이의 잣대입니다.',
+            en: 'Massive stars leave the main sequence first, so with age the brightest star still on it becomes fainter and redder. The turn-off position is the age indicator.',
+          },
+        },
+        {
+          id: 'cmd_cmp_sc2',
+          type: 'choice',
+          question: {
+            ko: '거리계수 m-M은 그대로 두고 소광 A_V만 올리면 등시선은 어떻게 움직이는가?',
+            en: 'If you keep m-M fixed and only raise A_V, how does the isochrone move?',
+          },
+          options: [
+            { ko: '색은 붉어지고 등급은 어두워져 대각선으로 움직인다', en: 'It moves diagonally: redder and fainter' },
+            { ko: '등급만 어두워지고 색은 그대로다', en: 'Only fainter; colour unchanged' },
+            { ko: '색만 붉어지고 등급은 그대로다', en: 'Only redder; magnitude unchanged' },
+          ],
+          correctIndex: 0,
+          explanation: {
+            ko: '먼지는 별빛을 흡수해 어둡게 하고, 파란빛을 더 많이 흡수해 붉게도 합니다. 그래서 소광과 거리는 세로 방향에서 서로 바꿔 맞출 수 있고, 색 방향의 차이로만 둘을 가릅니다.',
+            en: 'Dust dims starlight and absorbs blue light more, so it also reddens. Extinction and distance therefore trade off vertically, and only the colour shift separates them.',
+          },
+        },
       ],
     },
     // Field ids match backend/survey_templates/cluster_record.json (v2) 1:1 —
-    // Step 6 IS the record form and the save panel submits these answers. The
-    // fitted distance is NOT retyped by the learner: it rides along in the
-    // record context (ms_fit) straight from the Step 4 fit.
+    // Step 6 IS the record form. The Step 4 isochrone fit (age, m-M, A_V) is
+    // shown in Step 5's comparison table; the cluster module does not pass
+    // anonSubmit, so nothing from this block reaches the anonymous sheet yet.
     step6_reflect: {
       questions: [
         makePrompt('cmd_reflect_claim', '이번 CMD로 주장할 수 있는 것과 주장할 수 없는 것을 각각 하나씩 적어라.', 'Write one thing this CMD lets you claim, and one thing it does not.'),
@@ -534,10 +567,11 @@ export const clusterCmdModule: ExplorationModuleConfig = {
     ],
   },
   comparisonConfig: {
-    referenceSource: { ko: '등시선 모델 또는 문헌 CMD', en: 'Isochrone model or literature CMD' },
+    referenceSource: { ko: 'PARSEC 등시선 맞춤과 Cantat-Gaudin 외(2020) 표 1', en: 'PARSEC isochrone fit and Cantat-Gaudin et al. (2020) Table 1' },
     comparisonValues: [
-      { id: 'age', label: { ko: '나이 추정', en: 'Age estimate' }, value: { ko: '전향점 위치로 상대 나이 비교', en: 'Relative age from turn-off position' } },
-      { id: 'distance', label: { ko: '거리 계수', en: 'Distance modulus' }, value: { ko: '시차 기반 거리와 문헌값 비교', en: 'Parallax distance vs literature value' } },
+      { id: 'age', label: { ko: '나이', en: 'Age' }, value: { ko: '등시선 나이와 문헌 나이 비교', en: 'Isochrone age vs literature age' } },
+      { id: 'distance', label: { ko: '거리계수 m-M', en: 'Distance modulus m-M' }, value: { ko: '등시선 거리, Gaia 시차 거리, 문헌 거리 비교', en: 'Isochrone distance vs parallax vs literature' } },
+      { id: 'extinction', label: { ko: '소광 A_V', en: 'Extinction A_V' }, value: { ko: '맞춘 소광과 문헌 소광 비교', en: 'Fitted vs literature extinction' } },
     ],
     qualityCriteria: [
       { ko: '구성원 선별이 불량하면 주계열이 두꺼워진다.', en: 'Poor membership selection broadens the main sequence.' },
@@ -659,6 +693,41 @@ export const kmtnetModule: ExplorationModuleConfig = {
     step4_run_visualize: {
       questions: [
         makePrompt('kmt_anomaly_signal', '광도곡선에서 매끄러운 증광 위에 행성 아노말리(짧은 이상신호)는 어디에 나타나는가?', 'Where on the smooth magnification does a planetary anomaly (brief deviation) appear?'),
+      ],
+    },
+    step5_compare: {
+      selfChecks: [
+        {
+          id: 'kmt_cmp_sc1',
+          type: 'ox',
+          question: {
+            ko: '아인슈타인 시간척도 t_E가 길게 측정되었다면, 그것만으로 렌즈의 질량을 바로 정할 수 있다.',
+            en: 'A long Einstein timescale t_E by itself pins down the lens mass.',
+          },
+          correct: 'X',
+          explanation: {
+            ko: 't_E는 렌즈 질량뿐 아니라 렌즈까지의 거리와 상대 고유운동에도 달려 있습니다. 같은 t_E를 무거운 렌즈가 빨리 지나가도, 가벼운 렌즈가 천천히 지나가도 만들 수 있으므로, 질량을 정하려면 다른 정보가 더 필요합니다.',
+            en: 't_E depends on the lens distance and relative proper motion as well as on the mass. A heavy lens moving fast and a light lens moving slowly give the same t_E, so extra information is needed to fix the mass.',
+          },
+        },
+        {
+          id: 'kmt_cmp_sc2',
+          type: 'choice',
+          question: {
+            ko: '세 관측소의 광도곡선을 하나로 합쳤을 때 아노말리 판정에 가장 도움이 되는 점은 무엇인가?',
+            en: 'When the light curves from the three sites are combined, what helps most in judging an anomaly?',
+          },
+          options: [
+            { ko: '한 관측소의 밤이 끝나도 다른 관측소가 이어 관측해 짧은 신호를 놓치지 않는다', en: 'When night ends at one site another continues, so a brief signal is not missed' },
+            { ko: '관측소마다 다른 밝기 영점이 저절로 같아진다', en: 'The different brightness zero-points of the sites become equal by themselves' },
+            { ko: '행성과 별의 질량비 q를 곡선에서 바로 읽을 수 있다', en: 'The planet-to-star mass ratio q can be read straight off the curve' },
+          ],
+          correctIndex: 0,
+          explanation: {
+            ko: '칠레, 남아공, 호주는 경도가 달라 밤이 이어집니다. 아노말리는 몇 시간에서 하루 안에 끝나므로 이 이어 붙이기가 핵심입니다. 영점은 관측소별로 맞춰 주어야 하고, q는 모델 적합으로 얻습니다.',
+            en: 'Chile, South Africa and Australia sit at different longitudes so their nights follow one another. Anomalies last hours to a day, so this coverage is what matters. Zero-points must be aligned per site, and q comes from the model fit.',
+          },
+        },
       ],
     },
     // Field ids match backend/survey_templates/kmtnet_record.json (v2) 1:1 —

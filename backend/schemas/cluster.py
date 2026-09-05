@@ -22,6 +22,8 @@ class ClusterInfo(BaseModel):
     ref_distance_pc: float
     ref_distance_modulus: float
     ref_age_gyr: float
+    ref_logage: float
+    ref_av: float
     reference: str
     note_ko: str
     note_en: str

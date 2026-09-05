@@ -141,6 +141,8 @@ export interface ClusterInfo {
   ref_distance_pc: number;
   ref_distance_modulus: number;
   ref_age_gyr: number;
+  ref_logage: number;
+  ref_av: number;
   reference: string;
   note_ko: string;
   note_en: string;

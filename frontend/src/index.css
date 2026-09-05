@@ -11528,3 +11528,27 @@ body {
 
 /* CMD intro: keep the turn-off label readable over dense point clouds */
 .cluster-intro-cmd-svg .ti-note { paint-order: stroke; stroke: rgba(11, 14, 20, 0.85); stroke-width: 3px; }
+
+/* Cluster CMD: isochrone-fit model assumptions and Step 5 source line */
+.cmd-fit-assumptions {
+  margin: 4px 0 0;
+  padding: 8px 10px;
+  border-left: 2px solid var(--border);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+.cmd-fit-assumptions dt {
+  font-family: var(--font-mono);
+  color: var(--text-heading);
+  margin-bottom: 2px;
+}
+.cmd-fit-assumptions dd {
+  margin: 0;
+}
+.inquiry-compare-source {
+  margin: 8px 0 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
