@@ -18,16 +18,14 @@
  * 수신 형식: POST body = JSON 문자열 (프런트는 preflight 회피를 위해
  * Content-Type: text/plain;charset=utf-8 로 보냄 — e.postData.contents로 동일하게 수신됨)
  *
- * 동작: (anon_id, target_id) 기준 upsert. 앱이 학습자의 입력이 멎을 때마다
- * 같은 키로 계속 보내므로, 한 학습자·한 대상은 시트에서 항상 한 행이고 그
- * 행이 갱신된다. 제출 버튼은 없다 — 기록은 쓰는 대로 올라온다.
+ * 동작: (anon_id, module, target_id) 기준 upsert. 앱이 학습자의 입력이 멎을 때마다
+ * 같은 키로 계속 보내므로, 한 학습자·한 모듈·한 대상은 시트에서 항상 한 행이고
+ * 그 행이 갱신된다. 제출 버튼은 없다 — 기록은 쓰는 대로 올라온다.
  *
  * ⚠️ 이 파일을 고친 뒤에는 "배포 관리 → 편집(연필) → 버전: 새 버전 → 배포"로
  * 재배포해야 반영된다. "새 배포"를 누르면 URL이 바뀌어 앱과 끊어진다.
- * ⚠️ HEADERS는 시트가 비어 있을 때만 기록된다. 이미 데이터가 있는 시트에 열을
- * 추가했다면 헤더 셀은 손으로 채워야 한다 — 데이터를 지울 필요는 없다.
- * (2026-07-18 logged_in 추가분: T1 셀에 `logged_in` 입력. 새 열은 반드시 맨
- *  끝에만 붙일 것 — buildRow_가 위치 기반이라 중간 삽입은 기존 행을 밀어버린다.)
+ * 새 열은 반드시 맨 끝에만 붙인다. ensureHeaders_가 기존 열 순서를 확인하고 비어 있는
+ * 후속 헤더만 채운다. 순서가 달라져 있으면 데이터를 밀어 쓰지 않고 오류로 멈춘다.
  */
 
 var HEADERS = [
@@ -101,13 +99,14 @@ function doPost(e) {
 
   try {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
-    if (sheet.getLastRow() === 0) {
-      sheet.appendRow(HEADERS);
-      sheet.setFrozenRows(1);
-    }
+    ensureHeaders_(sheet);
+
+    // 2026-09-06 이전 클라이언트는 module을 보내지 않았다. 당시 익명 기록은 모두
+    // 식현상 모듈이므로 호환 기본값을 명시하고, 이후에는 모듈까지 upsert 키에 넣는다.
+    data.module = normalizeModule_(data.module);
 
     var row = buildRow_(data);
-    var existing = findRow_(sheet, data.anon_id, data.target_id);
+    var existing = findRow_(sheet, data.anon_id, data.module, data.target_id);
     var rowNumber;
 
     if (existing > 0) {
@@ -130,21 +129,107 @@ function doPost(e) {
   }
 }
 
-/** (anon_id, target_id)로 기존 행 번호를 찾는다. 없으면 -1.
- *  두 열만 읽어 학급 규모에서 충분히 빠르다. */
-function findRow_(sheet, anonId, targetId) {
+/** (anon_id, module, target_id)로 기존 행 번호를 찾는다. 없으면 -1.
+ *  한 익명 세션이 세 모듈을 수행해도 모듈마다 한 행씩 남는다. */
+function findRow_(sheet, anonId, moduleId, targetId) {
   var last = sheet.getLastRow();
   if (last < 2) return -1;
   var anonCol = HEADERS.indexOf('anon_id') + 1;
+  var moduleCol = HEADERS.indexOf('module') + 1;
   var targetCol = HEADERS.indexOf('target_id') + 1;
   var anons = sheet.getRange(2, anonCol, last - 1, 1).getValues();
+  var modules = sheet.getRange(2, moduleCol, last - 1, 1).getValues();
   var targets = sheet.getRange(2, targetCol, last - 1, 1).getValues();
   for (var i = 0; i < anons.length; i++) {
-    if (String(anons[i][0]) === String(anonId) && String(targets[i][0]) === String(targetId)) {
+    if (
+      String(anons[i][0]) === String(anonId) &&
+      normalizeModule_(modules[i][0]) === normalizeModule_(moduleId) &&
+      String(targets[i][0]) === String(targetId)
+    ) {
       return i + 2; // 헤더 1행 + 0-index 보정
     }
   }
   return -1;
+}
+
+function normalizeModule_(value) {
+  var moduleId = truncate_(value, 32);
+  return moduleId || 'exoplanet-transit';
+}
+
+/**
+ * 기존 A:V 헤더를 보존하면서 W:X(module, derived_json)를 안전하게 붙인다.
+ * 중간 열이 바뀌어 있으면 위치 기반 기록이 틀어지므로 조용히 덮지 않고 실패한다.
+ */
+function ensureHeaders_(sheet) {
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(HEADERS);
+    sheet.setFrozenRows(1);
+    return;
+  }
+
+  var current = sheet.getRange(1, 1, 1, HEADERS.length).getValues()[0];
+  var needsWrite = false;
+  for (var i = 0; i < HEADERS.length; i++) {
+    var found = String(current[i] || '').trim();
+    if (found && found !== HEADERS[i]) {
+      throw new Error('header mismatch at column ' + (i + 1) + ': expected ' + HEADERS[i] + ', found ' + found);
+    }
+    if (!found) needsWrite = true;
+  }
+  if (needsWrite) sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
+  if (sheet.getFrozenRows() < 1) sheet.setFrozenRows(1);
+}
+
+/**
+ * 사람이 원자료에서 세 모듈을 바로 구분할 수 있게 읽기 전용 QUERY 탭을 만든다.
+ * 원자료는 첫 시트에만 쓰며, 이 탭들은 그 시트를 자동으로 비추므로 별도 동기화가 없다.
+ * Apps Script 편집기에서 이 함수를 한 번 실행하면 된다.
+ */
+function setupModuleViews() {
+  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  var rawSheet = spreadsheet.getSheets()[0];
+  ensureHeaders_(rawSheet);
+
+  var rawName = rawSheet.getName().replace(/'/g, "''");
+  var specs = [
+    {
+      name: '식현상',
+      color: '#e8722a',
+      query: "select W,A,B,C,D,E,F,G,H,I,J,M,N,O,Q,R,T,U,V where W = 'exoplanet-transit' or W is null label W '모듈', A '최초 저장', B '마지막 저장', C '상태', D '익명 세션', E '대상', F 'Rp/R*', G 'Rp/R* 오차', H '식깊이(%)', I '주기(일)', J 'chi2_red', M '자가점검 응답', N '자가점검 전체', O '자가점검 정답', Q 'Lab 응답 수', R '앱 버전', T '로그인 여부', U '도구 평점', V '도구 의견'"
+    },
+    {
+      name: 'KMTNet',
+      color: '#2563eb',
+      query: "select W,A,B,C,D,E,X,M,N,O,Q,R,T,U,V where W = 'kmtnet' label W '모듈', A '최초 저장', B '마지막 저장', C '상태', D '익명 세션', E '이벤트', X 'KMTNet 산출값(JSON)', M '자가점검 응답', N '자가점검 전체', O '자가점검 정답', Q 'Lab 응답 수', R '앱 버전', T '로그인 여부', U '도구 평점', V '도구 의견'"
+    },
+    {
+      name: '성단 CMD',
+      color: '#16a34a',
+      query: "select W,A,B,C,D,E,X,M,N,O,Q,R,T,U,V where W = 'cluster-cmd' label W '모듈', A '최초 저장', B '마지막 저장', C '상태', D '익명 세션', E '성단', X '성단 산출값(JSON)', M '자가점검 응답', N '자가점검 전체', O '자가점검 정답', Q 'Lab 응답 수', R '앱 버전', T '로그인 여부', U '도구 평점', V '도구 의견'"
+    }
+  ];
+
+  for (var i = 0; i < specs.length; i++) {
+    var spec = specs[i];
+    var view = spreadsheet.getSheetByName(spec.name);
+    if (!view) view = spreadsheet.insertSheet(spec.name);
+    var formula = "=QUERY('" + rawName + "'!A:X,\"" + spec.query.replace(/\"/g, '\"\"') + "\",1)";
+    var cell = view.getRange(1, 1);
+    var currentFormula = cell.getFormula();
+    if (currentFormula || view.getLastRow() === 0) {
+      cell.setFormula(formula);
+    }
+    view.setFrozenRows(1);
+    view.setFrozenColumns(1);
+    view.setTabColor(spec.color);
+    view.setColumnWidth(1, 140);
+    view.setColumnWidth(2, 145);
+    view.setColumnWidth(3, 145);
+    view.setColumnWidth(4, 90);
+    view.setColumnWidth(5, 250);
+    view.setColumnWidth(6, 180);
+  }
 }
 
 function buildRow_(data) {

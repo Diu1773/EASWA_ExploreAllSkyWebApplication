@@ -293,6 +293,34 @@ export function ClusterModuleView({ module }: ClusterModuleViewProps) {
 
   const metadataSlot = filtered ? <ClusterDataPanel data={filtered} /> : undefined;
 
+  const anonSubmit = useMemo(() => {
+    if (!selectedId) return undefined;
+    return {
+      targetId: selectedId,
+      fit: null,
+      derived: fitInfo && data
+        ? {
+            log_age_yr: fitInfo.logAge,
+            age_gyr: fitInfo.ageGyr,
+            distance_modulus_mag: fitInfo.distanceModulus,
+            distance_pc: fitInfo.distancePc,
+            extinction_av_mag: fitInfo.av,
+            color_excess_bp_rp_mag: fitInfo.ebprp,
+            metallicity_z: fitInfo.metallicityZ,
+            metallicity_mh: fitInfo.metallicityMH,
+            gaia_parallax_distance_pc: fitInfo.priorDistancePc,
+            gaia_parallax_modulus_mag: fitInfo.priorModulus,
+            membership_level: membershipLevel,
+            member_count: filtered?.member_count ?? null,
+            reference_distance_pc: data.cluster.ref_distance_pc,
+            reference_age_gyr: data.cluster.ref_age_gyr,
+            reference_log_age_yr: data.cluster.ref_logage,
+            reference_av_mag: data.cluster.ref_av,
+          }
+        : undefined,
+    };
+  }, [selectedId, fitInfo, data, membershipLevel, filtered?.member_count]);
+
   return (
     <InquiryLayout
       module={module}
@@ -311,6 +339,7 @@ export function ClusterModuleView({ module }: ClusterModuleViewProps) {
       analysisSlot={analysisSlot}
       comparisonSlot={comparisonSlot}
       resultSummarySlot={resultSummarySlot}
+      anonSubmit={anonSubmit}
       draftTargetId={selectedId}
     />
   );

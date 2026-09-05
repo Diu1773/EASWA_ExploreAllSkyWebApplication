@@ -139,11 +139,16 @@ export interface AnonSubmitFit {
   reducedChiSquared: number;
 }
 
+export type AnonDerivedValue = number | string | null;
+
 /** What a block needs to declare for its records to reach the sheet. */
 export interface AnonSubmitConfig {
   targetId: string;
   /** null until the Lab fit is bridged back — a draft row can precede it. */
   fit: AnonSubmitFit | null;
+  /** Non-transit modules keep their scientific outputs in one namespaced JSON
+   *  object instead of pretending that tE or a cluster age is an Rp/R* value. */
+  derived?: Record<string, AnonDerivedValue>;
 }
 
 /** "생각해보기" responses, already graded by InquiryLayout (which owns the
@@ -170,7 +175,7 @@ export interface AnonRecordInput {
   /** Which 탐구블럭 this row belongs to. */
   module: string;
   /** Module-specific derived values; transit leaves this empty and uses `fit`. */
-  derived?: Record<string, number | string | null>;
+  derived?: Record<string, AnonDerivedValue>;
   selfCheckResponses: unknown;
   selfCheckAnswered: number;
   selfCheckTotal: number;

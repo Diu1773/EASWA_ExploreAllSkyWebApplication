@@ -367,6 +367,32 @@ export function KmtnetModuleView({ module }: KmtnetModuleViewProps) {
     </div>
   );
 
+  const anonSubmit = useMemo(() => {
+    if (!selectedId) return undefined;
+    return {
+      targetId: selectedId,
+      fit: null,
+      derived: fit
+        ? {
+            t0_hjd: fit.t0,
+            t0_err_days: fit.t0_err,
+            u0: fit.u0,
+            u0_err: fit.u0_err,
+            te_days: fit.tE,
+            te_err_days: fit.tE_err,
+            baseline_magnitude: fit.mag_base,
+            baseline_magnitude_err: fit.mag_base_err,
+            chi2_dof: fit.chi2_dof,
+            point_count: lc?.points.length ?? null,
+            included_sites: lc?.included_sites.join(',') ?? '',
+            missing_sites: lc?.missing_sites.join(',') ?? '',
+            extraction_mode: lc?.extraction_mode ?? '',
+            event_type: selectedEvent?.type ?? '',
+          }
+        : undefined,
+    };
+  }, [selectedId, fit, lc, selectedEvent?.type]);
+
   return (
     <InquiryLayout
       module={module}
@@ -389,6 +415,7 @@ export function KmtnetModuleView({ module }: KmtnetModuleViewProps) {
       analysisSlot={analysisSlot}
       comparisonSlot={comparisonSlot}
       maxUnlockedStepIndex={fit ? undefined : 4}
+      anonSubmit={anonSubmit}
       draftTargetId={selectedId}
     />
   );

@@ -136,4 +136,24 @@ describe('buildAnonRecordPayload — logged_in', () => {
     const payload = buildAnonRecordPayload({ ...input(false), siteFeedback: 'x'.repeat(5000) });
     expect(payload.site_feedback.length).toBe(2000);
   });
+
+  it('keeps the module id and non-transit outputs together without using transit columns', () => {
+    stubBrowser();
+    const payload = buildAnonRecordPayload({
+      ...input(false),
+      targetId: 'kmt-2019-blg-0113',
+      module: 'kmtnet',
+      derived: { t0_hjd: 2458620.5, u0: 0.12, te_days: 31.4, included_sites: 'ctio,saao,sso' },
+    });
+
+    expect(payload.module).toBe('kmtnet');
+    expect(JSON.parse(payload.derived_json)).toEqual({
+      t0_hjd: 2458620.5,
+      u0: 0.12,
+      te_days: 31.4,
+      included_sites: 'ctio,saao,sso',
+    });
+    expect(payload.rp_rs).toBeNull();
+    expect(payload.depth_pct).toBeNull();
+  });
 });

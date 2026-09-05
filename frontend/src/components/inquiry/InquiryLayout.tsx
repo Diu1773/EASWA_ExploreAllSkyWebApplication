@@ -312,22 +312,24 @@ export function InquiryLayout<TContext = unknown>({
   // Push a draft row to the sheet once the learner stops typing. Without this a
   // record only reached the sheet if someone remembered to press submit at the
   // very end — anyone who closed the tab first left nothing behind. The script
-  // upserts on (anon_id, target_id), so this keeps refreshing one row rather
+  // upserts on (anon_id, module, target_id), so this keeps refreshing one row rather
   // than appending. Local autosave still runs at 600ms; this is the slow lane.
   const anonTargetId = anonSubmit?.targetId ?? null;
   const anonFit = anonSubmit?.fit ?? null;
+  const anonDerived = anonSubmit?.derived;
+  const hasAnonAnalysisResult =
+    anonFit != null || (anonDerived != null && Object.keys(anonDerived).length > 0);
   // Signed-in state rides along as a plain boolean (no identity — see
   // AnonRecordPayload.logged_in). Kept in the effect deps so a learner who signs
   // in mid-sitting re-upserts their row with the flag corrected, instead of
   // leaving it stuck at whatever it was when they first typed.
   const loggedIn = useAuthStore((state) => state.user !== null);
   useEffect(() => {
-    // A fit is meaningful research on its own — the rp/rs measurement is the
-    // headline value. Sync when the learner has edited OR a fit exists, so a
-    // learner who runs the analysis but writes nothing still lands their
-    // measurement in the sheet (without a fit AND no edits there is nothing to
-    // send, so the empty-row case stays skipped).
-    if (!anonTargetId || !anonRecordWorthSyncing(dirtyRef.current, anonFit != null)) return;
+    // A module result is meaningful research on its own. Transit uses `fit`,
+    // while KMTNet and cluster CMD place their fitted values in `derived`.
+    // Sync when the learner has edited OR either result exists, so running the
+    // analysis without writing a note still reaches the sheet.
+    if (!anonTargetId || !anonRecordWorthSyncing(dirtyRef.current, hasAnonAnalysisResult)) return;
     const sinkUrl = getRecordSinkUrl();
     if (!sinkUrl) return;
     let retryTimer: ReturnType<typeof setTimeout> | null = null;
@@ -341,6 +343,7 @@ export function InquiryLayout<TContext = unknown>({
           module: module.id,
           status: 'draft',
           fit: anonFit,
+          derived: anonDerived,
           notes,
           selfCheckResponses: selfCheckSummary.responses,
           selfCheckAnswered: selfCheckSummary.answered,
@@ -380,7 +383,18 @@ export function InquiryLayout<TContext = unknown>({
       clearTimeout(timer);
       if (retryTimer) clearTimeout(retryTimer);
     };
-  }, [anonTargetId, anonFit, notes, selfCheckSummary, labDraftPulse, loggedIn, siteRating, siteFeedback]);
+  }, [
+    anonTargetId,
+    anonFit,
+    anonDerived,
+    hasAnonAnalysisResult,
+    notes,
+    selfCheckSummary,
+    labDraftPulse,
+    loggedIn,
+    siteRating,
+    siteFeedback,
+  ]);
 
   // Site feedback edits count as work so the row syncs even if the learner only
   // left feedback and wrote no inquiry notes.
