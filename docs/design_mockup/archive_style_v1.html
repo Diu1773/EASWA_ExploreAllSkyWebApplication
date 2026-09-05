@@ -6,127 +6,7 @@
 <title>EASWA 탐구활동 — 아카이브 조판 (다')</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<style>
-:root{
-  --ink:#12161e;          /* 머리띠 — NASA 남색 대신 EASWA 어두운 색 */
-  --ink-2:#1a2030;
-  --line:#c9d1da;         /* 괘선 */
-  --line-2:#e2e7ee;
-  --head:#e7ecf2;         /* 표 머리 */
-  --zebra:#f7f9fb;
-  --tool:#eef1f5;
-  --text:#1d2430;
-  --sub:#5a6675;
-  --accent:#b3480d;       /* 흰 바탕에서 4.5:1 넘는 주황 */
-  --accent-soft:#fdf3ec;
-  --ui:"Pretendard",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --mono:"SFMono-Regular",Consolas,"Liberation Mono",monospace;
-}
-*{box-sizing:border-box}
-body{margin:0;background:#fff;color:var(--text);font-family:var(--ui);font-size:15px;
-     line-height:1.65;font-variant-numeric:tabular-nums;word-break:keep-all}
-h1,h2,h3,h4{margin:0}
-
-/* 머리띠 */
-.bar{background:var(--ink);color:#e9edf3;padding:9px 20px;display:flex;
-     align-items:center;gap:16px;font-size:13px}
-.bar .brand{display:flex;align-items:center;gap:8px}
-.bar .mark{color:#e9edf3}
-.bar b{font-weight:700;letter-spacing:.08em;font-size:13px}
-.bar .meta{font-family:var(--mono);font-size:12px;color:#9aa6b6}
-.bar .meta em{font-style:normal;color:#e9edf3}
-.bar .right{margin-left:auto;font-family:var(--mono);font-size:12px;color:#9aa6b6}
-
-/* 단계 줄 — 붙어 있다 */
-.steps{position:sticky;top:0;z-index:20;background:var(--ink-2);color:#c3ccd8;
-       padding:0 20px;display:flex;align-items:stretch;font-size:13px;
-       border-bottom:1px solid #2a3342}
-.steps a{display:flex;align-items:center;gap:6px;padding:8px 14px;color:#8b95a5;
-         text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap}
-.steps a .n{font-family:var(--mono);font-size:11px}
-.steps a.done{color:#c3ccd8}
-.steps a.now{color:#fff;border-bottom-color:var(--accent);background:#222b3a}
-.steps .where{margin-left:auto;display:flex;align-items:center;font-size:12px;
-              color:#8b95a5;font-family:var(--mono)}
-
-/* 도구 줄 */
-.tools{background:var(--tool);border-bottom:1px solid var(--line);padding:7px 20px;
-       display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.tools button{font:inherit;font-size:12.5px;background:#fff;border:1px solid #9fabba;
-              border-radius:3px;padding:5px 11px;color:var(--ink);cursor:pointer}
-.tools button.go{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
-.tools .sp{margin-left:auto;font-size:12px;color:var(--sub);font-family:var(--mono)}
-
-/* 본문 */
-.main{padding:16px 20px 28px}
-.title{display:flex;align-items:baseline;gap:12px;margin-bottom:4px}
-.title h2{font-size:19px;font-weight:700;letter-spacing:-.01em}
-.title .step{font-family:var(--mono);font-size:12px;color:var(--accent);
-             border:1px solid var(--accent);border-radius:3px;padding:1px 7px}
-.q{font-size:15px;color:var(--text);margin:0 0 14px;padding:8px 12px;
-   background:var(--accent-soft);border-left:3px solid var(--accent)}
-.q b{font-weight:700}
-
-.cols{display:grid;grid-template-columns:1fr 420px;gap:16px;align-items:start}
-
-/* 표 */
-.lead{font-size:13px;color:var(--sub);margin:0 0 6px}
-table{width:100%;border-collapse:collapse;font-size:13.5px}
-thead th{background:var(--head);border:1px solid var(--line);padding:6px 9px;
-         text-align:left;font-size:11.5px;color:#3b4a5e;font-weight:700;letter-spacing:.02em}
-thead th.hi{background:#f2ded1;color:#7a3208}
-td{border:1px solid var(--line-2);padding:7px 9px;font-family:var(--mono);color:var(--text)}
-tbody tr:nth-child(even) td{background:var(--zebra)}
-td.lbl{font-family:var(--ui);font-weight:600;background:#f4f7fa}
-tbody tr:nth-child(even) td.lbl{background:#eef2f7}
-td.hi{background:#fdf3ec;color:var(--accent);font-weight:700}
-tbody tr:nth-child(even) td.hi{background:#fbeade}
-td.src{font-family:var(--ui);font-size:12px;color:var(--sub)}
-.after{font-size:12px;color:var(--sub);font-family:var(--mono);
-       padding:6px 2px 0;border-top:1px solid var(--line-2);margin-top:-1px}
-
-/* 그림 */
-.fig{border:1px solid var(--line);background:#0b0e14}
-.fig img{width:100%;display:block}
-.fig .cap{padding:6px 10px;border-top:1px solid #252d3a;font-family:var(--mono);
-          font-size:11px;color:#8b95a5}
-.figread{border:1px solid var(--line);border-top:0;padding:10px 12px;font-size:13px;
-         color:var(--sub);background:var(--zebra)}
-.figread b{color:var(--text)}
-
-/* 해석·기록 */
-.answer{margin-top:16px;border:1px solid var(--line);border-radius:0}
-.answer h4{font-size:12.5px;font-weight:700;color:#3b4a5e;background:var(--head);
-           padding:6px 12px;border-bottom:1px solid var(--line);letter-spacing:.02em}
-.answer .in{padding:12px}
-.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
-.chips button{font:inherit;font-size:13px;background:#fff;border:1px solid #9fabba;
-              border-radius:3px;padding:5px 12px;color:var(--ink);cursor:pointer}
-.chips button.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
-textarea{width:100%;min-height:74px;font:inherit;font-size:14px;color:var(--text);
-  background:#fff;border:1px solid #9fabba;border-radius:3px;padding:9px 11px;resize:vertical}
-
-/* 4단계용 조작 */
-.ctrls{border:1px solid var(--line)}
-.ctrls h4{font-size:12.5px;font-weight:700;color:#3b4a5e;background:var(--head);
-          padding:6px 12px;border-bottom:1px solid var(--line)}
-.ctrls .in{padding:0}
-.ctrls .row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;
-            padding:8px 12px;border-bottom:1px solid var(--line-2)}
-.ctrls .row:last-child{border-bottom:0}
-.ctrls .row .k{font-size:13px;color:var(--text)}
-.ctrls .row .v{font-family:var(--mono);font-size:13.5px;color:var(--ink);font-weight:600}
-.sector{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;
-        padding:8px 12px;border-bottom:1px solid var(--line-2);font-size:13px}
-.sector:last-child{border-bottom:0}
-.sector input{margin:0}
-.sector .nm{font-weight:600}
-.sector .mt{font-family:var(--mono);font-size:12px;color:var(--sub)}
-.sector.off .nm,.sector.off .mt{color:#98a2b0;font-weight:500}
-
-hr.split{border:0;border-top:8px solid #eef1f5;margin:0}
-@media (max-width:1100px){ .cols{grid-template-columns:1fr} }
-</style>
+<link rel="stylesheet" href="archive_style.css">
 </head>
 <body>
 
@@ -182,13 +62,14 @@ hr.split{border:0;border-top:8px solid #eef1f5;margin:0}
       <p class="after">4개 항목 · 기준값에 불확실도가 공개되지 않은 항목은 「—」로 둡니다</p>
 
       <div class="answer">
-        <h4>차이의 원인 — 골라 보고 이유를 적으세요</h4>
+        <h4>차이가 어디에서 왔는지 적어 보세요</h4>
         <div class="in">
+          <p class="lead">근거로 쓸 값은 앞 단계에 있습니다. 눌러서 다시 확인한 뒤 쓰세요.</p>
           <div class="chips">
-            <button class="on">구경 크기</button><button>비교성 선택</button>
-            <button>주연감광 가정</button><button>잡음</button><button>기준값 자체의 오차</button>
+            <button>3단계 · 내가 정한 구경</button><button>4단계 · 비교성 목록</button>
+            <button>4단계 · 잔차 그래프</button><button>기준값을 어떻게 계산했는가</button>
           </div>
-          <textarea placeholder="고른 원인이 왜 식 깊이를 얕게 만들었는지 적어 보세요."></textarea>
+          <textarea placeholder="식 깊이가 기준값보다 0.296 %p 얕게 나왔습니다. 왜 그렇게 되었다고 보는지 적어 보세요."></textarea>
         </div>
       </div>
     </div>
@@ -263,7 +144,7 @@ hr.split{border:0;border-top:8px solid #eef1f5;margin:0}
     <div>
       <div class="fig">
         <img src="real_output/wasp6b_lightcurve.png" alt="WASP-6 b 차등측광 광도곡선">
-        <div class="cap">가로 = 공전 위상 · 세로 = 상대 밝기 · 아래 = 잔차 (STD 1.6 ‰)</div>
+        <div class="cap">가로 = 공전 위상 · 세로 = 상대 밝기 · 아래 = 잔차 (표준편차 1.6 ‰)</div>
       </div>
       <div class="figread">행성이 별 앞을 지나는 동안 밝기가 내려갔다가 되돌아옵니다.
         <b>어느 구간을 근거로 삼겠습니까?</b></div>
@@ -271,7 +152,8 @@ hr.split{border:0;border-top:8px solid #eef1f5;margin:0}
       <div class="answer">
         <h4>탐구 기록</h4>
         <div class="in">
-          <div class="chips"><button>밝기 감소 구간</button><button>잔차의 크기</button><button>곡선의 대칭성</button></div>
+          <p class="lead">그림에 표시를 켜 두고 보면서 쓰면 됩니다.</p>
+          <div class="chips"><button>밝기 감소 구간 표시</button><button>잔차만 크게 보기</button><button>모델 곡선 겹치기</button></div>
           <textarea placeholder="곡선의 어느 부분을 근거로 삼았는지 적어 보세요."></textarea>
         </div>
       </div>

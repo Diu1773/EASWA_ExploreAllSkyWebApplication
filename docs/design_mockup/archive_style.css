@@ -1,0 +1,180 @@
+/* EASWA 아카이브 조판 — 탐구활동 화면 공용 스타일
+ * 2026-09-06. archive_style_v1.html(4·5단계)에서 추출, v2(1·2·3·6단계)가 함께 쓴다.
+ * 색·괘선·표 규칙을 여기 한 곳에서만 바꾼다.
+ */
+:root{
+  --ink:#12161e;          /* 머리띠 — NASA 남색 대신 EASWA 어두운 색 */
+  --ink-2:#1a2030;
+  --line:#c9d1da;         /* 괘선 */
+  --line-2:#e2e7ee;
+  --head:#e7ecf2;         /* 표 머리 */
+  --zebra:#f7f9fb;
+  --tool:#eef1f5;
+  --text:#1d2430;
+  --sub:#5a6675;
+  --accent:#b3480d;       /* 흰 바탕에서 4.5:1 넘는 주황 */
+  --accent-soft:#fdf3ec;
+  --ui:"Pretendard",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:var(--text);font-family:var(--ui);font-size:15px;
+     line-height:1.65;font-variant-numeric:tabular-nums;word-break:keep-all}
+h1,h2,h3,h4{margin:0}
+
+/* 머리띠 */
+.bar{background:var(--ink);color:#e9edf3;padding:8px 20px;display:flex;
+     align-items:center;gap:16px;font-size:13px}
+.bar .brand{display:flex;align-items:center;gap:8px}
+.bar .mark{color:#e9edf3}
+.bar b{font-weight:700;letter-spacing:.08em;font-size:13px}
+.bar .meta{font-family:var(--mono);font-size:12px;color:#9aa6b6}
+.bar .meta em{font-style:normal;color:#e9edf3}
+.bar .right{margin-left:auto;font-family:var(--mono);font-size:12px;color:#9aa6b6}
+
+/* 단계 줄 — 붙어 있다 */
+.steps{position:sticky;top:0;z-index:20;background:var(--ink-2);color:#c3ccd8;
+       padding:0 20px;display:flex;align-items:stretch;font-size:13px;
+       border-bottom:1px solid #2a3342}
+.steps a{display:flex;align-items:center;gap:6px;padding:8px 14px;color:#8b95a5;
+         text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap}
+.steps a .n{font-family:var(--mono);font-size:11px}
+.steps a.done{color:#c3ccd8}
+.steps a.now{color:#fff;border-bottom-color:var(--accent);background:#222b3a}
+.steps .where{margin-left:auto;display:flex;align-items:center;font-size:12px;
+              color:#8b95a5;font-family:var(--mono)}
+
+/* 도구 줄 */
+.tools{background:var(--tool);border-bottom:1px solid var(--line);padding:8px 20px;
+       display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.tools button{font:inherit;font-size:12.5px;background:#fff;border:1px solid #9fabba;
+              border-radius:3px;padding:6px 12px;color:var(--ink);cursor:pointer}
+.tools button.go{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.tools button.sel{font-weight:700;color:var(--accent);border-color:var(--accent);
+                  box-shadow:none;background:var(--accent-soft)}
+.tools .sp{margin-left:auto;font-size:12px;color:var(--sub);font-family:var(--mono)}
+
+/* 본문 */
+.main{padding:16px 20px 24px}
+.title{display:flex;align-items:baseline;gap:12px;margin-bottom:4px}
+.title h2{font-size:19px;font-weight:700;letter-spacing:-.01em}
+.title .step{font-family:var(--mono);font-size:12px;color:var(--accent);
+             border:1px solid var(--accent);border-radius:3px;padding:2px 8px}
+.q{font-size:15px;color:var(--text);margin:0 0 14px;padding:8px 12px;
+   background:var(--accent-soft);border-left:3px solid var(--accent)}
+.q b{font-weight:700}
+
+.cols{display:grid;grid-template-columns:1fr 420px;gap:16px;align-items:start}
+
+/* 표 */
+.lead{font-size:13px;color:var(--sub);margin:0 0 6px}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+thead th{background:var(--head);border:1px solid var(--line);padding:6px 8px;
+         text-align:left;font-size:11.5px;color:#3b4a5e;font-weight:700;letter-spacing:.02em}
+thead th.hi{background:#f2ded1;color:#7a3208}
+td{border:1px solid var(--line-2);padding:8px;font-family:var(--mono);color:var(--text)}
+tbody tr:nth-child(even) td{background:var(--zebra)}
+td.lbl{font-family:var(--ui);font-weight:600;background:#f4f7fa}
+tbody tr:nth-child(even) td.lbl{background:#eef2f7}
+td.hi{background:#fdf3ec;color:var(--accent);font-weight:700}
+tbody tr:nth-child(even) td.hi{background:#fbeade}
+td.src{font-family:var(--ui);font-size:12px;color:var(--sub)}
+.after{font-size:12px;color:var(--sub);font-family:var(--mono);padding:6px 2px 0}
+
+/* 그림 */
+.fig{border:1px solid var(--line);background:#0b0e14}
+.fig img{width:100%;display:block}
+.fig .cap{padding:6px 10px;border-top:1px solid #252d3a;font-family:var(--mono);
+          font-size:11px;color:#8b95a5}
+.figread{border:1px solid var(--line);border-top:0;padding:10px 12px;font-size:13px;
+         color:var(--sub);background:var(--zebra)}
+.figread b{color:var(--text)}
+
+/* 해석·기록 */
+.answer{margin-top:16px;border:1px solid var(--line);border-radius:0}
+.answer h4{font-size:12.5px;font-weight:700;color:#3b4a5e;background:var(--head);
+           padding:6px 12px;border-bottom:1px solid var(--line);letter-spacing:.02em}
+.answer .in{padding:12px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.chips button{font:inherit;font-size:13px;background:#fff;border:1px solid #9fabba;
+              border-radius:3px;padding:6px 12px;color:var(--ink);cursor:pointer}
+.chips button.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+textarea{width:100%;min-height:74px;font:inherit;font-size:14px;color:var(--text);
+  background:#fff;border:1px solid #9fabba;border-radius:3px;padding:8px 12px;resize:vertical}
+
+/* 4단계용 조작 */
+.ctrls{border:1px solid var(--line)}
+.ctrls h4{font-size:12.5px;font-weight:700;color:#3b4a5e;background:var(--head);
+          padding:6px 12px;border-bottom:1px solid var(--line)}
+.ctrls .in{padding:0}
+.ctrls .row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;
+            padding:8px 12px;border-bottom:1px solid var(--line-2)}
+.ctrls .row:last-child{border-bottom:0}
+.ctrls .row .k{font-size:13px;color:var(--text)}
+.ctrls .row .v{font-family:var(--mono);font-size:13.5px;color:var(--ink);font-weight:600}
+.sector{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;
+        padding:8px 12px;border-bottom:1px solid var(--line-2);font-size:13px}
+.sector:last-child{border-bottom:0}
+.sector input{margin:0}
+.sector .nm{font-weight:600}
+.sector .mt{font-family:var(--mono);font-size:12px;color:var(--sub)}
+.sector.off .nm,.sector.off .mt{color:#98a2b0;font-weight:500}
+
+hr.split{border:0;border-top:8px solid #eef1f5;margin:0}
+@media (max-width:1100px){ .cols{grid-template-columns:1fr} }
+
+/* ───────── 1·2·3·6단계에서 추가한 규칙 ───────── */
+
+/* 숫자가 아니라 설명이 들어가는 강조 열 */
+td.txt{font-family:var(--ui);font-weight:400;font-size:13px;line-height:1.5;
+          color:var(--text)}
+
+/* 표에서 한 행을 고르는 경우 — 형광 블럭 없이 왼쪽 굵은 선과 굵은 글씨로만 */
+td.pick{width:34px;text-align:center}
+tbody tr.chosen td{background:#fdf3ec}
+tbody tr.chosen td.lbl{background:#fbeade;border-left:3px solid var(--accent)}
+tbody tr.chosen td.lbl,tbody tr.chosen td.mark{color:var(--accent);font-weight:700}
+td.mark{font-family:var(--ui);font-size:12px;color:var(--sub)}
+
+/* 두 그림을 나란히 */
+.figs{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+@media (max-width:900px){ .figs{grid-template-columns:1fr} }
+.fig.plain{background:#fff}
+.fig.plain .cap{border-top:1px solid var(--line);color:var(--sub);background:var(--zebra)}
+
+/* 자료 출처 — 항목과 값을 두 칸으로 */
+.srcbox{border:1px solid var(--line);margin-top:16px}
+.srcbox h4{font-size:12.5px;font-weight:700;color:#3b4a5e;background:var(--head);
+           padding:6px 12px;border-bottom:1px solid var(--line);letter-spacing:.02em}
+.srcbox dl{margin:0;display:grid;grid-template-columns:130px 1fr}
+.srcbox dt{font-size:12.5px;font-weight:600;color:#3b4a5e;background:#f4f7fa;
+           padding:8px 12px;border-bottom:1px solid var(--line-2);border-right:1px solid var(--line-2)}
+.srcbox dd{margin:0;padding:8px 12px;font-size:13px;border-bottom:1px solid var(--line-2)}
+.srcbox dd.mono{font-family:var(--mono);font-size:12.5px}
+.srcbox dt:last-of-type,.srcbox dd:last-of-type{border-bottom:0}
+
+/* 기록 문항 — 번호·질문·안내·응답이 한 덩어리 */
+.recs{border:1px solid var(--line);border-bottom:0}
+.rec{padding:12px 14px;border-bottom:1px solid var(--line);
+     display:grid;grid-template-columns:22px 1fr;column-gap:8px}
+.rec .no{grid-column:1;grid-row:1;font-family:var(--mono);font-size:12px;
+         color:var(--accent);border:1px solid var(--accent);border-radius:3px;
+         text-align:center;align-self:start}
+.rec .head{grid-column:2;grid-row:1;display:flex;align-items:baseline;gap:8px;margin-bottom:2px}
+.rec .qq{font-size:14.5px;font-weight:600;color:var(--text)}
+.rec .must{font-size:11.5px;color:var(--accent);font-weight:700;flex:none;margin-left:auto}
+.rec .hint{grid-column:2;grid-row:2;font-size:12.5px;color:var(--sub);margin:0 0 8px}
+.rec .body{grid-column:2;grid-row:3}
+.opts{display:flex;flex-direction:column;gap:6px}
+.opts.wide{display:grid;grid-template-columns:1fr 1fr;gap:6px 16px}
+.opts label{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
+.opts input{margin:0;flex:none}
+.recfoot{border:1px solid var(--line);border-top:0;background:var(--zebra);
+         padding:8px 14px;font-size:12.5px;color:var(--sub);display:flex;
+         align-items:center;gap:10px;flex-wrap:wrap}
+.recfoot .st{font-family:var(--mono);font-size:12px}
+
+/* 본문 안의 짧은 주석 */
+.note{font-size:12.5px;color:var(--sub);margin:8px 0 0;padding:8px 12px;
+      background:var(--zebra);border:1px solid var(--line-2)}
+.note b{color:var(--text)}
