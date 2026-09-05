@@ -657,50 +657,6 @@ body {
   font-size: 0.78rem;
 }
 
-.cmd-fit-controls {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 12px;
-  padding: 14px 16px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.cmd-fit-controls > strong {
-  color: var(--accent);
-  font-size: 0.95rem;
-}
-
-.cmd-fit-controls label {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 0.82rem;
-  color: var(--text-secondary);
-  font-family: var(--font-mono);
-}
-
-.cmd-fit-controls input[type='range'] {
-  width: 100%;
-  accent-color: var(--accent);
-}
-
-.cmd-fit-readout {
-  font-family: var(--font-mono);
-  font-size: 0.9rem;
-  color: var(--text-heading);
-  padding: 4px 0;
-}
-
-.cmd-fit-hint {
-  margin: 0;
-  font-size: 0.82rem;
-  color: var(--text-secondary);
-  line-height: 1.5;
-}
-
 .inquiry-selfcheck {
   display: flex;
   flex-direction: column;
@@ -11529,26 +11485,26 @@ body {
 /* CMD intro: keep the turn-off label readable over dense point clouds */
 .cluster-intro-cmd-svg .ti-note { paint-order: stroke; stroke: rgba(11, 14, 20, 0.85); stroke-width: 3px; }
 
-/* Cluster CMD: isochrone-fit model assumptions and Step 5 source line */
-.cmd-fit-assumptions {
-  margin: 4px 0 0;
-  padding: 8px 10px;
-  border-left: 2px solid var(--border);
-  font-size: 0.78rem;
-  line-height: 1.5;
-  color: var(--text-secondary);
-}
-.cmd-fit-assumptions dt {
-  font-family: var(--font-mono);
-  color: var(--text-heading);
-  margin-bottom: 2px;
-}
-.cmd-fit-assumptions dd {
-  margin: 0;
-}
 .inquiry-compare-source {
   margin: 8px 0 0;
   font-size: 0.8rem;
   line-height: 1.5;
   color: var(--text-secondary);
+}
+
+/* Cluster CMD Step 4: isochrone-fit controls. Mirrors the transit 측광 설정
+   panel (.param-row) so the two analysis screens share one control idiom.
+   Three sliders side by side, each capped at 280px; no box inside the slot. */
+.cmd-fit { margin-top: 12px; display: grid; gap: 12px; }
+.cmd-fit-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.cmd-fit-head > strong { color: var(--text-heading); font-size: 14.5px; }
+.cmd-fit-summary { flex: 1 1 auto; font-family: var(--font-mono); font-size: 13.5px; color: var(--text-secondary); }
+.cmd-fit-head .btn-sm { margin-left: auto; }
+.cmd-fit-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 280px)); gap: 12px 24px; }
+.cmd-fit-grid .param-row { margin-bottom: 0; }
+.cmd-fit-sub { margin-left: 8px; font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); }
+.cmd-fit-hint { margin: 0; max-width: 860px; font-size: 13.5px; line-height: 1.5; color: var(--text-secondary); }
+.cmd-fit-assumptions { margin: 0; max-width: 860px; font-size: 12px; line-height: 1.5; color: var(--text-muted); }
+@media (max-width: 760px) {
+  .cmd-fit-grid { grid-template-columns: 1fr; }
 }

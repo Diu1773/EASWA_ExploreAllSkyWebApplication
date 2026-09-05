@@ -114,6 +114,11 @@ export function ClusterCmdVisualizer({ data, onFitChange }: ClusterCmdVisualizer
     const mags = points.map((member) => member.g_mag);
     const magMin = mags.reduce((acc, value) => Math.min(acc, value), Infinity);
     const magMax = mags.reduce((acc, value) => Math.max(acc, value), -Infinity);
+    // Axis ranges follow the stars, not the isochrone: the red-giant tip of an
+    // old isochrone reaches BP-RP 4-5 and would otherwise squeeze the cluster
+    // into the left half of the plot.
+    const colorMin = colors.reduce((acc, value) => Math.min(acc, value), Infinity);
+    const colorMax = colors.reduce((acc, value) => Math.max(acc, value), -Infinity);
 
     const colorShift = E_BPRP_PER_AV * av;
     const magShift = distanceModulus + A_G_PER_AV * av;
@@ -171,6 +176,7 @@ export function ClusterCmdVisualizer({ data, onFitChange }: ClusterCmdVisualizer
       },
       xaxis: {
         title: { text: data.color_label, font: { color: '#cbd5e1' } },
+        range: [colorMin - 0.2, colorMax + 0.2],
         gridcolor: 'rgba(148, 163, 184, 0.18)',
         color: '#cbd5e1',
         zeroline: false,
@@ -225,82 +231,82 @@ export function ClusterCmdVisualizer({ data, onFitChange }: ClusterCmdVisualizer
     <div className="cluster-cmd-visualizer">
       <div ref={plotRef} style={{ width: '100%', minHeight: 430 }} />
 
-      <div className="cmd-fit-controls">
-        <strong>{ko ? '등시선 맞추기: 나이, 거리, 소광' : 'Isochrone fitting: age, distance, extinction'}</strong>
-        <label>
-          <span>
+      <div className="cmd-fit">
+        <div className="cmd-fit-head">
+          <strong>{ko ? '등시선 맞추기' : 'Isochrone fit'}</strong>
+          <span className="cmd-fit-summary">
             {ko
-              ? `나이 log(t/yr) = ${logAge.toFixed(1)}  (약 ${formatAge(logAge)})`
-              : `Age log(t/yr) = ${logAge.toFixed(1)}  (about ${formatAge(logAge)})`}
+              ? `거리 ${distancePc.toFixed(0)} pc · 나이 ${formatAge(logAge)} · A_V ${av.toFixed(2)}   (시차 출발값 ${priorDistancePc.toFixed(0)} pc)`
+              : `distance ${distancePc.toFixed(0)} pc · age ${formatAge(logAge)} · A_V ${av.toFixed(2)}   (parallax prior ${priorDistancePc.toFixed(0)} pc)`}
           </span>
-          <input
-            type="range"
-            min={LOG_AGE_MIN}
-            max={LOG_AGE_MAX}
-            step={LOG_AGE_STEP}
-            value={logAge}
-            onChange={(e) => setLogAge(snapLogAge(Number(e.target.value)))}
-          />
-        </label>
-        <label>
-          <span>
-            {ko
-              ? `거리계수 m-M = ${distanceModulus.toFixed(2)}  (약 ${distancePc.toFixed(0)} pc)`
-              : `Distance modulus m-M = ${distanceModulus.toFixed(2)}  (about ${distancePc.toFixed(0)} pc)`}
-          </span>
-          <input
-            type="range"
-            min={0}
-            max={15}
-            step={0.05}
-            value={distanceModulus}
-            onChange={(e) => setDistanceModulus(Number(e.target.value))}
-          />
-        </label>
-        <label>
-          <span>
-            {ko
-              ? `소광 A_V = ${av.toFixed(2)}  (색 변화 E(BP-RP) = ${(E_BPRP_PER_AV * av).toFixed(2)})`
-              : `Extinction A_V = ${av.toFixed(2)}  (E(BP-RP) = ${(E_BPRP_PER_AV * av).toFixed(2)})`}
-          </span>
-          <input
-            type="range"
-            min={0}
-            max={3}
-            step={0.02}
-            value={av}
-            onChange={(e) => setAv(Number(e.target.value))}
-          />
-        </label>
-        <div className="cmd-fit-readout">
-          {ko
-            ? `내가 맞춘 거리 ${distancePc.toFixed(0)} pc, 나이 ${formatAge(logAge)}  ·  시차 출발값 ${priorDistancePc.toFixed(0)} pc`
-            : `Fitted distance ${distancePc.toFixed(0)} pc, age ${formatAge(logAge)}  ·  parallax prior ${priorDistancePc.toFixed(0)} pc`}
+          <button
+            type="button"
+            className="btn-sm"
+            onClick={() => {
+              setLogAge(DEFAULT_LOG_AGE);
+              setDistanceModulus(priorModulus);
+              setAv(0);
+            }}
+          >
+            {ko ? '초기값' : 'Reset'}
+          </button>
         </div>
+
+        <div className="cmd-fit-grid">
+          <div className="param-row">
+            <label>
+              {ko ? '나이 log(t/yr)' : 'Age log(t/yr)'}: <strong>{logAge.toFixed(1)}</strong>
+              <span className="cmd-fit-sub">{formatAge(logAge)}</span>
+            </label>
+            <input
+              type="range"
+              min={LOG_AGE_MIN}
+              max={LOG_AGE_MAX}
+              step={LOG_AGE_STEP}
+              value={logAge}
+              onChange={(e) => setLogAge(snapLogAge(Number(e.target.value)))}
+            />
+          </div>
+          <div className="param-row">
+            <label>
+              {ko ? '거리계수 m-M' : 'Distance modulus m-M'}: <strong>{distanceModulus.toFixed(2)}</strong>
+              <span className="cmd-fit-sub">{distancePc.toFixed(0)} pc</span>
+            </label>
+            <input
+              type="range"
+              min={0}
+              max={15}
+              step={0.05}
+              value={distanceModulus}
+              onChange={(e) => setDistanceModulus(Number(e.target.value))}
+            />
+          </div>
+          <div className="param-row">
+            <label>
+              {ko ? '소광 A_V' : 'Extinction A_V'}: <strong>{av.toFixed(2)}</strong>
+              <span className="cmd-fit-sub">E(BP-RP) {(E_BPRP_PER_AV * av).toFixed(2)}</span>
+            </label>
+            <input
+              type="range"
+              min={0}
+              max={3}
+              step={0.02}
+              value={av}
+              onChange={(e) => setAv(Number(e.target.value))}
+            />
+          </div>
+        </div>
+
         <p className="cmd-fit-hint">
           {ko
-            ? '주황 실선은 주계열 이전과 주계열, 점선은 주계열을 떠난 별의 자리입니다. 세 값을 함께 움직여 곡선을 별들에 겹쳐 보십시오. 거리는 곡선을 위아래로, 소광은 붉고 어두운 쪽으로 대각선으로, 나이는 전향점의 위치를 바꿉니다. 시차 거리는 출발점일 뿐이고, 맞춘 값은 Step 5에서 문헌값과 비교합니다.'
-            : 'The solid orange line is the pre-main-sequence and main sequence; the dotted line is post-main-sequence. Move all three controls to overlay the curve on the stars. Distance shifts it vertically, extinction diagonally toward red and faint, age moves the turn-off. The parallax distance is only a starting point; Step 5 compares your fit with the literature.'}
+            ? '실선은 주계열 이전과 주계열, 점선은 주계열을 떠난 별의 자리입니다. 거리는 곡선을 위아래로, 소광은 붉고 어두운 쪽으로 대각선으로, 나이는 전향점의 위치를 바꿉니다. 시차 거리는 출발점일 뿐이고, 맞춘 값은 Step 5에서 문헌값과 비교합니다.'
+            : 'Solid: pre-main-sequence and main sequence; dotted: post-main-sequence. Distance moves the curve vertically, extinction diagonally toward red and faint, age moves the turn-off. The parallax distance is only a starting point; Step 5 compares your fit with the literature.'}
         </p>
-        <dl className="cmd-fit-assumptions">
-          <dt>{ko ? '모델 가정' : 'Model assumptions'}</dt>
-          <dd>
-            {ko
-              ? 'PARSEC v1.2S 등시선, 금속함량 Z = 0.0152 (태양 조성, 고정), Kroupa 초기질량함수. 소광 계수 A_G/A_V = 0.806, E(BP-RP)/A_V = 0.429 (Wang & Chen, 2019). 쌍성과 자전은 고려하지 않습니다.'
-              : 'PARSEC v1.2S isochrones, metallicity Z = 0.0152 (solar, fixed), Kroupa IMF. Extinction coefficients A_G/A_V = 0.806, E(BP-RP)/A_V = 0.429 (Wang & Chen, 2019). Binaries and rotation are not modelled.'}
-          </dd>
-        </dl>
-        <button
-          type="button"
-          className="btn-sm"
-          onClick={() => {
-            setLogAge(DEFAULT_LOG_AGE);
-            setDistanceModulus(priorModulus);
-            setAv(0);
-          }}
-        >
-          {ko ? '초기값으로 되돌리기' : 'Reset to starting values'}
-        </button>
+        <p className="cmd-fit-assumptions">
+          {ko
+            ? '모델 가정: PARSEC v1.2S 등시선, Z = 0.0152 고정(태양 조성), Kroupa 초기질량함수, 소광 계수 A_G/A_V 0.806과 E(BP-RP)/A_V 0.429 (Wang & Chen 2019). 쌍성과 자전은 고려하지 않습니다.'
+            : 'Model assumptions: PARSEC v1.2S isochrones, Z = 0.0152 fixed (solar), Kroupa IMF, extinction coefficients A_G/A_V 0.806 and E(BP-RP)/A_V 0.429 (Wang & Chen 2019). Binaries and rotation are not modelled.'}
+        </p>
       </div>
 
       <p style={{ fontSize: 14.5, color: '#94a3b8', margin: '8px 0 0' }}>
