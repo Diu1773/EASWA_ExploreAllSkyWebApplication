@@ -134,8 +134,8 @@ export function ClusterIntro() {
       </div>
       <p className="topic-intro-caption">
         {ko
-          ? '왼쪽은 실제 성단 사진, 오른쪽은 그 성단의 실제 Gaia DR3 색-등급도입니다. 주계열이 꺾이는 전향점을 비교해 보세요 — 젊은 산개성단(플레이아데스)은 파란(뜨거운) 별까지 주계열에 남아 전향점이 왼쪽 위에 있고, 늙은 구상성단(M13)은 무거운 별이 모두 진화해 전향점이 오른쪽 아래로 내려가고 적색거성가지가 뚜렷합니다. Step 4에서 직접 성단을 골라 같은 색-등급도로 나이·거리를 구합니다.'
-          : "Left: a real photo of each cluster; right: that cluster's real Gaia DR3 color–magnitude diagram. Compare the main-sequence turn-off — the young open cluster (Pleiades) keeps blue, hot stars on the sequence so its turn-off is upper-left, while the old globular (M13) has lost its massive stars, so the turn-off drops down-right and a red-giant branch stands out. In Step 4 you pick a cluster and read its age and distance from the same kind of diagram."}
+          ? '두 성단의 사진과, 그 성단의 실제 Gaia DR3 색-등급도를 나란히 놓았습니다. 주계열이 꺾이는 전향점을 견주어 보세요 — 젊은 산개성단(플레이아데스)은 파란(뜨거운) 별까지 주계열에 남아 전향점이 파란 쪽 끝에 있고, 늙은 구상성단(M13)은 무거운 별이 모두 진화해 전향점이 붉고 어두운 쪽으로 내려가며 적색거성가지가 뚜렷합니다. 두 그림의 세로축은 겉보기 등급이고 성단까지의 거리가 크게 달라 눈금 범위가 서로 다릅니다. 비교할 것은 밝기의 절대값이 아니라 전향점이 주계열의 어디에 놓이는지입니다. Step 4에서 직접 성단을 골라 같은 색-등급도로 나이·거리를 구합니다.'
+          : "Each cluster is shown as a photo with its real Gaia DR3 color-magnitude diagram, side by side. Compare where the main sequence bends — the young open cluster (Pleiades) keeps blue, hot stars on the sequence, so its turn-off sits at the blue end, while the old globular (M13) has lost its massive stars, so the turn-off moves down toward red and faint and a red-giant branch stands out. The vertical axes are apparent magnitude and the two clusters lie at very different distances, so the two scales do not match. What to compare is where the turn-off falls along the sequence, not absolute brightness. In Step 4 you pick a cluster and read its age and distance from the same kind of diagram."}
       </p>
       <p className="cluster-intro-credit">
         {ko

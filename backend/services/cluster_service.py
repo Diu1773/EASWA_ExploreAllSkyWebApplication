@@ -17,7 +17,9 @@ catalog values.
 
 from __future__ import annotations
 
+import json
 from functools import lru_cache
+from pathlib import Path
 
 from schemas.cluster import (
     ClusterCMDResponse,
@@ -165,6 +167,7 @@ _PUBLIC_FIELDS = (
     "name", "name_ko", "ra", "dec", "search_radius_deg",
     "ref_distance_pc", "ref_distance_modulus", "ref_age_gyr", "ref_logage", "ref_av",
     "reference", "note_ko", "note_en",
+    "plx_min", "plx_max", "pmra_c", "pmdec_c", "pm_tol",
 )
 
 
@@ -187,8 +190,35 @@ def _to_float(value) -> float | None:
         return None
 
 
+_BUNDLE_DIR = Path(__file__).resolve().parent.parent / "bundled_clusters"
+
+
+def _bundled_members(cluster_id: str) -> tuple | None:
+    """Members downloaded from Gaia ahead of time and shipped with the app.
+
+    The live TAP query takes 6-9 s per cluster on a warm server and starts over
+    whenever the process restarts (the cache below is in-memory only, and the
+    free hosting tier sleeps). That wait sat in the middle of Step 4, where the
+    learner is meant to be reading a diagram. These files were produced by the
+    same ADQL on 2026-09-05; delete one and the live path below takes over.
+    """
+    path = _BUNDLE_DIR / f"{cluster_id}.json"
+    if not path.is_file():
+        return None
+    try:
+        with path.open(encoding="utf-8") as handle:
+            payload = json.load(handle)
+        return tuple(tuple(row) for row in payload["members"])
+    except (OSError, ValueError, KeyError):
+        return None
+
+
 @lru_cache(maxsize=64)
 def _query_gaia_members(cluster_id: str) -> tuple:
+    bundled = _bundled_members(cluster_id)
+    if bundled:
+        return bundled
+
     raw = _CATALOG[cluster_id]
     try:
         from astroquery.gaia import Gaia
@@ -272,7 +302,11 @@ def get_cluster_cmd(cluster_id: str) -> ClusterCMDResponse:
         color_label="Gaia BP - RP",
         mag_label="Gaia G",
         members=members,
-        data_source="ESA Gaia DR3 (gaiadr3.gaia_source) via TAP",
+        data_source=(
+            "ESA Gaia DR3 (gaiadr3.gaia_source) via TAP · 2026-09-05 내려받아 앱에 포함"
+            if _bundled_members(key)
+            else "ESA Gaia DR3 (gaiadr3.gaia_source) via TAP · 지금 조회"
+        ),
         selection_note_ko="시차·고유운동·측광 품질(RUWE<1.4) 기준의 천문측량 구성원 선별",
         selection_note_en="Astrometric member selection by parallax, proper motion, and photometric quality (RUWE<1.4)",
     )

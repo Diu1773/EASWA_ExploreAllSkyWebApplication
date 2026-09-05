@@ -87,13 +87,12 @@ export const clusterCmdAdapter: ExplorationModuleAdapter<ClusterCmdAdapterContex
     return {
       targetName: data.cluster.name,
       dataSource: { ko: data.data_source, en: data.data_source },
+      // Cluster name, centre, colour index and member count are shown by
+      // ClusterDataPanel above this panel; repeating them here rendered the
+      // same four lines twice on Step 2.
       metadata: [
         ...module.metadataFields,
-        literalField('cluster', { ko: '성단', en: 'Cluster' }, { ko: data.cluster.name_ko, en: data.cluster.name }),
-        literalField('coordinates', { ko: '중심 좌표', en: 'Center' }, `RA ${data.cluster.ra.toFixed(2)}, Dec ${data.cluster.dec.toFixed(2)}`),
-        literalField('color_label', { ko: '색지수', en: 'Color index' }, data.color_label),
-        literalField('member_count_meta', { ko: '구성원 수', en: 'Member count' }, data.member_count.toLocaleString()),
-        literalField('reference', { ko: '기준 출처', en: 'Reference' }, data.cluster.reference),
+        literalField('reference', { ko: '기준값 출처', en: 'Reference source' }, data.cluster.reference),
       ],
       analysisConditions: [
         ...analysisFieldsFromConfig(module),

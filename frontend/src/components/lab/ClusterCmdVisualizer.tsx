@@ -2,20 +2,24 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import PlotlyModule from 'plotly.js-dist-min';
 import { useLangStore } from '../../i18n';
 import type { ClusterCmdResponse } from '../../api/client';
-import parsecGridJson from '../../data/parsecGaiaZ0152.json';
+import parsecGridJson from '../../data/parsecGaiaIsochrones.json';
 
 const plotly = (PlotlyModule as any).default ?? (PlotlyModule as any);
 
-// PARSEC v1.2S isochrones (CMD 3.8, Gaia EDR3 passbands, Z = 0.0152, A_V = 0).
-// Each point is [BP-RP, absolute G, evolutionary phase]. Fetched with ezpadova on
-// 2026-09-05; provenance is in the JSON's `meta` block. Phases 0-1 are
-// pre-main-sequence / main sequence, 2+ are post-main-sequence.
+// PARSEC v1.2S isochrones (CMD 3.8, Gaia EDR3 passbands, A_V = 0), on a grid of
+// four metallicities × 34 ages. Each point is [BP-RP, absolute G, evolutionary
+// phase]. Fetched with ezpadova on 2026-09-05; provenance is in the JSON's
+// `meta` block. Phases 0-1 are pre-main-sequence / main sequence, 2+ are
+// post-main-sequence.
 interface ParsecGrid {
-  meta: Record<string, unknown>;
-  isochrones: Record<string, Array<[number, number, number]>>;
+  meta: { Z_sun: number; MH_for_Z: Record<string, number>; [k: string]: unknown };
+  isochrones: Record<string, Record<string, Array<[number, number, number]>>>;
 }
 const PARSEC = parsecGridJson as unknown as ParsecGrid;
-const LOG_AGES = Object.keys(PARSEC.isochrones)
+const Z_KEYS = Object.keys(PARSEC.isochrones).sort((a, b) => Number(a) - Number(b));
+const MH_VALUES = Z_KEYS.map((z) => PARSEC.meta.MH_for_Z[z]);
+const SOLAR_Z_INDEX = Math.max(0, MH_VALUES.indexOf(0));
+const LOG_AGES = Object.keys(PARSEC.isochrones[Z_KEYS[0]])
   .map(Number)
   .sort((a, b) => a - b);
 const LOG_AGE_MIN = LOG_AGES[0];
@@ -43,9 +47,10 @@ function snapLogAge(value: number): number {
   return Math.round(clamped * 10) / 10;
 }
 
-function isochroneFor(logAge: number): Array<[number, number, number]> {
-  const key = snapLogAge(logAge).toFixed(1);
-  return PARSEC.isochrones[key] ?? [];
+function isochroneFor(zIndex: number, logAge: number): Array<[number, number, number]> {
+  const zKey = Z_KEYS[Math.min(Z_KEYS.length - 1, Math.max(0, zIndex))];
+  const ageKey = snapLogAge(logAge).toFixed(1);
+  return PARSEC.isochrones[zKey]?.[ageKey] ?? [];
 }
 
 export function formatAge(logAge: number): string {
@@ -61,6 +66,8 @@ export interface ClusterFitInfo {
   distancePc: number;
   av: number;
   ebprp: number;
+  metallicityZ: number;
+  metallicityMH: number;
   priorDistancePc: number;
   priorModulus: number;
 }
@@ -96,12 +103,14 @@ export function ClusterCmdVisualizer({ data, onFitChange }: ClusterCmdVisualizer
   const [logAge, setLogAge] = useState(DEFAULT_LOG_AGE);
   const [distanceModulus, setDistanceModulus] = useState(priorModulus);
   const [av, setAv] = useState(0);
+  const [zIndex, setZIndex] = useState(SOLAR_Z_INDEX);
 
   // Reset the fit whenever a new cluster loads.
   useEffect(() => {
     setLogAge(DEFAULT_LOG_AGE);
     setDistanceModulus(priorModulus);
     setAv(0);
+    setZIndex(SOLAR_Z_INDEX);
   }, [priorModulus, data.cluster.id]);
 
   useEffect(() => {
@@ -122,7 +131,7 @@ export function ClusterCmdVisualizer({ data, onFitChange }: ClusterCmdVisualizer
 
     const colorShift = E_BPRP_PER_AV * av;
     const magShift = distanceModulus + A_G_PER_AV * av;
-    const iso = isochroneFor(logAge);
+    const iso = isochroneFor(zIndex, logAge);
     const early = iso.filter((p) => p[2] <= 1);
     const evolved = iso.filter((p) => p[2] >= 2);
 
@@ -205,7 +214,7 @@ export function ClusterCmdVisualizer({ data, onFitChange }: ClusterCmdVisualizer
     return () => {
       plotly.purge(node);
     };
-  }, [points, data, lang, logAge, distanceModulus, av]);
+  }, [points, data, lang, logAge, distanceModulus, av, zIndex]);
 
   // Lift the fit up so the block's Step 5 can compare it with parallax and literature.
   useEffect(() => {
@@ -218,10 +227,12 @@ export function ClusterCmdVisualizer({ data, onFitChange }: ClusterCmdVisualizer
       distancePc,
       av,
       ebprp: E_BPRP_PER_AV * av,
+      metallicityZ: Number(Z_KEYS[zIndex]),
+      metallicityMH: MH_VALUES[zIndex],
       priorDistancePc,
       priorModulus,
     });
-  }, [logAge, distanceModulus, av, priorModulus, onFitChange]);
+  }, [logAge, distanceModulus, av, zIndex, priorModulus, onFitChange]);
 
   const distancePc = Math.pow(10, (distanceModulus + 5) / 5);
   const priorDistancePc = Math.pow(10, (priorModulus + 5) / 5);
@@ -236,8 +247,8 @@ export function ClusterCmdVisualizer({ data, onFitChange }: ClusterCmdVisualizer
           <strong>{ko ? '등시선 맞추기' : 'Isochrone fit'}</strong>
           <span className="cmd-fit-summary">
             {ko
-              ? `거리 ${distancePc.toFixed(0)} pc · 나이 ${formatAge(logAge)} · A_V ${av.toFixed(2)}   (시차 출발값 ${priorDistancePc.toFixed(0)} pc)`
-              : `distance ${distancePc.toFixed(0)} pc · age ${formatAge(logAge)} · A_V ${av.toFixed(2)}   (parallax prior ${priorDistancePc.toFixed(0)} pc)`}
+              ? `거리 ${distancePc.toFixed(0)} pc · 나이 ${formatAge(logAge)} · A_V ${av.toFixed(2)} · 금속함량 ${MH_VALUES[zIndex] > 0 ? '+' : ''}${MH_VALUES[zIndex].toFixed(2)}   (시차 출발값 ${priorDistancePc.toFixed(0)} pc)`
+              : `distance ${distancePc.toFixed(0)} pc · age ${formatAge(logAge)} · A_V ${av.toFixed(2)} · [M/H] ${MH_VALUES[zIndex] > 0 ? '+' : ''}${MH_VALUES[zIndex].toFixed(2)}   (parallax prior ${priorDistancePc.toFixed(0)} pc)`}
           </span>
           <button
             type="button"
@@ -246,6 +257,7 @@ export function ClusterCmdVisualizer({ data, onFitChange }: ClusterCmdVisualizer
               setLogAge(DEFAULT_LOG_AGE);
               setDistanceModulus(priorModulus);
               setAv(0);
+              setZIndex(SOLAR_Z_INDEX);
             }}
           >
             {ko ? '초기값' : 'Reset'}
@@ -295,17 +307,37 @@ export function ClusterCmdVisualizer({ data, onFitChange }: ClusterCmdVisualizer
               onChange={(e) => setAv(Number(e.target.value))}
             />
           </div>
+          <div className="param-row">
+            <label>
+              {ko ? '금속함량' : 'Metallicity'}:{' '}
+              <strong>
+                {MH_VALUES[zIndex] > 0 ? '+' : ''}
+                {MH_VALUES[zIndex].toFixed(2)}
+              </strong>
+              <span className="cmd-fit-sub">
+                {ko ? `태양 대비 · Z ${Z_KEYS[zIndex]}` : `relative to the Sun · Z ${Z_KEYS[zIndex]}`}
+              </span>
+            </label>
+            <input
+              type="range"
+              min={0}
+              max={Z_KEYS.length - 1}
+              step={1}
+              value={zIndex}
+              onChange={(e) => setZIndex(Number(e.target.value))}
+            />
+          </div>
         </div>
 
         <p className="cmd-fit-hint">
           {ko
-            ? '실선은 주계열 이전과 주계열, 점선은 주계열을 떠난 별의 자리입니다. 거리는 곡선을 위아래로, 소광은 붉고 어두운 쪽으로 대각선으로, 나이는 전향점의 위치를 바꿉니다. 시차 거리는 출발점일 뿐이고, 맞춘 값은 Step 5에서 문헌값과 비교합니다.'
-            : 'Solid: pre-main-sequence and main sequence; dotted: post-main-sequence. Distance moves the curve vertically, extinction diagonally toward red and faint, age moves the turn-off. The parallax distance is only a starting point; Step 5 compares your fit with the literature.'}
+            ? '실선은 주계열 이전과 주계열, 점선은 주계열을 떠난 별의 자리입니다. 거리는 곡선을 위아래로, 소광은 붉고 어두운 쪽으로 대각선으로, 나이는 전향점의 위치를, 금속함량은 주계열 전체의 색을 바꿉니다. 시차 거리는 출발점일 뿐이고, 맞춘 값은 Step 5에서 문헌값과 비교합니다.'
+            : 'Solid: pre-main-sequence and main sequence; dotted: post-main-sequence. Distance moves the curve vertically, extinction diagonally toward red and faint, age moves the turn-off, and metallicity shifts the colour of the whole sequence. The parallax distance is only a starting point; Step 5 compares your fit with the literature.'}
         </p>
         <p className="cmd-fit-assumptions">
           {ko
-            ? '모델 가정: PARSEC v1.2S 등시선, Z = 0.0152 고정(태양 조성), Kroupa 초기질량함수, 소광 계수 A_G/A_V 0.806과 E(BP-RP)/A_V 0.429 (Wang & Chen 2019). 쌍성과 자전은 고려하지 않습니다.'
-            : 'Model assumptions: PARSEC v1.2S isochrones, Z = 0.0152 fixed (solar), Kroupa IMF, extinction coefficients A_G/A_V 0.806 and E(BP-RP)/A_V 0.429 (Wang & Chen 2019). Binaries and rotation are not modelled.'}
+            ? '모델 가정: PARSEC v1.2S 등시선, Kroupa 초기질량함수, 소광 계수 A_G/A_V 0.806과 E(BP-RP)/A_V 0.429 (Wang & Chen 2019). 쌍성과 자전은 고려하지 않습니다. 네 값은 서로 바꿔 맞출 수 있으므로 겹침이 좋다고 해서 각 값이 맞다는 뜻은 아닙니다.'
+            : 'Model assumptions: PARSEC v1.2S isochrones, Kroupa IMF, extinction coefficients A_G/A_V 0.806 and E(BP-RP)/A_V 0.429 (Wang & Chen 2019). Binaries and rotation are not modelled. The four controls trade off against each other, so a good overlay does not mean each value is right.'}
         </p>
       </div>
 

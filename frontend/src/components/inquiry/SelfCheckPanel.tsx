@@ -26,6 +26,16 @@ export function SelfCheckPanel({ items, scope, answers, onAnswer }: SelfCheckPan
   return (
     <section className="inquiry-selfcheck">
       <span className="inquiry-panel-kicker">{lang === 'ko' ? '생각해보기' : 'Check Yourself'}</span>
+      {/* The answer is locked on the first click. Before, the explanation
+          revealed the correct option and the buttons stayed live, so a learner
+          could switch to it — and only the last answer was recorded. The July
+          2026 cohort's 97% / 100% correct rates cannot be told apart from that
+          mechanism. */}
+      <p className="inquiry-selfcheck-note">
+        {lang === 'ko'
+          ? '처음 고른 답이 기록되고, 고른 뒤에는 바꿀 수 없습니다.'
+          : 'Your first choice is what gets recorded; it cannot be changed afterwards.'}
+      </p>
       {items.map((item) => {
         const key = `${scope}:${item.id}`;
         const answer = answers[key];
@@ -54,6 +64,7 @@ export function SelfCheckPanel({ items, scope, answers, onAnswer }: SelfCheckPan
                       key={opt}
                       type="button"
                       className={`inquiry-selfcheck-btn${chosen ? ' chosen' : ''}${showCorrect ? ' correct' : ''}${showWrong ? ' wrong' : ''}${showHint ? ' answer-hint' : ''}`}
+                      disabled={answered}
                       onClick={() => onAnswer(key, opt)}
                     >
                       {opt}
@@ -74,6 +85,7 @@ export function SelfCheckPanel({ items, scope, answers, onAnswer }: SelfCheckPan
                       key={idx}
                       type="button"
                       className={`inquiry-selfcheck-btn${chosen ? ' chosen' : ''}${showCorrect ? ' correct' : ''}${showWrong ? ' wrong' : ''}${showHint ? ' answer-hint' : ''}`}
+                      disabled={answered}
                       onClick={() => onAnswer(key, idx)}
                     >
                       {localize(opt, lang)}

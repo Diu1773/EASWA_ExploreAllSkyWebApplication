@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useLangStore } from '../../i18n';
+import { localize } from '../../explorationBlocks/localize';
+import type { LocalizedText } from '../../explorationBlocks/types';
 import { buildDssPreviewUrl } from '../../utils/surveys';
 
 const IMG_W = 640;
@@ -19,6 +21,9 @@ interface SkyDataPanelProps {
   /** Field of view of the preview along its width, in degrees. */
   fovDeg?: number;
   chips?: SkyDataChip[];
+  /** What the module actually analyses. Defaults to the TESS cutout wording;
+   *  every non-transit module has to pass its own or the caption lies. */
+  analysedDataNote?: LocalizedText;
 }
 
 export function SkyDataPanel({
@@ -28,6 +33,7 @@ export function SkyDataPanel({
   pixelScaleArcsec,
   fovDeg = 0.1,
   chips = [],
+  analysedDataNote,
 }: SkyDataPanelProps) {
   const lang = useLangStore((state) => state.lang);
   const [showGrid, setShowGrid] = useState(true);
@@ -142,8 +148,13 @@ export function SkyDataPanel({
           </div>
           <p className="inquiry-skydata-caption">
             {lang === 'ko'
-              ? `이 사진은 위치·크기 비교용 DSS 광학 탐사 이미지입니다 (시야 ${fovDeg}°). 실제 분석에 쓰는 자료는 MAST에서 API로 받아오는 TESS cutout(대상 주변 픽셀 데이터)입니다.`
-              : `This is a DSS optical survey image for spatial context (${fovDeg}° field). The data actually analyzed is a TESS pixel cutout fetched from MAST via its API.`}
+              ? `이 사진은 위치·크기 비교용 DSS 광학 탐사 이미지입니다 (시야 ${fovDeg}°). `
+              : `This is a DSS optical survey image for spatial context (${fovDeg}° field). `}
+            {analysedDataNote
+              ? localize(analysedDataNote, lang)
+              : lang === 'ko'
+                ? '실제 분석에 쓰는 자료는 MAST에서 API로 받아오는 TESS cutout(대상 주변 픽셀 데이터)입니다.'
+                : 'The data actually analyzed is a TESS pixel cutout fetched from MAST via its API.'}
             {gridOn &&
               (lang === 'ko'
                 ? ' 격자는 TESS 픽셀 크기(21″)이며, 강조된 한 픽셀 안에 몇 개의 별이 들어가는지 보세요.'

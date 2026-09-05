@@ -8,6 +8,7 @@ import { clusterCmdAdapter } from '../../explorationBlocks/adapters/clusterCmdAd
 import type { ExplorationModuleConfig } from '../../explorationBlocks/types';
 import { InquiryLayout } from '../inquiry';
 import { ClusterCmdVisualizer, type ClusterFitInfo } from '../lab/ClusterCmdVisualizer';
+import { ClusterDataPanel } from '../lab/ClusterDataPanel';
 import { SkyExplorer } from '../sky/SkyExplorer';
 import { ClusterIntro } from '../sky/ClusterIntro';
 
@@ -125,7 +126,12 @@ export function ClusterModuleView({ module }: ClusterModuleViewProps) {
 
   const context = useMemo(() => ({ clusterData: data }), [data]);
 
-  const comparisonSlot = fitInfo && data ? (() => {
+  // The comparison rows are built once and shown twice: in Step 5 as the
+  // comparison table, and again in Step 6 where the learner writes the record.
+  // Step 6 asked "how does your fitted distance compare?" while showing no
+  // numbers at all.
+  const comparisonRows = useMemo(() => {
+    if (!fitInfo || !data) return null;
     const ko = lang === 'ko';
     const ref = data.cluster;
     const pct = (mine: number, lit: number) => (lit ? `${(((mine - lit) / lit) * 100).toFixed(0)}%` : '—');
@@ -167,7 +173,22 @@ export function ClusterModuleView({ module }: ClusterModuleViewProps) {
         lit: ref.ref_av.toFixed(2),
         diff: `${signed(fitInfo.av - ref.ref_av, 2)} mag`,
       },
+      {
+        // Cantat-Gaudin et al. (2020) Table 1 carries no metallicity, so this
+        // row has a value to set but nothing to check it against.
+        label: ko ? '금속함량 (태양 대비)' : 'Metallicity (relative to the Sun)',
+        mine: `${fitInfo.metallicityMH > 0 ? '+' : ''}${fitInfo.metallicityMH.toFixed(2)}`,
+        parallax: '—',
+        lit: ko ? '이 자료에 없음' : 'not in this catalogue',
+        diff: '—',
+      },
     ];
+    return { ko, ref, rows };
+  }, [fitInfo, data, lang]);
+
+  const comparisonTable = (withPrompts: boolean) => {
+    if (!comparisonRows) return null;
+    const { ko, ref, rows } = comparisonRows;
     return (
       <section className="inquiry-info-panel">
         <span className="inquiry-panel-kicker">
@@ -200,17 +221,21 @@ export function ClusterModuleView({ module }: ClusterModuleViewProps) {
           {ko ? '문헌값 출처: ' : 'Literature source: '}
           {ref.reference}
           {ko
-            ? '. 문헌 거리는 Gaia 시차 기반이고, 나이와 소광은 그 논문의 신경망 추정값입니다.'
-            : '. The literature distance is parallax-based; age and extinction are that paper\'s neural-network estimates.'}
+            ? '. 거리와 나이와 소광 세 값은 그 논문이 성단 2,017개의 색-등급도를 같은 방법으로 한꺼번에 맞춰 얻은 것입니다. 문헌값도 직접 잰 값이 아니라 누군가 맞춘 결과라는 뜻입니다. 가운데 열의 시차 거리만 Gaia가 실제로 측정한 시차에서 나옵니다.'
+            : '. Distance, age and extinction all come from that paper fitting the colour-magnitude diagrams of 2,017 clusters the same way. A literature value is therefore also somebody\'s fit, not a direct measurement. Only the middle column, the parallax distance, comes from what Gaia actually measured.'}
         </p>
-        <div className="inquiry-callout">
-          {ko
-            ? '세 값 중 문헌과 가장 많이 어긋난 것은 무엇입니까. 그 차이를 소광 보정, 구성원 오염, 등시선 모델 가정(금속함량 고정, 쌍성 미고려) 중 무엇으로 설명할 수 있습니까. 거리와 소광은 서로 바꿔 맞출 수 있으므로, 한쪽을 문헌값에 두고 다른 쪽을 다시 맞춰 보십시오.'
-            : 'Which of the three values departs most from the literature? Can extinction, member contamination, or the isochrone assumptions (fixed metallicity, no binaries) explain it? Distance and extinction trade off, so fix one at the literature value and refit the other.'}
-        </div>
+        {withPrompts && (
+          <div className="inquiry-callout">
+            {ko
+              ? '네 값 중 문헌과 가장 많이 어긋난 것은 무엇입니까. 그 차이를 소광 보정, 구성원 오염, 등시선 모델 가정(쌍성 미고려) 중 무엇으로 설명할 수 있습니까. 거리와 소광은 서로 바꿔 맞출 수 있으므로, 한쪽을 문헌값에 두고 다른 쪽을 다시 맞춰 보십시오.'
+              : 'Which value departs most from the literature? Can extinction, member contamination, or the isochrone assumptions (no binaries) explain it? Distance and extinction trade off, so fix one at the literature value and refit the other.'}
+          </div>
+        )}
       </section>
     );
-  })() : (
+  };
+
+  const comparisonSlot = comparisonRows ? comparisonTable(true) : (
     <div className="inquiry-lab-handoff">
       <p>
         {lang === 'ko'
@@ -219,6 +244,25 @@ export function ClusterModuleView({ module }: ClusterModuleViewProps) {
       </p>
     </div>
   );
+
+  // Step 6 records the interpretation, so the numbers being interpreted have to
+  // be on the same screen. Landing here straight from a URL skips Step 4, where
+  // the fit is made, so say that rather than showing an empty record form.
+  const resultSummarySlot = comparisonRows ? (
+    comparisonTable(false)
+  ) : (
+    <div className="inquiry-lab-handoff">
+      <p>
+        {lang === 'ko'
+          ? '아직 맞춘 값이 없습니다. Step 4에서 등시선을 맞추면 그 나이·거리·소광이 여기에 시차 거리·문헌값과 함께 표로 나옵니다.'
+          : 'No fit yet. Fit the isochrone in Step 4 and its age, distance and extinction appear here alongside the parallax distance and the literature values.'}
+      </p>
+    </div>
+  );
+
+  const metadataSlot = data ? (
+    <ClusterDataPanel data={data} />
+  ) : undefined;
 
   return (
     <InquiryLayout
@@ -233,8 +277,10 @@ export function ClusterModuleView({ module }: ClusterModuleViewProps) {
         label: { ko: '이 성단으로 확인', en: 'Confirm this cluster' },
         hint: { ko: '먼저 지도에서 성단을 선택하세요.', en: 'Select a cluster on the map first.' },
       }}
+      metadataSlot={metadataSlot}
       analysisSlot={analysisSlot}
       comparisonSlot={comparisonSlot}
+      resultSummarySlot={resultSummarySlot}
       draftTargetId={selectedId}
     />
   );

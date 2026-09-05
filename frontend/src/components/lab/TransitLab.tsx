@@ -364,6 +364,14 @@ function StepGuide({
       </button>
       {open && (
         <div className="transit-guide-questions">
+          {/* O/X and choice answers lock on the first click — the feedback below
+              names the correct answer, so live buttons let a learner switch to it
+              and only the last answer was recorded. */}
+          <p className="transit-guide-note">
+            {lang === 'ko'
+              ? '처음 고른 답이 기록되고, 고른 뒤에는 바꿀 수 없습니다.'
+              : 'Your first choice is what gets recorded; it cannot be changed afterwards.'}
+          </p>
           {questions.map((q) => (
             <div key={q.id} className="transit-guide-item">
               <p className="transit-guide-text">{i18n(q.text)}</p>
@@ -378,7 +386,8 @@ function StepGuide({
                           key={v}
                           type="button"
                           className={`transit-guide-ox-btn ${answered === v ? (isCorrect ? 'correct' : 'wrong') : ''}`}
-                          onClick={() => handleAnswer(q.id, answered === v ? '' : v)}
+                          disabled={Boolean(answered)}
+                          onClick={() => handleAnswer(q.id, v)}
                         >
                           {v}
                         </button>
@@ -406,7 +415,8 @@ function StepGuide({
                             key={key}
                             type="button"
                             className={`transit-guide-choice-btn ${answered === key ? (isCorrect ? 'correct' : 'wrong') : (answered && key === q.correct ? 'reveal' : '')}`}
-                            onClick={() => handleAnswer(q.id, answered === key ? '' : key)}
+                            disabled={Boolean(answered)}
+                            onClick={() => handleAnswer(q.id, key)}
                           >
                             {i18n(opt)}
                           </button>

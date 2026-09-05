@@ -592,7 +592,9 @@ export const clusterCmdModule: ExplorationModuleConfig = {
   ],
   classroomUse: {
     suggestedTime: { ko: '45분', en: '45 minutes' },
-    level: { ko: '중등 심화~고등', en: 'Upper middle to secondary' },
+    // [12행우03-01] is a high-school elective standard (행성우주과학), and the
+    // manuscript states the curriculum basis sits at the high-school level.
+    level: { ko: '고등학교 탐구 (행성우주과학) / 대학 교양', en: 'High-school inquiry (Planetary & Space Science) / introductory college' },
     grouping: { ko: '모둠별 성단 비교', en: 'Group comparison across clusters' },
     teacherNotes: [
       { ko: '여러 모둠이 서로 다른 구성원 기준을 적용하고 CMD 차이를 비교할 수 있다.', en: 'Groups can apply different membership cuts and compare CMD changes.' },

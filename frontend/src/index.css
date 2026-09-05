@@ -703,7 +703,7 @@ body {
   transition: border-color 0.15s, background 0.15s, color 0.15s;
 }
 
-.inquiry-selfcheck-btn:hover {
+.inquiry-selfcheck-btn:not(:disabled):hover {
   border-color: var(--accent);
 }
 
@@ -4466,7 +4466,7 @@ body {
   transition: all 0.15s;
 }
 
-.transit-guide-ox-btn:hover {
+.transit-guide-ox-btn:not(:disabled):hover {
   border-color: var(--accent);
   color: var(--accent);
 }
@@ -4503,7 +4503,7 @@ body {
   text-align: left;
 }
 
-.transit-guide-choice-btn:hover {
+.transit-guide-choice-btn:not(:disabled):hover {
   border-color: var(--accent);
   color: var(--text-primary);
 }
@@ -6453,18 +6453,21 @@ body {
 }
 
 /* cluster intro — photo ↔ CMD pair cards */
+/* Two clusters side by side: the point of this intro is comparing the two
+   turn-offs, and stacked cards put them a scroll apart. Each card runs photo →
+   name → CMD downward so the two diagrams sit at the same height, next to
+   each other. */
 .cluster-intro-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
 }
 
 .cluster-intro-card {
   display: flex;
-  flex-wrap: wrap;
-  gap: 18px;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
   padding: 14px;
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -6472,8 +6475,8 @@ body {
 }
 
 .cluster-intro-photo {
-  width: 230px;
-  height: 190px;
+  width: 100%;
+  height: 150px;
   object-fit: cover;
   border-radius: 8px;
   border: 1px solid var(--border);
@@ -6481,12 +6484,14 @@ body {
 }
 
 .cluster-intro-body {
-  flex: 1 1 300px;
   min-width: 0;
-  max-width: 360px;
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+@media (max-width: 720px) {
+  .cluster-intro-grid { grid-template-columns: 1fr; }
 }
 
 .cluster-intro-head {
@@ -11508,3 +11513,46 @@ body {
 @media (max-width: 760px) {
   .cmd-fit-grid { grid-template-columns: 1fr; }
 }
+
+/* Self-check answers lock on the first click (SelfCheckPanel, StepGuide,
+   TransitLab). Disabled must not gray the result out: the chosen button keeps
+   its correct/wrong fill and the dashed answer hint stays readable — only the
+   affordance goes away. */
+.inquiry-selfcheck-btn:disabled,
+.transit-guide-ox-btn:disabled,
+.transit-guide-choice-btn:disabled {
+  cursor: default;
+  opacity: 1;
+}
+.inquiry-selfcheck-btn:disabled:not(.chosen):not(.answer-hint),
+.transit-guide-choice-btn:disabled:not(.correct):not(.wrong):not(.reveal),
+.transit-guide-ox-btn:disabled:not(.correct):not(.wrong) {
+  color: var(--text-muted);
+}
+.inquiry-selfcheck-note,
+.transit-guide-note {
+  margin: 0 0 4px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+/* Cluster Step 2 (자료 확인): sky field, the actual selection cuts, and real
+   rows from the catalogue the CMD is drawn from. */
+.cluster-data-panel { display: grid; gap: 16px; }
+.cluster-data-note {
+  margin: 0; max-width: 860px; font-size: 13.5px; line-height: 1.6;
+  color: var(--text-secondary);
+}
+.cluster-data-cut-list {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px 24px; margin: 0 0 8px;
+}
+.cluster-data-cut-list div { display: flex; flex-direction: column; gap: 2px; }
+.cluster-data-cut-list dt { font-size: 13.5px; color: var(--text-muted); }
+.cluster-data-cut-list dd {
+  margin: 0; font-family: var(--font-mono); font-size: 14.5px; color: var(--text-heading);
+}
+.cluster-data-table-wrap { overflow-x: auto; max-height: 340px; overflow-y: auto; }
+.cluster-data-table { font-family: var(--font-mono); font-size: 13px; }
+.cluster-data-table td { white-space: nowrap; }

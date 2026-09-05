@@ -146,6 +146,11 @@ export interface ClusterInfo {
   reference: string;
   note_ko: string;
   note_en: string;
+  plx_min: number;
+  plx_max: number;
+  pmra_c: number;
+  pmdec_c: number;
+  pm_tol: number | null;
 }
 
 export interface ClusterMember {

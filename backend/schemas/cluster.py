@@ -27,6 +27,11 @@ class ClusterInfo(BaseModel):
     reference: str
     note_ko: str
     note_en: str
+    plx_min: float
+    plx_max: float
+    pmra_c: float
+    pmdec_c: float
+    pm_tol: float | None = None
 
 
 class ClusterListResponse(BaseModel):
