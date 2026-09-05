@@ -244,7 +244,17 @@ export function ClusterCmdVisualizer({ data, onFitChange }: ClusterCmdVisualizer
 
       <div className="cmd-fit">
         <div className="cmd-fit-head">
-          <strong>{ko ? '등시선 맞추기' : 'Isochrone fit'}</strong>
+          {/* 「등시선」은 교육과정 밖 용어다. 표기 규칙(docs/TERMS_KO.md §1-0)에 따라
+              라벨에는 툴팁을, 화면에는 짧은 뜻풀이 한 줄을 함께 둔다. */}
+          <strong
+            title={
+              ko
+                ? '등시선: 같은 시기에 태어나 조성이 같은 별들이 색-등급도에서 이루는 선.'
+                : 'Isochrone: the line traced on a colour-magnitude diagram by stars of the same age and composition.'
+            }
+          >
+            {ko ? '등시선 맞추기' : 'Isochrone fit'}
+          </strong>
           <span className="cmd-fit-summary">
             {ko
               ? `거리 ${distancePc.toFixed(0)} pc · 나이 ${formatAge(logAge)} · A_V ${av.toFixed(2)} · 금속함량 ${MH_VALUES[zIndex] > 0 ? '+' : ''}${MH_VALUES[zIndex].toFixed(2)}   (시차 출발값 ${priorDistancePc.toFixed(0)} pc)`
@@ -264,6 +274,12 @@ export function ClusterCmdVisualizer({ data, onFitChange }: ClusterCmdVisualizer
           </button>
         </div>
 
+        <p className="cmd-fit-gloss">
+          {ko
+            ? '등시선은 같은 시기에 태어나 조성이 같은 별들이 이 그림에서 이루는 선입니다. 나이가 많을수록 무거운 별부터 주계열을 떠나므로 선의 모양이 달라집니다. 아래 네 값을 움직여 이 선을 별들에 겹쳐 보세요.'
+            : 'An isochrone is the line stars of one age and composition trace on this diagram. As age grows the massive stars leave the main sequence first, so the line changes shape. Move the four controls below to lay it over the stars.'}
+        </p>
+
         <div className="cmd-fit-grid">
           <div className="param-row">
             <label>
@@ -281,7 +297,16 @@ export function ClusterCmdVisualizer({ data, onFitChange }: ClusterCmdVisualizer
           </div>
           <div className="param-row">
             <label>
-              {ko ? '거리계수 m-M' : 'Distance modulus m-M'}: <strong>{distanceModulus.toFixed(2)}</strong>
+              <span
+                title={
+                  ko
+                    ? '거리계수 m-M: 겉보기 등급에서 절대 등급을 뺀 값. 성단이 멀수록 커진다.'
+                    : 'Distance modulus m-M: apparent minus absolute magnitude; it grows with distance.'
+                }
+              >
+                {ko ? '거리계수 m-M' : 'Distance modulus m-M'}
+              </span>
+              : <strong>{distanceModulus.toFixed(2)}</strong>
               <span className="cmd-fit-sub">{distancePc.toFixed(0)} pc</span>
             </label>
             <input
@@ -295,8 +320,19 @@ export function ClusterCmdVisualizer({ data, onFitChange }: ClusterCmdVisualizer
           </div>
           <div className="param-row">
             <label>
-              {ko ? '소광 A_V' : 'Extinction A_V'}: <strong>{av.toFixed(2)}</strong>
-              <span className="cmd-fit-sub">E(BP-RP) {(E_BPRP_PER_AV * av).toFixed(2)}</span>
+              <span
+                title={
+                  ko
+                    ? '소광 A_V: 별과 우리 사이의 성간 티끌이 별빛을 가리는 정도. 파란빛이 더 많이 가려져 별이 어둡고 붉게 보인다.'
+                    : 'Extinction A_V: how much interstellar dust dims the starlight. Blue light is absorbed more, so stars look fainter and redder.'
+                }
+              >
+                {ko ? '소광 A_V' : 'Extinction A_V'}
+              </span>
+              : <strong>{av.toFixed(2)}</strong>
+              <span className="cmd-fit-sub">
+                {ko ? '별빛을 가려 어둡고 붉게 · ' : 'dims and reddens · '}E(BP-RP) {(E_BPRP_PER_AV * av).toFixed(2)}
+              </span>
             </label>
             <input
               type="range"
@@ -309,13 +345,24 @@ export function ClusterCmdVisualizer({ data, onFitChange }: ClusterCmdVisualizer
           </div>
           <div className="param-row">
             <label>
-              {ko ? '금속함량' : 'Metallicity'}:{' '}
+              <span
+                title={
+                  ko
+                    ? '금속함량: 별이 가진, 수소와 헬륨보다 무거운 원소의 양. 태양을 0으로 두고 견준다. 많을수록 별이 붉고 어둡게 보인다.'
+                    : 'Metallicity: how much of a star is elements heavier than hydrogen and helium, measured against the Sun at 0. More of them makes stars look redder and fainter.'
+                }
+              >
+                {ko ? '금속함량' : 'Metallicity'}
+              </span>
+              :{' '}
               <strong>
                 {MH_VALUES[zIndex] > 0 ? '+' : ''}
                 {MH_VALUES[zIndex].toFixed(2)}
               </strong>
               <span className="cmd-fit-sub">
-                {ko ? `태양 대비 · Z ${Z_KEYS[zIndex]}` : `relative to the Sun · Z ${Z_KEYS[zIndex]}`}
+                {ko
+                  ? `무거운 원소의 양, 태양이 0 · Z ${Z_KEYS[zIndex]}`
+                  : `heavy-element content, Sun = 0 · Z ${Z_KEYS[zIndex]}`}
               </span>
             </label>
             <input
