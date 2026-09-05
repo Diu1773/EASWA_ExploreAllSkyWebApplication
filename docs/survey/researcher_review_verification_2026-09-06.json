@@ -1,0 +1,28 @@
+{
+  "status": "PASS",
+  "source_positions": 66,
+  "substantive_responses": 44,
+  "meaning_units": 66,
+  "source_texts_exact": true,
+  "initial_judgments_preserved": 66,
+  "researcher_notes_preserved": 66,
+  "units_without_forced_action": 39,
+  "action_unit_links": {
+    "개선1": 8,
+    "개선8": 1,
+    "개선6": 8,
+    "개선3": 2,
+    "개선5": 1,
+    "개선4": 3,
+    "개선7": 1,
+    "개선2": 1,
+    "개선9": 2
+  },
+  "original_quantitative_and_category_counts_unchanged": true,
+  "bibliography_unchanged": true,
+  "manual_note_roundtrip": true,
+  "html_cards": 44,
+  "html_history_controls": 66,
+  "manuscript_sha256": "c9cd60f202fdbf2631ba7ee4a8c5765ddfda90bf3bdd9c02ca359f4257030d43",
+  "limits": "Checks source preservation and links; does not certify interpretation validity, independent coder agreement, or web implementation."
+}

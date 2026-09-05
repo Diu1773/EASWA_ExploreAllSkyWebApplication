@@ -37,26 +37,26 @@ def appendix_rows(reviews, notes):
             uid=f"{r['id']}.{n}"
             raw=r['source_text'] if n==1 else '(같은 응답의 다음 의미 단위)'
             judgment=f"{u['meaning']}<br>**{u['decision']}** — {u['rationale']}"
-            lines.append('| '+' | '.join(cell(x) for x in (uid+' / '+r['cell'],raw,judgment,'·'.join(u['actions']),notes.get(uid,'—')))+' |')
+            lines.append('| '+' | '.join(cell(x) for x in (uid+' / '+r['cell'],raw,judgment,'·'.join(u['actions']) or '해당 없음',notes.get(uid,'—')))+' |')
     return lines
 
 
 def appendix(reviews,notes,action_number='4-18'):
     lines=[START,'','# 부록 A. 현직교사 서술형 응답별 판정표 — 연구자 검토용','',
         '본문 표 4-13은 범주 요약이고, 이 부록은 원문 하나하나의 판정 기록이다. 한 답에 여러 요구가 있으면 의미 단위로 나누었다. ID의 Q는 문항, R은 원본 응답 순서, 마지막 숫자는 해당 답의 의미 단위를 뜻한다. 예: Q23/R09.1 = 문항 23, 응답자 9, 첫 번째 내용. 원본 셀 주소도 함께 적었다. 응답 순서는 개인 식별자가 아니다.','',
-        f'**현재 판정은 검토 초안이며 사용자 의견란에 저자가 보완·수정할 내용을 적는다.** 긍정 의견, 개선 요구, 적용 조건, 수행 답변을 구분한다. 채택은 개선 필요성에 대한 판정이며 실제 구현 완료를 뜻하지 않는다. A01~A13은 본문 표 {action_number}과 연결된다. 문체 개선 A07은 향후 웹 업데이트에서 지속적으로 반영한다.','',
+        f'**연구자의 응답별 검토 의견을 반영하여 판정을 보정하였다.** 마지막 열은 연구자 의견의 요약이며 응답자의 원문과 구분한다. 최초 AI 판정과 연구자 검토 전문은 별도 분석 기록에 보존하였다. 개선 번호는 개별 해석 뒤 필요한 조치를 묶은 것으로 본문 표 {action_number}과 연결된다. 개선1~3은 시연 전 우선 검토·보완 후보, 개선4~9는 향후 과제이다. 어색한 문장은 눈에 띄는 부분부터 교정하되 전체 안내문 검수는 지속 과제로 둔다. 번호가 없는 응답도 장점·맥락·한계·논의·수행 자료로 분석에 포함되며 구현 완료와 구분한다.','',
         '## A.1. 기존 12명 — 내용 있는 응답 42개','',
         '의견 문항 35개 + 차이 원인 설명 6개 + Q21 기타 직접 입력 1개다. 문항별 인원 합을 서로 다른 사람 수로 해석하지 않는다.','']
     for question in ('Q6','Q20','Q20-1','Q22','Q23','Q21 기타'):
         group=[r for r in reviews if r['question']==question and r['respondent']<=12 and r['content_status']=='substantive']
         lines += [f"### {question} · {len(group)}개 응답",'',group[0]['question_text'],'',
-            '| 판정 ID / 원본 셀 | 응답 원문 | 내용별 판정과 이유 | 개선 번호 | 사용자 추가 의견 |',
+            '| 판정 ID / 원본 셀 | 응답 원문 | 보정 판정과 이유 | 개선 번호 | 연구자 의견 요약·추가 메모 |',
             '|---|---|---|---|---|']
         lines += appendix_rows(group,notes)+['']
     late=[r for r in reviews if r['respondent']>12 and r['content_status']=='substantive']
     lines += ['## A.2. 추가 응답자 — 판정은 포함, 기존 12명 집계에는 미포함','',
         '7월 24일 21:45 제출분이다. 시연 참가 여부 확인 전이며, 응답 내용은 누락하지 않고 판정한다.','',
-        '| 판정 ID / 원본 셀 | 응답 원문 | 내용별 판정과 이유 | 개선 번호 | 사용자 추가 의견 |','|---|---|---|---|---|']
+        '| 판정 ID / 원본 셀 | 응답 원문 | 보정 판정과 이유 | 개선 번호 | 연구자 의견 요약·추가 메모 |','|---|---|---|---|---|']
     lines += appendix_rows(late,notes)
     lines += ['','## A.3. 내용 없는 응답도 기록','',
         '빈칸과 문장부호만 적은 응답을 어려움 없음이나 긍정으로 바꾸지 않는다. 아래에는 원본 13개 응답을 모두 포함했다.','',
@@ -76,7 +76,8 @@ def action_table(data):
         refs=[]
         for r in data['individual_reviews']:
             if r['respondent']<=12 and any(aid in u['actions'] for u in r['units']):
-                refs.append(r['id'])
+                scope='（기존 서비스 참고）' if r['domain']=='기존 서비스' else '（EASWA 보충）' if r['domain']=='EASWA 보충' else ''
+                refs.append(r['id']+scope)
         timing=data['action_timing'].get(aid,'개선 필요성 채택. 구체 반영 순서는 응답별 검토 후 정하며, 실제 반영 내역은 표 4-14에 기록')
         rows.append('| '+' | '.join(cell(x) for x in (aid+' '+title,' · '.join(refs),action,timing))+' |')
     return '\n'.join(rows)
@@ -93,19 +94,20 @@ def review_html(data,notes,out):
     nav{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}nav a{background:white;padding:6px 14px;border:1px solid #cbd1d9;border-radius:4px;color:#28577b;text-decoration:none}
     article{background:white;border:1px solid #d7dbe1;border-radius:8px;padding:24px;margin:20px 0;break-inside:avoid}.meta{color:#5a626e;font-size:13px}.source{border-left:3px solid #b4bcc7;background:#f7f8fa;padding:16px 18px;white-space:pre-wrap;margin:16px 0 22px}
     table{border-collapse:collapse;width:100%;table-layout:fixed;font-size:14px}th,td{border:1px solid #d7dbe1;padding:12px;vertical-align:top;overflow-wrap:anywhere}th{background:#edf1f5;text-align:left}.units th:nth-child(1){width:23%}.units th:nth-child(2){width:42%}.units th:nth-child(3){width:12%}.units th:nth-child(4){width:23%}
-    .decision{display:block;font-weight:700;color:#28577b;margin-bottom:6px}.comment{min-height:64px;color:#79818c}.actions{background:white}.actions th:nth-child(1){width:22%}.actions th:nth-child(2){width:54%}.actions th:nth-child(3){width:24%}
+    .decision{display:block;font-weight:700;color:#28577b;margin-bottom:6px}.comment{min-height:64px;color:#303943}.actions{background:white}.actions th:nth-child(1){width:22%}.actions th:nth-child(2){width:54%}.actions th:nth-child(3){width:24%}details{font-size:12px;color:#68717a;margin-top:14px}summary{cursor:pointer}.now{background:#edf7f1}.question{font-size:14px;color:#58626b;margin-top:10px}
     @media(max-width:700px){main{padding:0 14px}article{padding:16px}.table-scroll{overflow-x:auto}.units{min-width:760px}.actions{min-width:760px}}
     @media print{body{background:white;font-size:11pt}main{max-width:none;margin:0;padding:0}nav{display:none}article{break-inside:auto;border-radius:0}thead{display:table-header-group}tr{break-inside:avoid}}
     </style><main>''',
-    '<header class="lead"><h1>서술형 응답을 하나씩 판정합니다</h1><p>원문 → 내용별 판정 → 개선 번호 → 사용자 추가 의견</p>',
+    '<header class="lead"><h1>응답별 검토 의견을 반영했습니다</h1><p>원문 → 연구자 의견 요약 → 보정 판정 → 필요한 개선만 연결</p>',
     '<p>기존 12명의 의견 35개·수행 설명 6개·Q21 기타 1개, 추가 응답자의 의견 2개를 모두 확인했습니다. 내용 있는 응답 44개를 66개 의미 단위로 나눴습니다. 추가 응답은 12명 집계에 더하지 않았습니다.</p></header>',
-    '<aside class="notice"><b>문체 개선 A07: 향후 웹 업데이트에서 지속 반영</b><br>당장 수정할 항목으로 두지 않습니다. 판정은 초안이며 사용자 의견을 덧붙여 확정합니다. 의견은 논문 부록 A의 같은 ID 행에 적거나 대화에서 ID와 함께 전달할 수 있습니다.</aside>',
+    '<aside class="notice"><b>시연 전 우선 후보 3개 · 향후 과제 6개</b><br>① 용어·영어·그래프 기본 표기 ② 눈에 띄는 어색한 문장 ③ 단계 안내·도움 질문·이해 점검. 난이도·차시 우려를 전부 긴급 수정으로 바꾸지 않았습니다. 문체 전체 검수는 지속 과제이며 퀴즈 팝업은 미확정 아이디어입니다. 연구자 의견은 요약이며 보정 판정은 그 의견을 반영한 분석안입니다. 각 행에서 최초 AI 판정도 펼쳐 볼 수 있습니다.</aside>',
     '<nav><a href="#actions">개선 목록</a>'+''.join(f'<a href="#group-{q}">{dict(other="기타 직접 입력",late="추가 응답").get(q,q)}</a>' for q in ['Q6','Q20','Q20-1','Q22','Q23','other','late'])+'</nav>',
     '<h2 id="actions">개선사항 전체 목록</h2><div class="table-scroll"><table class="actions"><thead><tr><th>번호 / 개선사항</th><th>할 일</th><th>반영 시점</th></tr></thead><tbody>']
     for aid,values in data['action_definitions'].items():
         if aid=='KEEP':continue
         timing=data['action_timing'].get(aid,'개선 필요성 채택 · 구체 반영 순서는 응답별 검토 후 결정')
-        parts.append(f'<tr><td><b>{aid} {e(values[0])}</b></td><td>{e(values[2])}</td><td>{e(timing)}</td></tr>')
+        klass=' class="now"' if aid in ('개선1','개선2','개선3') else ''
+        parts.append(f'<tr{klass}><td><b>{aid} {e(values[0])}</b></td><td>{e(values[2])}</td><td>{e(timing)}</td></tr>')
     parts.append('</tbody></table></div>')
     groups=[(q,q,[r for r in data['individual_reviews'] if r['question']==q and r['respondent']<=12]) for q in ['Q6','Q20','Q20-1','Q22','Q23']]
     groups += [('other','Q21 기타',[r for r in data['individual_reviews'] if r['question']=='Q21 기타']),('late','추가 응답 · 집계 보류',[r for r in data['individual_reviews'] if r['respondent']>12])]
@@ -113,14 +115,16 @@ def review_html(data,notes,out):
         parts.append(f'<h2 id="group-{gid}">{e(title)}</h2>')
         for r in group:
             if r['content_status']!='substantive':continue
-            parts += [f'<article><h3>{e(r["id"])} · 원본 {r["cell"]}</h3>',f'<div class="meta">{e(r["domain"])} / {e(r["cohort_status"])}</div>',f'<div class="source">{e(r["source_text"])}</div>',
-                '<div class="table-scroll"><table class="units"><thead><tr><th>의미 단위</th><th>판정과 이유</th><th>개선 번호</th><th>사용자 추가 의견</th></tr></thead><tbody>']
+            parts += [f'<article><h3>{e(r["id"])} · 원본 {r["cell"]}</h3>',f'<div class="meta">{e(r["domain"])} / {e(r["cohort_status"])}</div>',f'<div class="question">질문: {e(r["question_text"])}</div>',f'<div class="source">{e(r["source_text"])}</div>',
+                '<div class="table-scroll"><table class="units"><thead><tr><th>의미 단위</th><th>보정 판정과 이유</th><th>개선 번호</th><th>연구자 의견 요약</th></tr></thead><tbody>']
             for n,u in enumerate(r['units'],1):
                 uid=f'{r["id"]}.{n}'
                 note=notes.get(uid,'검토 예정')
-                parts.append(f'<tr><td><span class="meta">{e(uid)}</span><br>{e(u["meaning"])}</td><td><span class="decision">{e(u["decision"])}</span>{e(u["rationale"])}</td><td>{e(" · ".join(u["actions"]))}</td><td class="comment">{e(note)}</td></tr>')
+                initial=u.get('initial_judgment',{})
+                history=f'<details><summary>최초 AI 판정 · 수정 전</summary>{e(initial.get("decision",""))}<br>{e(initial.get("rationale",""))}<br>종전 연결: {e(" · ".join(initial.get("actions",[])))}</details>'
+                parts.append(f'<tr><td><span class="meta">{e(uid)}</span><br>{e(u["meaning"])}</td><td><span class="decision">{e(u["decision"])}</span>{e(u["rationale"])}{history}</td><td>{e(" · ".join(u["actions"]) or "해당 없음")}</td><td class="comment">{e(note)}</td></tr>')
             parts.append('</tbody></table></div></article>')
-    parts.append('<p>빈칸 17개와 마침표만 있는 5개는 논문 부록 A.3에 별도 기록했습니다. 모든 판정은 원문을 읽고 작성한 검토 초안이며, 자동 검사 통과가 해석의 타당성이나 구현 완료를 보증하지 않습니다.</p></main></html>')
+    parts.append('<p>빈칸 17개와 마침표만 있는 5개는 논문 부록 A.3에 별도 기록했습니다. 44개 응답·66개 의미 단위 모두에 연구자 의견을 연결했습니다. 최초 판정 보존과 누락 검사는 해석의 타당성·독립 부호화 신뢰도·구현 완료의 인증과 구분됩니다.</p></main></html>')
     out.write_text('\n'.join(parts),encoding='utf-8')
 
 
@@ -134,7 +138,11 @@ def main():
     for r in data['individual_reviews']:
         for n,u in enumerate(r['units'],1):
             if u.get('user_note'):
-                notes.setdefault(f"{r['id']}.{n}",u['user_note'])
+                uid=f"{r['id']}.{n}"
+                if not notes.get(uid) or notes[uid]==u.get('previous_user_note'):
+                    notes[uid]=u['user_note']
+                elif u['user_note'] not in notes[uid]:
+                    notes[uid]+=' / '+u['user_note']
     suffix=''
     if START in text:
         before,generated=text.split(START,1)
@@ -149,10 +157,10 @@ def main():
     action_number=match[1]
     caption=f'**표 {action_number}. 현직교사 응답에서 도출한 개선사항과 반영 계획**'
     text=text[:match.start()]+caption+'\n\n'+action_table(data)+text[match.end():]
-    anchor='현재까지 확보된 검토 결과를 바탕으로 EASWA의 개선 방향을'
+    anchor='응답별 판정에서 도출한 개선사항을'
     if anchor in text:
         start=text.index(anchor);end=text.index('\n',start)
-        text=text[:start]+f'응답별 판정에서 도출한 개선사항을 표 {action_number}에 정리하였다. 각 항목의 근거 응답과 개별 판정은 부록 A에 연결하였다. 개선 필요성의 채택, 반영 시점, 실제 구현 상태는 구분한다. 특히 안내 문장의 자연스러움은 현재 일괄 수정하지 않고 향후 웹 업데이트 과정에서 지속적으로 다듬는다. 나머지 항목의 구체적인 반영 순서는 응답별 검토 의견을 통합하여 정한다.'+text[end:]
+        text=text[:start]+f'응답별 판정에서 도출한 개선사항을 표 {action_number}에 정리하였다. 용어·기본 표기, 어색한 안내 문장, 단계 안내와 이해 점검 질문을 시연 전 우선 보완 후보로 정하였다. 난이도·차시·선수 지식에 대한 일반적인 우려는 적용 조건과 한계로 논의하고, 구체적인 장기 제안은 향후 과제로 구분하였다. 긍정 평가와 탐구 수행 답변에는 별도 개선을 강제하지 않았다. 각 항목의 근거와 연구자 의견은 부록 A에 제시하며, 이 표의 계획과 실제 구현·배포 상태는 구분한다.'+text[end:]
     ref='개별 자유응답의 원문, 의미 단위별 판정, 개선 번호와 연구자 추가 의견란은 부록 A에 제시하였다.'
     if ref not in text:
         anchor='**표 4-13. EASWA 관련 자유응답 범주화 결과 (현직 코호트, N=12)**'

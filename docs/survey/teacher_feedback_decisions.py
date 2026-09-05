@@ -4,12 +4,13 @@ These are interpretive decisions, not automatically discovered codes or a claim
 of independent coder agreement. Coverage and exact source text are checked by code.
 """
 from collections import Counter
+from copy import deepcopy
 from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter
 
 
 # Each action stays distinct; frequency is not a rule for ignoring a concrete need.
-ACTIONS = {
+INITIAL_ACTIONS = {
     'A01': ('용어·기호·단위 풀이', '원리 3·5', '용어가 처음 나오는 곳과 값 옆에 우리말 뜻·기호·단위를 함께 제시한다. BTJD·BJD·Rp/R*·χ²_red·ROI·잡음·픽셀을 실제 노출 위치별로 확인한다.', '명시된 용어의 노출 위치→설명 위치를 대조하고, 설명을 읽어도 이해되지 않는 항목을 확인한다.'),
     'A02': ('선수 개념 안내', '원리 3·5', '식현상·차등측광·구경·비교성·산포 등 이번 활동에 필요한 개념을 자료 예와 연결한다. 상세 이론은 확장 설명으로 나눈다.', '입문자가 다음 조작과 결과를 이해하는 데 필요한 설명을 찾을 수 있는지 확인한다. 수학·통계 전공 지식 전체를 선수 조건으로 삼지 않는다.'),
     'A03': ('그래프 읽기', '원리 3·4', '축과 단위, 점 하나의 의미, 빈 구간의 의미를 해당 그래프에서 설명한다. 빈 구간의 실제 원인이 확인되지 않으면 원인을 단정하지 않는다.', '비교성 품질 그래프와 광도곡선에서 축·점·빈 구간 설명을 각각 확인한다.'),
@@ -26,7 +27,7 @@ ACTIONS = {
     'KEEP': ('긍정 요소 유지', '관련 원리의 장점', '실자료·직접 조작·시각화·출처·기존 화면의 장점을 보존한다. 긍정 진술은 개선 요구와 분리한다.', '호의적 평가·활용 의향을 실제 학습 효과·자료 정확성 검증으로 확대하지 않는다.'),
 }
 
-ACTION_TIMING = {'A07': '사용자 결정: 당장 수정하지 않고 향후 웹 업데이트마다 지속 개선'}
+INITIAL_ACTION_TIMING = {'A07': '사용자 결정: 당장 수정하지 않고 향후 웹 업데이트마다 지속 개선'}
 
 
 def u(meaning, decision, rationale, *actions, user_note=''):
@@ -102,7 +103,7 @@ def build_reviews(path):
             content = 'blank' if not raw.strip() else ('punctuation_only' if raw.strip()=='.' else 'substantive')
             if content == 'substantive':
                 assert key in DECISIONS, ('unreviewed source response',key)
-                units = DECISIONS[key]
+                units = deepcopy(DECISIONS[key])
             else:
                 units = [u('빈칸' if content=='blank' else '마침표만 입력', '분석 가능한 내용 없음', '긍정·어려움 없음으로 간주하지 않는다. 미응답 유형으로 기록한다.')]
             reviews.append(dict(id=key,question='Q'+q,respondent=respondent,
@@ -117,10 +118,11 @@ def build_reviews(path):
     reviews.append(dict(id='Q21_OTHER/R10',question='Q21 기타',respondent=10,
         sheet=sheet.title,cell=f'{get_column_letter(q21col+1)}11',question_text=str(headers[q21col]),
         source_text=other,source_cell_text=str(matrix[10][q21col]),content_status='substantive',
-        cohort_status='기존 12명',domain='EASWA',units=DECISIONS['Q21_OTHER/R10']))
+        cohort_status='기존 12명',domain='EASWA',units=deepcopy(DECISIONS['Q21_OTHER/R10'])))
     book.close()
     observed={r['id'] for r in reviews if r['content_status']=='substantive'}
     assert observed==set(DECISIONS), ('unmatched decisions',set(DECISIONS)-observed)
+    apply_researcher_review(reviews)
     for review in reviews:
         for unit in review['units']:
             assert unit['meaning'] and unit['decision'] and unit['rationale']
@@ -133,14 +135,15 @@ def build_reviews(path):
         meaning_units=sum(len(r['units']) for r in reviews if r['content_status']=='substantive'),
         punctuation_only=5,blank=17,
         coverage_by_question=dict(Counter(r['question'] for r in reviews if r['content_status']=='substantive')),
-        note='Every substantive response has individual judgments. Human interpretation draft; no independent coder agreement claimed. Late responses reviewed but not added to N=12 counts.')
+        reviewed_units=sum(bool(u.get('user_note')) for r in reviews for u in r['units']),
+        note='Author feedback mapped to all 44 substantive responses and 66 meaning units. Revised interpretations are an AI synthesis of the author review, not independent coder agreement. Initial AI judgments retained. Late responses not added to N=12 counts.')
     return reviews, summary
 
 
 def render_reviews(reviews, summary):
-    lines=['## 5. 응답 하나씩: 원문 → 의미 단위 → 판정 → 조치', '',
+    lines=['## 5. 응답 하나씩: 원문 → 연구자 의견 → 보정 판정 → 필요한 조치', '',
         '원본의 서술형 5문항을 13개 응답 모두 확인했다. Q21 기타 직접 입력도 포함했다. 내용 있는 응답 **44개**를 아래에서 각각 판정한다. 기존 12명의 의견 35개·수행 설명 6개·Q21 기타 1개, 추가 응답자의 의견 2개다. 추가 응답은 내용을 판정하되 기존 12명 빈도에는 넣지 않는다.', '',
-        '판정은 응답의 진술을 채택·유지·조건 구분하는 분석 초안이다. 응답자의 말이 사실인지, 수정이 실제 구현되었는지와 구분한다. 한 답 안의 서로 다른 요구와 긍정 평가는 의미 단위로 나눈다. 의미 단위 수를 응답자 수로 사용하지 않는다.', '',
+        '연구자가 응답별로 검토한 의견을 요약하고 판정을 보정했다. 연구자 의견 요약은 직접 인용이 아니며, 전문은 연구자_응답별검토_2026-09-05.md에 보존했다. 최초 AI 판정은 JSON의 initial_judgment에 남긴다. 개선 번호는 해석을 마친 뒤 필요한 조치만 묶은 것이며 번호 없는 응답도 분석에서 제외된 것이 아니다. 의미 단위 수를 응답자 수로 사용하지 않는다.', '',
         '### 5.1. 개선 조치와 완료 확인 기준', '',
         '| ID | 조치 | 원리 연결 | 할 일 | 완료로 판단할 근거 | 반영 시점 |', '|---|---|---|---|---|---|']
     clean=lambda s:str(s).replace('|','\\|').replace('\n','<br>')
@@ -152,7 +155,7 @@ def render_reviews(reviews, summary):
         lines += [f"#### {r['id']} · {r['cell']} · {r['domain']} · {r['cohort_status']}", '',
                   f"질문: {r['question_text']}", '', '원문:', '']
         lines.extend('> '+line.rstrip() for line in r['source_text'].splitlines())
-        lines += ['', '| 의미 단위 ID / 내용 | 판정 | 판정 이유와 해석 범위 | 연결 조치 | 사용자 추가 의견 |','|---|---|---|---|---|']
+        lines += ['', '| 의미 단위 ID / 내용 | 보정 판정 | 판정 이유와 해석 범위 | 연결 조치 | 연구자 의견 요약 |','|---|---|---|---|---|']
         for n,unit in enumerate(r['units'],1):
             lines.append('| '+' | '.join(clean(v) for v in (f"{r['id']}.{n} / {unit['meaning']}",unit['decision'],unit['rationale'],' · '.join(unit['actions']),unit.get('user_note','—')))+' |')
         lines.append('')
@@ -162,3 +165,7 @@ def render_reviews(reviews, summary):
         lines.append(f"| {r['id']} | {r['cell']} | {r['source_text'] or '(빈칸)'} | 분석 가능한 내용 없음. 어려움 없음으로 해석하지 않음 |")
     lines += ['', f"검증: 총 {summary['source_positions']}개 위치 = 내용 있는 응답 {summary['substantive_responses']}개 + 마침표만 5개 + 빈칸 17개. 내용 응답에서 판정한 의미 단위는 {summary['meaning_units']}개이며 응답자 빈도와 별개다.", '']
     return lines
+
+
+# Keep DECISIONS above as the initial draft; use only the reviewed action groups.
+from teacher_feedback_researcher_review import ACTIONS, ACTION_TIMING, apply_researcher_review
