@@ -75,9 +75,9 @@ export const exoplanetTransitModule: ExplorationModuleConfig = {
         {
           id: 'tr_meta_sc1',
           type: 'ox',
-          question: { ko: '겉보기 등급이 더 밝은(숫자가 작은) 별일수록 식 신호를 보기 쉽다.', en: 'A brighter host (smaller magnitude) gives a lower-noise light curve, making the transit easier to see.' },
+          question: { ko: '위 화면의 등급 값이 작을수록 더 밝은 별이고, 밝은 별일수록 같은 시간에 받는 빛이 많아 곡선이 덜 흔들린다.', en: 'On the screen above, a smaller magnitude means a brighter star, and a brighter star collects more light in the same time, so its curve wobbles less.' },
           correct: 'O',
-          explanation: { ko: '밝은 별은 받는 광자 수가 많아 신호대잡음비(S/N)가 높습니다.', en: 'Brighter stars deliver more photons, so the signal-to-noise ratio is higher.' },
+          explanation: { ko: '등급은 숫자가 작을수록 밝습니다. 화면의 대상 등급을 확인해 보세요. 밝은 별일수록 받는 빛이 많아 밝기 변화를 재기 쉽습니다.', en: 'Magnitude runs backwards: smaller is brighter. Check the target magnitude on the screen. More light makes a brightness change easier to measure.' },
         },
         {
           id: 'tr_meta_sc2',
@@ -382,9 +382,9 @@ export const clusterCmdModule: ExplorationModuleConfig = {
         {
           id: 'cmd_meta_sc1',
           type: 'ox',
-          question: { ko: 'BP-RP 색지수가 클수록 표면온도가 높은 파란 별이다.', en: 'A larger BP-RP color index means a hotter, bluer star.' },
-          correct: 'X',
-          explanation: { ko: '반대입니다 — 색지수가 클수록 더 붉고 차가운 별입니다.', en: 'The opposite — a larger BP-RP means a redder, cooler star.' },
+          question: { ko: '위 표에서 BP−RP 값이 큰 별은 붉은 별이다.', en: 'In the table above, a star with a larger BP−RP is a redder star.' },
+          correct: 'O',
+          explanation: { ko: 'BP는 파란 쪽, RP는 붉은 쪽에서 잰 밝기입니다. 붉은 별은 붉은 쪽이 더 밝아 BP−RP가 커집니다. Step 4의 색-등급도에서도 오른쪽으로 갈수록 붉은 점입니다.', en: 'BP is measured on the blue side and RP on the red side, so a red star is brighter in RP and BP−RP grows. On the Step 4 diagram, points further right are redder.' },
         },
               ],
     },
@@ -421,7 +421,25 @@ export const clusterCmdModule: ExplorationModuleConfig = {
         makePrompt('cmd_vis_axes', '축을 확인하라 - 등급 축은 위로 갈수록 밝은(작은 수)인가? 색지수가 클수록 별의 표면온도는 어떻게 되는가?', 'Check the axes - does brighter (smaller magnitude) point upward? As the color index increases, what happens to the surface temperature of a star?'),
       ],
       selfChecks: [
-{
+        {
+          id: 'cmd_run_sc1',
+          type: 'choice',
+          question: {
+            ko: '등시선을 별들에 겹칠 때, 거리계수 m−M만 키우면 곡선은 어떻게 움직이는가?',
+            en: 'While overlaying the isochrone, what happens if you raise only the distance modulus m−M?',
+          },
+          options: [
+            { ko: '곡선 전체가 아래(어두운 쪽)로 내려간다', en: 'The whole curve slides down, toward fainter' },
+            { ko: '곡선이 오른쪽(붉은 쪽)으로만 움직인다', en: 'The curve moves only to the right, toward redder' },
+            { ko: '전향점의 위치만 바뀌고 나머지는 그대로다', en: 'Only the turn-off moves; the rest stays put' },
+          ],
+          correctIndex: 0,
+          explanation: {
+            ko: '거리계수는 같은 별이 얼마나 어둡게 보이는지를 정하므로 곡선 전체가 위아래로만 움직입니다. 색은 그대로입니다. 슬라이더를 직접 움직여 확인해 보세요 — 색을 바꾸는 것은 소광과 금속함량이고, 전향점을 옮기는 것은 나이입니다.',
+            en: 'The distance modulus sets how faint the same star looks, so the curve only slides vertically; colour is unchanged. Try the slider — colour is moved by extinction and metallicity, and the turn-off by age.',
+          },
+        },
+        {
           id: 'cmd_cond_sc1',
           type: 'ox',
           question: { ko: '성간 소광(적색화)을 보정하지 않으면 CMD가 더 붉고 어두운 쪽으로 치우친다.', en: 'Without reddening correction, the CMD is shifted toward redder and fainter.' },
