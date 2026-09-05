@@ -386,14 +386,7 @@ export const clusterCmdModule: ExplorationModuleConfig = {
           correct: 'X',
           explanation: { ko: '반대입니다 — 색지수가 클수록 더 붉고 차가운 별입니다.', en: 'The opposite — a larger BP-RP means a redder, cooler star.' },
         },
-        {
-          id: 'cmd_meta_sc2',
-          type: 'ox',
-          question: { ko: '구성원 선별을 느슨하게 하면 배경별이 섞여 주계열 띠가 두꺼워진다.', en: 'Loosening membership selection lets field stars in and broadens the main-sequence band.' },
-          correct: 'O',
-          explanation: { ko: '오염된 배경별이 CMD에 흩어져 띠를 두껍게 만듭니다.', en: 'Contaminating field stars scatter across the CMD, widening the band.' },
-        },
-      ],
+              ],
     },
     step3_analysis_conditions: {
       questions: [
@@ -401,14 +394,14 @@ export const clusterCmdModule: ExplorationModuleConfig = {
         makePrompt('cmd_cond_extinction', '성간 소광(적색화) 보정을 하지 않으면 CMD는 색·등급 방향으로 어느 쪽으로 이동하는가?', 'Without interstellar extinction (reddening) correction, in which color and magnitude direction does the CMD shift?'),
       ],
       selfChecks: [
-        {
-          id: 'cmd_cond_sc1',
+{
+          id: 'cmd_meta_sc2',
           type: 'ox',
-          question: { ko: '성간 소광(적색화)을 보정하지 않으면 CMD가 더 붉고 어두운 쪽으로 치우친다.', en: 'Without reddening correction, the CMD is shifted toward redder and fainter.' },
+          question: { ko: '구성원 선별을 느슨하게 하면 배경별이 섞여 주계열 띠가 두꺼워진다.', en: 'Loosening membership selection lets field stars in and broadens the main-sequence band.' },
           correct: 'O',
-          explanation: { ko: '소광은 별을 어둡게 + 붉게 만들어 CMD를 그 방향으로 밀어냅니다.', en: 'Extinction dims and reddens stars, pushing the CMD that way.' },
+          explanation: { ko: '오염된 배경별이 CMD에 흩어져 띠를 두껍게 만듭니다.', en: 'Contaminating field stars scatter across the CMD, widening the band.' },
         },
-        {
+                {
           id: 'cmd_cond_sc2',
           type: 'choice',
           question: { ko: '구성원 선별 기준을 엄격하게 하면 CMD가 어떻게 변할까?', en: 'If you make the membership test stricter, how does the CMD change?' },
@@ -426,6 +419,15 @@ export const clusterCmdModule: ExplorationModuleConfig = {
       questions: [
         makePrompt('cmd_vis_features', 'CMD에서 주계열·전향점(turn-off)·(있다면) 거성가지를 찾아 표시하라. 전향점은 무엇을 의미하는가?', 'Locate the main sequence, the turn-off, and (if present) the giant branch on the CMD. What does the turn-off signify?'),
         makePrompt('cmd_vis_axes', '축을 확인하라 - 등급 축은 위로 갈수록 밝은(작은 수)인가? 색지수가 클수록 별의 표면온도는 어떻게 되는가?', 'Check the axes - does brighter (smaller magnitude) point upward? As the color index increases, what happens to the surface temperature of a star?'),
+      ],
+      selfChecks: [
+{
+          id: 'cmd_cond_sc1',
+          type: 'ox',
+          question: { ko: '성간 소광(적색화)을 보정하지 않으면 CMD가 더 붉고 어두운 쪽으로 치우친다.', en: 'Without reddening correction, the CMD is shifted toward redder and fainter.' },
+          correct: 'O',
+          explanation: { ko: '소광은 별을 어둡게 + 붉게 만들어 CMD를 그 방향으로 밀어냅니다.', en: 'Extinction dims and reddens stars, pushing the CMD that way.' },
+        },
       ],
     },
     step5_compare: {

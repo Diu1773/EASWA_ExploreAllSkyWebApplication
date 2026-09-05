@@ -338,6 +338,7 @@ export function InquiryLayout<TContext = unknown>({
         sinkUrl,
         buildAnonRecordPayload({
           targetId: anonTargetId,
+          module: module.id,
           status: 'draft',
           fit: anonFit,
           notes,

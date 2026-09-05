@@ -75,6 +75,7 @@ describe('anonRecordWorthSyncing', () => {
 describe('buildAnonRecordPayload — logged_in', () => {
   const input = (loggedIn: boolean): AnonRecordInput => ({
     targetId: 'wasp_6_b',
+    module: 'exoplanet-transit',
     status: 'draft',
     fit: null,
     notes: {},

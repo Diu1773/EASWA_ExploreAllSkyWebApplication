@@ -60,6 +60,14 @@ var HEADERS = [
   // 공공 배포 시 온라인으로 개선점을 받는 채널. 반드시 맨 끝에.
   'site_rating', // 도구 만족도 1~5 (0 또는 빈칸 = 미응답)
   'site_feedback', // 도구 개선 자유 서술 (선택)
+  // 아래 2열은 2026-09-06 추가 — 탐구블럭이 셋(식현상·성단·KMTNet)이 되면서 필요해졌다.
+  // 그전에는 target_id 로만 갈렸는데, 그러면 어느 모듈의 행인지 사람이 이름을 보고
+  // 짐작해야 하고 식현상이 아닌 모듈의 산출값은 넣을 자리가 없다.
+  'module', // 'exoplanet-transit' | 'cluster-cmd' | 'kmtnet'. 빈칸 = 이 열이 생기기 전의
+  //           옛 행이며, 전부 식현상이다(2026-07-24 조사 시점에 다른 모듈은 기록하지 않았다).
+  'derived_json', // 모듈별 산출값 (JSON). 식현상은 위의 rp_rs~chi2_red 열을 그대로 쓰고,
+  //                 성단은 거리계수·나이·소광·금속함량·구성원 수, KMTNet 은 t0·u0·tE 가
+  //                 여기로 들어간다. 모듈마다 열을 새로 만들면 시트가 계속 넓어진다.
 ];
 
 function doPost(e) {
@@ -163,6 +171,8 @@ function buildRow_(data) {
     toBoolOrBlank_(data.logged_in),
     toNumberOrBlank_(data.site_rating),
     truncate_(data.site_feedback, 2000),
+    truncate_(data.module, 32),
+    truncate_(data.derived_json, 4000),
   ];
 }
 

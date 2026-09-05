@@ -36,6 +36,14 @@ export function getAnonId(): string {
 export interface AnonRecordPayload {
   anon_id: string;
   target_id: string;
+  /** Which 탐구블럭 the row came from. Until 2026-09-06 the sheet had only
+   *  target_id, so telling a cluster row from a transit one meant recognising
+   *  the id by eye — and the module's own derived values had nowhere to go. */
+  module: string;
+  /** Per-module derived values as JSON. Transit keeps its dedicated columns
+   *  (rp_rs …); cluster and KMTNet put theirs here rather than widening the
+   *  sheet once per module. */
+  derived_json: string;
   /** Always 'draft': there is no submit button any more — records upload as they
    *  are written. Kept as a column so a future explicit "done" action has a place
    *  to land without a sheet migration. */
@@ -159,6 +167,10 @@ export interface AnonRecordInput {
     reducedChiSquared: number;
   } | null;
   notes: Record<string, string>;
+  /** Which 탐구블럭 this row belongs to. */
+  module: string;
+  /** Module-specific derived values; transit leaves this empty and uses `fit`. */
+  derived?: Record<string, number | string | null>;
   selfCheckResponses: unknown;
   selfCheckAnswered: number;
   selfCheckTotal: number;
@@ -220,6 +232,8 @@ export function buildAnonRecordPayload(input: AnonRecordInput): AnonRecordPayloa
   return {
     anon_id: getAnonId(),
     target_id: input.targetId,
+    module: input.module,
+    derived_json: JSON.stringify(input.derived ?? {}),
     status: input.status,
     rp_rs: fit ? fit.rpRs : null,
     rp_rs_err: fit ? fit.rpRsErr : null,
