@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "paper": "C:\\Users\\bmffr\\Desktop\\Me\\ERP2026_Cosmos\\EASWA_논문_전체수정본_v14.md",
+  "backup": "C:\\Users\\bmffr\\Desktop\\Me\\ERP2026_Cosmos\\원고_백업\\EASWA_논문_전체수정본_v14_모듈개발순서수정전_20260906_003052.md",
+  "sections": [
+    "3.4",
+    "3.5",
+    "4.2",
+    "4.3",
+    "4.4",
+    "5.5",
+    "6.1"
+  ],
+  "scope": "module selection, sequential development and implementation versus evaluation scope",
+  "references_and_appendix_unchanged": true,
+  "survey_results_unchanged": true,
+  "old_simultaneous_initial_framing_removed": true,
+  "sha256": "44d3543a7baa35f30e2a9f303bedcba7eaa7c3abff1fa99b5a74883efa0d7d10"
+}
