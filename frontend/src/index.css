@@ -6296,8 +6296,32 @@ body {
   margin-top: 2px;
 }
 
+/* 스텝퍼를 화면 위에 붙여 둔다.
+   재보니 326px 만 내려가면 사라져서, 작업하는 내내 「지금 몇 단계」가 보이지 않았다
+   (1440x900, Step 4, 총 스크롤 859px). Zooniverse 베타 설문(약 1,200명 응답)의 최다
+   불만이 「막혔을 때 어디로 갈지 모름 · 다음에 뭘 할지 불명확」이었고 같은 문제다.
+   근거: docs/DESIGN_EVIDENCE_TOOL_SCREENS_2026-09-05.md §5-1
+
+   붙어 있는 동안 자리를 덜 먹도록 여백과 원 크기를 줄였다 — 848px 화면에서 70px 는 8% 다.
+   JS 상태 없이 CSS 로만 한다. */
 .inquiry-stepper {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   margin-bottom: 16px;
+  padding: 10px 20px;
+  background: var(--bg-primary);
+  box-shadow: none;
+}
+
+.inquiry-stepper .transit-step-circle {
+  width: 28px;
+  height: 28px;
+  font-size: 13px;
+}
+
+.inquiry-stepper .transit-step-label {
+  font-size: 12px;
 }
 
 .inquiry-layout-grid-full {
