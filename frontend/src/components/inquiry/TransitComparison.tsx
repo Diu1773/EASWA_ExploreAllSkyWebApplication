@@ -425,8 +425,8 @@ export function TransitComparison({ fit, target }: TransitComparisonProps) {
 
       <div className="inquiry-callout">
         {lang === 'ko'
-          ? '여기 기준값은 NASA Exoplanet Archive가 주는 식 깊이에서 √(식 깊이)로 되짚어 계산한 것입니다. 논문이 직접 싣는 Rp/R*는 주연감광까지 함께 맞춰 얻은 값이라 이 되짚은 값과는 원래 조금 다릅니다. 그러니 두 값이 벌어졌다고 해서 측정이 틀린 것은 아닙니다. 차이가 어디서 왔는지 찾아보세요. 비교성 선택, 주변 별빛이 섞이는 정도, 구경과 ROI 설정이 흔한 원인입니다.'
-          : 'This reference comes from working backwards from the transit depth in the NASA Exoplanet Archive, as √(depth). Papers that report Rp/R* directly fit it together with limb darkening, so their value already differs a little from this back-calculation. A gap between the two does not mean your measurement is wrong. Look for where the difference came from: comparison-star choice, how much light from nearby stars is blended in, and your aperture and ROI settings are the usual causes.'}
+          ? '여기 기준값은 NASA Exoplanet Archive가 주는 식 깊이에서 √(식 깊이)로 되짚어 계산한 것입니다. 논문이 직접 싣는 Rp/R*는 주연감광까지 함께 맞춰 얻은 값이라 이 되짚은 값과는 원래 조금 다릅니다. 그러니 두 값이 벌어졌다고 해서 측정이 틀린 것은 아닙니다. 차이가 어디서 왔는지는 위의 σ 배수와 비교성 수·산포, 잔차, 그리고 내가 쓴 구경·ROI 설정을 함께 보면서 판단해 보세요.'
+          : 'This reference comes from working backwards from the transit depth in the NASA Exoplanet Archive, as √(depth). Papers that report Rp/R* directly fit it together with limb darkening, so their value already differs a little from this back-calculation. A gap between the two does not mean your measurement is wrong. To work out where the difference came from, read the σ multiple above together with the comparison-star count and scatter, the residuals, and the aperture and ROI settings you used.'}
       </div>
     </section>
   );
