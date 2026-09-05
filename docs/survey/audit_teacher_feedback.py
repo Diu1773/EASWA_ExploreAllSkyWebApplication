@@ -12,6 +12,7 @@ import argparse
 import statistics
 from collections import defaultdict
 from pathlib import Path
+from teacher_feedback_decisions import ACTIONS, ACTION_TIMING, build_reviews, render_reviews
 
 ROOT = Path(__file__).resolve().parent
 SOURCE = ROOT / "RESULTS_2026-07-24_교사시연.md"
@@ -213,17 +214,20 @@ def main() -> None:
 
     for q,stats in quantitative.items():
         assert stats['raw_distribution']==workbook['scenarios']['12']['likert'][q]['raw_distribution']
-    result = dict(status="original_xlsx_verified_12_response_baseline_late_response_eligibility_pending",
+    individual_reviews, review_summary = build_reviews(Path(workbook['path']))
+    result = dict(status="original_xlsx_verified_individual_judgments_drafted_late_response_eligibility_pending",
                   original_workbook=workbook,
                   source=SOURCE.name, source_sha256=hashlib.sha256(SOURCE.read_bytes()).hexdigest(),
-                  scope="35 nonempty answers: Q6=12, Q20=7, Q22=11, Q23=5; Q20-1 excluded as performance artifact",
+                  scope="Original N=12 category counts retained. All 13 responses across five open questions plus Q21 written-in response individually reviewed; performance and late-response scopes remain separate.",
+                  individual_reviews=individual_reviews,review_summary=review_summary,action_definitions=ACTIONS,action_timing=ACTION_TIMING,
                   codes=CODES, records=records, quantitative=quantitative,
                   counts={d:{c:sorted(ids) for c,ids in cs.items()} for d,cs in counts.items()})
     OUT.write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
 
     lines = ["# 현직교사 검토 재대조 — 문항 맥락을 보존한 부호화 검토본", "",
              "> 2026-09-05. 종전의 ‘사전 지식·용어 11명 확정’ 해석을 이 검토본으로 교체한다.",
-             "> 원본 XLSX의 기존 12명 응답과 서술형 전사본 35개를 대조했다. 빈도·역채점은 일치하며, 21:45 추가 응답 1개의 시연 참가 여부 확인이 남아 있다.",
+             "> 원본의 서술형 5문항을 13개 응답 모두 확인하고 Q21 기타 직접 입력까지 응답별로 판정했다. 내용 있는 응답 44개와 빈칸·문장부호만 있는 22개 위치를 보존한다.",
+             "> 범주 빈도는 기존 12명 기준이다. 추가 응답자의 의견도 판정했으나 참가 여부 확인 전이므로 기존 빈도에 더하지 않는다.",
              "> 이 파일은 독립 부호화자 간 신뢰도 확인이나 연구자의 최종 부호화 승인을 뜻하지 않는다.", "",
              f"원자료: [{SOURCE.name}]({SOURCE.name}) §8. 응답 번호는 저장 전사본의 번호를 유지한다.",
              f"기계 확인·응답별 전문: [{OUT.name}]({OUT.name}). 재생성: `python -X utf8 docs/survey/audit_teacher_feedback.py --xlsx <원본.xlsx>`.", "",
@@ -259,22 +263,21 @@ def main() -> None:
               "| 각 단계의 할 일·자가점검 가시성 | 보충 Q6-11, Q23-12, Q23-1; Q21 STEP 보완 4명 | 1.4 / 원리 1·5 | 다음 행동이 보이는지, 질문 위치를 찾는지, 중복 설명·중복 기록 | Q19 본인 막힘과 Q20 구체 위치·이유; 새 보충 문항은 별도 보고 |",
               "| 근거를 사용한 해석·기록 | Q21 기준값 비교·원인·기록 7명, Q20-11, Q22-9 | 1.4 / 원리 4 | 실제 사용한 조건을 근거로 선택·예측·설명하는 기회, 원인 정답 대행 여부 | Q20-1 원인 서술과 근거 연결; 정답률만으로 독립적 해석을 주장하지 않음 |",
               "| 최소 활동 안내·교사 준비 자료 | Q21 활동지·교사 안내 6명, Q22-12; Q22-8 난이도 단계화 | 1.4·표 2-1 / 원리 5 | 학습 목표·선수 개념·필수/확장 활동·진행 팁; 실제 제공 여부 | 실제 자료를 본 경우만 내용·분량의 적절성; 보지 않았다면 미노출 |",
-              "| 문체와 동시 사용 | Q23-9, Q23-10 | 1.4 / 원리 2·5 | 부자연스러운 문장 교체, 실제 동시 수행 시 지연 | 문체 관련 구체 의견과 실제 지연 기록; 일반 인프라 과제로만 밀지 않음 |", "",
+              "| 안내 문장의 자연스러움 | Q23 응답자 9 / AK10 | 1.4 / 원리 2·5 | 사용자 결정: 당장 수정하지 않고 향후 웹 업데이트마다 문장별로 지속 개선 | 자연스럽게 이해되지 않는 구체 문장. AI 작성 여부 판정으로 바꾸지 않음 |",
+              "| 동시 사용과 진행 지연 | Q23 응답자 10 / AK11; Q21 기타 / AG11 | 1.4 / 원리 2·5 | 현재 회차와 요구된 20~30명 규모를 구분해 자료 호출·분석 지연을 점검 | 실제 대기·오류·인원 기록. 같은 사람의 두 문항 언급을 두 명으로 세지 않음 |", "",
               "위 작업표는 요구 도출이다. 화면 기능의 구현 완료나 배포 완료를 인증하지 않는다. 첫 답 고정 같은 기록 수집 결함은 앱 점검 근거로 별도 관리하며 교사가 직접 요구한 수정으로 서술하지 않는다.", "",
-              "## 5. 응답별 재대조 — 35개 전수", "",
-              "| 원문 위치 / XLSX 셀 | 대상 | 관점 | 부호 | 원문 | 해석 주의 |", "|---|---|---|---|---|---|"]
-    for r in records:
-        clean=lambda s:s.replace("|","\\|").replace("\n","<br>")
-        lines.append("| "+" | ".join(clean(s) for s in [r["locator"]+' / '+r['source_cell'],r["domain"],r["perspective"]," / ".join(CODES[c] for c in r["codes"]),r["text"],r["note"]])+" |")
+              ]
+    lines += render_reviews(individual_reviews, review_summary)
     lines += ["", "## 6. 검증 범위", "",
               "- 저장 전사본 35개의 위치·전문·고유 응답자 집계를 확인했다.",
+              "- 서술형 5문항의 전체 65개 셀과 Q21 기타 직접 입력 1개를 별도로 추출했다. 내용 있는 응답 44개 모두에 의미·판정·이유·조치를 연결했으며 빈칸 17개·마침표만 5개도 기록했다.",
               "- 척도 11문항의 빈도 합(각 12)과 원평균·역채점평균을 재계산했다.",
               f"- 원본: `{workbook['path']}` / 시트 `{workbook['sheet']}`. 파일 SHA-256: `{workbook['sha256']}`.",
               "- 기존 12명은 XLSX 2~13행이다. 서술형의 공백만 정규화하여 35개 전문과 응답자 번호의 일치를 확인했다. 마침표만 적은 4개는 내용 없는 응답으로 별도 기록했다.",
               "- 14행은 같은 날 21:45 제출된 동의 응답이다. 시연 참가자의 지연 제출인지 확인 전이므로 삭제하거나 주 분석에 자동 편입하지 않았다. JSON에는 N=12와 N=13 통계를 모두 계산했다.",
               "- 부호화는 원문을 읽고 작성한 검토안이다. 연구자의 최종 범주 승인·독립 재부호화를 대신하지 않는다.", ""]
     REPORT.write_text("\n".join(lines),encoding="utf-8")
-    print(json.dumps(dict(answers=len(records),likert_items=len(quantitative),easwa_terms=sorted(counts["EASWA"]["terms"]),supplemental_terms=sorted(counts["EASWA 보충"]["terms"]),report=str(REPORT),status=result["status"]),ensure_ascii=False))
+    print(json.dumps(dict(answers=len(records),likert_items=len(quantitative),review_summary=review_summary,easwa_terms=sorted(counts["EASWA"]["terms"]),supplemental_terms=sorted(counts["EASWA 보충"]["terms"]),report=str(REPORT),status=result["status"]),ensure_ascii=False))
 
 
 if __name__ == "__main__":
