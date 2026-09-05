@@ -32,6 +32,9 @@ def main():
             continue
         expected = re.sub(r'표\s+(4-\d+)(?!\d)',
                           lambda m: '표 ' + record['table_map'].get(m[1], m[1]), table)
+        if title == '사용자 검토 조사 도구의 구성':
+            expected = expected.replace('개선 요구 우선순위, 수업 적용 가능성',
+                                        '보완 요구의 분포와 구체 의견, 수업 적용 가능성')
         assert expected == new_tables[title], title
         checked.append(title)
     assert '| 6단계. 개발 산출값–기준값 점검 |' in text
@@ -58,6 +61,16 @@ def main():
     assert '설계 원리와 현장 검토 결과의 연결은 표 4-13과 같다' in s45
     assert '개발 과정에서는 산출값–기준값 비교로 분석 기능을 점검' in text
     assert 'a revision reflecting that review is complete' not in text
+    assert '두 차례의 조사는 같은 방식으로 운영한다' not in text
+    assert '두 차례의 조사는 모두 로그인 없이 진행하였으므로' not in text
+    assert '활용 장벽을 실제로 해소하는지를' not in text
+    assert '2차 조사의 자가점검 응답은 정답률로 해석할 수 있으나' not in text
+    assert '1차 현장 전문가 검토는 2026년 7월 24일에 실시하였고' in text
+    assert '두 시연 사이의 약 6주 동안에는' in text
+    assert '전체 정보구조와 시각 디자인의 재설계' in text
+    assert '| 10단계. 최종 구현 및 검토 결과 정리 [예정] |' in text
+    assert '표 3-4는 1차 현장 전문가 검토에 사용한 조사 도구의 기본 구성' in text
+    assert '조사에 사용할 배포본과 실제 저장 결과에서 첫 선택이 유지되는지 확인한 뒤 분석하며' in text
     conclusion = body.split('## 6.1.', 1)[1].split('## 6.2.', 1)[0]
     third, fourth = conclusion.split('셋째,', 1)[1].split('넷째,', 1)
     assert '4.4.4' in third and '산출값–기준값 비교에서는' not in fourth
@@ -92,8 +105,10 @@ def main():
     diff = ''.join(difflib.unified_diff(before.splitlines(keepends=True), text.splitlines(keepends=True),
                     fromfile='v14-before-results-structure', tofile='v14-after-results-structure', n=0))
     (root / 'MANUSCRIPT_RESULTS_STRUCTURE_20260906.diff').write_text(diff, encoding='utf-8')
+    record.pop('unchanged_tables_including_relocated_plan', None)
     record.update(status='PASS', sha256=hashlib.sha256(original).hexdigest(),
-                  unchanged_tables_including_relocated_plan=len(checked),
+                  source_tables_checked=len(checked),
+                  intentional_method_table_updates=['연구 절차', '사용자 검토 조사 도구의 구성'],
                   korean_particle_crossreferences_verified=True,
                   original_checkbox_respondents=checkbox,
                   direct_term_comment_respondents=sorted(set(term_cells.values())),

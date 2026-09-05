@@ -30,8 +30,7 @@
   "references_unchanged": true,
   "runtime_source": "docs/LOAD_TEST_2026-07.md, 2026-07-16 API load results",
   "technical_numerical_comparison": "Existing source table retained; placement and interpretation scope revised, scientific analysis not rerun",
-  "sha256": "1ca848e31cd4d499134bc2cef5ee7afa3249a6f005e6e11e70e50105df793893",
-  "unchanged_tables_including_relocated_plan": 21,
+  "sha256": "a2875434ae4c1c8b42a77d23d1e121866ecd10a25e119dda3d113f009b9e89c0",
   "korean_particle_crossreferences_verified": true,
   "original_checkbox_respondents": {
     "해석": [
@@ -64,5 +63,10 @@
     10
   ],
   "generator_full_manuscript_idempotence": true,
-  "verification_script": "docs/verify_manuscript_results_structure.py"
+  "verification_script": "docs/verify_manuscript_results_structure.py",
+  "source_tables_checked": 21,
+  "intentional_method_table_updates": [
+    "연구 절차",
+    "사용자 검토 조사 도구의 구성"
+  ]
 }
