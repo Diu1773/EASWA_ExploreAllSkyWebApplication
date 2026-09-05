@@ -346,10 +346,13 @@ def get_cluster_cmd(cluster_id: str) -> ClusterCMDResponse:
         color_label="Gaia BP - RP",
         mag_label="Gaia G",
         members=members,
+        # Plain wording on purpose: "내려받아 앱에 포함" read as jargon to the
+        # owner, and this line is the learner's only statement of where the
+        # numbers came from.
         data_source=(
-            f"ESA Gaia DR3 (gaiadr3.gaia_source) via TAP · {fetched_on} 내려받아 앱에 포함"
+            f"ESA Gaia DR3 카탈로그 · {fetched_on}에 미리 받아 둔 자료"
             if (fetched_on := _bundled_fetched_on(key))
-            else "ESA Gaia DR3 (gaiadr3.gaia_source) via TAP · 지금 조회"
+            else "ESA Gaia DR3 카탈로그 · 지금 받아온 자료"
         ),
         selection_note_ko="시차·고유운동·측광 품질(RUWE<1.4) 기준의 천문측량 구성원 선별",
         selection_note_en="Astrometric member selection by parallax, proper motion, and photometric quality (RUWE<1.4)",

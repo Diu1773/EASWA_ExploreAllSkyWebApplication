@@ -293,7 +293,6 @@ export function ClusterCmdVisualizer({
   }, [logAge, distanceModulus, av, zIndex, priorModulus, onFitChange]);
 
   const distancePc = Math.pow(10, (distanceModulus + 5) / 5);
-  const priorDistancePc = Math.pow(10, (priorModulus + 5) / 5);
   const ko = lang === 'ko';
 
   return (
@@ -349,11 +348,6 @@ export function ClusterCmdVisualizer({
           >
             {ko ? '등시선 맞추기' : 'Isochrone fit'}
           </strong>
-          <span className="cmd-fit-summary">
-            {ko
-              ? `거리 ${distancePc.toFixed(0)} pc · 나이 ${formatAge(logAge)} · A_V ${av.toFixed(2)} · 금속함량 ${MH_VALUES[zIndex] > 0 ? '+' : ''}${MH_VALUES[zIndex].toFixed(2)}   (시차 출발값 ${priorDistancePc.toFixed(0)} pc)`
-              : `distance ${distancePc.toFixed(0)} pc · age ${formatAge(logAge)} · A_V ${av.toFixed(2)} · [M/H] ${MH_VALUES[zIndex] > 0 ? '+' : ''}${MH_VALUES[zIndex].toFixed(2)}   (parallax prior ${priorDistancePc.toFixed(0)} pc)`}
-          </span>
           <button
             type="button"
             className="btn-sm"
@@ -369,12 +363,6 @@ export function ClusterCmdVisualizer({
             {ko ? '초기값' : 'Reset'}
           </button>
         </div>
-
-        <p className="cmd-fit-gloss">
-          {ko
-            ? '등시선은 같은 시기에 태어나 조성이 같은 별들이 이 그림에서 이루는 선입니다. 네 값을 움직여 별들에 겹쳐 보세요.'
-            : 'An isochrone is the line stars of one age and composition trace here. Move the four controls to lay it over the stars.'}
-        </p>
 
         <div className="cmd-fit-grid">
           <div className="param-row">

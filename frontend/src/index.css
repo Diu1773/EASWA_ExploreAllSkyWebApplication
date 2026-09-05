@@ -11524,8 +11524,9 @@ body {
 /* Cluster CMD Step 4: isochrone-fit controls. Mirrors the transit 측광 설정
    panel (.param-row) so the two analysis screens share one control idiom.
    Three sliders side by side, each capped at 280px; no box inside the slot. */
-.cmd-fit { margin-top: 12px; display: grid; gap: 12px; min-width: 0; }
+.cmd-fit { margin-top: 16px; display: grid; gap: 18px; min-width: 0; }
 .cmd-fit-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.cmd-fit-head { padding-bottom: 10px; border-bottom: 1px solid var(--border); }
 .cmd-fit-head > strong { color: var(--text-heading); font-size: 14.5px; }
 .cmd-fit-summary { flex: 1 1 auto; font-family: var(--font-mono); font-size: 13.5px; color: var(--text-secondary); }
 .cmd-fit-head .btn-sm { margin-left: auto; }
@@ -11534,6 +11535,7 @@ body {
 .cmd-fit-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
   gap: 12px 24px; max-width: 1180px; width: 100%; min-width: 0; }
 .cmd-fit-grid .param-row { margin-bottom: 0; }
+.cmd-fit-grid { row-gap: 18px; }
 .cmd-fit-sub { margin-left: 8px; font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); }
 .cmd-fit-hint { margin: 0; max-width: 860px; font-size: 13.5px; line-height: 1.5; color: var(--text-secondary); }
 .cmd-fit-assumptions { margin: 0; max-width: 860px; font-size: 12px; line-height: 1.5; color: var(--text-muted); }
