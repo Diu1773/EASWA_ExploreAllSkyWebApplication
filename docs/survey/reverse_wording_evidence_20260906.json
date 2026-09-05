@@ -1,0 +1,49 @@
+{
+  "schema_version": "literature-capture/v1",
+  "status": "pending_validation",
+  "project_root": "C:\\Users\\bmffr\\Desktop\\Result\\EASWA_ExploringAllSkyWebApp",
+  "question_id": null,
+  "source": {
+    "title": "Ineffectiveness of Reverse Wording of Questionnaire Items: Let's Learn from Cows in the Rain",
+    "authors": [
+      "Eric van Sonderen",
+      "Robbert Sanderman",
+      "James C. Coyne"
+    ],
+    "year": 2013,
+    "venue": "PLOS ONE",
+    "doi": "10.1371/journal.pone.0068967",
+    "arxiv_id": null,
+    "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0068967",
+    "source_path": null,
+    "source_sha256": null,
+    "source_bytes": null,
+    "abstract": "We did not find evidence that ten reverse-worded items prevented response bias.",
+    "evidence_level": "abstract_only"
+  },
+  "interpretation": {
+    "topic_lens": "EASWA preservice survey reverse item interpretation",
+    "source_locator": "PLOS ONE Abstract, Methods and Results, accessed 2026-09-06",
+    "paper_statement": "MFI-20 data from 700 respondents did not support prevention of response bias by reverse wording; authors reported possible inattention and confusion.",
+    "relevance": "",
+    "strengths": [],
+    "limitations": [],
+    "our_inference": "Do not automatically exclude EASWA respondents for inconsistent answers to Q15 and Q18-1.",
+    "uncertainty": "Fatigue questionnaire evidence does not validate the Korean EASWA questionnaire. Only abstract-level evidence captured."
+  },
+  "provenance": {
+    "actor_kind": "agent",
+    "provider": "session",
+    "model": null,
+    "session_id": null,
+    "captured_at": "2026-09-05T18:00:09.453381+00:00"
+  },
+  "claim_policy": {
+    "automatic_fact_created": false,
+    "automatic_novelty_created": false,
+    "human_verified": false,
+    "human_review_required": true
+  },
+  "capture_id": "litcapture-148876d40f122119ecca",
+  "packet_sha256": "829c9d04b4823055fe58f742eea929c7fd2aafa5ab6fe7023227766e6d856bf1"
+}
