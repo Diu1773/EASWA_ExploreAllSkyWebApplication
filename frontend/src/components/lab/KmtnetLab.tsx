@@ -1142,7 +1142,7 @@ export function KmtnetLab({
           {preview && previewBundleLoading && <p className="hint">대표 frame bundle을 캐시하는 중...</p>}
           {previewError && <p className="error-message">{previewError}</p>}
 
-          <StepGuide questions={KMT_GUIDES.field} storageKey="easwa_kmt_guide_field" onAnswersChange={handleGuideAnswers} />
+          <StepGuide questions={KMT_GUIDES.field} storageKey="easwa_kmt_guide_field" initialAnswers={guideAnswersRef.current} onAnswersChange={handleGuideAnswers} />
 
           <div className="ml-step-nav">
             <button className="btn-primary" onClick={() => goTo('align')}>
@@ -1213,7 +1213,7 @@ export function KmtnetLab({
           {preview && previewBundleLoading && <p className="hint">정렬 비교용 frame bundle을 캐시하는 중...</p>}
           {previewError && <p className="error-message">{previewError}</p>}
 
-          <StepGuide questions={KMT_GUIDES.align} storageKey="easwa_kmt_guide_align" onAnswersChange={handleGuideAnswers} />
+          <StepGuide questions={KMT_GUIDES.align} storageKey="easwa_kmt_guide_align" initialAnswers={guideAnswersRef.current} onAnswersChange={handleGuideAnswers} />
 
           <div className="ml-step-nav">
             <button className="btn-secondary" onClick={() => goTo('field')}>← 이전</button>
@@ -1255,7 +1255,7 @@ export function KmtnetLab({
           {preview && previewBundleLoading && <p className="hint">difference 비교용 frame bundle을 캐시하는 중...</p>}
           {previewError && <p className="error-message">{previewError}</p>}
 
-          <StepGuide questions={KMT_GUIDES.difference} storageKey="easwa_kmt_guide_difference" onAnswersChange={handleGuideAnswers} />
+          <StepGuide questions={KMT_GUIDES.difference} storageKey="easwa_kmt_guide_difference" initialAnswers={guideAnswersRef.current} onAnswersChange={handleGuideAnswers} />
 
           <div className="ml-step-nav">
             <button className="btn-secondary" onClick={() => goTo('align')}>← 이전</button>
@@ -1373,7 +1373,7 @@ export function KmtnetLab({
             </>
           )}
 
-          <StepGuide questions={KMT_GUIDES.extract} storageKey="easwa_kmt_guide_extract" onAnswersChange={handleGuideAnswers} />
+          <StepGuide questions={KMT_GUIDES.extract} storageKey="easwa_kmt_guide_extract" initialAnswers={guideAnswersRef.current} onAnswersChange={handleGuideAnswers} />
 
           <div className="ml-step-nav">
             <button className="btn-secondary" onClick={() => goTo('difference')}>← 이전</button>
@@ -1528,7 +1528,7 @@ export function KmtnetLab({
             </>
           )}
 
-          <StepGuide questions={KMT_GUIDES.merge} storageKey="easwa_kmt_guide_merge" onAnswersChange={handleGuideAnswers} />
+          <StepGuide questions={KMT_GUIDES.merge} storageKey="easwa_kmt_guide_merge" initialAnswers={guideAnswersRef.current} onAnswersChange={handleGuideAnswers} />
 
           <div className="ml-step-nav">
             <button className="btn-secondary" onClick={() => goTo('extract')}>← 이전</button>
@@ -1646,7 +1646,7 @@ export function KmtnetLab({
             </div>
           )}
 
-          <StepGuide questions={KMT_GUIDES.fit} storageKey="easwa_kmt_guide_fit" onAnswersChange={handleGuideAnswers} />
+          <StepGuide questions={KMT_GUIDES.fit} storageKey="easwa_kmt_guide_fit" initialAnswers={guideAnswersRef.current} onAnswersChange={handleGuideAnswers} />
 
           {fitResult && (
             <div className="ml-interpret-grid">

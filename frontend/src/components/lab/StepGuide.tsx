@@ -11,16 +11,20 @@ export type GuideAnswers = Record<string, string>;
 interface StepGuideProps {
   questions: GuideQuestion[];
   storageKey: string;
+  /** Answers already given for these questions. This component unmounts on every
+   *  Lab step change, so without seeding it the O/X and choice buttons unlock
+   *  again on the way back and a settled answer can be replaced. */
+  initialAnswers?: GuideAnswers;
   onAnswersChange?: (answers: GuideAnswers) => void;
 }
 
-export function StepGuide({ questions, storageKey, onAnswersChange }: StepGuideProps) {
+export function StepGuide({ questions, storageKey, initialAnswers, onAnswersChange }: StepGuideProps) {
   const lang = useLangStore((s) => s.lang);
   const [open, setOpen] = useState(() => {
     try { return localStorage.getItem(storageKey) !== 'false'; }
     catch { return true; }
   });
-  const [answers, setAnswers] = useState<GuideAnswers>({});
+  const [answers, setAnswers] = useState<GuideAnswers>(() => initialAnswers ?? {});
 
   if (!questions?.length) return null;
 
