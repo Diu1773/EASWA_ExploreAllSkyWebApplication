@@ -188,8 +188,13 @@ export const exoplanetTransitModule: ExplorationModuleConfig = {
           helperText: {
             // 공전 주기는 비교 대상에서 뺐다: 앱이 계산하지 않고 아카이브 값을 그대로
             // 쓰므로 '주기를 비교하라'는 건 모순이다. Rp/R*·식 깊이만 비교 대상.
-            ko: 'Rp/R*와 식 깊이를 기준값과 비교하고, 비교성 품질·별빛 오염·구경 크기·ROI·잡음·모델 가정을 근거로 설명하세요.',
-            en: 'Compare Rp/R* and depth with the reference; explain using comparison-star quality, blending, aperture, ROI, noise, and model assumptions.',
+            //
+            // 원인 목록을 여기서 뺐다. 종전 문구는 '비교성 품질·별빛 오염·구경 크기·
+            // ROI·잡음·모델 가정'을 나열했고, 2026-07-24 조사에서 한 응답이 그 목록을
+            // 글자 그대로 옮겨 적었다. 원인을 학습자가 댔는지 화면을 베꼈는지 구분할 수
+            // 없으면 이 문항이 탐구 수행 산출물로 기능하지 못한다.
+            ko: '먼저 Rp/R*와 식 깊이가 기준값과 얼마나 다른지 쓰고, 그 차이가 왜 생겼다고 보는지 이어서 쓰세요. 근거는 앞 단계에서 직접 보거나 설정한 값에서 찾으세요.',
+            en: 'First write how far your Rp/R* and depth are from the reference, then why you think the gap arose. Draw your evidence from values you saw or set in the earlier steps.',
           },
         },
         {
