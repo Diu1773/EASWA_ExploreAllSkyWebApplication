@@ -1,0 +1,1525 @@
+{
+  "status": "original_xlsx_verified_12_response_baseline_late_response_eligibility_pending",
+  "original_workbook": {
+    "path": "C:\\Users\\bmffr\\Downloads\\EASWA 프로토타입 반응 및 보완 요구 조사(응답).xlsx",
+    "sha256": "de08d9060bfe718f6cbed8ef2d71bb744a6cd3ab06aa41650bdbcdb45bb48558",
+    "sheet": "설문지 응답 시트1",
+    "rows": 13,
+    "headers": {
+      "A": "타임스탬프",
+      "B": "본 조사의 목적과 익명 처리 안내를 확인하였으며, 연구 목적의 응답 활용에 동의합니다.",
+      "C": "1. 현재 본인에게 가장 가까운 항목을 선택해 주세요.",
+      "D": "2. 천문 관련 교육 또는 자료 활용 경험은 어느 정도입니까?",
+      "E": "3. 공공 천문자료 또는 실제 관측자료를 활용해 본 경험이 있습니까?",
+      "F": "3-1. 실제 관측자료(공공 천문자료)를 수업에 활용하고 싶은 이유는 무엇입니까? (해당하는 것을 모두 선택)",
+      "G": "4. 웹 기반 자료 분석 도구 또는 데이터 분석 플랫폼을 사용해 본 경험이 있습니까?",
+      "H": "5. 기존 공공 천문자료 서비스를 학교 수업에서 활용할 때 경험했거나 예상되는 어려움을 모두 선택해 주세요.",
+      "I": "6. 위에서 선택한 어려움 중 가장 크게 느껴지는 것은 무엇이며, 그 이유는 무엇입니까?",
+      "J": "7. EASWA의 어느 단계까지 직접 수행하였습니까?",
+      "K": "7-1. 직접 수행에 걸린 시간은 어느 정도입니까?",
+      "L": "8. EASWA는 천체명이나 자료 검색보다 탐구 주제와 탐구 질문에서 출발하도록 구성되어 있다.",
+      "M": "9. EASWA는 별도의 코딩 환경 없이 공공 천문자료 분석 과정을 따라갈 수 있도록 돕는다.",
+      "N": "10. EASWA는 분석에 사용한 자료의 출처와 관측 정보를 확인할 수 있도록 제시한다.",
+      "O": "11. EASWA는 학습자가 분석 조건(측정·분석 설정)을 직접 조정해 볼 수 있는 기능을 제공한다.",
+      "P": "12. EASWA의 화면 구성은 복잡하여 각 단계의 탐구 흐름을 파악하기 어렵다.",
+      "Q": "13. EASWA의 STEP별 질문과 생각해보기 문항은 각 단계에서 무엇을 확인해야 하는지 이해하는 데 도움이 된다.",
+      "R": "14. EASWA는 광도곡선과 식현상 모델 적합 결과를 해석할 수 있도록 제시한다.",
+      "S": "15. EASWA의 기준값 비교 화면은 무엇을 해석해야 하는지 파악하기 어렵다.",
+      "T": "16. EASWA는 산출값과 NASA Exoplanet Archive 기준값의 차이를 학습자가 스스로 해석하도록 돕는다.",
+      "U": "17. EASWA의 단계별 안내와 질문은 학교 천문탐구 수업 또는 예비교사 교육에서 활용하기 적절하다.",
+      "V": "18. EASWA는 공공 천문자료 기반 천문탐구를 지원하는 교육용 웹 플랫폼으로 적절하다.",
+      "W": "19. 각 단계에 대해, 본인이 어려움을 경험한 단계와 학생이 어려워할 것으로 예상되는 단계를 각각 표시해 주세요. [접속·서버 활성화]",
+      "X": "19. 각 단계에 대해, 본인이 어려움을 경험한 단계와 학생이 어려워할 것으로 예상되는 단계를 각각 표시해 주세요. [주제 소개]",
+      "Y": "19. 각 단계에 대해, 본인이 어려움을 경험한 단계와 학생이 어려워할 것으로 예상되는 단계를 각각 표시해 주세요. [대상 선택]",
+      "Z": "19. 각 단계에 대해, 본인이 어려움을 경험한 단계와 학생이 어려워할 것으로 예상되는 단계를 각각 표시해 주세요. [자료 확인 (출처·관측 정보)]",
+      "AA": "19. 각 단계에 대해, 본인이 어려움을 경험한 단계와 학생이 어려워할 것으로 예상되는 단계를 각각 표시해 주세요. [분석 준비 (설정·모델 가정)]",
+      "AB": "19. 각 단계에 대해, 본인이 어려움을 경험한 단계와 학생이 어려워할 것으로 예상되는 단계를 각각 표시해 주세요. [분석 실행·시각화 (광도곡선·모델 적합)]",
+      "AC": "19. 각 단계에 대해, 본인이 어려움을 경험한 단계와 학생이 어려워할 것으로 예상되는 단계를 각각 표시해 주세요. [기준값 비교]",
+      "AD": "19. 각 단계에 대해, 본인이 어려움을 경험한 단계와 학생이 어려워할 것으로 예상되는 단계를 각각 표시해 주세요. [해석·기록]",
+      "AE": "20. 위에서 표시한 단계가 어렵다고 생각한 이유를 적어 주세요.",
+      "AF": "20-1. (기준값 비교 단계까지 수행하신 경우) EASWA에서 확인한 산출값(식 깊이, Rp/R* 등)과 NASA Exoplanet Archive 기준값 사이에 차이가 생길 수 있는 원인을 한 가지 이상 적어 주세요.",
+      "AG": "21. EASWA를 보완하기 위해 중요하다고 생각하는 요소를 모두 선택해 주세요.",
+      "AH": "21-1. EASWA를 지금 제공되는 형태 그대로 실제 수업 또는 예비교사 교육에 활용할 의향이 있다.",
+      "AI": "21-2. EASWA 외계행성 탐구 활동에 적절하다고 생각하는 수업 시간은?",
+      "AJ": "22. 앞에서 선택하신 본인의 입장(예: 현직 교사 / 예비 교사)에서, EASWA를 실제 수업에 활용하거나 배우는 과정에서 가장 걱정되는 점 한 가지와 그 이유를 적어 주세요.",
+      "AK": "23. EASWA에서 가장 잘 되어 있다고 생각하는 점 한 가지와, 보완이 가장 시급하다고 생각하는 점 한 가지를 각각 적어 주세요. 기타 의견이 있다면 함께 적어 주세요."
+    },
+    "cells": {
+      "Q6-1": "I2",
+      "Q6-2": "I3",
+      "Q6-3": "I4",
+      "Q6-4": "I5",
+      "Q6-5": "I6",
+      "Q6-6": "I7",
+      "Q6-7": "I8",
+      "Q6-8": "I9",
+      "Q6-9": "I10",
+      "Q6-10": "I11",
+      "Q6-11": "I12",
+      "Q6-12": "I13",
+      "Q20-1": "AE2",
+      "Q20-3": "AE4",
+      "Q20-4": "AE5",
+      "Q20-5": "AE6",
+      "Q20-9": "AE10",
+      "Q20-10": "AE11",
+      "Q20-11": "AE12",
+      "Q22-1": "AJ2",
+      "Q22-2": "AJ3",
+      "Q22-3": "AJ4",
+      "Q22-4": "AJ5",
+      "Q22-5": "AJ6",
+      "Q22-6": "AJ7",
+      "Q22-8": "AJ9",
+      "Q22-9": "AJ10",
+      "Q22-10": "AJ11",
+      "Q22-11": "AJ12",
+      "Q22-12": "AJ13",
+      "Q23-1": "AK2",
+      "Q23-5": "AK6",
+      "Q23-9": "AK10",
+      "Q23-10": "AK11",
+      "Q23-12": "AK13"
+    },
+    "nonanswers": [
+      {
+        "locator": "Q20-2",
+        "cell": "AE3",
+        "kind": "blank",
+        "value": ""
+      },
+      {
+        "locator": "Q20-6",
+        "cell": "AE7",
+        "kind": "blank",
+        "value": ""
+      },
+      {
+        "locator": "Q20-7",
+        "cell": "AE8",
+        "kind": "punctuation_only",
+        "value": "."
+      },
+      {
+        "locator": "Q20-8",
+        "cell": "AE9",
+        "kind": "blank",
+        "value": ""
+      },
+      {
+        "locator": "Q20-12",
+        "cell": "AE13",
+        "kind": "blank",
+        "value": ""
+      },
+      {
+        "locator": "Q22-7",
+        "cell": "AJ8",
+        "kind": "punctuation_only",
+        "value": "."
+      },
+      {
+        "locator": "Q23-2",
+        "cell": "AK3",
+        "kind": "blank",
+        "value": ""
+      },
+      {
+        "locator": "Q23-3",
+        "cell": "AK4",
+        "kind": "blank",
+        "value": ""
+      },
+      {
+        "locator": "Q23-4",
+        "cell": "AK5",
+        "kind": "punctuation_only",
+        "value": "."
+      },
+      {
+        "locator": "Q23-6",
+        "cell": "AK7",
+        "kind": "blank",
+        "value": ""
+      },
+      {
+        "locator": "Q23-7",
+        "cell": "AK8",
+        "kind": "punctuation_only",
+        "value": "."
+      },
+      {
+        "locator": "Q23-8",
+        "cell": "AK9",
+        "kind": "blank",
+        "value": ""
+      },
+      {
+        "locator": "Q23-11",
+        "cell": "AK12",
+        "kind": "blank",
+        "value": ""
+      }
+    ],
+    "scenarios": {
+      "12": {
+        "n": 12,
+        "likert": {
+          "8": {
+            "range": "L2:L13",
+            "raw_distribution": [
+              0,
+              0,
+              2,
+              7,
+              3
+            ],
+            "oriented_mean": 4.083333333333333,
+            "sample_sd": 0.6685579234215214,
+            "favorable": 10,
+            "neutral": 2,
+            "unfavorable": 0
+          },
+          "9": {
+            "range": "M2:M13",
+            "raw_distribution": [
+              0,
+              0,
+              0,
+              6,
+              6
+            ],
+            "oriented_mean": 4.5,
+            "sample_sd": 0.5222329678670935,
+            "favorable": 12,
+            "neutral": 0,
+            "unfavorable": 0
+          },
+          "10": {
+            "range": "N2:N13",
+            "raw_distribution": [
+              0,
+              0,
+              2,
+              3,
+              7
+            ],
+            "oriented_mean": 4.416666666666667,
+            "sample_sd": 0.7929614610987591,
+            "favorable": 10,
+            "neutral": 2,
+            "unfavorable": 0
+          },
+          "11": {
+            "range": "O2:O13",
+            "raw_distribution": [
+              0,
+              0,
+              1,
+              5,
+              6
+            ],
+            "oriented_mean": 4.416666666666667,
+            "sample_sd": 0.6685579234215214,
+            "favorable": 11,
+            "neutral": 1,
+            "unfavorable": 0
+          },
+          "12": {
+            "range": "P2:P13",
+            "raw_distribution": [
+              3,
+              3,
+              4,
+              1,
+              1
+            ],
+            "oriented_mean": 3.5,
+            "sample_sd": 1.243163121016122,
+            "favorable": 6,
+            "neutral": 4,
+            "unfavorable": 2
+          },
+          "13": {
+            "range": "Q2:Q13",
+            "raw_distribution": [
+              0,
+              0,
+              3,
+              6,
+              3
+            ],
+            "oriented_mean": 4,
+            "sample_sd": 0.7385489458759964,
+            "favorable": 9,
+            "neutral": 3,
+            "unfavorable": 0
+          },
+          "14": {
+            "range": "R2:R13",
+            "raw_distribution": [
+              0,
+              0,
+              1,
+              4,
+              7
+            ],
+            "oriented_mean": 4.5,
+            "sample_sd": 0.674199862463242,
+            "favorable": 11,
+            "neutral": 1,
+            "unfavorable": 0
+          },
+          "15": {
+            "range": "S2:S13",
+            "raw_distribution": [
+              1,
+              7,
+              1,
+              2,
+              1
+            ],
+            "oriented_mean": 3.4166666666666665,
+            "sample_sd": 1.164500152881315,
+            "favorable": 8,
+            "neutral": 1,
+            "unfavorable": 3
+          },
+          "16": {
+            "range": "T2:T13",
+            "raw_distribution": [
+              0,
+              1,
+              3,
+              6,
+              2
+            ],
+            "oriented_mean": 3.75,
+            "sample_sd": 0.8660254037844386,
+            "favorable": 8,
+            "neutral": 3,
+            "unfavorable": 1
+          },
+          "17": {
+            "range": "U2:U13",
+            "raw_distribution": [
+              0,
+              0,
+              2,
+              7,
+              3
+            ],
+            "oriented_mean": 4.083333333333333,
+            "sample_sd": 0.6685579234215214,
+            "favorable": 10,
+            "neutral": 2,
+            "unfavorable": 0
+          },
+          "18": {
+            "range": "V2:V13",
+            "raw_distribution": [
+              0,
+              0,
+              0,
+              8,
+              4
+            ],
+            "oriented_mean": 4.333333333333333,
+            "sample_sd": 0.49236596391733095,
+            "favorable": 12,
+            "neutral": 0,
+            "unfavorable": 0
+          }
+        },
+        "q21": {
+          "자료 출처와 분석 조건을 더 명확히 제시하는 것": [
+            6,
+            7
+          ],
+          "분석 과정과 품질 점검 정보를 더 자세히 제공하는 것": [
+            6,
+            7
+          ],
+          "그래프와 분석 결과를 해석할 수 있는 도움말을 제공하는 것": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10,
+            12
+          ],
+          "STEP별 질문과 생각해보기를 보완하는 것": [
+            2,
+            5,
+            9,
+            12
+          ],
+          "기준값 비교, 차이 원인 설명, 결과 기록 활동을 강화하는 것": [
+            2,
+            3,
+            4,
+            5,
+            8,
+            11,
+            12
+          ],
+          "수업 적용을 위한 활동지와 교사용 안내 자료를 제공하는 것": [
+            1,
+            7,
+            8,
+            9,
+            10,
+            11
+          ],
+          "추가 탐구 주제를 제공하는 것": [
+            5,
+            9
+          ],
+          "동시에 자료 출력이 가능하게..? 다인원 수용 가능하게": [
+            10
+          ]
+        },
+        "complete": [
+          2,
+          3,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "time_10_30": [
+          2,
+          4,
+          5,
+          7,
+          8,
+          9,
+          10,
+          12
+        ],
+        "complete_time_10_30": [
+          2,
+          7,
+          8,
+          9,
+          10,
+          12
+        ],
+        "composite_mean": 4.090909090909091,
+        "composite_sample_sd": 0.37382422736855014
+      },
+      "13": {
+        "n": 13,
+        "likert": {
+          "8": {
+            "range": "L2:L14",
+            "raw_distribution": [
+              0,
+              0,
+              2,
+              7,
+              4
+            ],
+            "oriented_mean": 4.153846153846154,
+            "sample_sd": 0.6887372317211945,
+            "favorable": 11,
+            "neutral": 2,
+            "unfavorable": 0
+          },
+          "9": {
+            "range": "M2:M14",
+            "raw_distribution": [
+              0,
+              0,
+              0,
+              6,
+              7
+            ],
+            "oriented_mean": 4.538461538461538,
+            "sample_sd": 0.5188745216627708,
+            "favorable": 13,
+            "neutral": 0,
+            "unfavorable": 0
+          },
+          "10": {
+            "range": "N2:N14",
+            "raw_distribution": [
+              0,
+              0,
+              2,
+              3,
+              8
+            ],
+            "oriented_mean": 4.461538461538462,
+            "sample_sd": 0.7762500258061849,
+            "favorable": 11,
+            "neutral": 2,
+            "unfavorable": 0
+          },
+          "11": {
+            "range": "O2:O14",
+            "raw_distribution": [
+              0,
+              0,
+              1,
+              6,
+              6
+            ],
+            "oriented_mean": 4.384615384615385,
+            "sample_sd": 0.6504436355879909,
+            "favorable": 12,
+            "neutral": 1,
+            "unfavorable": 0
+          },
+          "12": {
+            "range": "P2:P14",
+            "raw_distribution": [
+              3,
+              4,
+              4,
+              1,
+              1
+            ],
+            "oriented_mean": 3.5384615384615383,
+            "sample_sd": 1.1982893790305562,
+            "favorable": 7,
+            "neutral": 4,
+            "unfavorable": 2
+          },
+          "13": {
+            "range": "Q2:Q14",
+            "raw_distribution": [
+              0,
+              0,
+              3,
+              7,
+              3
+            ],
+            "oriented_mean": 4,
+            "sample_sd": 0.7071067811865476,
+            "favorable": 10,
+            "neutral": 3,
+            "unfavorable": 0
+          },
+          "14": {
+            "range": "R2:R14",
+            "raw_distribution": [
+              0,
+              0,
+              1,
+              5,
+              7
+            ],
+            "oriented_mean": 4.461538461538462,
+            "sample_sd": 0.6602252917735247,
+            "favorable": 12,
+            "neutral": 1,
+            "unfavorable": 0
+          },
+          "15": {
+            "range": "S2:S14",
+            "raw_distribution": [
+              1,
+              8,
+              1,
+              2,
+              1
+            ],
+            "oriented_mean": 3.4615384615384617,
+            "sample_sd": 1.126601424298216,
+            "favorable": 9,
+            "neutral": 1,
+            "unfavorable": 3
+          },
+          "16": {
+            "range": "T2:T14",
+            "raw_distribution": [
+              0,
+              1,
+              3,
+              7,
+              2
+            ],
+            "oriented_mean": 3.769230769230769,
+            "sample_sd": 0.8320502943378437,
+            "favorable": 9,
+            "neutral": 3,
+            "unfavorable": 1
+          },
+          "17": {
+            "range": "U2:U14",
+            "raw_distribution": [
+              0,
+              0,
+              2,
+              8,
+              3
+            ],
+            "oriented_mean": 4.076923076923077,
+            "sample_sd": 0.6405126152203485,
+            "favorable": 11,
+            "neutral": 2,
+            "unfavorable": 0
+          },
+          "18": {
+            "range": "V2:V14",
+            "raw_distribution": [
+              0,
+              0,
+              0,
+              8,
+              5
+            ],
+            "oriented_mean": 4.384615384615385,
+            "sample_sd": 0.5063696835418333,
+            "favorable": 13,
+            "neutral": 0,
+            "unfavorable": 0
+          }
+        },
+        "q21": {
+          "자료 출처와 분석 조건을 더 명확히 제시하는 것": [
+            6,
+            7
+          ],
+          "분석 과정과 품질 점검 정보를 더 자세히 제공하는 것": [
+            6,
+            7,
+            13
+          ],
+          "그래프와 분석 결과를 해석할 수 있는 도움말을 제공하는 것": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10,
+            12,
+            13
+          ],
+          "STEP별 질문과 생각해보기를 보완하는 것": [
+            2,
+            5,
+            9,
+            12
+          ],
+          "기준값 비교, 차이 원인 설명, 결과 기록 활동을 강화하는 것": [
+            2,
+            3,
+            4,
+            5,
+            8,
+            11,
+            12
+          ],
+          "수업 적용을 위한 활동지와 교사용 안내 자료를 제공하는 것": [
+            1,
+            7,
+            8,
+            9,
+            10,
+            11
+          ],
+          "추가 탐구 주제를 제공하는 것": [
+            5,
+            9
+          ],
+          "동시에 자료 출력이 가능하게..? 다인원 수용 가능하게": [
+            10
+          ]
+        },
+        "complete": [
+          2,
+          3,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "time_10_30": [
+          2,
+          4,
+          5,
+          7,
+          8,
+          9,
+          10,
+          12,
+          13
+        ],
+        "complete_time_10_30": [
+          2,
+          7,
+          8,
+          9,
+          10,
+          12
+        ],
+        "composite_mean": 4.111888111888112,
+        "composite_sample_sd": 0.36581515103917667
+      }
+    },
+    "eligibility": "12 archived responses verified; row 14 at 21:45 requires participant-membership confirmation",
+    "late_response": {
+      "row": 14,
+      "timestamp": "2026-07-24 21:45:20.064000",
+      "Q6": "영어 인터페이스와 전문 용어",
+      "Q22": "학생들이 잘 이해할 수 있을지 개념을 어려워할 것 같다."
+    }
+  },
+  "source": "RESULTS_2026-07-24_교사시연.md",
+  "source_sha256": "e42612bf010d21cbb50037ffe689b302450926ed2e94829da7ac91ac236ac2a0",
+  "scope": "35 nonempty answers: Q6=12, Q20=7, Q22=11, Q23=5; Q20-1 excluded as performance artifact",
+  "codes": {
+    "terms": "용어·기호·단위·영어 표기의 뜻",
+    "concepts": "사전 개념·통계 지식·전공 배경 관련 어려움",
+    "meaning": "자료·과정·그래프 요소의 의미 설명",
+    "independence": "학습자가 근거를 가지고 설명할 기회와 지원",
+    "next_action": "단계에서 할 일의 가시성",
+    "self_check": "자가점검 문항의 발견과 이용",
+    "layout": "화면 구성 단순화",
+    "language": "설명 문구의 자연스러움",
+    "progression": "쉬운 자료 해석부터의 난이도 단계화",
+    "classroom": "교육과정·수업 시간·학생 수준과의 정합",
+    "teacher_support": "진행 교사의 사전 설명 준비",
+    "concurrency": "다인원 동시 사용의 응답 지연",
+    "access": "코딩·자료 다운로드·재구성의 실행 부담",
+    "positive": "긍정 평가 또는 활용 의향",
+    "choice": "자료 선택과 학습자 주도 수행의 여지"
+  },
+  "records": [
+    {
+      "locator": "Q6-1",
+      "question": "Q6",
+      "respondent": 1,
+      "domain": "기존 서비스",
+      "source_cell": "I2",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "학생·수업 예상",
+      "codes": [
+        "classroom"
+      ],
+      "note": "",
+      "text": "고등학생이 수업 시간 안에 활용하기가 다소 어려울 것 같다는 생각이 듭니다.(플랫폼 사용 설명에 많은 시간이 소요될 것 같음.)",
+      "text_sha256": "ccee8ab2981678e7389efa657bbab15fc672dd85e1e9f3fd79d04863ba05d1dd"
+    },
+    {
+      "locator": "Q6-2",
+      "question": "Q6",
+      "respondent": 2,
+      "domain": "기존 서비스",
+      "source_cell": "I3",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "학생·수업 예상",
+      "codes": [
+        "classroom"
+      ],
+      "note": "",
+      "text": "수업 시간 안에서 활용하기가 활용하기가 가장 어려울 것 같습니다. 상상이상으로 학생들의 수준이 천차만별이라, 하나하나 모두를 끌고가는 교사의 입장에서는 천문 자료 서비스 모두를 한 차시안에 활용하기 쉽지 않을 것 같다고 예상됩니다.",
+      "text_sha256": "54b1f5eb10493451b3f782a5f5b3e2c9825fea06dac7c952199fb9e55464fafe"
+    },
+    {
+      "locator": "Q6-3",
+      "question": "Q6",
+      "respondent": 3,
+      "domain": "기존 서비스",
+      "source_cell": "I4",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "학생·수업 예상",
+      "codes": [
+        "classroom"
+      ],
+      "note": "",
+      "text": "학생 수준에 맞게 재구성",
+      "text_sha256": "9c6f1b53145f05378b246731aec888e783d93e484c5ddbadf88f64af28f6ff02"
+    },
+    {
+      "locator": "Q6-4",
+      "question": "Q6",
+      "respondent": 4,
+      "domain": "기존 서비스",
+      "source_cell": "I5",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "학생 예상",
+      "codes": [
+        "meaning"
+      ],
+      "note": "자료·과정 의미의 이해 어려움이다. 사전 지식 부족을 명시한 응답으로 단정하지 않는다.",
+      "text": "이 데이터가 무엇을 의미하고 이러한 과정이 뭘 의미하는지 일반 학생들 입장에서 어려워 할 것 같습니다.",
+      "text_sha256": "a2a8c2b1b2f9acd0c8915a9ec8d0c5ec5905d46a700e9c4bef8365f46fd720a2"
+    },
+    {
+      "locator": "Q6-5",
+      "question": "Q6",
+      "respondent": 5,
+      "domain": "기존 서비스",
+      "source_cell": "I6",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "학생 예상",
+      "codes": [
+        "concepts",
+        "access"
+      ],
+      "note": "",
+      "text": "학생들이 코딩에 대한 이해, 개념에 대한 이해 없이 프로그램을 먼저 접할 경우 내용 자체를 어려워하는 역설적 현상이 발생할 것 같습니다",
+      "text_sha256": "6e0416f757f8d52337aadb70ac0956806ff627203e0a3ec833a05dfe830836af"
+    },
+    {
+      "locator": "Q6-6",
+      "question": "Q6",
+      "respondent": 6,
+      "domain": "기존 서비스",
+      "source_cell": "I7",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "관점 미명시",
+      "codes": [
+        "terms",
+        "meaning"
+      ],
+      "note": "",
+      "text": "영어 인터페이스와 메타데이터의 이해 : 자료의 의미를 이해하는데 영어를 해석해야해서 제일 어렵다.",
+      "text_sha256": "1c6286d3445e699bdfd911902ba51b61652b4a6a358ea69a17d7c732e289700d"
+    },
+    {
+      "locator": "Q6-7",
+      "question": "Q6",
+      "respondent": 7,
+      "domain": "기존 서비스",
+      "source_cell": "I8",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "학생·수업 예상",
+      "codes": [
+        "access",
+        "classroom"
+      ],
+      "note": "",
+      "text": "코딩 능력의 한계점과 학생 수준으로 자료 재구성의 부담감, 현장에서의 수업 여건(크롬북으로 가동 가능해야하며, 이 과정을 수업시간 내에 30여명의 학생들이 다 따라올 수 있으면서 이해시키는 것이 어려울 수 있음)",
+      "text_sha256": "aed1f2203a449f793e516243eae8f29f419e39802b3d0247d3ca201115606f54"
+    },
+    {
+      "locator": "Q6-8",
+      "question": "Q6",
+      "respondent": 8,
+      "domain": "기존 서비스",
+      "source_cell": "I9",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "학생 예상",
+      "codes": [
+        "concepts",
+        "classroom"
+      ],
+      "note": "",
+      "text": "일반계 고등학고 학생 수준에 맞게 자료를 재구성이 필요할 것 같습니다.\n일반계 고등학생이 하기에는 전공 내용이 많이 필요하기 때문입니다.",
+      "text_sha256": "575915fabc3d5ea9c6cd05314d71a18fc9801b21d53aac89e39190a5ea78bcea"
+    },
+    {
+      "locator": "Q6-9",
+      "question": "Q6",
+      "respondent": 9,
+      "domain": "기존 서비스",
+      "source_cell": "I10",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "교사의 자료 준비",
+      "codes": [
+        "access",
+        "classroom"
+      ],
+      "note": "다운로드 후 재구성 부담이 명시돼 있다. 기존 서비스 맥락의 자료 접근 부담을 0으로 보고할 수 없다.",
+      "text": "학생 수준에 맞게 자료를 재구성하기 어려울 것 같습니다. 다양한 수준을 가지고 있는 교실 내에서 실제 데이터를 가지고 활용을 하려면 데이터를 다운 받고 재구성까지 교사의 역량이 절대적으로 필요한 부분인데, 이 부분에서 현실적으로 어려움을 느끼고 있습니다.",
+      "text_sha256": "84da0fb39a9cc95b978ea16fade10c69cfe5af22863df1787c7d6810114a4196"
+    },
+    {
+      "locator": "Q6-10",
+      "question": "Q6",
+      "respondent": 10,
+      "domain": "기존 서비스",
+      "source_cell": "I11",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "학생·수업 예상",
+      "codes": [
+        "terms",
+        "classroom"
+      ],
+      "note": "",
+      "text": "정성적 내용이 아닌 적경과 적위를 다루는 내용, 관측 천문학은 고등학교 교육과정의 거의 마지막 부분이며 학생들이 가장 어려워 함, 영어로 된 전문 용어 역시 학생들이 수업시간에 보면 어려워 할 것 같음",
+      "text_sha256": "88d8610018d8d72faa7c348f10add97fca39c9dd18d7855a92cba3396fa17e23"
+    },
+    {
+      "locator": "Q6-11",
+      "question": "Q6",
+      "respondent": 11,
+      "domain": "EASWA 보충",
+      "source_cell": "I12",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "본인 사용 경험과 학생 지원 제안",
+      "codes": [
+        "positive",
+        "next_action",
+        "meaning",
+        "terms"
+      ],
+      "note": "기존 서비스 문항에 EASWA와 맞물리는 구체 화면 경험이 기입된 예외다. 삭제하지 않고 보충 근거로 보존하되 EASWA 문항의 빈도에 합산하지 않는다.",
+      "text": "피상적으로만 알던 천문 연구 과정을 웹에서 해볼 수 있다는것이 큰 장점인 것 같습니다. 다만, 설명 없이, 웹만 처음 보았을 때 무엇을 해야하는지 찾는 시간이 좀 걸리는 것 같습니다. 각 스텝에서 해야할 것을 명확하게 눈에 띄게 보여주면 더 좋을 것 같습니다. 또한, 그래프를 그렸을 때 변수에 대한 설명이 먼저 진행되지 않고, 생소한 용어들이 많아서, 그래프 해석에 시간이 좀 걸렸던 것 같습니다. 비교별 품질 점검 그래프에서 가로축, 세로축이 무엇을 나타내는지 명확한 설명이 있었으면 더 편안하게 학생들이 탐구하기 편할 것 같습니다. BTJD, BJD, Rp/R*, χ²_red, ROI 등 생소한 용어들이 갑자기 튀어나오는데, 간단한 설명 또는 한글로 풀어서 설명해주는 방식이 있으면 더 도움될 것 같습니다.",
+      "text_sha256": "9cdf68f5cefa14e7b6808bafecad79ddbbaf6d4ce3de46fe72c1eca2de4784fd"
+    },
+    {
+      "locator": "Q6-12",
+      "question": "Q6",
+      "respondent": 12,
+      "domain": "기존 서비스",
+      "source_cell": "I13",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "학생·수업 예상",
+      "codes": [
+        "classroom",
+        "positive"
+      ],
+      "note": "",
+      "text": "수업 시간 안에서 활용하는 것이 어렵긴 합니다. 실제 과학자들이 해보는 경험을 같이 한다는 게 득이 될지 실이 될지는 미지수라는 생각이 듭니다. 방과후 시간에 데이터를 활용한 수업이 개설된다면 활용한 용의는 무조건 있습니다~",
+      "text_sha256": "7f3a4b5e09fd89cae58d9fe4e87bf36aba1c18d652e28a4118737413c08f6b40"
+    },
+    {
+      "locator": "Q20-1",
+      "question": "Q20",
+      "respondent": 1,
+      "domain": "EASWA",
+      "source_cell": "AE2",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "본인 경험",
+      "codes": [
+        "concepts"
+      ],
+      "note": "본인이 비전공자여서 어렵다는 반응이며 용어 풀이를 직접 요구한 것은 아니다.",
+      "text": "제가 지구과학 전공자가 아니라..다 어렵게 느껴졌습니다ㅜ.ㅠ",
+      "text_sha256": "e429f25abb08bb4810c30be41b118a276ff0d18c77b3d547902f9dca1ca620c2"
+    },
+    {
+      "locator": "Q20-3",
+      "question": "Q20",
+      "respondent": 3,
+      "domain": "EASWA",
+      "source_cell": "AE4",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "관점 미명시",
+      "codes": [
+        "concepts"
+      ],
+      "note": "수학·통계 지식의 필요성이다. 특정 용어 풀이 요청이나 본인 경험으로 자동 변환하지 않는다.",
+      "text": "수학적? 통계적 지식이 필요할 것 같아요.",
+      "text_sha256": "a7f32bdf9be73c913f91ba32a3a9aefe53381ac46897d36dd13851c877b45163"
+    },
+    {
+      "locator": "Q20-4",
+      "question": "Q20",
+      "respondent": 4,
+      "domain": "EASWA",
+      "source_cell": "AE5",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "경험한 화면에 대한 설명 요구",
+      "codes": [
+        "meaning"
+      ],
+      "note": "",
+      "text": "점이 찍혀져 있는 것의 의미, 중간에 끊어진 부분이 있었는데, 이러한 부분이 뭘 의미하는지 알려주면 더 해석에 용이할 것 같습니다.",
+      "text_sha256": "128e1b431241c695583d76accd1eac5eed7e59d31bbb5f7f46a773e3570f13a5"
+    },
+    {
+      "locator": "Q20-5",
+      "question": "Q20",
+      "respondent": 5,
+      "domain": "EASWA",
+      "source_cell": "AE6",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "학생 예상",
+      "codes": [
+        "concepts"
+      ],
+      "note": "",
+      "text": "학생들이 생각보다 과학개념에 대한 이해가 더디고 여기에 프로그램을 도입할 경우 어려워할 가능성이 있습니다",
+      "text_sha256": "0575eb707b649963d3da7633d253220d52d5b9b0cb36e9214d5cdfc924fd33de"
+    },
+    {
+      "locator": "Q20-9",
+      "question": "Q20",
+      "respondent": 9,
+      "domain": "EASWA",
+      "source_cell": "AE10",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "학생·수업 예상",
+      "codes": [
+        "concepts",
+        "classroom"
+      ],
+      "note": "",
+      "text": "고등학교 교육과정에서 차등 측광 개념을 배우지 않아 프로그램 처음부터 교사의 식현상 설명, 차등 측광의 개념의 설명이 필요하다.",
+      "text_sha256": "842667b80db1052b79a07c7d78e8f2ff043b2ce66cc336e185cec55b8d357f31"
+    },
+    {
+      "locator": "Q20-10",
+      "question": "Q20",
+      "respondent": 10,
+      "domain": "EASWA",
+      "source_cell": "AE11",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "학생 예상",
+      "codes": [
+        "terms",
+        "concepts"
+      ],
+      "note": "",
+      "text": "학생이 접해보지 못한 전문 용어들이 사용되어 페이지 전체 내용 이해에 어려움이 있을 것, 별 관측에 대해 경험이 적기 때문에 별 관측에 있어 어떤 점들을 고려해야 하는지에 대해서도 어색한 부분이 많을 것",
+      "text_sha256": "008af4fcb1738377d1ae236c6b3f0d3fdb08c2a9d496a767f74699a9aedbe7ab"
+    },
+    {
+      "locator": "Q20-11",
+      "question": "Q20",
+      "respondent": 11,
+      "domain": "EASWA",
+      "source_cell": "AE12",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "학생 예상·현재 단서에 대한 조건부 우려",
+      "codes": [
+        "concepts",
+        "classroom",
+        "independence"
+      ],
+      "note": "키워드가 현재 없다는 말이 아니다. 제시된 단서 없이 독립적으로 설명할 수 있을지의 우려다.",
+      "text": "오차 해석의 여지가 많고, 외계행성에 대한 교육과정 내용이 탐구에서 나오는 만큼 많지 않다. 교육과정 정도의 배경 지식을 가지고 있는 수준의 학생이라면, 웹사이트에서는 키워드가 주어졌지만, 키워드가 주어지지 않는 상황이라면, 오차에 대한 분석을 쓰지 못하지 않을까하고 생각된다.",
+      "text_sha256": "908287ec39f4c35c9a6ff2ad4ebcfc699614d945e70d3a7e1b9b4284bf6999da"
+    },
+    {
+      "locator": "Q22-1",
+      "question": "Q22",
+      "respondent": 1,
+      "domain": "EASWA",
+      "source_cell": "AJ2",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "학생·수업 예상",
+      "codes": [
+        "classroom"
+      ],
+      "note": "",
+      "text": "많은 시간 소요. 프로그램 활용에 어려움을 느끼는 학생들의 참여도 및 의욕 저하 우려",
+      "text_sha256": "d905c7ff254c009ad2403de91c0dd3c7243d12cce830db65f8931efdbc8f10ae"
+    },
+    {
+      "locator": "Q22-2",
+      "question": "Q22",
+      "respondent": 2,
+      "domain": "EASWA",
+      "source_cell": "AJ3",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "학생 예상",
+      "codes": [
+        "terms"
+      ],
+      "note": "",
+      "text": "용어들에 대한 어려움이 예상됩니다. 학생들이 어려워 할만한 용어들 (잡음, 픽셀, 그래프에 사용되는 용 등)이 무슨뜻인지 함께 설명하는 과정도 필요하지 않을까라고 생각됩니다.",
+      "text_sha256": "8310c3bea994bb9d80ac2c540c4db7fe1eeb7da5067f548813ff906e4f1d8c40"
+    },
+    {
+      "locator": "Q22-3",
+      "question": "Q22",
+      "respondent": 3,
+      "domain": "EASWA",
+      "source_cell": "AJ4",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "교사의 수업 운영",
+      "codes": [
+        "classroom"
+      ],
+      "note": "",
+      "text": "현장에서는 지구과학 교과 선택 학생이 많이 줄어들고 있어요. 애초에 이러한 좋은 자료를 활용할 교과 시수 확보가 많이 힘들다고 생각해요.",
+      "text_sha256": "ffc712e8901e7a1f0cdd33ef21d55d866881f7e49a6e83f3207a6708da783f37"
+    },
+    {
+      "locator": "Q22-4",
+      "question": "Q22",
+      "respondent": 4,
+      "domain": "EASWA",
+      "source_cell": "AJ5",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "학생 활동에 대한 긍정",
+      "codes": [
+        "positive"
+      ],
+      "note": "",
+      "text": "교과서만 보는 것 보다 천문학자들의 수행 과정을 따라 직접 수행하면 좋을 것 같습니다.",
+      "text_sha256": "4a0c1cff4cf64cf1ca61bf1008e31b6dde8116b3f18e02837db28eb6c052ab6a"
+    },
+    {
+      "locator": "Q22-5",
+      "question": "Q22",
+      "respondent": 5,
+      "domain": "EASWA",
+      "source_cell": "AJ6",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "학생 예상",
+      "codes": [
+        "concepts"
+      ],
+      "note": "",
+      "text": "역설적이게도 과학 이론을 오히려 더 어려워할 가능성이 있음",
+      "text_sha256": "d9131dba7f550534a9c295383a22bd65345170852af8db7b08b89ce15cf03fd6"
+    },
+    {
+      "locator": "Q22-6",
+      "question": "Q22",
+      "respondent": 6,
+      "domain": "EASWA",
+      "source_cell": "AJ7",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "학생·수업 예상",
+      "codes": [
+        "terms",
+        "concepts"
+      ],
+      "note": "",
+      "text": "이 프로그램을 활용하기 전에 알고 있어야 하는 사전 지식이 많이 필요함. 실제 관측하는것처럼 따라서 진행하는데, 학생들에게 설명할 때 각 전문 용어들에대한 설명이 필요함.",
+      "text_sha256": "6fc4f857662b05e69d89320f2fa2cd1e01cfa51cd54c9d430ae2d97ec9944ad8"
+    },
+    {
+      "locator": "Q22-8",
+      "question": "Q22",
+      "respondent": 8,
+      "domain": "EASWA",
+      "source_cell": "AJ9",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "학생·수업 예상",
+      "codes": [
+        "classroom",
+        "progression"
+      ],
+      "note": "",
+      "text": "지구과학 심화과목 선택자에게만 활용할 수 있는 자료가 될 것 같아\n(현재 고등학교에서는 고교학점제가 시행되고 난 후 지구과학 선택자가 매우 적어진 상황입니다.)\n실제로 2022개정 교육과정에 있는 기본 내용에서는 적용하기가 어려울 것 같아 아쉽다.\n난이도가 조금 더 쉬운 자료 해석부터 순차적으로 난이도를 높여가면 좋을 것 같다.",
+      "text_sha256": "ae42d76f089b16b50c4c580094e21c74f7a1ac11e79e4cb5ea7798d8bd45940c"
+    },
+    {
+      "locator": "Q22-9",
+      "question": "Q22",
+      "respondent": 9,
+      "domain": "EASWA",
+      "source_cell": "AJ10",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "학생·수업 예상",
+      "codes": [
+        "classroom",
+        "independence",
+        "choice"
+      ],
+      "note": "안내가 과도하다는 직접 진술이 아니다. 교육과정·수준·자료 선택과 교사 주도 수행에 대한 우려다.",
+      "text": "교육과정 내에서 수업을 하기에는 성취기준, 학생 수준에 조금 맞지 않는 부분도 있고 아직 자료의 선택지?가 많지 않아 실제 수업을 한다면 교사의 설명이 대부분이 되고 학생들은 버튼을 누르며 따라오는 주입식 수업이 될 수도 있을 것 같습니다. \n직접 해보며 생각해보니 지구과학, 행성우주과학 수업 보다는 천체를 진로로 희망하는 학생들만 따로 모아 활동을 진행해볼 것 같다는 생각이 듭니다.",
+      "text_sha256": "fe3b09d3f7e45232665ec543173f25fa0bc79b01a620d6c349d4363c59eac449"
+    },
+    {
+      "locator": "Q22-10",
+      "question": "Q22",
+      "respondent": 10,
+      "domain": "EASWA",
+      "source_cell": "AJ11",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "학생·수업 예상",
+      "codes": [
+        "terms",
+        "concepts",
+        "classroom"
+      ],
+      "note": "",
+      "text": "식 현상 개념 설명부터 탐구 활동까지, 3차시 이상의 수업이 예상되며, 해당 수업 전후로 하여 진도 상홍에 대한 우려가 있음. EASWA에서 사용되는, 고등학교 교과서 내용에서 잘 다루지 않는 기호, 단위 등에 대한 설명이 확실하게 이루어져야 학생들에게 의미있는 수업이 될 것 같음.",
+      "text_sha256": "2cba31f45911205c5d5434c586c3f4106a97fdcb3baedccb592bdd80ba2be5a5"
+    },
+    {
+      "locator": "Q22-11",
+      "question": "Q22",
+      "respondent": 11,
+      "domain": "EASWA",
+      "source_cell": "AJ12",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "수업 적용 우려",
+      "codes": [
+        "classroom"
+      ],
+      "note": "",
+      "text": "교육과정과의 불일치",
+      "text_sha256": "f62242c8e0fc51b187912454c55eebd776e1ed053f386cea99b95cd5aa3cba4e"
+    },
+    {
+      "locator": "Q22-12",
+      "question": "Q22",
+      "respondent": 12,
+      "domain": "EASWA",
+      "source_cell": "AJ13",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "교사의 설명 준비와 긍정 평가",
+      "codes": [
+        "concepts",
+        "teacher_support",
+        "positive"
+      ],
+      "note": "",
+      "text": "어려운 코딩이나 데이터 수집과 같은 활동없이 간단하게(?) 학생들에게 과학자들이 해보는 활동을 체험해볼 수 있다는 점에선 훌륭한 컨텐츠이지만, 실제 수업에서 교사가 활용할 때에는 A~Z까지 설명을 할 수 있어야 된다고 생각합니다. 이를테면, 식현상에 대한 개념, 식현상을 파악하는 과정의 어려움, 차등측광의 개념, Simbad와 같은 데이터베이스에 대한 설명이 수반되어야 교육적 효과가 있을 것 같아요.",
+      "text_sha256": "f3baae6f34716d2cd2534444c1d657f5eb4a25cdd575110b6428bb25c86d5739"
+    },
+    {
+      "locator": "Q23-1",
+      "question": "Q23",
+      "respondent": 1,
+      "domain": "EASWA",
+      "source_cell": "AK2",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "본인 평가·보완 제안",
+      "codes": [
+        "positive",
+        "layout"
+      ],
+      "note": "",
+      "text": "가장 잘 되어 있는 점 : 화면 구성, 인터페이스, 자료 활용\n보완 : 전체적인 구성이 조금 더 단순했으면 좋겠습니다.",
+      "text_sha256": "15bf4b6922b7c17b4e74a17d336a6b19c5dad0f73898bad73b6706a36ce42d3c"
+    },
+    {
+      "locator": "Q23-5",
+      "question": "Q23",
+      "respondent": 5,
+      "domain": "EASWA",
+      "source_cell": "AK6",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "학생 활동에 대한 긍정",
+      "codes": [
+        "positive"
+      ],
+      "note": "",
+      "text": "학생들에게 시각화자료를 주고 실제 데이터로 만들 수 있도록 한 점이 흥미를 불러일으 킬 것",
+      "text_sha256": "4c76d5183f382a8cbff485959ddea683307e013db9d253a98db055afbfe6c784"
+    },
+    {
+      "locator": "Q23-9",
+      "question": "Q23",
+      "respondent": 9,
+      "domain": "EASWA",
+      "source_cell": "AK10",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "본인 평가·보완 제안",
+      "codes": [
+        "language",
+        "positive"
+      ],
+      "note": "",
+      "text": "단어, 표현 방법이 AI를 사용한 듯한 문맥, 문장, 표현이 있어 자연스럽게 읽히지 않는 설명들이 있었습니다.(교사가 세특 AI로 쓰면 부자연스러운 표현이 티가 나듯이요) 이 부분을 검토해서 수정하면 좋을 것 같습니다. \n아이디어부터 사이트까지 너무 창의적이고 실제로 계속 여러 주제가 탑재된다면 많은 사람들이 쓰게 될 것 같습니다. 좋은 자료 감사합니다~!!",
+      "text_sha256": "9df5fcc63fbc48ea1ae3ae43ff0edb6ea37e4867cfbba2b5d555bf47c1584901"
+    },
+    {
+      "locator": "Q23-10",
+      "question": "Q23",
+      "respondent": 10,
+      "domain": "EASWA",
+      "source_cell": "AK11",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "본인 평가·수업 운영 요구",
+      "codes": [
+        "positive",
+        "concurrency"
+      ],
+      "note": "",
+      "text": "학생이 직접 조작할 수 있는 부분,  신뢰도 높은 DB를 구축해놓은 것이 굉장히 좋았습니다! 20-30명이 동시에 사용해도 모두가 딜레이없이 거의 동시에 활동을 이어갈 수 있도록 서버를 세팅해 놓으면 바로 현장에서 사용 가능할 것 같습니다",
+      "text_sha256": "1500c9668b5247116383f427aa4844119030d677cb8e0749cde58cb3221cf2ca"
+    },
+    {
+      "locator": "Q23-12",
+      "question": "Q23",
+      "respondent": 12,
+      "domain": "EASWA",
+      "source_cell": "AK13",
+      "source_sheet": "설문지 응답 시트1",
+      "perspective": "학습자 지원의 보완 제안",
+      "codes": [
+        "self_check"
+      ],
+      "note": "자가점검 UI가 눈에 띄고 진단 기능이 분명하기를 요구했다. 첫 답 고정이나 특정 채점 방식을 요구하지는 않았다.",
+      "text": "수행자가 해당 차시의 과정이나 방법을 잘 이해하고 있는지에 대한 연구질문? 도움질문의 UI가 보완되어서 학습자 스스로 진단해볼 수 있는 과정이 지금보다 확실히 눈에 띄고 보완되면 좋을 것 같습니다~",
+      "text_sha256": "7db2c1f82a4ac3c277c3b72f3ba255e9832f72e593cf42fa0ff3ee975ae845f3"
+    }
+  ],
+  "quantitative": {
+    "8": {
+      "n": 12,
+      "raw_distribution": [
+        0,
+        0,
+        2,
+        7,
+        3
+      ],
+      "raw_mean": 4.083333333333333,
+      "oriented_mean": 4.083333333333333,
+      "favorable": 10,
+      "neutral": 2,
+      "unfavorable": 0
+    },
+    "9": {
+      "n": 12,
+      "raw_distribution": [
+        0,
+        0,
+        0,
+        6,
+        6
+      ],
+      "raw_mean": 4.5,
+      "oriented_mean": 4.5,
+      "favorable": 12,
+      "neutral": 0,
+      "unfavorable": 0
+    },
+    "10": {
+      "n": 12,
+      "raw_distribution": [
+        0,
+        0,
+        2,
+        3,
+        7
+      ],
+      "raw_mean": 4.416666666666667,
+      "oriented_mean": 4.416666666666667,
+      "favorable": 10,
+      "neutral": 2,
+      "unfavorable": 0
+    },
+    "11": {
+      "n": 12,
+      "raw_distribution": [
+        0,
+        0,
+        1,
+        5,
+        6
+      ],
+      "raw_mean": 4.416666666666667,
+      "oriented_mean": 4.416666666666667,
+      "favorable": 11,
+      "neutral": 1,
+      "unfavorable": 0
+    },
+    "12": {
+      "n": 12,
+      "raw_distribution": [
+        3,
+        3,
+        4,
+        1,
+        1
+      ],
+      "raw_mean": 2.5,
+      "oriented_mean": 3.5,
+      "favorable": 6,
+      "neutral": 4,
+      "unfavorable": 2
+    },
+    "13": {
+      "n": 12,
+      "raw_distribution": [
+        0,
+        0,
+        3,
+        6,
+        3
+      ],
+      "raw_mean": 4.0,
+      "oriented_mean": 4.0,
+      "favorable": 9,
+      "neutral": 3,
+      "unfavorable": 0
+    },
+    "14": {
+      "n": 12,
+      "raw_distribution": [
+        0,
+        0,
+        1,
+        4,
+        7
+      ],
+      "raw_mean": 4.5,
+      "oriented_mean": 4.5,
+      "favorable": 11,
+      "neutral": 1,
+      "unfavorable": 0
+    },
+    "15": {
+      "n": 12,
+      "raw_distribution": [
+        1,
+        7,
+        1,
+        2,
+        1
+      ],
+      "raw_mean": 2.5833333333333335,
+      "oriented_mean": 3.4166666666666665,
+      "favorable": 8,
+      "neutral": 1,
+      "unfavorable": 3
+    },
+    "16": {
+      "n": 12,
+      "raw_distribution": [
+        0,
+        1,
+        3,
+        6,
+        2
+      ],
+      "raw_mean": 3.75,
+      "oriented_mean": 3.75,
+      "favorable": 8,
+      "neutral": 3,
+      "unfavorable": 1
+    },
+    "17": {
+      "n": 12,
+      "raw_distribution": [
+        0,
+        0,
+        2,
+        7,
+        3
+      ],
+      "raw_mean": 4.083333333333333,
+      "oriented_mean": 4.083333333333333,
+      "favorable": 10,
+      "neutral": 2,
+      "unfavorable": 0
+    },
+    "18": {
+      "n": 12,
+      "raw_distribution": [
+        0,
+        0,
+        0,
+        8,
+        4
+      ],
+      "raw_mean": 4.333333333333333,
+      "oriented_mean": 4.333333333333333,
+      "favorable": 12,
+      "neutral": 0,
+      "unfavorable": 0
+    }
+  },
+  "counts": {
+    "기존 서비스": {
+      "classroom": [
+        1,
+        2,
+        3,
+        7,
+        8,
+        9,
+        10,
+        12
+      ],
+      "meaning": [
+        4,
+        6
+      ],
+      "concepts": [
+        5,
+        8
+      ],
+      "access": [
+        5,
+        7,
+        9
+      ],
+      "terms": [
+        6,
+        10
+      ],
+      "positive": [
+        12
+      ]
+    },
+    "EASWA 보충": {
+      "positive": [
+        11
+      ],
+      "next_action": [
+        11
+      ],
+      "meaning": [
+        11
+      ],
+      "terms": [
+        11
+      ]
+    },
+    "EASWA": {
+      "concepts": [
+        1,
+        3,
+        5,
+        6,
+        9,
+        10,
+        11,
+        12
+      ],
+      "meaning": [
+        4
+      ],
+      "classroom": [
+        1,
+        3,
+        8,
+        9,
+        10,
+        11
+      ],
+      "terms": [
+        2,
+        6,
+        10
+      ],
+      "independence": [
+        9,
+        11
+      ],
+      "positive": [
+        1,
+        4,
+        5,
+        9,
+        10,
+        12
+      ],
+      "progression": [
+        8
+      ],
+      "choice": [
+        9
+      ],
+      "teacher_support": [
+        12
+      ],
+      "layout": [
+        1
+      ],
+      "language": [
+        9
+      ],
+      "concurrency": [
+        10
+      ],
+      "self_check": [
+        12
+      ]
+    }
+  }
+}
