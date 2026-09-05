@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import base64
+import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import io
 import logging
 import warnings
 from dataclasses import dataclass
 from functools import lru_cache
+from pathlib import Path
 from typing import Any
 
 import astropy.units as u
@@ -329,6 +331,29 @@ def _extract_site_point(
     )
 
 
+_PREVIEW_BUNDLE_DIR = Path(__file__).resolve().parent.parent / "bundled_kmtnet" / "preview"
+
+
+def _bundled_preview(target_id: str, site: str) -> MicrolensingPreviewResponse | None:
+    """A preview rendered ahead of time and shipped with the app.
+
+    The live path downloads several FITS frames from KASI and takes 38-45 s
+    (measured 2026-09-06), which sits in the middle of the step where the
+    learner is meant to be looking at the images. It also fails whenever the
+    archive is unreachable. This is the same computation, run in advance on the
+    same real frames — not a stand-in for them.
+    """
+    path = _PREVIEW_BUNDLE_DIR / f"{target_id}__{site}.json"
+    if not path.is_file():
+        return None
+    try:
+        with path.open(encoding="utf-8") as handle:
+            payload = json.load(handle)
+        return MicrolensingPreviewResponse.model_validate(payload["preview"])
+    except (OSError, ValueError, KeyError):
+        return None
+
+
 def get_preview(
     target_id: str,
     site: str,
@@ -336,6 +361,12 @@ def get_preview(
     size_px: int = _DEFAULT_CUTOUT_SIZE_PX,
     reference_frame_index: int | None = None,
 ) -> MicrolensingPreviewResponse:
+    # Only the default view is bundled; stepping to another frame or reference
+    # goes to the live path below.
+    if frame_index is None and reference_frame_index is None:
+        bundled = _bundled_preview(target_id, site)
+        if bundled is not None:
+            return bundled
     resolved_frame_index = 0 if frame_index is None else int(frame_index)
     site_key = _normalize_site_key(site)
     reference_observation_id = _resolve_reference_request(target_id, site_key, reference_frame_index)

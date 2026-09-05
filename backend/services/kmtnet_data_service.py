@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+import json
+import logging
+from pathlib import Path
+
 from functools import lru_cache
 from typing import Any
 
@@ -13,7 +17,25 @@ _KASI_KMTNET_SEARCH_URL = "https://data.kasi.re.kr/api/KMTNet/search"
 _SEARCH_RADIUS_ARCMIN = 60
 _REMOTE_LIMIT = 240
 _RESULT_LIMIT = 60
+logger = logging.getLogger(__name__)
+
 _TIMEOUT_SECONDS = 15.0
+
+
+_BUNDLE_DIR = Path(__file__).resolve().parent.parent / "bundled_kmtnet" / "observations"
+
+
+def _bundled_observations(target_id: str) -> list[dict[str, Any]]:
+    """KASI rows downloaded ahead of time and shipped with the app."""
+    path = _BUNDLE_DIR / f"{target_id}.json"
+    if not path.is_file():
+        return []
+    try:
+        with path.open(encoding="utf-8") as handle:
+            rows = json.load(handle).get("observations")
+        return rows if isinstance(rows, list) else []
+    except (OSError, ValueError):
+        return []
 
 
 def list_target_observations(target_id: str) -> list[dict[str, Any]]:
@@ -34,10 +56,17 @@ def list_target_observations(target_id: str) -> list[dict[str, Any]]:
         if remote_rows:
             return remote_rows
     except Exception:
-        # Fail closed into the synthetic fallback below.
-        pass
+        logger.warning("KASI search failed for %s; falling back to the bundle", target_id)
 
-    return _build_synthetic_observations(target_id)
+    # The archive being unreachable used to fall through to generated
+    # observations, silently — a learner would then analyse invented data
+    # without any sign of it. These bundles are the same KASI rows fetched on
+    # 2026-09-06, so the fallback stays real; if there is no bundle either, the
+    # caller gets nothing rather than something made up.
+    bundled = _bundled_observations(target_id)
+    if bundled:
+        return bundled
+    return []
 
 
 @lru_cache(maxsize=32)
@@ -104,31 +133,6 @@ def _search_kasi_rows(
         )
     )
     return normalized[:_RESULT_LIMIT]
-
-
-def _build_synthetic_observations(target_id: str) -> list[dict[str, Any]]:
-    observations = kmtnet_archive.list_observations(target_id)
-    normalized: list[dict[str, Any]] = []
-    for obs in observations:
-        site = str(obs.get("site") or "kmt").upper()
-        hjd = _to_float(obs.get("hjd")) or 0.0
-        normalized.append(
-            {
-                "id": str(obs.get("id") or ""),
-                "target_id": target_id,
-                "epoch": f"JD {hjd:.5f}",
-                "hjd": hjd,
-                "filter_band": str(obs.get("filter_band") or "I"),
-                "exposure_sec": _to_float(obs.get("exposure_sec")) or 0.0,
-                "thumbnail_url": "",
-                "airmass": _to_float(obs.get("airmass")) or 0.0,
-                "mission": "KMTNet",
-                "display_label": site,
-                "display_subtitle": "Synthetic fallback",
-                "cutout_url": None,
-            }
-        )
-    return normalized
 
 
 def _to_float(value: Any) -> float | None:

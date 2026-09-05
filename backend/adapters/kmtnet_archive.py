@@ -2,8 +2,11 @@
 
 Event coordinates and published (t0, u0, tE) parameters come from the public
 KMTNet ulens database; per-site light curves are fetched live from the ulens
-pySIS files (services/kmtnet_lightcurve_service). The synthetic per-frame
-observation generator below is retained only for the difference-image preview.
+pySIS files (services/kmtnet_lightcurve_service), and the per-frame images the
+difference-imaging screen shows come from the KASI archive via
+services/kmtnet_data_service. Nothing here is generated: the synthetic
+observation generator that used to stand in when the archive was unreachable was
+removed on 2026-09-06 and replaced by bundled real rows.
 """
 
 from __future__ import annotations
@@ -152,63 +155,12 @@ def _planetary_mag(hjd: float, model: dict) -> float:
     return base_mag
 
 
-def synthetic_ml_magnitude(target_id: str, hjd: float) -> tuple[float, float]:
-    event = next((e for e in KMT_EVENTS if e["id"] == target_id), None)
-    if not event:
-        return 18.0, 0.05
-
-    model = event["model"]
-    mag = _planetary_mag(hjd, model) if model["type"] == "planetary" else _single_lens_mag(hjd, model)
-
-    mag_err = 0.008 * 10 ** ((mag - 16.0) / 5.0)
-    mag_err = min(max(mag_err, 0.004), 0.15)
-    mag += random.gauss(0, mag_err)
-    return round(mag, 4), round(mag_err, 4)
-
-
-# ── archive class ─────────────────────────────────────────────────────────────
-
 class KmtnetArchive:
-    """In-memory KMTNet microlensing event store with synthetic observations."""
+    """In-memory KMTNet microlensing event store (event coordinates and published model parameters)."""
 
     def __init__(self) -> None:
         self._events = KMT_EVENTS
         self._observations: dict[str, list[dict]] = {}
-        self._generate_observations()
-
-    def _generate_observations(self) -> None:
-        for event in self._events:
-            model = event["model"]
-            t0 = model["t0"]
-            tE = model["tE"]
-            obs_list = []
-            obs_index = 1
-
-            for site_id, site_info in _SITES.items():
-                n_obs = 20
-                t_start = t0 - 2.5 * tE
-                t_end   = t0 + 2.5 * tE
-                t_span  = t_end - t_start
-
-                for i in range(n_obs):
-                    frac = (i + 0.5) / n_obs
-                    hjd_base = t_start + frac * t_span
-                    day_phase = site_info["lon_frac"] + random.uniform(0, 0.28)
-                    hjd = hjd_base + day_phase + random.uniform(-0.04, 0.04)
-
-                    obs_list.append({
-                        "id": f"{event['id']}_obs_{obs_index:03d}",
-                        "target_id": event["id"],
-                        "site": site_id,
-                        "hjd": round(hjd, 5),
-                        "filter_band": "I",
-                        "exposure_sec": 120.0,
-                        "airmass": round(1.1 + random.uniform(0, 0.7), 3),
-                    })
-                    obs_index += 1
-
-            obs_list.sort(key=lambda o: o["hjd"])
-            self._observations[event["id"]] = obs_list
 
     def list_targets(self, topic_id: str | None = None) -> list[dict[str, Any]]:
         if topic_id and topic_id != "microlensing":
