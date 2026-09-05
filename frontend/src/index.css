@@ -3317,7 +3317,6 @@ body {
   border-color: var(--accent);
   background: var(--accent);
   color: #fff;
-  box-shadow: 0 0 14px rgba(232, 114, 42, 0.35);
 }
 
 .transit-step-circle.completed {
@@ -5836,7 +5835,6 @@ body {
   width: 56px;
   height: 56px;
   flex-shrink: 0;
-  filter: drop-shadow(0 0 14px rgba(232, 114, 42, 0.35));
 }
 
 .home-hero-brand-text {
@@ -10961,7 +10959,6 @@ body {
   background: radial-gradient(ellipse at center, #0b1224 0%, #020617 75%);
   border: 1px solid rgba(232, 114, 42, 0.18);
   box-shadow:
-    0 24px 60px -28px rgba(232, 114, 42, 0.35),
     0 8px 24px -10px rgba(0, 0, 0, 0.6),
     inset 0 0 0 1px rgba(255, 255, 255, 0.02);
 }
@@ -11135,7 +11132,6 @@ body {
   border-radius: 50%;
   background: #fbbf24;
   border: 2px solid #fff;
-  box-shadow: 0 0 6px rgba(251, 191, 36, 0.5);
   cursor: pointer;
 }
 
@@ -11145,7 +11141,6 @@ body {
   border-radius: 50%;
   background: #fbbf24;
   border: 2px solid #fff;
-  box-shadow: 0 0 6px rgba(251, 191, 36, 0.5);
   cursor: pointer;
 }
 

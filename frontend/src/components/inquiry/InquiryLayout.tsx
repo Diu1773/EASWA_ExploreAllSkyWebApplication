@@ -223,12 +223,7 @@ export function InquiryLayout<TContext = unknown>({
   );
   const activeStep = module.steps.find((step) => step.id === activeStepId) ?? module.steps[0];
   const stepIndex = module.steps.findIndex((step) => step.id === activeStep.id);
-  // 사본 전용 — 디자인 검토·자동 캡처용으로 단계 잠김을 푼다.
-  // 이 분기는 worktree(worktree-design-tool-screens)에만 있고 main 에 넣지 않는다.
-  const previewUnlock = searchParams.get('unlock') === '1';
-  const maxUnlocked = previewUnlock
-    ? module.steps.length - 1
-    : (maxUnlockedStepIndex ?? module.steps.length - 1);
+  const maxUnlocked = maxUnlockedStepIndex ?? module.steps.length - 1;
   const selectionStepIndex = module.steps.findIndex((step) => step.kind === 'selection');
 
   // A URL can point past the gate (stale bookmark, hand-edited ?blockStep=):
@@ -236,11 +231,10 @@ export function InquiryLayout<TContext = unknown>({
   // the fit that unlocks Steps 5–6 is read in a mount effect — clamping eagerly
   // would demote a legitimately unlocked learner during that first frame.
   useEffect(() => {
-    if (previewUnlock) return;
     if (stepIndex > maxUnlocked) {
       setActiveStepId(module.steps[Math.max(maxUnlocked, 0)].id, { replace: true });
     }
-  }, [previewUnlock, stepIndex, maxUnlocked, module.steps]);
+  }, [stepIndex, maxUnlocked, module.steps]);
 
   // No target, but sitting on a step past selection — the shape you land in when
   // back/forward drops ?target= from a deep step's URL (reported 2026-07-18:
@@ -248,7 +242,6 @@ export function InquiryLayout<TContext = unknown>({
   // learner back to the selection step so the state is coherent.
   const selectionReady = selectionConfirm ? selectionConfirm.ready : true;
   useEffect(() => {
-    if (previewUnlock) return;
     if (
       !selectionReady &&
       selectionStepIndex >= 0 &&
@@ -256,7 +249,7 @@ export function InquiryLayout<TContext = unknown>({
     ) {
       setActiveStepId(module.steps[selectionStepIndex].id, { replace: true });
     }
-  }, [previewUnlock, selectionReady, selectionStepIndex, stepIndex, module.steps]);
+  }, [selectionReady, selectionStepIndex, stepIndex, module.steps]);
   const goToStep = (delta: number) => {
     const next = module.steps[stepIndex + delta];
     if (next) setActiveStepId(next.id);

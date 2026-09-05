@@ -9,8 +9,8 @@ interface ModuleSelectorProps {
 export function ModuleSelector({ modules = explorationModules }: ModuleSelectorProps) {
   return (
     <div className="inquiry-module-selector">
-      {modules.map((module, index) => (
-        <ModuleCard key={module.id} module={module} revealDelay={index * 90} />
+      {modules.map((module) => (
+        <ModuleCard key={module.id} module={module} />
       ))}
     </div>
   );

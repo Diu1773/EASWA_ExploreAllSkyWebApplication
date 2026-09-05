@@ -4,24 +4,17 @@ import { useLangStore } from '../../i18n';
 import { localize } from '../../explorationBlocks/localize';
 import type { ExplorationModuleConfig } from '../../explorationBlocks/types';
 import { ImageWithFallback } from '../layout/ImageWithFallback';
-import { useReveal } from '../layout/useReveal';
 
 interface ModuleCardProps {
   module: ExplorationModuleConfig;
-  revealDelay?: number;
 }
 
-export function ModuleCard({ module, revealDelay = 0 }: ModuleCardProps) {
+export function ModuleCard({ module }: ModuleCardProps) {
   const lang = useLangStore((state) => state.lang);
   const firstQuestion = module.steps[0]?.questions[0]?.question;
-  const { ref, revealed } = useReveal<HTMLElement>();
 
   return (
-    <article
-      ref={ref}
-      className={`inquiry-module-card reveal ${revealed ? 'reveal-visible' : ''}`}
-      style={revealDelay ? { transitionDelay: `${revealDelay}ms` } : undefined}
-    >
+    <article className="inquiry-module-card">
       <div className="inquiry-module-card-media">
         <ImageWithFallback
           src={module.image}
