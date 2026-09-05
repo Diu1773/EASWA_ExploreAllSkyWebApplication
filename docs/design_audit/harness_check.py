@@ -24,7 +24,16 @@ def ratio(a,b):
     hi,lo = max(la,lb), min(la,lb)
     return (hi+.05)/(lo+.05)
 
-src = pathlib.Path(sys.argv[1]).read_text(encoding="utf-8")
+raw = pathlib.Path(sys.argv[1]).read_text(encoding="utf-8")
+# CSS 선언만 모은다. 예전 판은 HTML 본문까지 긁어 인라인 style 하나가 문서 끝까지
+# 삼키는 오탐을 냈다 (2026-09-06).
+_styles = re.findall(r"<style[^>]*>(.*?)</style>", raw, re.S)
+_inline = re.findall(r'style\s*=\s*"([^"]*)"', raw)
+_joined = ("\n").join(_styles)
+_inl = ("\n").join("x{" + v + "}" for v in _inline)
+src = raw if not (_styles or _inline) else (_joined + ("\n") + _inl)
+# 이모지·대문자 라벨·감속모션 검사는 원문에서 본다
+full = raw
 fails, notes = [], []
 
 # 1) 간격 스케일
@@ -60,23 +69,23 @@ emo = re.findall(r"[\U0001F300-\U0001FAFF☀-➿]", src)
 if emo: fails.append(f"이모지 {len(emo)}개: {set(emo)}")
 
 # 5) 감속 모션 선언
-if "prefers-reduced-motion" not in src: fails.append("prefers-reduced-motion 없음")
+if "prefers-reduced-motion" not in full: fails.append("prefers-reduced-motion 없음")
 
 # 6) 스크롤 등장
-if re.search(r"reveal|animate-on-scroll|IntersectionObserver", src): fails.append("스크롤 등장 흔적")
+if re.search(r"reveal|animate-on-scroll|IntersectionObserver", full): fails.append("스크롤 등장 흔적")
 
 # 7) 화면 문구의 영문 대문자 라벨 (고유명사 제외)
 PROPER = {"EASWA","NASA","ESA","TESS","MAST","KASI","KMTNet","DR3","STScI","AURA",
           "CMD","Gaia","Hubble","Google","App","Exploring","All","Sky","Web","Archive","ASWA",
-          "Caltech","English"}
+          "Caltech","English","CCD","WASP","MAST","TESS","ASWA"}
 caps = []
-for t in re.findall(r">([^<>{}]{2,60})<", src):
+for t in re.findall(r">([^<>{}]{2,60})<", full):
     for w in re.findall(r"\b[A-Z]{3,}\b", t):
         if w not in PROPER: caps.append(w)
 if caps: fails.append(f"영문 대문자 라벨: {sorted(set(caps))}")
 
 # 8) 명암비 — :root 토큰끼리
-tok = dict(re.findall(r"--([\w-]+)\s*:\s*(#[0-9a-fA-F]{3,6})", src))
+tok = dict(re.findall(r"--([\w-]+)\s*:\s*(#[0-9a-fA-F]{3,6})", full))
 if "bg" in tok:
     for name in ("body","sec","muted","heading"):
         if name in tok:

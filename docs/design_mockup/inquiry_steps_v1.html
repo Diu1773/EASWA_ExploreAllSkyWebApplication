@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EASWA 탐구활동 — 홈과 같은 문법으로 (시안)</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --bg:#ffffff; --bg-2:#f5f7f9; --canvas:#0b0e14; --canvas-2:#12161e;
+  --border:#e3e7ec; --border-lit:#8796a9; --border-dark:#252d3a;
+  --heading:#101722; --body:#3e4856; --sec:#5b6673; --muted:#69727d;
+  --on-dark-h:#f2f5f9; --on-dark-b:#c3ccd8; --on-dark-m:#8b95a5;
+  --accent:#b95314; --accent-dark:#e8722a;
+  --ui:"Pretendard",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",monospace;
+  --r-sm:6px; --r-md:8px; --r-lg:12px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--body);font-family:var(--ui);font-size:16px;
+     line-height:1.7;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums;
+     word-break:keep-all;overflow-wrap:break-word}
+img{display:block;max-width:100%}
+h1,h2,h3,h4{color:var(--heading);margin:0}
+.wrap{width:min(1280px,calc(100% - 48px));margin:0 auto}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* 앱 바 */
+.appbar{height:56px;border-bottom:1px solid var(--border);background:var(--bg)}
+.appbar .wrap{height:100%;display:flex;align-items:center;gap:24px}
+.brand{display:flex;align-items:center;gap:8px}
+.brand .mark{color:var(--heading);flex-shrink:0}
+.brand b{font-size:15px;font-weight:700;letter-spacing:.10em;color:var(--heading)}
+.appbar .crumb{font-size:14px;color:var(--sec)}
+.appbar .right{margin-left:auto;font-size:13px;color:var(--muted)}
+
+/* 단계 띠 — 화면 위에 붙는다 */
+.steps{position:sticky;top:0;z-index:20;background:var(--bg);
+       border-bottom:1px solid var(--border);padding:8px 0}
+.steps .wrap{display:flex;align-items:center;gap:8px}
+.steps .who{font-size:13px;color:var(--muted);margin-right:16px;white-space:nowrap}
+.steps .who b{color:var(--heading);font-weight:600}
+.step{display:flex;align-items:center;gap:8px;flex:1}
+.step .dot{width:24px;height:24px;border-radius:999px;display:grid;place-items:center;
+           font-size:12px;font-weight:600;border:1.5px solid var(--border-lit);
+           color:var(--muted);background:var(--bg);flex-shrink:0}
+.step.done .dot{border-color:var(--accent);color:var(--accent)}
+.step.now .dot{background:var(--accent);border-color:var(--accent);color:#fff}
+.step .nm{font-size:12px;color:var(--muted);white-space:nowrap}
+.step.now .nm{color:var(--heading);font-weight:600}
+.step .bar{flex:1;height:1.5px;background:var(--border);min-width:12px}
+.step.done .bar{background:var(--accent)}
+
+/* 단계 화면 */
+.screen{padding:32px 0 64px}
+.screen + .screen{border-top:8px solid var(--bg-2)}
+.shead{display:flex;align-items:baseline;gap:12px;margin-bottom:8px}
+.shead .tag{font-family:var(--mono);font-size:12px;color:var(--accent);
+            border:1px solid var(--accent);border-radius:var(--r-sm);padding:2px 8px}
+.shead h2{font-size:24px;font-weight:700;letter-spacing:-.01em}
+.sq{font-size:17px;font-weight:600;color:var(--heading);margin:0 0 24px;
+    padding-left:12px;border-left:3px solid var(--accent)}
+
+/* 두 칸 — 왼쪽 조작, 오른쪽 자료 */
+.two{display:grid;grid-template-columns:308px 1fr;gap:24px;align-items:start}
+.panel{border:1px solid var(--border);border-radius:var(--r-lg);background:var(--bg);
+       overflow:hidden}
+.panel > h3{font-size:14px;font-weight:600;padding:16px;
+            border-bottom:1px solid var(--border);background:var(--bg-2)}
+.panel .in{padding:16px}
+
+/* 섹터 목록 */
+.sector{display:block;width:100%;text-align:left;border:1px solid var(--border);
+        border-radius:var(--r-md);padding:12px 16px;margin-bottom:8px;background:var(--bg);
+        cursor:pointer;font:inherit}
+.sector:last-child{margin-bottom:0}
+.sector.on{border-color:var(--heading);border-width:2px}
+.sector b{display:block;font-size:15px;font-weight:600;color:var(--heading)}
+.sector span{font-size:12px;color:var(--muted);font-family:var(--mono)}
+.sector.off b,.sector.off span{color:var(--muted);font-weight:500}
+
+/* 조작 행 */
+.ctrl{border-top:1px solid var(--border);padding:16px 0}
+.ctrl:first-child{border-top:0;padding-top:0}
+.ctrl .lab{display:flex;justify-content:space-between;align-items:baseline;width:100%;
+           font-size:13px;color:var(--sec);margin-bottom:8px}
+.ctrl .lab b{font-family:var(--mono);font-size:14px;color:var(--heading);font-weight:600}
+.track{display:block;height:4px;background:var(--border);border-radius:999px;position:relative}
+.track i{position:absolute;top:-5px;width:14px;height:14px;border-radius:999px;
+         background:var(--heading);border:2px solid var(--bg)}
+
+/* 자료 캔버스 — 어둡게 */
+.canvas{background:var(--canvas);border:1px solid var(--border-dark);
+        border-radius:var(--r-lg);overflow:hidden}
+.canvas .cap{display:flex;justify-content:space-between;align-items:center;
+             padding:12px 16px;border-bottom:1px solid var(--border-dark);
+             font-size:12px;color:var(--on-dark-m);font-family:var(--mono)}
+.canvas .cap b{color:var(--on-dark-h);font-family:var(--ui);font-size:13px}
+.canvas img{width:100%;display:block}
+.canvas .empty{height:300px;display:grid;place-items:center;color:var(--on-dark-m);
+               font-size:14px;text-align:center;padding:24px;line-height:1.8}
+.canvas .src{padding:12px 16px;border-top:1px solid var(--border-dark);
+             font-size:11px;color:var(--on-dark-m);font-family:var(--mono)}
+
+/* 그림 바로 아래 설명 — 인접성 */
+.read{border:1px solid var(--border);border-top:0;border-radius:0 0 var(--r-lg) var(--r-lg);
+      background:var(--bg-2);padding:16px 24px;margin-top:-1px}
+.read p{margin:0;font-size:15px;color:var(--body)}
+.read p + p{margin-top:8px}
+.read .ask{font-weight:600;color:var(--heading)}
+.figblock{border-radius:var(--r-lg);overflow:hidden}
+.figblock .canvas{border-radius:var(--r-lg) var(--r-lg) 0 0}
+
+/* 비교 표 */
+.cmp{width:100%;border-collapse:collapse;font-size:15px}
+.cmp th{text-align:left;font-size:12px;font-weight:600;color:var(--muted);
+        padding:0 12px 8px 0;border-bottom:1px solid var(--border)}
+.cmp td{padding:12px 12px 12px 0;border-bottom:1px solid var(--border);color:var(--body)}
+.cmp td:first-child{color:var(--heading);font-weight:600}
+.cmp .num{font-family:var(--mono);color:var(--heading)}
+.cmp .diff{font-family:var(--mono);color:var(--accent);font-weight:600}
+.cmp .src{font-size:12px;color:var(--muted)}
+
+/* 버튼 */
+.row{display:flex;align-items:center;gap:12px;margin-top:24px}
+.btn{border:0;font:inherit;font-size:15px;font-weight:600;border-radius:var(--r-md);
+     padding:12px 24px;cursor:pointer;background:var(--heading);color:#fff}
+.btn.acc{background:var(--accent)}
+.btn.ghost{background:var(--bg);color:var(--heading);border:1px solid var(--border-lit)}
+.hint{font-size:13px;color:var(--muted)}
+
+/* 기록 */
+.note{border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 24px;
+      margin-top:24px}
+.note h4{font-size:14px;font-weight:600;margin-bottom:8px}
+.note textarea{width:100%;min-height:88px;font:inherit;font-size:15px;color:var(--heading);
+  background:var(--bg-2);border:1px solid var(--border);border-radius:var(--r-md);
+  padding:12px 16px;resize:vertical}
+.note .oc{display:flex;gap:8px;margin-bottom:12px}
+.note .oc button{font:inherit;font-size:14px;font-weight:600;width:44px;height:36px;
+  border-radius:var(--r-md);border:1px solid var(--border-lit);background:var(--bg);
+  color:var(--heading);cursor:pointer}
+
+@media (max-width:1000px){ .two{grid-template-columns:1fr} .step .nm{display:none} }
+</style>
+</head>
+<body>
+
+<header class="appbar">
+  <div class="wrap">
+    <span class="brand">
+      <svg class="mark" width="26" height="26" viewBox="0 0 640 640" aria-hidden="true"><use href="#m"/></svg>
+      <b>ASWA</b>
+    </span>
+    <span class="crumb">외계행성 식현상 탐구블럭 · WASP-6 b</span>
+    <span class="right">P = 3.3610026 d · NASA TESS / MAST</span>
+  </div>
+</header>
+
+<!-- 단계 띠: 화면 위에 붙는다 -->
+<nav class="steps" aria-label="탐구 단계">
+  <div class="wrap">
+    <span class="who">지금 <b>4단계</b> · 분석과 시각화</span>
+    <span class="step done"><span class="dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span><span class="nm">주제</span><span class="bar"></span></span>
+    <span class="step done"><span class="dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span><span class="nm">대상 선택</span><span class="bar"></span></span>
+    <span class="step done"><span class="dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span><span class="nm">자료 확인</span><span class="bar"></span></span>
+    <span class="step done"><span class="dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span><span class="nm">분석 준비</span><span class="bar"></span></span>
+    <span class="step now"><span class="dot">4</span><span class="nm">분석·시각화</span><span class="bar"></span></span>
+    <span class="step"><span class="dot">5</span><span class="nm">기준값 비교</span><span class="bar"></span></span>
+    <span class="step"><span class="dot">6</span><span class="nm">해석·기록</span></span>
+  </div>
+</nav>
+
+<!-- ── 4단계 ─────────────────────────────────────────── -->
+<section class="screen">
+  <div class="wrap">
+    <div class="shead"><span class="tag">4단계</span><h2>분석 실행과 시각화</h2></div>
+    <p class="sq">시각화 결과에서 현상을 뒷받침하는 근거는 어디에 보이는가?</p>
+
+    <div class="two">
+      <div>
+        <div class="panel">
+          <h3>TESS 섹터</h3>
+          <div class="in">
+            <button class="sector on"><b>Sector 2</b><span>Camera 1 · CCD 4 · 1,245 프레임</span></button>
+            <button class="sector off"><b>Sector 29</b><span>번들 아님 · 비활성</span></button>
+            <button class="sector off"><b>Sector 69</b><span>번들 아님 · 비활성</span></button>
+            <button class="sector off"><b>Sector 96</b><span>번들 아님 · 비활성</span></button>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top:16px">
+          <h3>측광 조건</h3>
+          <div class="in">
+            <div class="ctrl">
+              <span class="lab">구경 반지름 <b>2.5 px</b></span>
+              <span class="track"><i style="left:28%"></i></span>
+            </div>
+            <div class="ctrl">
+              <span class="lab">배경 고리 안쪽 <b>4.0 px</b></span>
+              <span class="track"><i style="left:46%"></i></span>
+            </div>
+            <div class="ctrl">
+              <span class="lab">배경 고리 바깥 <b>6.0 px</b></span>
+              <span class="track"><i style="left:64%"></i></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <button class="btn acc">차등측광 실행</button>
+          <button class="btn ghost">초기화</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="figblock">
+          <div class="canvas">
+            <div class="cap"><b>WASP-6 b · 차등측광 광도곡선</b><span>Sector 2 · 1,245점</span></div>
+            <img src="real_output/wasp6b_lightcurve.png" alt="WASP-6 b 광도곡선. 측정 적합 모델과 카탈로그 기대 모델을 겹쳐 그렸다.">
+            <div class="src">자료 NASA TESS / MAST · 기준값 NASA Exoplanet Archive</div>
+          </div>
+          <div class="read">
+            <p>가로축은 공전 위상, 세로축은 상대 밝기입니다. 행성이 별 앞을 지나는 동안
+               밝기가 내려갔다가 되돌아옵니다.</p>
+            <p class="ask">이 곡선에서 「식현상이 일어났다」고 말할 수 있는 근거는 어느 부분입니까?</p>
+          </div>
+        </div>
+
+        <div class="note">
+          <h4>탐구 기록</h4>
+          <div class="oc"><button>O</button><button>X</button></div>
+          <textarea placeholder="곡선의 어느 구간을 근거로 삼았는지 적어 보세요."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── 5단계 ─────────────────────────────────────────── -->
+<section class="screen">
+  <div class="wrap">
+    <div class="shead"><span class="tag">5단계</span><h2>기준값과 비교</h2></div>
+    <p class="sq">측정한 값이 문헌 기준값과 다르다면, 그 차이는 어디에서 왔습니까?</p>
+
+    <div class="two" style="grid-template-columns:1fr 1fr">
+      <div class="figblock">
+        <div class="canvas">
+          <div class="cap"><b>겹쳐 보기</b><span>실선 = 측정 적합 · 점선 = 카탈로그</span></div>
+          <img src="real_output/wasp6b_lightcurve.png" alt="측정 적합 모델과 카탈로그 기대 모델을 겹쳐 그린 광도곡선">
+          <div class="src">잔차 표준편차 1.6‰</div>
+        </div>
+        <div class="read">
+          <p>두 곡선의 <b>깊이 차이</b>가 곧 측정값과 기준값의 차이입니다.</p>
+        </div>
+      </div>
+
+      <div>
+        <div class="panel">
+          <h3>측정값과 기준값</h3>
+          <div class="in" style="padding-top:4px">
+            <table class="cmp">
+              <tr><th>항목</th><th>측정값</th><th>기준값</th><th>차이</th></tr>
+              <tr>
+                <td>반지름비 Rp/R*</td>
+                <td class="num">0.1453</td>
+                <td class="num">0.1552</td>
+                <td class="diff">−6.4 %</td>
+              </tr>
+              <tr>
+                <td>식 깊이</td>
+                <td class="num">2.112 %</td>
+                <td class="num">2.408 %</td>
+                <td class="diff">−0.296 %p</td>
+              </tr>
+              <tr>
+                <td>공전 주기</td>
+                <td class="num">3.3610 d</td>
+                <td class="num">3.3610026 d</td>
+                <td class="diff">−0.0000026 d</td>
+              </tr>
+              <tr>
+                <td>잔차 표준편차</td>
+                <td class="num">1.6 ‰</td>
+                <td class="src">—</td>
+                <td class="src">측정 흩어짐</td>
+              </tr>
+            </table>
+            <p class="hint" style="margin:16px 0 0">기준값 출처 — NASA Exoplanet Archive.
+              불확실도가 공개되지 않은 항목은 비워 둡니다.</p>
+          </div>
+        </div>
+
+        <div class="note">
+          <h4>차이의 원인</h4>
+          <div class="oc" style="flex-wrap:wrap">
+            <button style="width:auto;padding:0 16px">구경 크기</button>
+            <button style="width:auto;padding:0 16px">비교성 선택</button>
+            <button style="width:auto;padding:0 16px">주연감광 가정</button>
+            <button style="width:auto;padding:0 16px">잡음</button>
+          </div>
+          <textarea placeholder="고른 원인이 왜 깊이를 얕게 만들었는지 적어 보세요."></textarea>
+        </div>
+
+        <div class="row">
+          <button class="btn">6단계로</button>
+          <span class="hint">기록을 한 가지 이상 적으면 열립니다.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="m" viewBox="0 0 640 640">
+  <ellipse cx="318.0" cy="322.0" rx="348.0" ry="108.0" transform="rotate(-20.0 318.0 322.0)"
+           fill="none" stroke="currentColor" stroke-width="12"/>
+  <path fill="currentColor" d="M196.0 120.0L480.0 120.0L480.0 198.0L251.5 198.0L249.7 204.4L247.9 210.8L246.2 217.2L244.6 223.5L243.0 229.9L241.6 236.3L240.2 242.7L239.0 249.1L237.8 255.5L236.7 261.8L235.8 268.2L234.9 274.6L234.1 281.0L430.0 281.0L430.0 359.0L234.1 359.0L234.9 365.4L235.8 371.8L236.7 378.2L237.8 384.5L239.0 390.9L240.2 397.3L241.6 403.7L243.0 410.1L244.6 416.5L246.2 422.8L247.9 429.2L249.7 435.6L251.5 442.0L480.0 442.0L480.0 520.0L196.0 520.0L193.8 513.9L191.6 507.9L189.5 501.8L187.3 495.8L185.2 489.7L183.0 483.6L181.0 477.6L178.9 471.5L176.9 465.5L174.9 459.4L173.0 453.3L171.1 447.3L169.3 441.2L167.6 435.2L165.9 429.1L164.3 423.0L162.7 417.0L161.2 410.9L159.8 404.8L158.5 398.8L157.3 392.7L156.2 386.7L155.1 380.6L154.2 374.5L153.3 368.5L152.5 362.4L151.9 356.4L151.3 350.3L150.8 344.2L150.5 338.2L150.2 332.1L150.1 326.1L150.0 320.0L150.1 313.9L150.2 307.9L150.5 301.8L150.8 295.8L151.3 289.7L151.9 283.6L152.5 277.6L153.3 271.5L154.2 265.5L155.1 259.4L156.2 253.3L157.3 247.3L158.5 241.2L159.8 235.2L161.2 229.1L162.7 223.0L164.3 217.0L165.9 210.9L167.6 204.8L169.3 198.8L171.1 192.7L173.0 186.7L174.9 180.6L176.9 174.5L178.9 168.5L181.0 162.4L183.0 156.4L185.2 150.3L187.3 144.2L189.5 138.2L191.6 132.1L193.8 126.1L196.0 120.0Z"/>
+  <circle cx="544.8" cy="165.6" r="27" fill="currentColor"/>
+</symbol>
+</defs></svg>
+</body>
+</html>
