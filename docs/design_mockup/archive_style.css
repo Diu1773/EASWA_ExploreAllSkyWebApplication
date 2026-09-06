@@ -1,35 +1,25 @@
 /* EASWA 아카이브 조판 — 탐구활동 화면 공용 스타일
- * 2026-09-06. archive_style_v1.html(4·5단계) · archive_style_v2.html(1·2·3·6단계).
- * 색·괘선·표 규칙을 여기 한 곳에서만 바꾼다.
+ * 2026-09-06 3판. archive_style_v1.html(4·5단계) · archive_style_v2.html(1·2·3·6단계).
  *
- * 색은 뜻에 묶여 있다. 장식으로 쓰지 않는다.
- *   남색   자료가 준 것   — 출처, 관측 조건, 문헌 기준값, 카탈로그 목록
- *   올리브 내가 정하는 것 — 구경, 배경 고리, 섹터, 목록 조건, 비교성
- *   주황   내가 얻은 것   — 측정 결과, 기준값과의 차이, 다음에 할 일
- * 화면에 범례를 따로 두지 않는다. 패널 제목이 이미 그 뜻을 적고 있다.
- *
- * 표를 쓰는 자리도 정해져 있다. 여러 대상을 같은 잣대로 견줄 때만 표다
- * (후보 목록, 조건을 키우면/줄이면, 측정값 ↔ 기준값).
- * 설명이 딸린 사실을 늘어놓을 때는 .facts 를 쓴다. 값 하나에 뜻 한 줄인 것을
- * 표로 만들면 빈 열이 남고, 화면 전체가 표로만 보인다 (2026-09-06 지적).
+ * 2판에서 두 가지를 되돌렸다.
+ *  ① 테두리 상자를 걷어냈다. 무엇이든 괘선 상자에 담으면 화면이 전부 표로 보인다.
+ *     표는 화면당 최대 하나 — 여러 대상을 같은 잣대로 견줄 때만이다.
+ *     나머지는 상자 없이 제목 + 여백으로만 나눈다.
+ *  ② 크림·베이지·연주황 바탕색을 전부 뺐다. 따뜻한 중성색을 깔면 화면이
+ *     Claude 쪽 색으로 읽힌다. 바탕은 흰색과 차가운 회색뿐이고,
+ *     색은 자료 그림(전천 지도·광도곡선·별 이미지)에서 나온다.
+ *     주황은 EASWA 색 하나만, 그것도 채우지 않고 글자와 선으로만 쓴다.
  */
 :root{
-  --ink:#12161e;          /* 머리띠 — NASA 남색 대신 EASWA 어두운 색 */
+  --ink:#12161e;          /* 머리띠 */
   --ink-2:#1a2030;
-  --line:#c9d1da;         /* 괘선 */
-  --line-2:#e2e7ee;
-  --head:#e7ecf2;         /* 표 머리 */
-  --zebra:#f7f9fb;
-  --tool:#eef1f5;
-  --text:#1d2430;
-  --sub:#5a6675;
-
-  --c-data:#1c4f7c;  --c-data-bg:#eff4f9;  --c-data-line:#b3c9dd;
-  --c-set:#3a5a1e;   --c-set-bg:#f2f6ea;   --c-set-line:#c2d2ac;
-  --c-out:#b3480d;   --c-out-bg:#fdf3ec;   --c-out-line:#e4c5ac;
-
-  --accent:#b3480d;
-  --accent-soft:#fdf3ec;
+  --line:#d7dde4;         /* 괘선 */
+  --line-2:#e8ecf1;       /* 옅은 괘선 */
+  --head:#eef1f4;         /* 표 머리 — 차가운 회색 */
+  --tool:#f4f6f8;
+  --text:#161b22;
+  --sub:#59636e;
+  --accent:#b3480d;       /* 흰 바탕에서 5.46 : 1 */
   --ui:"Pretendard",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"SFMono-Regular",Consolas,"Liberation Mono",monospace;
 }
@@ -37,11 +27,6 @@
 body{margin:0;background:#fff;color:var(--text);font-family:var(--ui);font-size:15px;
      line-height:1.65;font-variant-numeric:tabular-nums;word-break:keep-all}
 h1,h2,h3,h4{margin:0}
-
-/* 갈래 — 패널에 붙여 그 안의 색을 정한다 */
-.d-data{--cat:#1c4f7c;--cat-bg:#eff4f9;--cat-line:#b3c9dd}
-.d-set {--cat:#3a5a1e;--cat-bg:#f2f6ea;--cat-line:#c2d2ac}
-.d-out {--cat:#b3480d;--cat-bg:#fdf3ec;--cat-line:#e4c5ac}
 
 /* 머리띠 */
 .bar{background:var(--ink);color:#e9edf3;padding:8px 20px;display:flex;
@@ -61,168 +46,139 @@ h1,h2,h3,h4{margin:0}
          text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap}
 .steps a .n{font-family:var(--mono);font-size:11px}
 .steps a.done{color:#c3ccd8}
-.steps a.now{color:#fff;border-bottom-color:#e8722a;background:#222b3a}
+.steps a.now{color:#fff;border-bottom-color:#e8722a}
 .steps .where{margin-left:auto;display:flex;align-items:center;font-size:12px;
               color:#8b95a5;font-family:var(--mono)}
 
 /* 도구 줄 */
 .tools{background:var(--tool);border-bottom:1px solid var(--line);padding:8px 20px;
        display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.tools button{font:inherit;font-size:12.5px;background:#fff;border:1px solid #9fabba;
-              border-radius:3px;padding:6px 12px;color:var(--ink);cursor:pointer}
-.tools button.go{background:var(--c-out);border-color:var(--c-out);color:#fff;font-weight:600}
-.tools button.sel{font-weight:700;color:var(--c-data);border-color:var(--c-data);
-                  background:var(--c-data-bg)}
+.tools button{font:inherit;font-size:12.5px;background:#fff;border:1px solid #a8b2bd;
+              border-radius:3px;padding:6px 12px;color:var(--text);cursor:pointer}
+.tools button.go{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.tools button.sel{font-weight:700;color:var(--accent);border-color:var(--accent)}
 .tools .sp{margin-left:auto;font-size:12px;color:var(--sub);font-family:var(--mono)}
 
 /* 본문 */
 .main{padding:16px 20px 24px}
-.title{display:flex;align-items:baseline;gap:12px;margin-bottom:4px}
+.title{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
 .title h2{font-size:19px;font-weight:700;letter-spacing:-.01em}
-.title .step{font-family:var(--mono);font-size:12px;color:var(--c-out);
-             border:1px solid var(--c-out);border-radius:3px;padding:2px 8px}
-.q{font-size:15px;color:var(--text);margin:0 0 14px;padding:8px 12px;
-   background:var(--c-out-bg);border-left:3px solid var(--c-out)}
+.title .step{font-family:var(--mono);font-size:12px;color:var(--accent);
+             border:1px solid var(--accent);border-radius:3px;padding:2px 8px}
+/* 질문 — 바탕을 칠하지 않는다. 왼쪽 선 하나로 표시한다 */
+.q{font-size:16px;color:var(--text);margin:0 0 16px;padding:2px 0 2px 12px;
+   border-left:3px solid var(--accent)}
 .q b{font-weight:700}
 
-.cols{display:grid;grid-template-columns:1fr 420px;gap:16px;align-items:start}
+.cols{display:grid;grid-template-columns:1fr 420px;gap:24px;align-items:start}
 
-/* 표 — 여러 대상을 같은 잣대로 견줄 때만 */
-.lead{font-size:13px;color:var(--sub);margin:0 0 6px}
+/* 덩어리 — 상자가 아니라 제목과 여백으로 나눈다 */
+.blk{margin-top:20px}
+.blk:first-child{margin-top:0}
+.blk > h4{font-size:12.5px;font-weight:700;color:#39434e;letter-spacing:.03em;
+          padding-bottom:6px;border-bottom:1px solid var(--line);margin-bottom:10px}
+.blk > h4 span{float:right;font-weight:400;color:var(--sub);letter-spacing:0}
+
+/* 표 — 화면당 하나. 여러 대상을 같은 잣대로 견줄 때만 */
+.lead{font-size:13px;color:var(--sub);margin:0 0 8px}
 table{width:100%;border-collapse:collapse;font-size:13.5px}
 thead th{background:var(--head);border:1px solid var(--line);padding:6px 8px;
-         text-align:left;font-size:11.5px;color:#3b4a5e;font-weight:700;letter-spacing:.02em}
-thead th.hi{background:#f2ded1;color:#7a3208}
-thead th.c-data{background:var(--c-data-bg);color:var(--c-data)}
-thead th.c-set{background:var(--c-set-bg);color:var(--c-set)}
+         text-align:left;font-size:11.5px;color:#39434e;font-weight:700;letter-spacing:.02em}
+thead th small{display:block;font-weight:400;font-size:10.5px;color:var(--sub);letter-spacing:0}
+thead th.hi{color:var(--accent)}
 td{border:1px solid var(--line-2);padding:8px;font-family:var(--mono);color:var(--text)}
-tbody tr:nth-child(even) td{background:var(--zebra)}
-td.lbl{font-family:var(--ui);font-weight:600;background:#f4f7fa}
-tbody tr:nth-child(even) td.lbl{background:#eef2f7}
-td.hi{background:var(--c-out-bg);color:var(--c-out);font-weight:700}
-tbody tr:nth-child(even) td.hi{background:#fbeade}
-td.c-data{color:var(--c-data);font-weight:600}
-td.src{font-family:var(--ui);font-size:12px;color:var(--sub)}
-/* 강조 열에 숫자가 아니라 문장이 들어가면 주황 글씨를 쓰지 않는다 —
-   문장 열 전체가 주황이면 「먼저 볼 곳」이라는 뜻이 사라진다 (2026-09-06 확인) */
+td.lbl{font-family:var(--ui);font-weight:600}
+td.hi{color:var(--accent);font-weight:700}
+td.src,td.mark{font-family:var(--ui);font-size:12px;color:var(--sub)}
 td.txt{font-family:var(--ui);font-weight:400;font-size:13px;line-height:1.5;color:var(--text)}
 .after{font-size:12px;color:var(--sub);font-family:var(--mono);padding:6px 2px 0}
 
-/* 표에서 한 행을 고르는 경우 — 형광 블럭 없이 왼쪽 선과 굵은 글씨로만 */
+/* 고른 행 — 바탕을 칠하지 않고 왼쪽 선과 굵은 글씨로만 */
 td.pick{width:34px;text-align:center}
-tbody tr.chosen td{background:var(--c-out-bg)}
-tbody tr.chosen td.lbl{background:#fbeade;border-left:3px solid var(--c-out)}
-tbody tr.chosen td.lbl,tbody tr.chosen td.mark{color:var(--c-out);font-weight:700}
-td.mark{font-family:var(--ui);font-size:12px;color:var(--sub)}
+tbody tr.chosen td{border-top:1px solid var(--accent);border-bottom:1px solid var(--accent)}
+tbody tr.chosen td.lbl{border-left:3px solid var(--accent);color:var(--accent);font-weight:700}
+tbody tr.chosen td.mark{color:var(--accent);font-weight:600}
 
-/* 사실 목록 — 값 하나에 뜻 한 줄. 표가 아니다: 세로 괘선도 얼룩도 없다 */
-.facts{border:1px solid var(--cat-line,var(--line))}
-.facts dl{margin:0}
-.facts .f{padding:10px 14px;border-bottom:1px solid var(--line-2);
-          display:grid;grid-template-columns:1fr auto;column-gap:16px;align-items:baseline}
-.facts .f:last-child{border-bottom:0}
+/* 사실 목록 — 값 하나에 뜻 한 줄. 괘선도 상자도 없다 */
+.facts{margin:0}
+.facts .f{display:grid;grid-template-columns:1fr auto;column-gap:20px;
+          align-items:baseline;padding:0 0 12px}
+.facts .f:last-child{padding-bottom:0}
 .facts dt{font-size:13.5px;font-weight:600;color:var(--text)}
 .facts dd{margin:0}
-.facts dd.v{font-family:var(--mono);font-size:14px;font-weight:600;
-            color:var(--cat,var(--text));text-align:right;white-space:nowrap}
-.facts dd.m{grid-column:1/-1;margin:2px 0 0;font-size:12.5px;color:var(--sub);line-height:1.55}
-.facts .f.wide{grid-template-columns:112px 1fr}
+.facts dd.v{font-family:var(--mono);font-size:14px;color:var(--text);
+            text-align:right;white-space:nowrap}
+.facts dd.m{grid-column:1/-1;margin:1px 0 0;font-size:12.5px;color:var(--sub);line-height:1.55}
+.facts .f.wide{grid-template-columns:106px 1fr;column-gap:16px}
 .facts .f.wide dd.v{text-align:left;white-space:normal;font-family:var(--ui);
-                    font-weight:400;font-size:13px;color:var(--text);line-height:1.55}
+                    font-size:13px;color:var(--text);line-height:1.55}
 
-/* 패널 머리 — 갈래 색을 여기서 쓴다 */
-.facts > h4,.ctrls > h4,.answer > h4,.srcbox > h4{
-  font-size:12.5px;font-weight:700;letter-spacing:.02em;padding:6px 12px;
-  background:var(--cat-bg,var(--head));color:var(--cat,#3b4a5e);
-  border-bottom:1px solid var(--cat-line,var(--line))}
-
-/* 그림 */
+/* 그림 — 여기가 화면의 색이다 */
 .fig{border:1px solid var(--line);background:#0b0e14}
 .fig.plain{background:#fff}
 .fig img{width:100%;display:block}
 .fig .cap{padding:6px 10px;border-top:1px solid #252d3a;font-family:var(--mono);
           font-size:11px;color:#8b95a5}
-.fig.plain .cap{border-top:1px solid var(--line);color:var(--sub);background:var(--zebra)}
-.figread{border:1px solid var(--line);border-top:0;padding:10px 12px;font-size:13px;
-         color:var(--sub);background:var(--zebra)}
+.fig.plain .cap{border-top:1px solid var(--line);color:var(--sub)}
+.figread{padding:10px 0 0;font-size:13px;color:var(--sub)}
 .figread b{color:var(--text)}
 .figs{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
 @media (max-width:900px){ .figs{grid-template-columns:1fr} }
 
-/* 해석·기록 */
-.answer{margin-top:16px;border:1px solid var(--cat-line,var(--line))}
-.answer .in{padding:12px}
+/* 적는 곳 — 테두리는 입력칸에만 */
 .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
-.chips button{font:inherit;font-size:13px;background:#fff;border:1px solid #9fabba;
-              border-radius:3px;padding:6px 12px;color:var(--ink);cursor:pointer}
-.chips button.on{background:var(--c-out);border-color:var(--c-out);color:#fff;font-weight:600}
+.chips button{font:inherit;font-size:13px;background:#fff;border:1px solid #a8b2bd;
+              border-radius:3px;padding:6px 12px;color:var(--text);cursor:pointer}
 textarea{width:100%;min-height:74px;font:inherit;font-size:14px;color:var(--text);
-  background:#fff;border:1px solid #9fabba;border-radius:3px;padding:8px 12px;resize:vertical}
+  background:#fff;border:1px solid #a8b2bd;border-radius:3px;padding:8px 12px;resize:vertical}
 
 /* 내가 정하는 값들 */
-.ctrls{border:1px solid var(--cat-line,var(--line))}
-.ctrls .in{padding:0}
-.ctrls .row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;
-            padding:8px 12px;border-bottom:1px solid var(--line-2)}
-.ctrls .row:last-child{border-bottom:0}
-.ctrls .row .k{font-size:13px;color:var(--text)}
-.ctrls .row .v{font-family:var(--mono);font-size:13.5px;color:var(--cat,var(--ink));font-weight:600}
+.rows .row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:baseline;
+           padding:0 0 10px}
+.rows .row:last-child{padding-bottom:0}
+.rows .row .k{font-size:13.5px;color:var(--text)}
+.rows .row .v{font-family:var(--mono);font-size:14px;color:var(--text)}
 .sector{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;
-        padding:8px 12px;border-bottom:1px solid var(--line-2);font-size:13px}
-.sector:last-child{border-bottom:0}
+        padding:0 0 10px;font-size:13.5px}
+.sector:last-child{padding-bottom:0}
 .sector input{margin:0}
 .sector .nm{font-weight:600}
 .sector .mt{font-family:var(--mono);font-size:12px;color:var(--sub)}
 .sector.off .nm,.sector.off .mt{color:#98a2b0;font-weight:500}
 
-/* 자료 출처 */
-.srcbox{border:1px solid var(--cat-line,var(--line));margin-top:16px}
-.srcbox dl{margin:0;display:grid;grid-template-columns:130px 1fr}
-.srcbox dt{font-size:12.5px;font-weight:600;color:var(--cat,#3b4a5e);
-           background:var(--cat-bg,#f4f7fa);padding:8px 12px;
-           border-bottom:1px solid var(--line-2);border-right:1px solid var(--line-2)}
-.srcbox dd{margin:0;padding:8px 12px;font-size:13px;border-bottom:1px solid var(--line-2)}
-.srcbox dd.mono{font-family:var(--mono);font-size:12.5px}
-.srcbox dt:last-of-type,.srcbox dd:last-of-type{border-bottom:0}
-
-/* 지나온 단계 — 표가 아니라 줄줄이 목록. 값의 색이 그 값의 출처를 말한다 */
-.trail{list-style:none;margin:0;padding:0;border:1px solid var(--line)}
-.trail li{display:grid;grid-template-columns:24px 1fr;column-gap:10px;
-          padding:10px 14px;border-bottom:1px solid var(--line-2)}
-.trail li:last-child{border-bottom:0}
-.trail .n{grid-row:1/3;font-family:var(--mono);font-size:12px;color:var(--sub);
-          border:1px solid var(--line);border-radius:3px;text-align:center;
-          align-self:start;background:var(--zebra)}
+/* 지나온 단계 */
+.trail{list-style:none;margin:0;padding:0}
+.trail li{display:grid;grid-template-columns:20px 1fr;column-gap:10px;padding:0 0 12px}
+.trail li:last-child{padding-bottom:0}
+.trail .n{grid-row:1/3;font-family:var(--mono);font-size:12px;color:var(--sub);align-self:start}
 .trail .what{font-size:13.5px;font-weight:600;color:var(--text)}
 .trail .what small{display:block;font-size:12.5px;font-weight:400;color:var(--sub)}
-.trail .got{font-family:var(--mono);font-size:13px;font-weight:600;
-            color:var(--cat,var(--text));margin-top:2px}
+.trail .got{font-family:var(--mono);font-size:13px;color:var(--text);margin-top:1px}
+.trail li.now .got{color:var(--accent);font-weight:600}
 
-/* 기록 문항 — 번호·질문·안내·응답이 한 덩어리 */
-.recs{border:1px solid var(--line);border-bottom:0}
-.rec{padding:12px 14px;border-bottom:1px solid var(--line);
+/* 기록 문항 */
+.rec{padding:16px 0;border-top:1px solid var(--line-2);
      display:grid;grid-template-columns:22px 1fr;column-gap:8px}
+.rec:first-of-type{border-top:0;padding-top:0}
 .rec .no{grid-column:1;grid-row:1;font-family:var(--mono);font-size:12px;
-         color:var(--c-out);border:1px solid var(--c-out);border-radius:3px;
-         text-align:center;align-self:start}
+         color:var(--accent);align-self:start}
 .rec .head{grid-column:2;grid-row:1;display:flex;align-items:baseline;gap:8px;margin-bottom:2px}
 .rec .qq{font-size:14.5px;font-weight:600;color:var(--text)}
-.rec .must{font-size:11.5px;color:var(--c-out);font-weight:700;flex:none;margin-left:auto}
+.rec .must{font-size:11.5px;color:var(--accent);font-weight:700;flex:none;margin-left:auto}
 .rec .hint{grid-column:2;grid-row:2;font-size:12.5px;color:var(--sub);margin:0 0 8px}
 .rec .body{grid-column:2;grid-row:3}
 .opts{display:flex;flex-direction:column;gap:6px}
 .opts.wide{display:grid;grid-template-columns:1fr 1fr;gap:6px 16px}
 .opts label{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
 .opts input{margin:0;flex:none}
-.recfoot{border:1px solid var(--line);border-top:0;background:var(--zebra);
-         padding:8px 14px;font-size:12.5px;color:var(--sub);display:flex;
-         align-items:center;gap:10px;flex-wrap:wrap}
+.recfoot{border-top:1px solid var(--line);margin-top:16px;padding:8px 0 0;
+         font-size:12.5px;color:var(--sub);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .recfoot .st{font-family:var(--mono);font-size:12px}
 
-/* 본문 안의 짧은 주석 */
-.note{font-size:12.5px;color:var(--sub);margin:8px 0 0;padding:8px 12px;
-      background:var(--cat-bg,var(--zebra));border:1px solid var(--cat-line,var(--line-2))}
-.note b{color:var(--cat,var(--text))}
+/* 짧은 주석 */
+.note{font-size:12.5px;color:var(--sub);margin:12px 0 0;padding:0 0 0 12px;
+      border-left:2px solid var(--line)}
+.note b{color:var(--text)}
 
 hr.split{border:0;border-top:8px solid #eef1f5;margin:0}
 @media (max-width:1100px){ .cols{grid-template-columns:1fr} }

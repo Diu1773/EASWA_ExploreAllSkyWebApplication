@@ -10,7 +10,7 @@
 </head>
 <body>
 
-<!-- ══════════ 1단계 — 지도가 먼저다 ══════════ -->
+<!-- ══════════ 1단계 — 앱에 이미 있는 전천 지도를 그대로 쓴다 ══════════ -->
 <div class="bar">
   <span class="brand">
     <svg class="mark" width="22" height="22" viewBox="0 0 640 640" aria-hidden="true"><use href="#m"/></svg>
@@ -34,8 +34,8 @@
 <div class="tools">
   <button class="sel">하늘에서 고르기</button>
   <button>목록으로 견주기</button>
-  <button>목록 조건 바꾸기</button>
   <button>식 깊이가 무엇인가</button>
+  <button>밝기 등급이 무엇인가</button>
   <button class="go">WASP-6 b 로 2단계 가기</button>
   <span class="sp">조회 2026-09-06 · 조건에 맞는 대상 6개</span>
 </div>
@@ -43,22 +43,22 @@
 <div class="main">
   <div class="title"><span class="step">1단계</span><h2>탐구할 대상 고르기</h2></div>
   <p class="q">밝기 변화를 눈으로 확인하려면 <b>어떤 별이어야 합니까?</b>
-     지도에서 점을 눌러 고릅니다.</p>
+     전천 지도에서 주황 동그라미를 눌러 고릅니다.</p>
 
-  <div class="cols" style="grid-template-columns:1fr 360px">
+  <div class="cols" style="grid-template-columns:1fr 320px">
     <div>
-      <div class="fig plain">
-        <img src="real_output/skymap_targets.png" alt="여섯 후보 대상의 하늘 위치와 은하면을 표시한 전천 지도">
-        <div class="cap">가로 = 적경(왼쪽으로 증가) · 세로 = 적위 · 채운 점 = 지금 고른 대상</div>
+      <div class="fig">
+        <img src="real_output/skymap_app.png" alt="EASWA 전천 지도 — 조건에 맞는 대상이 주황 동그라미로 표시되어 있다">
+        <div class="cap">배경 = DSS 광학 탐사 · 분홍 선 = 적경·적위 격자 · 주황 동그라미 = 조건에 맞는 대상</div>
       </div>
-      <div class="figread">띠 안쪽은 은하면 방향이라 별이 빽빽합니다. 그런 하늘에 있는 별은
-        <b>옆 별빛이 섞여 들어오기 쉽습니다</b> — 지금 고른 WASP-6 b 는 띠에서 벗어나 있습니다.</div>
+      <div class="figread">위쪽 필터 값을 바꾸면 동그라미가 늘거나 줄어듭니다.
+        <b>지금은 식 깊이 1 % 이상 · 공전 주기 5일 이하 · 밝기 V 13 이내</b>로 걸러 여섯이 남았습니다.</div>
     </div>
 
     <div>
-      <div class="facts d-data">
-        <h4>고른 대상 — 카탈로그가 알려 주는 값</h4>
-        <dl>
+      <div class="blk">
+        <h4>고른 대상 <span>카탈로그 값</span></h4>
+        <dl class="facts">
           <div class="f"><dt>이름</dt><dd class="v">WASP-6 b</dd></div>
           <div class="f"><dt>별자리</dt><dd class="v">물병자리</dd></div>
           <div class="f"><dt>적경 · 적위</dt><dd class="v">348.157° −22.674°</dd></div>
@@ -71,56 +71,51 @@
         </dl>
       </div>
 
-      <div class="ctrls d-set" style="margin-top:16px">
-        <h4>목록 조건 — 바꾸면 후보가 달라집니다</h4>
-        <div class="in">
-          <div class="row"><span class="k">식 깊이 최소</span><span class="v">1.0 %</span></div>
-          <div class="row"><span class="k">공전 주기 최대</span><span class="v">5.0 d</span></div>
-          <div class="row"><span class="k">밝기 한계</span><span class="v">V 13.0</span></div>
-          <div class="row"><span class="k">목록 개수</span><span class="v">20</span></div>
-        </div>
+      <div class="blk">
+        <h4>이 대상을 고르면 <span>수업 시간과 관계있는 것</span></h4>
+        <p style="margin:0;font-size:13.5px;color:var(--sub);line-height:1.6">
+          WASP-6 b 는 TESS Sector 2 자료가 앱 안에 들어 있어 기다리지 않고 바로 계산합니다.
+          나머지 다섯은 분석할 때 MAST 에서 자료를 받아 오므로 시간이 더 걸립니다.</p>
       </div>
     </div>
   </div>
 
-  <p class="lead" style="margin-top:16px">지도에서 고르기 어려우면 여섯을 나란히 견줘 보세요.</p>
+  <p class="lead" style="margin-top:24px">지도에서 고르기 어려우면 여섯을 나란히 견줘 보세요.</p>
   <table>
     <thead>
-      <tr><th>대상</th><th>별자리</th><th>공전 주기</th><th class="c-data">식 깊이</th>
-          <th>식 지속</th><th>밝기 V</th><th>바로 분석</th><th class="pick">선택</th></tr>
+      <tr><th>대상</th><th>별자리</th><th>공전 주기</th>
+          <th class="hi">식 깊이<small>클수록 또렷하다</small></th>
+          <th>식 지속</th><th>밝기 V<small>작을수록 밝다</small></th>
+          <th>자료</th><th class="pick">선택</th></tr>
     </thead>
     <tbody>
       <tr class="chosen">
         <td class="lbl">WASP-6 b</td><td class="src">물병자리</td><td>3.3610026 d</td>
-        <td class="c-data">2.408 %</td><td>2.57 h</td><td>11.91</td>
-        <td class="mark">가능 · Sector 2 내장</td><td class="pick"><input type="radio" name="t" checked></td></tr>
+        <td class="hi">2.408 %</td><td>2.57 h</td><td>11.91</td>
+        <td class="mark">앱에 들어 있음</td><td class="pick"><input type="radio" name="t" checked></td></tr>
       <tr>
         <td class="lbl">HD 189733 b</td><td class="src">여우자리</td><td>2.2185757 d</td>
-        <td class="c-data">2.400 %</td><td>1.82 h</td><td>7.67</td>
-        <td class="mark">자료를 받아야 함</td><td class="pick"><input type="radio" name="t"></td></tr>
+        <td>2.400 %</td><td>1.82 h</td><td>7.67</td>
+        <td class="mark">받아야 함</td><td class="pick"><input type="radio" name="t"></td></tr>
       <tr>
         <td class="lbl">HAT-P-32 b</td><td class="src">안드로메다자리</td><td>2.1500082 d</td>
-        <td class="c-data">2.216 %</td><td>3.12 h</td><td>11.44</td>
-        <td class="mark">자료를 받아야 함</td><td class="pick"><input type="radio" name="t"></td></tr>
+        <td>2.216 %</td><td>3.12 h</td><td>11.44</td>
+        <td class="mark">받아야 함</td><td class="pick"><input type="radio" name="t"></td></tr>
       <tr>
         <td class="lbl">WASP-19 b</td><td class="src">돛자리</td><td>0.7888385 d</td>
-        <td class="c-data">2.077 %</td><td>1.61 h</td><td>12.25</td>
-        <td class="mark">자료를 받아야 함</td><td class="pick"><input type="radio" name="t"></td></tr>
+        <td>2.077 %</td><td>1.61 h</td><td>12.25</td>
+        <td class="mark">받아야 함</td><td class="pick"><input type="radio" name="t"></td></tr>
       <tr>
         <td class="lbl">HAT-P-12 b</td><td class="src">목동자리</td><td>3.2130598 d</td>
-        <td class="c-data">1.977 %</td><td>2.34 h</td><td>12.67</td>
-        <td class="mark">자료를 받아야 함</td><td class="pick"><input type="radio" name="t"></td></tr>
+        <td>1.977 %</td><td>2.34 h</td><td>12.67</td>
+        <td class="mark">받아야 함</td><td class="pick"><input type="radio" name="t"></td></tr>
       <tr>
         <td class="lbl">WASP-17 b</td><td class="src">전갈자리</td><td>3.7354300 d</td>
-        <td class="c-data">1.700 %</td><td>4.42 h</td><td>11.59</td>
-        <td class="mark">자료를 받아야 함</td><td class="pick"><input type="radio" name="t"></td></tr>
+        <td>1.700 %</td><td>4.42 h</td><td>11.59</td>
+        <td class="mark">받아야 함</td><td class="pick"><input type="radio" name="t"></td></tr>
     </tbody>
   </table>
-  <p class="after">6개 대상 · 목록 조건 = 식 깊이 1 % 이상 · 공전 주기 5일 이하 · 밝기 V 13 이내 · NASA Exoplanet Archive pscomppars 2026-09-06 조회</p>
-
-  <p class="note d-data"><b>「바로 분석」이 무슨 뜻인가.</b> WASP-6 b 는 TESS Sector 2 자료가 앱 안에 들어 있어
-    기다리지 않고 바로 계산합니다. 나머지는 분석할 때 MAST 에서 자료를 받아 오므로 시간이 더 걸립니다.
-    수업 시간이 정해져 있다면 이 열을 먼저 보세요.</p>
+  <p class="after">6개 대상 · NASA Exoplanet Archive pscomppars 2026-09-06 조회</p>
 </div>
 
 <hr class="split">
@@ -157,14 +152,13 @@
 
 <div class="main">
   <div class="title"><span class="step">2단계</span><h2>자료의 출처와 관측 조건</h2></div>
-  <p class="q">이 자료의 출처와 관측 조건은 <b>결과 해석에 어떤 제한을 만들 수 있습니까?</b>
-     다 외우지 말고, 결과를 흔들 수 있는 항목을 한두 개만 골라 보세요.</p>
+  <p class="q">이 자료의 출처와 관측 조건은 <b>결과 해석에 어떤 제한을 만들 수 있습니까?</b></p>
 
-  <div class="cols">
+  <div class="cols" style="grid-template-columns:1fr 520px">
     <div>
-      <div class="facts d-data">
-        <h4>관측 조건 — 자료가 이렇게 찍혔다</h4>
-        <dl>
+      <div class="blk">
+        <h4>관측 조건 <span>자료가 이렇게 찍혔다</span></h4>
+        <dl class="facts">
           <div class="f"><dt>TESS 섹터</dt><dd class="v">2 · 29 · 69 · 96</dd>
             <dd class="m">관측이 네 시기로 나뉘어 있습니다. 한 번에 이어 붙일 수 없습니다.</dd></div>
           <div class="f"><dt>케이던스</dt><dd class="v">30분 · 10분 · 200초</dd>
@@ -179,14 +173,10 @@
         </dl>
       </div>
 
-      <div class="srcbox d-data">
-        <h4>자료 출처</h4>
-        <dl>
-          <dt>제공 기관</dt><dd>NASA TESS / MAST (Mikulski Archive for Space Telescopes)</dd>
-          <dt>접근 방식</dt><dd>앱이 MAST 에 자동으로 요청해 대상 주변 픽셀만 잘라 옵니다 (TESS cutout)</dd>
-          <dt>기준값 출처</dt><dd>NASA Exoplanet Archive · pscomppars</dd>
-          <dt>사진의 출처</dt><dd class="mono">DSS 광학 탐사 이미지 · 시야 0.1° · 위치와 크기 비교용</dd>
-        </dl>
+      <div class="blk">
+        <h4>결과를 흔들 수 있다고 본 항목</h4>
+        <p class="lead">위에서 골라 적으세요. 왜 그렇게 보았는지도 함께 씁니다.</p>
+        <textarea placeholder="예: 픽셀이 21초각이라서 …"></textarea>
       </div>
     </div>
 
@@ -198,13 +188,20 @@
       <div class="figread">주황 칸 <b>한 칸 안에 별이 몇 개</b> 들어가는지 세어 보세요.
         거기 들어간 별빛은 모두 함께 측정됩니다.</div>
 
-      <div class="answer d-out">
-        <h4>결과를 흔들 수 있다고 본 항목</h4>
-        <div class="in">
-          <p class="lead">왼쪽에서 골라 적으세요. 왜 그렇게 보았는지도 함께 씁니다.</p>
-          <textarea placeholder="예: 픽셀이 21초각이라서 …"></textarea>
-        </div>
+      <div class="blk">
+        <h4>자료 출처</h4>
+        <dl class="facts">
+          <div class="f wide"><dt>제공 기관</dt>
+            <dd class="v">NASA TESS / MAST (Mikulski Archive for Space Telescopes)</dd></div>
+          <div class="f wide"><dt>접근 방식</dt>
+            <dd class="v">앱이 MAST 에 자동으로 요청해 대상 주변 픽셀만 잘라 옵니다 (TESS cutout)</dd></div>
+          <div class="f wide"><dt>기준값 출처</dt>
+            <dd class="v">NASA Exoplanet Archive · pscomppars</dd></div>
+          <div class="f wide"><dt>사진 출처</dt>
+            <dd class="v">DSS 광학 탐사 이미지 · 시야 0.1° · 위치와 크기 비교용</dd></div>
+        </dl>
       </div>
+
     </div>
   </div>
 </div>
@@ -246,12 +243,12 @@
   <p class="q">아래 조건 중 <b>결과에 가장 큰 영향을 줄 수 있는 항목</b>은 무엇입니까?
      하나만 골라, 그것을 바꾸면 결과가 어떻게 달라질지 예상해 보세요.</p>
 
-  <div class="cols" style="grid-template-columns:1fr 420px">
+  <div class="cols" style="grid-template-columns:1fr 380px">
     <div>
       <p class="lead">내가 정하는 값입니다. 오른쪽 두 열이 바꿨을 때 벌어지는 일입니다.</p>
       <table>
         <thead>
-          <tr><th>조건</th><th>지금 값</th><th class="c-set">크게 하면</th><th class="c-set">작게 하면</th></tr>
+          <tr><th>조건</th><th>지금 값</th><th>크게 하면</th><th>작게 하면</th></tr>
         </thead>
         <tbody>
           <tr><td class="lbl">구경 반지름</td><td>2.5 px</td>
@@ -268,9 +265,9 @@
               <td class="txt">한 별의 흔들림이 그대로 결과에 들어옵니다</td></tr>
         </tbody>
       </table>
-      <p class="after">4개 조건 · 실제 조절은 4단계에서 하고, 바꾼 값은 5단계 비교표에 함께 남습니다</p>
+      <p class="after">실제 조절은 4단계에서 하고, 바꾼 값은 5단계 비교표에 함께 남습니다</p>
 
-      <div class="figs" style="margin-top:16px">
+      <div class="figs" style="margin-top:20px">
         <div>
           <div class="fig">
             <img src="real_output/aperture_sandbox.png" alt="구경과 배경 고리를 겹쳐 보인 별 이미지">
@@ -289,9 +286,9 @@
     </div>
 
     <div>
-      <div class="facts d-data">
-        <h4>분석 방법과 모델 가정 — 바꿀 수 없다</h4>
-        <dl>
+      <div class="blk">
+        <h4>분석 방법과 모델 가정 <span>바꿀 수 없다</span></h4>
+        <dl class="facts">
           <div class="f wide"><dt>분석 방법</dt>
             <dd class="v">차등측광 — 비교성 여러 개의 평균을 기준 삼아, 목표별의 진짜 밝기 변화만 남깁니다</dd></div>
           <div class="f wide"><dt>적합 모델</dt>
@@ -305,12 +302,10 @@
         </dl>
       </div>
 
-      <div class="answer d-set">
+      <div class="blk">
         <h4>예상 적어 두기</h4>
-        <div class="in">
-          <p class="lead">4단계에서 실제로 바꿔 본 뒤, 예상과 맞았는지 5단계에서 확인합니다.</p>
-          <textarea placeholder="예: 구경을 크게 하면 … 해질 것 같다. 왜냐하면 …"></textarea>
-        </div>
+        <p class="lead">4단계에서 실제로 바꿔 본 뒤, 예상과 맞았는지 5단계에서 확인합니다.</p>
+        <textarea placeholder="예: 구경을 크게 하면 … 해질 것 같다. 왜냐하면 …"></textarea>
       </div>
     </div>
   </div>
@@ -349,66 +344,64 @@
 
 <div class="main">
   <div class="title"><span class="step">6단계</span><h2>해석하고 기록하기</h2></div>
-  <p class="q">여기까지 무엇을 했고, <b>그 결과를 어디까지 믿을 수 있습니까?</b>
-     오른쪽 기록을 근거로 삼아 네 문항에 답하세요.</p>
+  <p class="q">여기까지 무엇을 했고, <b>그 결과를 어디까지 믿을 수 있습니까?</b></p>
 
-  <div class="cols" style="grid-template-columns:1fr 400px">
+  <div class="cols" style="grid-template-columns:1fr 460px">
     <div>
-      <div class="recs">
-        <div class="rec">
-          <span class="no">1</span>
-          <div class="head">
-            <span class="qq">광도곡선에서 식현상으로 보이는 밝기 감소가 확인되는가?</span>
-            <span class="must">필수</span></div>
-          <p class="hint">4단계 그림에서 밝기가 내려갔다 되돌아오는 구간을 보고 고르세요.</p>
-          <div class="body">
-            <div class="opts">
-              <label><input type="radio" name="v" checked>예, 뚜렷하게 보인다</label>
-              <label><input type="radio" name="v">식현상일 가능성이 있다</label>
-              <label><input type="radio" name="v">불분명하거나 잡음이 많다</label>
-              <label><input type="radio" name="v">뚜렷한 밝기 감소가 보이지 않는다</label>
-            </div>
-          </div>
-        </div>
-
-        <div class="rec">
-          <span class="no">2</span>
-          <div class="head">
-            <span class="qq">분석 과정에서 확인한 문제를 선택하세요.</span></div>
-          <p class="hint">겪지 않은 문제는 고르지 않아도 됩니다.</p>
-          <div class="body">
-            <div class="opts wide">
-              <label><input type="checkbox">적절한 비교성이 부족함</label>
-              <label><input type="checkbox" checked>주변 별빛에 오염됨</label>
-              <label><input type="checkbox">광도곡선 잡음이 큼</label>
-              <label><input type="checkbox">분석 시야가 너무 좁음</label>
-              <label><input type="checkbox">뚜렷한 문제 없음</label>
-            </div>
-          </div>
-        </div>
-
-        <div class="rec">
-          <span class="no">3</span>
-          <div class="head">
-            <span class="qq">측정값은 NASA Exoplanet Archive 기준값과 어떻게 다른가? 차이의 원인은 무엇인가?</span>
-            <span class="must">필수</span></div>
-          <p class="hint">먼저 Rp/R*와 식 깊이가 기준값과 얼마나 다른지 쓰고, 그 차이가 왜 생겼다고 보는지 이어서 쓰세요.
-            근거는 앞 단계에서 직접 보거나 설정한 값에서 찾으세요.</p>
-          <div class="body">
-            <textarea></textarea>
-          </div>
-        </div>
-
-        <div class="rec">
-          <span class="no">4</span>
-          <div class="head">
-            <span class="qq">분석을 다시 수행한다면 무엇을 바꾸겠는가?</span></div>
-          <p class="hint">예: 시야 확대, 비교성 변경, 다른 섹터 분석</p>
-          <div class="body">
-            <textarea style="min-height:58px"></textarea>
+      <div class="rec">
+        <span class="no">1</span>
+        <div class="head">
+          <span class="qq">광도곡선에서 식현상으로 보이는 밝기 감소가 확인되는가?</span>
+          <span class="must">필수</span></div>
+        <p class="hint">4단계 그림에서 밝기가 내려갔다 되돌아오는 구간을 보고 고르세요.</p>
+        <div class="body">
+          <div class="opts">
+            <label><input type="radio" name="v" checked>예, 뚜렷하게 보인다</label>
+            <label><input type="radio" name="v">식현상일 가능성이 있다</label>
+            <label><input type="radio" name="v">불분명하거나 잡음이 많다</label>
+            <label><input type="radio" name="v">뚜렷한 밝기 감소가 보이지 않는다</label>
           </div>
         </div>
       </div>
+
+      <div class="rec">
+        <span class="no">2</span>
+        <div class="head">
+          <span class="qq">분석 과정에서 확인한 문제를 선택하세요.</span></div>
+        <p class="hint">겪지 않은 문제는 고르지 않아도 됩니다.</p>
+        <div class="body">
+          <div class="opts wide">
+            <label><input type="checkbox">적절한 비교성이 부족함</label>
+            <label><input type="checkbox" checked>주변 별빛에 오염됨</label>
+            <label><input type="checkbox">광도곡선 잡음이 큼</label>
+            <label><input type="checkbox">분석 시야가 너무 좁음</label>
+            <label><input type="checkbox">뚜렷한 문제 없음</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="rec">
+        <span class="no">3</span>
+        <div class="head">
+          <span class="qq">측정값은 NASA Exoplanet Archive 기준값과 어떻게 다른가? 차이의 원인은 무엇인가?</span>
+          <span class="must">필수</span></div>
+        <p class="hint">먼저 Rp/R*와 식 깊이가 기준값과 얼마나 다른지 쓰고, 그 차이가 왜 생겼다고 보는지 이어서 쓰세요.
+          근거는 앞 단계에서 직접 보거나 설정한 값에서 찾으세요.</p>
+        <div class="body">
+          <textarea></textarea>
+        </div>
+      </div>
+
+      <div class="rec">
+        <span class="no">4</span>
+        <div class="head">
+          <span class="qq">분석을 다시 수행한다면 무엇을 바꾸겠는가?</span></div>
+        <p class="hint">예: 시야 확대, 비교성 변경, 다른 섹터 분석</p>
+        <div class="body">
+          <textarea style="min-height:58px"></textarea>
+        </div>
+      </div>
+
       <div class="recfoot">
         <span class="st">제출 버튼은 없습니다 — 적는 대로 저장됩니다</span>
         <span class="st">마지막 저장 14:22:07</span>
@@ -417,31 +410,33 @@
     </div>
 
     <div>
-      <p class="lead">지나온 단계와 그때 나온 값입니다. 값의 색이 그 값이 어디서 왔는지 말해 줍니다.</p>
-      <ol class="trail">
-        <li class="d-set"><span class="n">1</span>
-          <span class="what">대상 선택<small>식 깊이가 큰 대상을 골랐다</small></span>
-          <span class="got">WASP-6 b · V 11.91</span></li>
-        <li class="d-data"><span class="n">2</span>
-          <span class="what">자료 확인<small>출처와 관측 조건을 보았다</small></span>
-          <span class="got">Sector 2 · 1,245 프레임 · 21″/px</span></li>
-        <li class="d-set"><span class="n">3</span>
-          <span class="what">분석 준비<small>조건과 모델 가정을 보았다</small></span>
-          <span class="got">구경 2.5 px · 고리 4.0–6.0 px · 비교성 4</span></li>
-        <li class="d-out"><span class="n">4</span>
-          <span class="what">분석·시각화<small>차등측광과 모델 적합을 돌렸다</small></span>
-          <span class="got">Rp/R* 0.1453 · 식 깊이 2.112 % · 잔차 1.6 ‰</span></li>
-        <li class="d-out"><span class="n">5</span>
-          <span class="what">기준값 비교<small>아카이브 값과 견주었다</small></span>
-          <span class="got">식 깊이 −0.296 %p · Rp/R* −6.4 %</span></li>
-      </ol>
-      <p class="after">값을 고쳐 쓰려면 해당 단계로 돌아가세요</p>
-
-      <div class="fig" style="margin-top:16px">
+      <div class="fig">
         <img src="real_output/wasp6b_lightcurve.png" alt="WASP-6 b 광도곡선">
-        <div class="cap">4단계에서 만든 광도곡선 · 실선 = 측정 적합</div>
+        <div class="cap">4단계에서 만든 광도곡선 · 실선 = 측정 적합 · 점선 = 카탈로그 기대</div>
       </div>
-      <div class="figread">3번 문항을 쓸 때 이 그림과 <b>위의 기록을 함께</b> 보세요.</div>
+      <div class="figread">3번 문항을 쓸 때 이 그림과 <b>아래 기록을 함께</b> 보세요.</div>
+
+      <div class="blk">
+        <h4>지나온 단계</h4>
+        <ol class="trail">
+          <li><span class="n">1</span>
+            <span class="what">대상 선택<small>식 깊이가 큰 대상을 골랐다</small></span>
+            <span class="got">WASP-6 b · V 11.91</span></li>
+          <li><span class="n">2</span>
+            <span class="what">자료 확인<small>출처와 관측 조건을 보았다</small></span>
+            <span class="got">Sector 2 · 1,245 프레임 · 21″/px</span></li>
+          <li><span class="n">3</span>
+            <span class="what">분석 준비<small>조건과 모델 가정을 보았다</small></span>
+            <span class="got">구경 2.5 px · 고리 4.0–6.0 px · 비교성 4</span></li>
+          <li class="now"><span class="n">4</span>
+            <span class="what">분석·시각화<small>차등측광과 모델 적합을 돌렸다</small></span>
+            <span class="got">Rp/R* 0.1453 · 식 깊이 2.112 % · 잔차 1.6 ‰</span></li>
+          <li class="now"><span class="n">5</span>
+            <span class="what">기준값 비교<small>아카이브 값과 견주었다</small></span>
+            <span class="got">식 깊이 −0.296 %p · Rp/R* −6.4 %</span></li>
+        </ol>
+        <p class="after">값을 고쳐 쓰려면 해당 단계로 돌아가세요</p>
+      </div>
     </div>
   </div>
 </div>
