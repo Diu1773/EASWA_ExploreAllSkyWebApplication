@@ -6,7 +6,7 @@ interface TransitResultSummaryProps {
   fit: SavedTransitFit;
   targetName?: string;
   /** Catalog values (NASA Exoplanet Archive) shown under each measured metric.
-   *  Without them the Step 6 record question "기준값과 어떻게 다른가?" forced the
+   *  Without them the Step 6 record question "문헌값과 어떻게 다른가?" forced the
    *  learner to walk back to Step 5 and memorize numbers. */
   target?: Target | null;
 }
@@ -37,7 +37,7 @@ export function TransitResultSummary({ fit, targetName, target }: TransitResultS
     typeof target?.period_days === 'number' && Number.isFinite(target.period_days)
       ? target.period_days
       : null;
-  const refLabel = lang === 'ko' ? '기준' : 'ref';
+  const refLabel = lang === 'ko' ? '문헌' : 'ref';
 
   return (
     <section className="inquiry-info-panel transit-result-summary">
@@ -113,7 +113,7 @@ export function TransitResultSummary({ fit, targetName, target }: TransitResultS
       </div>
       <p className="transit-result-note">
         {lang === 'ko'
-          ? 'Step 4에서 차등측광·모델 적합으로 얻은 값이며, 기준값은 NASA Exoplanet Archive입니다. 아래 기록은 이 결과를 정답으로 받아들이지 않고, 근거와 한계를 설명하기 위한 것입니다.'
+          ? 'Step 4에서 차등측광·모델 적합으로 얻은 값이며, 문헌값은 NASA Exoplanet Archive입니다. 아래 기록은 이 결과를 정답으로 받아들이지 않고, 근거와 한계를 설명하기 위한 것입니다.'
           : 'From your Step 4 photometry and model fit; reference values are from the NASA Exoplanet Archive. The prompts below ask you to explain evidence and limits — not to treat the value as a final answer.'}
       </p>
     </section>

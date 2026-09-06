@@ -687,8 +687,19 @@ export function TransitLab({
     if (!validationStats) return;
     const saved = loadTransitFit(target.id);
     if (!saved || saved.validationStats === validationStats) return;
-    saveTransitFit({ ...saved, validationStats });
-  }, [validationStats, target.id]);
+    saveTransitFit({
+      ...saved,
+      validationStats,
+      // Step 6 lists the analysis settings next to the result; they live only
+      // in the Lab's own state, so they ride along here with the diagnostics.
+      setup: {
+        apertureRadius: targetAperture.apertureRadius,
+        innerAnnulus: targetAperture.innerAnnulus,
+        outerAnnulus: targetAperture.outerAnnulus,
+        comparisonCount: comparisonStars.length,
+      },
+    });
+  }, [validationStats, target.id, targetAperture, comparisonStars.length]);
 
   // Restored draft → refill the bridge. A logged-in learner resuming a backend
   // draft gets fitResult back in Lab state, but the session-scoped bridge entry
@@ -1748,7 +1759,7 @@ export function TransitLab({
       >
         <strong>{lang === 'ko' ? '자료 출처' : 'Data provenance'}</strong>
         <span>
-          {lang === 'ko' ? '대상·기준값' : 'Target and reference'}:
+          {lang === 'ko' ? '대상·문헌값' : 'Target and reference'}:
           {' '}
           {target.data_source === 'nasa_exoplanet_archive'
             ? 'NASA Exoplanet Archive'
@@ -3714,7 +3725,7 @@ export function TransitLab({
                 {fitResult && (
                   <span className="transit-fit-done-hint">
                     {lang === 'ko'
-                      ? '적합 결과 저장됨 — 위 탐구 단계 Step 5(기준값 비교)로 이동하세요'
+                      ? '적합 결과 저장됨 — 위 탐구 단계 Step 5(문헌값 비교)로 이동하세요'
                       : 'Fit saved — continue with Step 5 (reference comparison) in the stepper above'}
                   </span>
                 )}

@@ -22,6 +22,15 @@ export interface SavedTransitFit {
   t0?: number;
   /** Downsampled light curve + best-fit model for the Step 5 HOPS-style overlay. */
   curve?: SavedTransitFitCurve;
+  /** What the learner set in Step 3, carried so Step 6 can list it without
+   *  sending them back to the Lab. The Lab owns these values; the block never
+   *  sees the Lab's own state. */
+  setup?: {
+    apertureRadius: number;
+    innerAnnulus: number;
+    outerAnnulus: number;
+    comparisonCount: number;
+  };
   /** Paper-ready diagnostics (residual RMS/MAD, clipping, reference deltas, …).
    *  Computed in the Lab, displayed in the block's Step 5 — the Lab's fit step
    *  itself only surfaces χ²_red, so this ride-along is what the comparison

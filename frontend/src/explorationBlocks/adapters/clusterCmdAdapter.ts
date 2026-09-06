@@ -92,7 +92,7 @@ export const clusterCmdAdapter: ExplorationModuleAdapter<ClusterCmdAdapterContex
       // same four lines twice on Step 2.
       metadata: [
         ...module.metadataFields,
-        literalField('reference', { ko: '기준값 출처', en: 'Reference source' }, data.cluster.reference),
+        literalField('reference', { ko: '문헌값 출처', en: 'Reference source' }, data.cluster.reference),
       ],
       analysisConditions: [
         ...analysisFieldsFromConfig(module),

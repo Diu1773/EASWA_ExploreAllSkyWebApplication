@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { fetchMicrolensingPreviewBundle } from '../../api/client';
 import type {
   MicrolensingPreviewBundleResponse,
@@ -12,20 +12,23 @@ import { useLangStore } from '../../i18n';
  * The module's own Step 3 self-check asks whether a light curve in a crowded
  * field is built by subtracting a reference image — and until now the step
  * showed only text, so the learner had nothing on screen to answer it from.
- * The four stages here are the actual pipeline this platform runs
+ * The four panels here are the actual pipeline this platform runs
  * (kmtnet_actual_service): the frame as observed, the same frame shifted onto
  * a reference, the reference, and what is left after subtraction.
+ *
+ * All four are shown at once rather than behind a stepper. Clicking through
+ * them in order was the first design and it hid the comparison the step is
+ * about — the learner had to remember the previous panel to see what changed.
+ * The one control left is which night to look at.
+ *
+ * Under each panel is the target's pixel position. In the frame as observed it
+ * sits somewhere else; after alignment it matches the reference exactly, which
+ * is what alignment means and is otherwise invisible.
  *
  * Every image is a real KMTNet cutout from the KASI archive. The frames are
  * rendered ahead of time by backend/scripts/bundle_kmtnet_preview_frames.py
  * because doing it live costs 30-40 s for the first frame — the same
  * computation on the same frames, moved off the classroom clock.
- *
- * Three frames: the archive frame nearest the event peak, the one farthest from
- * it, and one in between. Each chip carries the night it was taken and the
- * brightness this app measured on it. Which frame shows a source in the
- * difference image is left for the learner to read off the screen — the
- * captions say what each stage does, never what it proves.
  */
 
 type Stage = 'raw' | 'aligned' | 'reference' | 'difference';
@@ -52,10 +55,26 @@ function imageFor(preview: MicrolensingPreviewResponse, stage: Stage): string {
   }
 }
 
+/**
+ * Where the target sits in each panel, in cutout pixels.
+ *
+ * The reference frame defines the grid, so in the aligned, reference and
+ * difference panels the target is at the reference position. In the frame as
+ * observed it is that position minus the registration shift: the shift is what
+ * has to be added to the observed frame to bring its stars onto the reference,
+ * so a feature at p in the observed frame lands at p + shift after alignment.
+ *
+ * Not `raw_target_position` — that is the frame's own WCS estimate, which puts
+ * the target at the middle of its own cutout by construction and so shows no
+ * movement at all.
+ */
 function markerFor(preview: MicrolensingPreviewResponse, stage: Stage) {
-  if (stage === 'raw') return preview.raw_target_position;
-  if (stage === 'reference') return preview.reference_target_position;
-  return preview.aligned_target_position;
+  const reference = preview.reference_target_position;
+  if (stage !== 'raw') return reference;
+  return {
+    x: reference.x - preview.registration_dx_px,
+    y: reference.y - preview.registration_dy_px,
+  };
 }
 
 /** HJD to a calendar date, so the frame chips read as observing nights. */
@@ -92,7 +111,6 @@ export function KmtnetDiaSandbox({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [frameSlot, setFrameSlot] = useState(0);
-  const [stage, setStage] = useState<Stage>('raw');
 
   useEffect(() => {
     if (!targetId || !site) {
@@ -104,7 +122,6 @@ export function KmtnetDiaSandbox({
     setError(null);
     setBundle(null);
     setFrameSlot(0);
-    setStage('raw');
     fetchMicrolensingPreviewBundle(targetId, site, null, 96)
       .then((data) => {
         if (!active) return;
@@ -125,31 +142,6 @@ export function KmtnetDiaSandbox({
 
   const previews = bundle?.previews ?? [];
   const preview = previews[Math.min(frameSlot, Math.max(previews.length - 1, 0))] ?? null;
-
-  const caption = useMemo(() => {
-    if (!preview) return '';
-    const dx = preview.registration_dx_px;
-    const dy = preview.registration_dy_px;
-    const shift = `x ${dx >= 0 ? '+' : ''}${dx.toFixed(1)}, y ${dy >= 0 ? '+' : ''}${dy.toFixed(1)}`;
-    switch (stage) {
-      case 'raw':
-        return ko
-          ? '그날 찍힌 그대로입니다. 망원경이 매번 똑같은 곳을 겨누지 못해 별들이 통째로 몇 화소에서 수십 화소까지 밀려 있습니다.'
-          : 'The frame exactly as observed. The telescope never points at precisely the same place twice, so the whole star field sits a few — sometimes tens of — pixels off.';
-      case 'aligned':
-        return ko
-          ? `기준 영상과 별 위치가 겹치도록 영상 전체를 밀었습니다 — ${shift} 화소. 민 만큼 가장자리에는 자료가 없어 어둡게 남습니다.`
-          : `The whole frame was shifted so the stars line up with the reference — ${shift} pixels. The edge it was shifted away from has no data and stays dark.`;
-      case 'reference':
-        return ko
-          ? `비교 기준으로 삼은 다른 날의 영상입니다 (${frameDateLabel(preview.reference_hjd, true)} 관측).`
-          : `The frame chosen as the comparison baseline (observed ${frameDateLabel(preview.reference_hjd, false)}).`;
-      default:
-        return ko
-          ? '두 영상의 번짐 정도와 밝기를 맞춘 뒤 뺀 결과입니다. 별자리처럼 남은 자국은 두 영상이 완전히 같아지지 않은 자리입니다.'
-          : 'The two frames were matched for blur and brightness, then subtracted. The marks left behind are where the two frames did not come out identical.';
-    }
-  }, [preview, stage, ko]);
 
   if (!targetId) return null;
 
@@ -195,104 +187,103 @@ export function KmtnetDiaSandbox({
 
       {preview && (
         <>
-          <div className="kmt-dia-controls">
-            <div className="kmt-dia-frames" role="group" aria-label={ko ? '관측 프레임' : 'Observed frame'}>
-              <span className="kmt-dia-control-label">{ko ? '관측한 날' : 'Night'}</span>
-              {previews.map((item, index) => (
-                <button
-                  key={item.frame_metadata.observation_id}
-                  type="button"
-                  className={`kmt-dia-chip${index === frameSlot ? ' is-on' : ''}`}
-                  onClick={() => setFrameSlot(index)}
-                >
-                  {frameDateLabel(item.frame_metadata.hjd, ko)}
-                  <span className="kmt-dia-chip-mag">{item.frame_metadata.magnitude.toFixed(2)}</span>
-                </button>
-              ))}
-            </div>
-            <div className="kmt-dia-stages" role="group" aria-label={ko ? '처리 단계' : 'Pipeline stage'}>
-              <span className="kmt-dia-control-label">{ko ? '처리 순서' : 'Stage'}</span>
-              {STAGES.map((item, index) => (
-                <button
-                  key={item}
-                  type="button"
-                  className={`kmt-dia-step${item === stage ? ' is-on' : ''}`}
-                  onClick={() => setStage(item)}
-                >
-                  <span className="kmt-dia-step-num">{index + 1}</span>
-                  {STAGE_LABEL[item][ko ? 'ko' : 'en']}
-                </button>
-              ))}
-            </div>
+          <div className="kmt-dia-frames" role="group" aria-label={ko ? '관측 프레임' : 'Observed frame'}>
+            <span className="kmt-dia-control-label">{ko ? '관측한 날' : 'Night'}</span>
+            {previews.map((item, index) => (
+              <button
+                key={item.frame_metadata.observation_id}
+                type="button"
+                className={`kmt-dia-chip${index === frameSlot ? ' is-on' : ''}`}
+                onClick={() => setFrameSlot(index)}
+              >
+                {frameDateLabel(item.frame_metadata.hjd, ko)}
+                <span className="kmt-dia-chip-mag">{item.frame_metadata.magnitude.toFixed(2)}</span>
+              </button>
+            ))}
           </div>
 
-          <div className="kmt-dia-body">
-            <figure className="kmt-dia-stage">
-              <div className="kmt-dia-frame">
-                <img
-                  src={imageFor(preview, stage)}
-                  alt={`${STAGE_LABEL[stage][ko ? 'ko' : 'en']} — ${preview.frame_metadata.observation_id}`}
-                />
-                <span
-                  className="kmt-dia-marker"
-                  style={{
-                    left: `${(markerFor(preview, stage).x / preview.cutout_width_px) * 100}%`,
-                    top: `${(markerFor(preview, stage).y / preview.cutout_height_px) * 100}%`,
-                  }}
-                  aria-hidden="true"
-                />
-              </div>
-              <figcaption>{caption}</figcaption>
-            </figure>
-
-            <dl className="kmt-dia-facts">
-              <div>
-                <dt>{ko ? '관측 파일' : 'Observation'}</dt>
-                <dd><code>{preview.frame_metadata.observation_id}</code></dd>
-              </div>
-              <div>
-                <dt>{ko ? '관측소' : 'Site'}</dt>
-                <dd>{preview.site_label}</dd>
-              </div>
-              <div>
-                <dt>{ko ? '측정된 밝기' : 'Measured brightness'}</dt>
-                <dd>
-                  {preview.frame_metadata.magnitude.toFixed(3)} ± {preview.frame_metadata.mag_error.toFixed(3)}
-                  {ko ? ' 등급' : ' mag'}
-                </dd>
-              </div>
-              <div>
-                <dt>{ko ? '노출·필터' : 'Exposure · filter'}</dt>
-                <dd>
-                  {preview.frame_metadata.exposure_sec?.toFixed(0) ?? '—'} s · {preview.frame_metadata.filter_band ?? 'I'}
-                </dd>
-              </div>
-              <div>
-                <dt>{ko ? '정렬 이동량' : 'Registration shift'}</dt>
-                <dd>
-                  x {preview.registration_dx_px >= 0 ? '+' : ''}{preview.registration_dx_px.toFixed(1)},{' '}
-                  y {preview.registration_dy_px >= 0 ? '+' : ''}{preview.registration_dy_px.toFixed(1)} px
-                </dd>
-              </div>
-              {preview.psf_match_sigma_px !== undefined && (
-                <div>
-                  <dt>{ko ? '번짐 맞춤' : 'Blur match'}</dt>
-                  <dd>
-                    {Math.abs(preview.psf_match_sigma_px).toFixed(2)} px
-                    {preview.psf_match_sigma_px < 0
-                      ? ko ? ' (관측 영상에)' : ' (to the frame)'
-                      : ko ? ' (기준 영상에)' : ' (to the reference)'}
-                  </dd>
-                </div>
-              )}
-              {preview.flux_scale !== undefined && (
-                <div>
-                  <dt>{ko ? '밝기 비율' : 'Brightness ratio'}</dt>
-                  <dd>×{preview.flux_scale.toFixed(3)}</dd>
-                </div>
-              )}
-            </dl>
+          <div className="kmt-dia-strip">
+            {STAGES.map((stage, index) => {
+              const marker = markerFor(preview, stage);
+              return (
+                <figure key={stage} className="kmt-dia-panel">
+                  <figcaption>
+                    <span className="kmt-dia-panel-num">{index + 1}</span>
+                    {STAGE_LABEL[stage][ko ? 'ko' : 'en']}
+                  </figcaption>
+                  <div className="kmt-dia-frame">
+                    <img
+                      src={imageFor(preview, stage)}
+                      alt={`${STAGE_LABEL[stage][ko ? 'ko' : 'en']} — ${preview.frame_metadata.observation_id}`}
+                    />
+                    <span
+                      className="kmt-dia-marker"
+                      style={{
+                        left: `${(marker.x / preview.cutout_width_px) * 100}%`,
+                        top: `${(marker.y / preview.cutout_height_px) * 100}%`,
+                      }}
+                      aria-hidden="true"
+                    />
+                  </div>
+                  <span className={`kmt-dia-coord${stage === 'raw' ? '' : ' is-matched'}`}>
+                    x {marker.x.toFixed(1)} · y {marker.y.toFixed(1)}
+                  </span>
+                </figure>
+              );
+            })}
           </div>
+
+          <dl className="kmt-dia-facts">
+            <div>
+              <dt>{ko ? '관측 파일' : 'Observation'}</dt>
+              <dd><code>{preview.frame_metadata.observation_id}</code></dd>
+            </div>
+            <div>
+              <dt>{ko ? '관측소' : 'Site'}</dt>
+              <dd>{preview.site_label}</dd>
+            </div>
+            <div>
+              <dt>{ko ? '기준 영상' : 'Reference'}</dt>
+              <dd>{frameDateLabel(preview.reference_hjd, ko)}</dd>
+            </div>
+            <div>
+              <dt>{ko ? '측정된 밝기' : 'Measured brightness'}</dt>
+              <dd>
+                {preview.frame_metadata.magnitude.toFixed(3)} ± {preview.frame_metadata.mag_error.toFixed(3)}
+                {ko ? ' 등급' : ' mag'}
+              </dd>
+            </div>
+            <div>
+              <dt>{ko ? '노출·필터' : 'Exposure · filter'}</dt>
+              <dd>
+                {preview.frame_metadata.exposure_sec?.toFixed(0) ?? '—'} s · {preview.frame_metadata.filter_band ?? 'I'}
+              </dd>
+            </div>
+            <div>
+              <dt>{ko ? '정렬 이동량' : 'Registration shift'}</dt>
+              <dd>
+                x {preview.registration_dx_px >= 0 ? '+' : ''}{preview.registration_dx_px.toFixed(1)},{' '}
+                y {preview.registration_dy_px >= 0 ? '+' : ''}{preview.registration_dy_px.toFixed(1)} px
+              </dd>
+            </div>
+            {preview.psf_match_sigma_px !== undefined && (
+              <div>
+                <dt>{ko ? '번짐 맞춤' : 'Blur match'}</dt>
+                <dd>
+                  {Math.abs(preview.psf_match_sigma_px).toFixed(2)} px
+                  {preview.psf_match_sigma_px < 0
+                    ? ko ? ' (관측 영상에)' : ' (to the frame)'
+                    : ko ? ' (기준 영상에)' : ' (to the reference)'}
+                </dd>
+              </div>
+            )}
+            {preview.flux_scale !== undefined && (
+              <div>
+                <dt>{ko ? '밝기 비율' : 'Brightness ratio'}</dt>
+                <dd>×{preview.flux_scale.toFixed(3)}</dd>
+              </div>
+            )}
+          </dl>
 
           <p className="kmt-dia-note">
             {ko

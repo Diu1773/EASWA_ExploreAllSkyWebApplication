@@ -15,6 +15,9 @@ interface StepPanelProps {
    *  feedback so it comes below the inquiry notes — the notes are the point of
    *  this step, tool feedback is an afterthought. */
   afterRecordSlot?: ReactNode;
+  /** 'numbered' gives each record field a number, a divider and a spelled-out
+   *  「필수」 badge — the Step 6 composition. Everything else stays 'plain'. */
+  recordLayout?: 'plain' | 'numbered';
 }
 
 export function StepPanel({
@@ -25,6 +28,7 @@ export function StepPanel({
   selfCheckAnswers,
   onSelfCheckAnswer,
   afterRecordSlot,
+  recordLayout = 'plain',
 }: StepPanelProps) {
   const lang = useLangStore((state) => state.lang);
 
@@ -59,14 +63,20 @@ export function StepPanel({
       {/* Mirrors the self-check panel (kicker + bold prompt) so the step-specific
           question — not the generic "탐구 기록" heading — is what the eye lands on. */}
       {step.recordFields.length > 0 && (
-        <section className="inquiry-record-fields">
-          <span className="inquiry-panel-kicker">{lang === 'ko' ? '탐구 기록' : 'Inquiry Notes'}</span>
+        <section
+          className={`inquiry-record-fields${recordLayout === 'numbered' ? ' inquiry-record-numbered' : ''}`}
+        >
+          {/* 번호가 붙는 배치에서는 「탐구 기록」 머리말을 빼 둔다 — 문항 번호가
+              이미 그 자리를 대신하고, 한 화면에 라벨이 둘이면 눈이 갈린다. */}
+          {recordLayout !== 'numbered' && (
+            <span className="inquiry-panel-kicker">{lang === 'ko' ? '탐구 기록' : 'Inquiry Notes'}</span>
+          )}
           {step.recordFields.map((field) => {
             const fieldId = `${step.id}:${field.id}`;
             const raw = notes[fieldId] ?? '';
             const requiredMark = field.required ? (
               <em className="inquiry-record-required" title={lang === 'ko' ? '필수' : 'Required'}>
-                *
+                {recordLayout === 'numbered' ? (lang === 'ko' ? '필수' : 'Required') : '*'}
               </em>
             ) : null;
 

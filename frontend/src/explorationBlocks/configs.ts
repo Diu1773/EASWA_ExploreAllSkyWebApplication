@@ -10,7 +10,7 @@ export const exoplanetTransitModule: ExplorationModuleConfig = {
   id: 'exoplanet-transit',
   title: { ko: '외계행성 식현상 탐구블럭', en: 'Exoplanet Transit Block' },
   subtitle: {
-    ko: 'TESS 공개 관측자료로 밝기 감소를 측정하고 NASA 기준값과 비교합니다.',
+    ko: 'TESS 공개 관측자료로 밝기 감소를 측정하고 NASA 문헌값과 비교합니다.',
     en: 'Measure brightness dips from public TESS observations and compare with NASA reference values.',
   },
   description: {
@@ -24,7 +24,7 @@ export const exoplanetTransitModule: ExplorationModuleConfig = {
     name: { ko: 'NASA TESS / MAST + NASA Exoplanet Archive', en: 'NASA TESS / MAST + NASA Exoplanet Archive' },
     provider: { ko: 'NASA, STScI MAST', en: 'NASA, STScI MAST' },
     description: {
-      ko: 'TESS 전천 관측 sector 자료에서 target pixel cutout을 가져오고, 외계행성 기준값은 NASA Exoplanet Archive 기반 대상 목록에서 확인합니다.',
+      ko: 'TESS 전천 관측 sector 자료에서 target pixel cutout을 가져오고, 외계행성 문헌값은 NASA Exoplanet Archive 기반 대상 목록에서 확인합니다.',
       en: 'Target pixel cutouts are loaded from TESS sector observations, while reference exoplanet values come from the NASA Exoplanet Archive-backed target list.',
     },
     archiveUrl: 'https://mast.stsci.edu/',
@@ -47,7 +47,7 @@ export const exoplanetTransitModule: ExplorationModuleConfig = {
       en: 'Evaluate how comparison-star quality, aperture, and ROI selection affect derived values.',
     },
     {
-      ko: 'NASA 기준값과 측정값의 차이를 자료 품질과 모델 가정으로 해석한다.',
+      ko: 'NASA 문헌값과 측정값의 차이를 자료 품질과 모델 가정으로 해석한다.',
       en: 'Interpret differences from NASA reference values using data quality and model assumptions.',
     },
   ],
@@ -212,8 +212,8 @@ export const exoplanetTransitModule: ExplorationModuleConfig = {
           id: 'reference_comparison',
           required: true,
           question: {
-            ko: '측정값은 NASA Exoplanet Archive 기준값과 어떻게 다른가? 차이의 원인은 무엇인가?',
-            en: 'How does your measured result compare with the NASA reference value, and what causes the difference?',
+            ko: '측정값은 문헌값과 어떻게 다른가? 차이의 원인은 무엇인가?',
+            en: 'How does your measured result compare with the published value, and what causes the difference?',
           },
           helperText: {
             // 공전 주기는 비교 대상에서 뺐다: 앱이 계산하지 않고 아카이브 값을 그대로
@@ -223,7 +223,7 @@ export const exoplanetTransitModule: ExplorationModuleConfig = {
             // ROI·잡음·모델 가정'을 나열했고, 2026-07-24 조사에서 한 응답이 그 목록을
             // 글자 그대로 옮겨 적었다. 원인을 학습자가 댔는지 화면을 베꼈는지 구분할 수
             // 없으면 이 문항이 탐구 수행 산출물로 기능하지 못한다.
-            ko: '먼저 Rp/R*와 식 깊이가 기준값과 얼마나 다른지 쓰고, 그 차이가 왜 생겼다고 보는지 이어서 쓰세요. 근거는 앞 단계에서 직접 보거나 설정한 값에서 찾으세요.',
+            ko: '먼저 Rp/R*와 식 깊이가 문헌값과 얼마나 다른지 쓰고, 그 차이가 왜 생겼다고 보는지 이어서 쓰세요. 근거는 앞 단계에서 직접 보거나 설정한 값에서 찾으세요.',
             en: 'First write how far your Rp/R* and depth are from the reference, then why you think the gap arose. Draw your evidence from values you saw or set in the earlier steps.',
           },
         },
@@ -237,7 +237,7 @@ export const exoplanetTransitModule: ExplorationModuleConfig = {
             en: 'If you ran this again, which setting would you change?',
           },
           helperText: {
-            // 답을 나열하지 않는다(기준값 비교 화면과 같은 원칙). 어디를
+            // 답을 나열하지 않는다(문헌값 비교 화면과 같은 원칙). 어디를
             // 보면 되는지만 가리킨다.
             ko: '앞 단계에서 직접 고르거나 정한 것들을 떠올려 보세요.',
             en: 'Think back to what you picked or set in the earlier steps.',
@@ -260,7 +260,7 @@ export const exoplanetTransitModule: ExplorationModuleConfig = {
     },
     {
       id: 'reference',
-      label: { ko: '기준값 출처', en: 'Reference source' },
+      label: { ko: '문헌값 출처', en: 'Reference source' },
       value: 'NASA Exoplanet Archive',
     },
   ],
@@ -321,7 +321,7 @@ export const exoplanetTransitModule: ExplorationModuleConfig = {
     referenceSource: 'NASA Exoplanet Archive',
     comparisonValues: [
       { id: 'depth', label: { ko: '식 깊이 (transit depth)', en: 'Transit depth' }, value: { ko: '카탈로그 depth와 측정 depth 비교', en: 'Catalog depth compared with measured depth' } },
-      { id: 'rp_rs', label: { ko: '반지름비 Rp/R*', en: 'Radius ratio Rp/R*' }, value: { ko: 'sqrt(depth) 기준값과 fit 결과 비교', en: 'sqrt(depth) reference compared with fit result' } },
+      { id: 'rp_rs', label: { ko: '반지름비 Rp/R*', en: 'Radius ratio Rp/R*' }, value: { ko: 'sqrt(depth) 문헌값과 fit 결과 비교', en: 'sqrt(depth) reference compared with fit result' } },
       { id: 'period', label: { ko: '공전 주기', en: 'Orbital period' }, value: { ko: '카탈로그 주기와 fit 주기 비교', en: 'Catalog period compared with fitted period' } },
     ],
     qualityCriteria: [
@@ -330,7 +330,7 @@ export const exoplanetTransitModule: ExplorationModuleConfig = {
       { ko: 'χ²_red와 residual은 해석 근거이지 단독 판정값이 아니다.', en: 'χ²_red and residuals are evidence, not a single verdict.' },
     ],
     interpretationRule: {
-      ko: '측정값이 기준값과 다르면 비교성 품질, blending, aperture, ROI, noise, 모델 가정을 근거로 설명한다.',
+      ko: '측정값이 문헌값과 다르면 비교성 품질, blending, aperture, ROI, noise, 모델 가정을 근거로 설명한다.',
       en: 'When measured values differ from references, explain the difference through comparison quality, blending, aperture, ROI, noise, and model assumptions.',
     },
   },
@@ -347,7 +347,7 @@ export const exoplanetTransitModule: ExplorationModuleConfig = {
     level: { ko: '고등학교 심화 / 대학 교양 / 시민과학 입문', en: 'Advanced secondary, introductory college, citizen-science entry' },
     grouping: { ko: '2~3인 모둠 또는 개인 탐구', en: 'Pairs, small groups, or individual work' },
     teacherNotes: [
-      { ko: 'Step 5에서 기준값과 다르다는 사실 자체보다 차이 원인 설명을 평가한다.', en: 'Assess the explanation of differences in Step 5, not just whether values match.' },
+      { ko: 'Step 5에서 문헌값과 다르다는 사실 자체보다 차이 원인 설명을 평가한다.', en: 'Assess the explanation of differences in Step 5, not just whether values match.' },
     ],
   },
   entry: {

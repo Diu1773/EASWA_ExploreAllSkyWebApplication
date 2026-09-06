@@ -12,10 +12,10 @@ interface TransitComparisonProps {
 const fmt = (value: number, digits = 4) => (Number.isFinite(value) ? value.toFixed(digits) : '—');
 
 /**
- * 측정값 − 기준값. 절대차와 상대차를 함께 준다.
+ * 측정값 − 문헌값. 절대차와 상대차를 함께 준다.
  *
  * 절대차만 주면 "0.303%p 차이"가 큰 건지 작은 건지 학습자가 판단할 수 없고,
- * 상대차만 주면 기준값이 작을 때 과장된다. 둘 다 보여주고 판단은 학습자가 한다.
+ * 상대차만 주면 문헌값이 작을 때 과장된다. 둘 다 보여주고 판단은 학습자가 한다.
  * unit이 '%p'인 이유: 두 백분율(식 깊이)의 차는 퍼센트가 아니라 퍼센트포인트다.
  */
 function diffOf(
@@ -91,7 +91,7 @@ function CompareRow({
  * (accent) + the expected model built from the catalog depth (dashed gray),
  * with a residual sub-panel — differences read as curve separation, not text.
  */
-function FitOverlayPlot({
+export function FitOverlayPlot({
   fit,
   refDepth,
   archiveRpRs,
@@ -253,7 +253,7 @@ function FitOverlayPlot({
 }
 
 /**
- * Step 5 (기준값 비교): HOPS-style overlay of the learner's data, their fit and
+ * Step 5 (문헌값 비교): HOPS-style overlay of the learner's data, their fit and
  * the catalog-based expected model (when curve data exists), with the numeric
  * measured-vs-reference comparison below; falls back to bars for older saves.
  */
@@ -271,7 +271,7 @@ export function TransitComparison({ fit, target }: TransitComparisonProps) {
   return (
     <section className="inquiry-info-panel">
       <span className="inquiry-panel-kicker">
-        {lang === 'ko' ? '측정값 ↔ 기준값 (NASA Exoplanet Archive)' : 'Measured ↔ Reference (NASA Exoplanet Archive)'}
+        {lang === 'ko' ? '측정값 ↔ 문헌값 (NASA Exoplanet Archive)' : 'Measured ↔ Reference (NASA Exoplanet Archive)'}
       </span>
       <h3>{target?.name ?? fit.targetId}</h3>
 
@@ -281,7 +281,7 @@ export function TransitComparison({ fit, target }: TransitComparisonProps) {
 
       <div className="transit-compare-legend">
         <span><i className="dot measured" /> {lang === 'ko' ? '내 측정값 (fit)' : 'Measured (fit)'}</span>
-        <span><i className="dot reference" /> {lang === 'ko' ? '카탈로그 기준값' : 'Catalog reference'}</span>
+        <span><i className="dot reference" /> {lang === 'ko' ? '문헌값' : 'Catalog reference'}</span>
       </div>
 
       {/* 값을 위아래로 나열만 하던 표. "얼마나 차이가 나는가"가 이 단계의 핵심
@@ -360,7 +360,7 @@ export function TransitComparison({ fit, target }: TransitComparisonProps) {
         </div>
       )}
 
-      {/* 현장 전문가 검토(2026-07) 최저점 문항: "기준값 비교 화면은 무엇을 해석해야
+      {/* 현장 전문가 검토(2026-07) 최저점 문항: "문헌값 비교 화면은 무엇을 해석해야
           하는지 파악하기 어렵다"(역채점 3.42). 차이 수치는 위에 있었지만 «왜 차이가
           나는가»를 따질 재료가 화면에 없어서, 학습자가 원인을 상상으로 적어야 했다.
           여기서는 답을 주지 않고, 이 학습자가 실제로 쓴 분석 조건만 모아 보여준다.
@@ -435,7 +435,7 @@ export function TransitComparison({ fit, target }: TransitComparisonProps) {
 
       <div className="inquiry-callout">
         {lang === 'ko'
-          ? '여기 기준값은 NASA Exoplanet Archive가 주는 식 깊이에서 √(식 깊이)로 되짚어 계산한 것입니다. 논문이 직접 싣는 Rp/R*는 주연감광까지 함께 맞춰 얻은 값이라 이 되짚은 값과는 원래 조금 다릅니다. 그러니 두 값이 벌어졌다고 해서 측정이 틀린 것은 아닙니다. 차이가 어디서 왔는지는 위의 σ 배수와 비교성 수·산포, 잔차, 그리고 내가 쓴 구경·ROI 설정을 함께 보면서 판단해 보세요.'
+          ? '여기 문헌값은 NASA Exoplanet Archive가 주는 식 깊이에서 √(식 깊이)로 되짚어 계산한 것입니다. 논문이 직접 싣는 Rp/R*는 주연감광까지 함께 맞춰 얻은 값이라 이 되짚은 값과는 원래 조금 다릅니다. 그러니 두 값이 벌어졌다고 해서 측정이 틀린 것은 아닙니다. 차이가 어디서 왔는지는 위의 σ 배수와 비교성 수·산포, 잔차, 그리고 내가 쓴 구경·ROI 설정을 함께 보면서 판단해 보세요.'
           : 'This reference comes from working backwards from the transit depth in the NASA Exoplanet Archive, as √(depth). Papers that report Rp/R* directly fit it together with limb darkening, so their value already differs a little from this back-calculation. A gap between the two does not mean your measurement is wrong. To work out where the difference came from, read the σ multiple above together with the comparison-star count and scatter, the residuals, and the aperture and ROI settings you used.'}
       </div>
     </section>

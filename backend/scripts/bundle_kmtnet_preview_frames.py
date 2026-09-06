@@ -40,8 +40,14 @@ SIZE_PX = 96
 
 COVERAGE_WINDOW_DAYS = 60.0
 MIN_SPAN_DAYS = 10.0
-CANDIDATE_LIMIT = 8
-MIN_REGISTRATION_CORRELATION = 0.6
+CANDIDATE_LIMIT = 16
+MIN_REGISTRATION_CORRELATION = 0.8
+# A frame that took in far less light than the reference was shot through cloud
+# or at high airmass. Its stars are gone rather than dimmed, so the subtraction
+# leaves the field full of holes and the brightness ratio the app reports for it
+# is unreliable (kmt-2019-blg-0128 frames 21 and 23: two estimators disagreed at
+# 0.19 and 0.47 for the same frame).
+FLUX_SCALE_RANGE = (0.6, 1.6)
 KEEP_FRAMES = 3
 
 
@@ -134,10 +140,15 @@ def bundle_one(target_id: str, site: str, *, force: bool) -> bool:
         seen_indices.add(preview.frame_index)
         meta = preview.frame_metadata
         correlation = preview.registration_correlation
-        verdict = "keep" if correlation >= MIN_REGISTRATION_CORRELATION else "drop"
+        usable = (
+            correlation >= MIN_REGISTRATION_CORRELATION
+            and FLUX_SCALE_RANGE[0] <= preview.flux_scale <= FLUX_SCALE_RANGE[1]
+        )
+        verdict = "keep" if usable else "drop"
         print(f"  {verdict} {target_id} {site} frame {index}->{preview.frame_index} "
-              f"({time.time() - started:.1f}s, corr {correlation:.2f}, mag {meta.magnitude}, A {meta.magnification})")
-        if correlation >= MIN_REGISTRATION_CORRELATION:
+              f"({time.time() - started:.1f}s, corr {correlation:.2f}, scale {preview.flux_scale:.2f}, "
+              f"mag {meta.magnitude}, A {meta.magnification})")
+        if usable:
             kept.append(json.loads(preview.model_dump_json()))
 
     if len(kept) < 2:

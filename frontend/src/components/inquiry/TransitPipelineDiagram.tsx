@@ -82,7 +82,7 @@ const STAGES: Stage[] = [
     // 1인칭이었다. 같은 형식으로 맞춘다(2026-09-06 소유자 지적).
     actor: { ko: '직접 해석', en: 'You decide' },
     why: {
-      ko: 'NASA 기준값과 비교하고, 차이의 근거와 한계를 스스로 설명합니다.',
+      ko: 'NASA 문헌값과 비교하고, 차이의 근거와 한계를 스스로 설명합니다.',
       en: 'Compare with the NASA reference and explain the evidence and limits yourself.',
     },
     role: 'interpret',

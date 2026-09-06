@@ -19,7 +19,7 @@ const QUESTION_LABELS: Record<string, string> = {
   'lc_q3': '[TESS 4] 식 구간 판별 근거',
   'fit_q1': '[TESS 5] χ²_red 해석',
   'fit_q2': '[TESS 5] Rp/R* 해석',
-  'fit_q3': '[TESS 5] 기준값 차이 원인',
+  'fit_q3': '[TESS 5] 문헌값 차이 원인',
   'rec_q1': '[TESS 6] 문헌값과 측정값',
   'rec_q2': '[TESS 6] 주요 오차 원인',
   'rec_q3': '[TESS 6] 후속 탐구',

@@ -139,7 +139,7 @@ const baseSteps: InquiryStepConfig[] = [
     id: 'step5_compare',
     number: 5,
     kind: 'comparison',
-    title: { ko: '기준값 또는 비교 자료와 비교', en: 'Compare with Reference Values' },
+    title: { ko: '문헌값 또는 비교 자료와 비교', en: 'Compare with Reference Values' },
     summary: {
       ko: '산출값을 문헌값, 품질 기준, 비교 자료와 나란히 비교합니다.',
       en: 'Compare derived values with literature values, quality criteria, or reference data.',
@@ -148,12 +148,12 @@ const baseSteps: InquiryStepConfig[] = [
       {
         id: 'difference_reason',
         question: {
-          ko: '기준값과 차이가 있다면 자료 품질, 분석 조건, 모델 가정 중 무엇으로 설명할 수 있는가?',
+          ko: '문헌값과 차이가 있다면 자료 품질, 분석 조건, 모델 가정 중 무엇으로 설명할 수 있는가?',
           en: 'If your value differs from the reference, can data quality, analysis conditions, or model assumptions explain it?',
         },
       },
     ],
-    // No record field: "측정값과 기준값의 차이 + 원인" is exactly what Step 6's
+    // No record field: "측정값과 문헌값의 차이 + 원인" is exactly what Step 6's
     // reference_comparison asks. Asking it here too made learners write the same
     // answer twice, one screen apart.
     recordFields: [],

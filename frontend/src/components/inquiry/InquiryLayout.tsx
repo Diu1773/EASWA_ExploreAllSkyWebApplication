@@ -65,7 +65,7 @@ const STEP_SHORT_LABELS: Record<string, Record<string, string>> = {
   step2_metadata: { ko: '자료 확인', en: 'Data Check' },
   step3_analysis_conditions: { ko: '분석 준비', en: 'Prep' },
   step4_run_visualize: { ko: '분석·시각화', en: 'Analyze' },
-  step5_compare: { ko: '기준값 비교', en: 'Compare' },
+  step5_compare: { ko: '문헌값 비교', en: 'Compare' },
   step6_reflect: { ko: '해석·기록', en: 'Reflect' },
 };
 
@@ -85,6 +85,9 @@ interface InquiryLayoutProps<TContext = unknown> {
   conditionsSlot?: ReactNode;
   comparisonSlot?: ReactNode;
   resultSummarySlot?: ReactNode;
+  /** Pinned beside the questions on the reflection step (Step 6). When given,
+   *  that step switches to the two-column composition with numbered questions. */
+  sideRailSlot?: ReactNode;
   maxUnlockedStepIndex?: number;
   /** Optional explicit "confirm selection" control shown under the selection step. */
   selectionConfirm?: {
@@ -112,6 +115,7 @@ export function InquiryLayout<TContext = unknown>({
   selectionSlot,
   metadataSlot,
   conditionsSlot,
+  sideRailSlot,
   comparisonSlot,
   resultSummarySlot,
   maxUnlockedStepIndex,
@@ -475,6 +479,10 @@ export function InquiryLayout<TContext = unknown>({
           : 'Complete this step to unlock the next one.'
       : null;
 
+  // The rail only makes sense where the learner is writing about a finished
+  // result; on the earlier steps the same space belongs to the analysis itself.
+  const showSideRail = Boolean(sideRailSlot) && activeStep.kind === 'reflection';
+
   const renderStepBody = () => {
     if (activeStep.kind === 'intro') {
       return (
@@ -665,7 +673,7 @@ export function InquiryLayout<TContext = unknown>({
         })}
       </nav>
 
-      <div className="inquiry-layout-grid">
+      <div className={`inquiry-layout-grid${showSideRail ? ' has-rail' : ''}`}>
         <main className="inquiry-layout-main">
           <StepPanel
             step={activeStep}
@@ -674,6 +682,7 @@ export function InquiryLayout<TContext = unknown>({
             selfCheckAnswers={selfCheckAnswers}
             onSelfCheckAnswer={handleSelfCheckAnswer}
             afterRecordSlot={siteFeedbackSlot}
+            recordLayout={showSideRail ? 'numbered' : 'plain'}
           >
             {renderStepBody()}
           </StepPanel>
@@ -745,6 +754,7 @@ export function InquiryLayout<TContext = unknown>({
             <p className="inquiry-step-gate-hint">{nextBlockedReason}</p>
           )}
         </main>
+        {showSideRail && <aside className="inquiry-layout-rail">{sideRailSlot}</aside>}
       </div>
     </div>
   );

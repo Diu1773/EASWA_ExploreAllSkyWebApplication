@@ -12,7 +12,7 @@ import { formatConstellation } from '../../utils/targetFormat';
 import { lazyWithRetry } from '../../utils/lazyWithRetry';
 import { ApertureSandbox, InquiryLayout, SkyDataPanel } from '../inquiry';
 import { TransitComparison } from '../inquiry/TransitComparison';
-import { TransitResultSummary } from '../inquiry/TransitResultSummary';
+import { TransitStep6Rail } from '../inquiry/TransitStep6Rail';
 import { TransitPipelineDiagram } from '../inquiry/TransitPipelineDiagram';
 import { SkyExplorer } from '../sky/SkyExplorer';
 import { TransitLab } from '../lab/TransitLab';
@@ -323,8 +323,15 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
     </div>
   );
 
-  const resultSummarySlot = fit ? (
-    <TransitResultSummary fit={fit} targetName={target?.name} target={target} />
+  // Step 6 puts the result in the side rail instead of a card above the
+  // questions: the questions ask about the numbers, so the numbers stay in view
+  // while they are answered rather than scrolling away.
+  const sideRailSlot = fit ? (
+    <TransitStep6Rail
+      fit={fit}
+      target={target}
+      moduleHref={`/modules/exoplanet-transit?target=${encodeURIComponent(targetId)}`}
+    />
   ) : undefined;
 
   // Anonymous (no-login) submission stays visible even before a fit exists —
@@ -355,7 +362,7 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
       conditionsSlot={<ApertureSandbox />}
       analysisSlot={analysisSlot}
       comparisonSlot={comparisonSlot}
-      resultSummarySlot={resultSummarySlot}
+      sideRailSlot={sideRailSlot}
       maxUnlockedStepIndex={fit ? undefined : 4}
       anonSubmit={anonSubmit}
       draftTargetId={targetId}
