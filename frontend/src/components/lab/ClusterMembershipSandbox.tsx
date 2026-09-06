@@ -135,7 +135,7 @@ export function ClusterMembershipSandbox({
               </dd>
             </div>
             <div>
-              <dt>{ko ? '표준 기준과 견주면' : 'Against the standard'}</dt>
+              <dt>{ko ? '표준 기준과 비교하면' : 'Against the standard'}</dt>
               <dd>
                 {vsStandard === 0
                   ? ko

@@ -166,7 +166,7 @@ const STEP_GUIDES: Record<TransitStep, GuideQuestion[]> = {
       correct: '여러 안정된 별을 함께 써서 개별 오차를 평균한다',
       explanation: { ko: '한 별의 우연한 오차나 미세한 변광은 여러 별을 함께 쓰면 평균되어 묻힙니다. 그래서 완벽한 하나를 고르기보다 여러 안정된 비교성을 함께 씁니다.', en: 'A single star\'s random error or slight variability averages out when several are combined — so instead of finding one perfect star, several steady comparisons are used together.' },
     },
-    { type: 'open', id: 'qc_q3', text: { ko: '혼자 유독 출렁이는 비교성이 있어 제외했다면, 무엇을 보고 그렇게 판단했는지 설명해보자.', en: 'If you excluded a comparison star that wobbled unlike the others, explain what you saw that led to that call.' } },
+    { type: 'open', id: 'qc_q3', text: { ko: '혼자만 밝기가 크게 변하는 비교성이 있어 제외했다면, 무엇을 보고 그렇게 판단했는지 설명해보자.', en: 'If you excluded a comparison star that wobbled unlike the others, explain what you saw that led to that call.' } },
   ],
   lightcurve: [
     {
@@ -3024,7 +3024,7 @@ export function TransitLab({
                         transit is gone and only this star's own wobble shows. */}
                     <div className="transit-qc-guide">
                       {lang === 'ko'
-                        ? '좋은 비교성은 스스로 밝기가 안 변하는 별입니다. 아래 곡선(이 별 ÷ 다른 비교성들)이 평평하면 안정적이고, 혼자 출렁이면 이 별에 문제가 있는 것입니다. 하나로 단정하긴 어려우니 여러 개를 함께 씁니다.'
+                        ? '좋은 비교성은 스스로 밝기가 변하지 않는 별입니다. 아래 곡선(이 별 ÷ 다른 비교성들)이 평평할수록 그렇고, 이 별만 밝기가 크게 변하면 기준으로 쓰기 어렵습니다. 한 별로 단정하기 어려우므로 여러 개를 함께 씁니다.'
                         : "A good comparison star doesn't vary on its own. If the curve below (this star ÷ the other comparisons) is flat, it's steady; if it wobbles alone, this star is the problem. One star is never certain, so several are used together."}
                     </div>
 
@@ -3111,7 +3111,7 @@ export function TransitLab({
                         const meta = {
                           steady: { label: { ko: '안정적', en: 'Steady' }, hint: { ko: '흔들림이 이 중에서 작은 편입니다.', en: 'Scatter is on the low side among these.' } },
                           typical: { label: { ko: '보통', en: 'Typical' }, hint: { ko: '흔들림이 중간입니다.', en: 'Scatter is middling among these.' } },
-                          noisy: { label: { ko: '불안정', en: 'Noisy' }, hint: { ko: '혼자 출렁여요. 이 별은 빼는 게 좋겠습니다.', en: 'Wobbles on its own. Better to drop this one.' } },
+                          noisy: { label: { ko: '불안정', en: 'Noisy' }, hint: { ko: '흔들림이 이 중에서 큰 편입니다.', en: 'Scatter is on the high side among these.' } },
                         }[tier];
                         return (
                           <div className={`transit-qc-quality ${tier}`}>

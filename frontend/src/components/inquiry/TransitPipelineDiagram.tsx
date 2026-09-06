@@ -62,8 +62,8 @@ const STAGES: Stage[] = [
     label: { ko: '차등측광', en: 'Differential photometry' },
     actor: { ko: '플랫폼 · 비교성 선택', en: 'Platform · you pick comparisons' },
     why: {
-      ko: '망원경 흔들림·온도 변화는 사진 속 모든 별을 함께 흔듭니다. 비교성으로 나누면 그 공통 흔들림이 지워지고 목표별 고유의 변화만 남습니다.',
-      en: 'Jitter and thermal drift move every star together. Dividing by comparison stars cancels that shared wobble, leaving only the target’s own change.',
+      ko: '망원경의 미세한 떨림이나 온도 변화는 사진 속 모든 별의 밝기를 함께 바꿉니다. 비교성으로 나누면 그 공통된 변화가 지워지고 목표별 고유의 변화만 남습니다.',
+      en: 'Jitter and thermal drift change every star’s measured brightness together. Dividing by comparison stars cancels that shared change, leaving only the target’s own variation.',
     },
     role: 'tune',
   },
@@ -163,8 +163,8 @@ export function TransitPipelineDiagram() {
       <span className="inquiry-panel-kicker">{ko ? '탐구 단계' : 'How the analysis flows'}</span>
       <p className="transit-pipeline-intro">
         {ko
-          ? '주황으로 표시된 단계는 직접 정합니다. 나머지는 플랫폼이 계산합니다.'
-          : 'The platform handles most steps automatically. The steps marked in orange below are yours — settings like comparisons and aperture, and the final interpretation. See why each step matters before you start.'}
+          ? '주황으로 표시된 단계에서 구경·비교성·분석 구간을 직접 고르고, 마지막에 결과를 해석합니다. 나머지 단계는 위성 관측과 플랫폼 자동 처리입니다.'
+          : 'In the orange steps you choose the aperture, the comparison stars and the fitting range, and you interpret the result at the end. The other steps are satellite observation and automatic processing.'}
       </p>
       <ol className="transit-pipeline-flow">
         {STAGES.map((stage, i) => (

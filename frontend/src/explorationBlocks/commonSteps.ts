@@ -106,7 +106,7 @@ const baseSteps: InquiryStepConfig[] = [
           en: 'Pick one setting and write down how you expect changing it would alter the result.',
         },
         helperText: {
-          ko: '분석을 실행한 뒤 이 예상과 실제 결과를 견주어 보게 됩니다.',
+          ko: '분석을 실행한 뒤 이 예상과 실제 결과를 비교하게 됩니다.',
           en: 'After running the analysis you will compare this prediction with what actually happened.',
         },
       },
