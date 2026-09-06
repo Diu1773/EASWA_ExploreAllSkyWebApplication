@@ -11717,8 +11717,15 @@ body {
 
 .kmt-dia-strip {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 12px;
+}
+
+/* 좁아지면 3+1로 어긋나지 않게 2×2로 접는다. */
+@media (max-width: 900px) {
+  .kmt-dia-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .kmt-dia-panel {
@@ -11831,32 +11838,28 @@ body {
   color: var(--accent);
 }
 
-/* ── 용어함 (우하단 고정) ─────────────────────────────────────────────────
+/* ── 용어 해설 (상단 바) ──────────────────────────────────────────────────
    2026-07 현직 검토에서 가장 넓게 나온 요구가 용어 설명이었다. 종전 목록은
    식현상 Step 0 접힘 안에만 있어 값이 나오는 화면에서 되돌아가야 했다.
-   흐름 밖에 상주하되, 스스로 열 때만 보이게 한다. 글로우·형광 없이 선과
-   글자로만 구분한다. */
+   처음엔 우하단에 고정했으나 탐구 화면 위에 늘 떠 있어 거슬리고 좁은 폭에서
+   그래프 도구막대와 자리를 다퉈, 언어 전환·로그인과 같은 줄로 옮겼다
+   (2026-09-06 소유자 지시). 글로우·형광 없이 선과 글자로만 구분한다. */
 .glossary-dock {
-  position: fixed;
-  right: 20px;
-  bottom: 20px;
-  z-index: 60;
+  position: relative;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 10px;
+  align-items: center;
 }
 
 .glossary-toggle {
-  padding: 8px 16px;
+  padding: 6px 12px;
   border: 1px solid var(--border-light);
-  border-radius: 8px;
-  background: var(--bg-card);
-  color: var(--text-primary);
-  font-size: 0.82rem;
-  letter-spacing: 0.02em;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
   cursor: pointer;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
 }
 
 .glossary-toggle:hover,
@@ -11867,11 +11870,16 @@ body {
 
 .glossary-toggle[aria-expanded='true'] {
   border-color: var(--accent);
+  color: var(--text-heading);
 }
 
 .glossary-panel {
-  width: min(360px, calc(100vw - 40px));
-  max-height: min(60vh, 520px);
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: min(360px, calc(100vw - 32px));
+  max-height: min(64vh, 520px);
+  z-index: 80;
   display: flex;
   flex-direction: column;
   background: var(--bg-secondary);
@@ -11961,18 +11969,19 @@ body {
   line-height: 1.5;
 }
 
-/* 좁은 화면에서는 왼쪽 아래로 옮긴다. 그래프 도구막대(확대·그림 저장)가 늘
-   플롯 오른쪽 위에 붙는데, 폭이 좁아지면 그 자리가 화면 오른쪽 아래와 만나
-   버튼이 서로를 가린다(375px 실측, 2026-09-06). 왼쪽에는 그 도구가 없다. */
+/* 좁은 화면에서는 패널이 상단 바 밖으로 나가지 않게 화면 폭에 맞춘다. */
 @media (max-width: 720px) {
-  .glossary-dock {
-    right: auto;
-    left: 12px;
-    bottom: 12px;
-    align-items: flex-start;
+  .glossary-toggle {
+    padding: 5px 9px;
+    font-size: 0.74rem;
   }
 
   .glossary-panel {
-    max-height: 50vh;
+    position: fixed;
+    top: 58px;
+    right: 12px;
+    left: 12px;
+    width: auto;
+    max-height: 62vh;
   }
 }

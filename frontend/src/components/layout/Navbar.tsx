@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { GlossaryDock } from '../common/GlossaryDock';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { useT, useLangStore } from '../../i18n';
@@ -106,6 +107,9 @@ export function Navbar() {
           </Link>
         ))}
       </div>
+      {/* 화면에 나오는 용어·기호의 뜻. 언어 전환·로그인과 같은 줄에 둬서 «화면
+          전체에 걸린 도구»임을 드러낸다(2026-09-06 소유자 지시로 우하단에서 이동). */}
+      <GlossaryDock />
       <button
         type="button"
         className="navbar-lang-toggle"
