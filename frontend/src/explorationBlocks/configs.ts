@@ -90,12 +90,42 @@ export const exoplanetTransitModule: ExplorationModuleConfig = {
     },
     step3_analysis_conditions: {
       selfChecks: [
+        // Step 3 은 분석을 실행하기 전에 설정의 뜻을 점검하는 자리다. 종전 문항
+        // ("구경을 키우면 그만큼 정확해진다")은 상식만으로 답할 수 있어 변별이
+        // 되지 않았다(2026-09-06 소유자 지적). 화면에서 직접 조절할 수 있는
+        // 구경·배경 고리·중심 맞추기를 근거로 삼아 다시 썼고, 정밀 분석 화면의
+        // 문항(비교성·나눗셈·품질 점검·곡선·적합)과는 다루는 대상이 겹치지 않는다.
         {
           id: 'tr_cond_sc1',
           type: 'ox',
-          question: { ko: '측광 구경을 두 배로 키우면 별빛을 더 많이 담으므로 측정이 그만큼 정확해진다.', en: 'A larger photometry aperture gives a more accurate measurement.' },
+          question: {
+            ko: '배경 고리 안에 다른 별이 들어가면, 그 별빛 때문에 목표별이 실제보다 밝게 측정된다.',
+            en: 'If another star falls inside the sky annulus, its light makes the target measure brighter than it really is.',
+          },
           correct: 'X',
-          explanation: { ko: '너무 키우면 주변 별·배경이 섞여 오히려 잡음이 커집니다 — 적정 크기가 중요합니다.', en: 'Too large an aperture lets in nearby stars and background, raising noise; the right size matters.' },
+          explanation: {
+            ko: '반대입니다. 하늘 배경을 실제보다 크게 재게 되고, 그만큼 더 빼기 때문에 목표별은 어둡게 측정됩니다. 화면에서 고리를 옮겨 등급이 어느 쪽으로 바뀌는지 확인해 보세요.',
+            en: 'The opposite. The sky level is overestimated and too much is subtracted, so the target measures fainter. Move the annulus on screen and watch which way the magnitude goes.',
+          },
+        },
+        {
+          id: 'tr_cond_sc2',
+          type: 'choice',
+          question: {
+            ko: '구경 반지름을 조금씩 키울 때 측정 오차는 어떻게 될까?',
+            en: 'As you widen the aperture step by step, what happens to the measurement error?',
+          },
+          options: [
+            { ko: '구경이 클수록 계속 줄어든다', en: 'It keeps shrinking as the aperture grows' },
+            { ko: '어느 크기까지는 줄어들다가, 그보다 커지면 다시 늘어난다', en: 'It shrinks up to a point, then grows again' },
+            { ko: '구경이 클수록 계속 늘어난다', en: 'It keeps growing as the aperture grows' },
+            { ko: '구경 크기와 관계없다', en: 'It does not depend on the aperture' },
+          ],
+          correctIndex: 1,
+          explanation: {
+            ko: '구경이 작으면 별빛을 놓치고, 너무 크면 하늘 배경과 이웃 별빛이 함께 들어옵니다. 그 사이에 오차가 가장 작은 크기가 있습니다. 화면에서 구경을 넓혀 보며 값이 어떻게 달라지는지 확인해 보세요.',
+            en: 'A small aperture misses starlight; a large one takes in sky background and neighbouring stars. Between them lies the size with the smallest error. Widen the aperture on screen and watch the values.',
+          },
         },
       ],
     },

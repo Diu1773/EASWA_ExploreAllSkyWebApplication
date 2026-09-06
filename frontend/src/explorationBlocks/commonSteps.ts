@@ -89,13 +89,28 @@ const baseSteps: InquiryStepConfig[] = [
           en: 'Which analysis condition could most strongly affect the result?',
         },
         helperText: {
-          ko: '조건을 나열만 하지 말고, "이걸 바꾸면 결과가 어떻게 달라질까?"를 한 가지만 예상해 보세요 (예: aperture·ROI).',
-          en: 'Rather than listing conditions, predict how changing one (e.g., aperture, ROI) would move the result.',
+          ko: '조건을 나열만 하지 말고, 그 조건을 바꾸면 결과가 어떻게 달라질지 한 가지만 예상해 보세요.',
+          en: 'Rather than listing conditions, predict how changing one would change the result.',
         },
       },
     ],
-    // 기록은 Step 6으로 (표 4: 이 단계 활동은 '예측한다').
-    recordFields: [],
+    // 예측을 이 자리에서 쓰게 한다(2026-09-06 소유자 지시). 종전에는 질문만
+    // 던지고 기록은 Step 6 으로 미뤘는데, 1차 조사에서 뒤쪽 서술 응답이
+    // 거의 없었다(정밀 분석 6문항 4건·기록 단계 0건). 분석을 실행하기 전에
+    // 적어 두면 나중에 실제 결과와 견줄 수 있다(설계 원리 4).
+    recordFields: [
+      {
+        id: 'condition_prediction',
+        question: {
+          ko: '설정을 하나 골라, 그것을 바꾸면 결과가 어떻게 달라질지 예상을 적어 두세요.',
+          en: 'Pick one setting and write down how you expect changing it would alter the result.',
+        },
+        helperText: {
+          ko: '분석을 실행한 뒤 이 예상과 실제 결과를 견주어 보게 됩니다.',
+          en: 'After running the analysis you will compare this prediction with what actually happened.',
+        },
+      },
+    ],
   },
   {
     id: 'step4_run_visualize',
