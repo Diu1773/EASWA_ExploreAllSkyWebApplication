@@ -64,6 +64,7 @@ import {
 import { TransitCutoutViewer } from './TransitCutoutViewer';
 import { LightCurvePlot } from './LightCurvePlot';
 import { isAnswerFilled, isAnswerGateOn } from '../../utils/answerGate';
+import { toggleSelfCheckSkip, useSelfCheckSkip } from '../../utils/selfCheckSkip';
 
 interface TransitLabProps {
   target: Target;
@@ -331,7 +332,10 @@ function StepGuide({
     }
   });
   const [answers, setAnswers] = useState<GuideAnswers>(() => initialAnswers ?? {});
-  const shown = open || forceOpen;
+  // 시연자용 우회. 켜져 있으면 forceOpen 을 무시해 접을 수 있고, 게이트도
+  // 생각해보기를 세지 않는다 — utils/selfCheckSkip.
+  const skipSelfChecks = useSelfCheckSkip();
+  const shown = open || (forceOpen && !skipSelfChecks);
   const questions = STEP_GUIDES[step];
   if (!questions?.length) return null;
 
@@ -363,6 +367,14 @@ function StepGuide({
           const next = !open;
           setOpen(next);
           try { localStorage.setItem(storageKey, String(next)); } catch { /* ignore */ }
+        }}
+        onDoubleClick={() => {
+          // 두 번 누르면 시연자 우회를 켜고 패널을 접는다.
+          // 한 번 누르기는 종전대로 접기/펼치기.
+          if (toggleSelfCheckSkip()) {
+            setOpen(false);
+            try { localStorage.setItem(storageKey, 'false'); } catch { /* ignore */ }
+          }
         }}
       >
         <span>{toggleLabel}</span>
@@ -1463,17 +1475,18 @@ export function TransitLab({
   // 그리지 않으려고 ref 에 있으므로, 이미 있는 labDraftTick 으로만 다시 센다.
   // 배포본에서만 켜진다 — utils/answerGate.
   const labGateOn = isAnswerGateOn();
+  const labSkipSelfChecks = useSelfCheckSkip();
   // Counted by kind: ox/choice are CHOSEN, open is WRITTEN. The "모르겠다"
   // hint belongs only to the written ones — the O/X buttons have no text box.
   const unansweredGuideByKind = useMemo(() => {
-    if (!labGateOn) return { picks: 0, writes: 0, total: 0 };
+    if (!labGateOn || labSkipSelfChecks) return { picks: 0, writes: 0, total: 0 };
     void labDraftTick;
     const pending = (STEP_GUIDES[step] ?? []).filter(
       (q) => !isAnswerFilled(guideAnswersRef.current[q.id]),
     );
     const writes = pending.filter((q) => q.type === 'open').length;
     return { picks: pending.length - writes, writes, total: pending.length };
-  }, [labGateOn, step, labDraftTick]);
+  }, [labGateOn, labSkipSelfChecks, step, labDraftTick]);
   const unansweredGuide = unansweredGuideByKind.total;
   const guideBlockedHint =
     unansweredGuide > 0

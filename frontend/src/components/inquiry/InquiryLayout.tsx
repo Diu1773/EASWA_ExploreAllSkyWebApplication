@@ -12,6 +12,7 @@ import { ComparisonPanel } from './ComparisonPanel';
 import { DataSourcePanel } from './DataSourcePanel';
 import { MetadataPanel } from './MetadataPanel';
 import { isAnswerFilled, isAnswerGateOn } from '../../utils/answerGate';
+import { useSelfCheckSkip } from '../../utils/selfCheckSkip';
 import { ReflectionPanel } from './ReflectionPanel';
 import { AnonCollectionNotice } from './AnonCollectionNotice';
 import { SiteFeedbackPanel } from './SiteFeedbackPanel';
@@ -423,10 +424,15 @@ export function InquiryLayout<TContext = unknown>({
   // "you may write 모르겠다" hint only applies to the latter — O/X items have no
   // text box, so telling a learner to type there sends them looking for a
   // control that does not exist.
+  // Lab 의 생각해보기 접기 버튼을 두 번 누르면 켜지는 시연자 우회. 여기서도
+  // 생각해보기만 빼고 기록 칸은 그대로 요구한다 — utils/selfCheckSkip.
+  const skipSelfChecks = useSelfCheckSkip();
   const unansweredOnStep = (step: (typeof module.steps)[number]) => {
-    const checks = (step.selfChecks ?? []).filter(
-      (item) => selfCheckAnswers[`${step.id}:${item.id}`] === undefined,
-    ).length;
+    const checks = skipSelfChecks
+      ? 0
+      : (step.selfChecks ?? []).filter(
+          (item) => selfCheckAnswers[`${step.id}:${item.id}`] === undefined,
+        ).length;
     const fields = step.recordFields.filter((field) => !isFieldFilled(step, field.id)).length;
     return { checks, fields, total: checks + fields };
   };

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useLangStore } from '../../i18n';
 import { isAnswerGateOn } from '../../utils/answerGate';
+import { toggleSelfCheckSkip } from '../../utils/selfCheckSkip';
 
 export type GuideQuestion =
   | { type: 'open'; id: string; text: string }
@@ -48,6 +49,10 @@ export function StepGuide({ questions, storageKey, initialAnswers, onAnswersChan
           const next = !open;
           setOpen(next);
           try { localStorage.setItem(storageKey, String(next)); } catch { /* ignore */ }
+        }}
+        onDoubleClick={() => {
+          // 시연자 우회 — utils/selfCheckSkip. 한 번 누르기는 종전대로.
+          if (toggleSelfCheckSkip()) setOpen(false);
         }}
       >
         <span>{lang === 'ko' ? '생각해보기' : 'Think About It'}</span>
