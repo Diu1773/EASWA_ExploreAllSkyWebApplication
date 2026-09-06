@@ -50,18 +50,18 @@
       <p class="lead">「차이」 열부터 보세요. 나머지 열은 그 값이 어떻게 나왔는지 알려 줍니다.</p>
       <table>
         <thead>
-          <tr><th>항목</th><th>측정값</th><th>기준값</th><th class="hi">차이</th><th>단위</th><th>기준값 출처</th></tr>
+          <tr><th>항목</th><th class="c-out">측정값</th><th class="c-data">기준값</th><th class="hi">차이</th><th>단위</th><th class="c-data">기준값 출처</th></tr>
         </thead>
         <tbody>
-          <tr><td class="lbl">반지름비 Rp/R*</td><td>0.1453</td><td>0.1552</td><td class="hi">−6.4</td><td>%</td><td class="src">NASA Exoplanet Archive</td></tr>
-          <tr><td class="lbl">식 깊이</td><td>2.112</td><td>2.408</td><td class="hi">−0.296</td><td>%p</td><td class="src">NASA Exoplanet Archive</td></tr>
-          <tr><td class="lbl">공전 주기</td><td>3.3610</td><td>3.3610026</td><td class="hi">−0.0000026</td><td>d</td><td class="src">NASA Exoplanet Archive</td></tr>
-          <tr><td class="lbl">잔차 표준편차</td><td>1.6</td><td>—</td><td class="hi">—</td><td>‰</td><td class="src">측정에서 나온 값</td></tr>
+          <tr><td class="lbl">반지름비 Rp/R*</td><td>0.1453</td><td class="c-data">0.1552</td><td class="hi">−6.4</td><td>%</td><td class="src">NASA Exoplanet Archive</td></tr>
+          <tr><td class="lbl">식 깊이</td><td>2.112</td><td class="c-data">2.408</td><td class="hi">−0.296</td><td>%p</td><td class="src">NASA Exoplanet Archive</td></tr>
+          <tr><td class="lbl">공전 주기</td><td>3.3610</td><td class="c-data">3.3610026</td><td class="hi">−0.0000026</td><td>d</td><td class="src">NASA Exoplanet Archive</td></tr>
+          <tr><td class="lbl">잔차 표준편차</td><td>1.6</td><td class="c-data">—</td><td class="hi">—</td><td>‰</td><td class="src">측정에서 나온 값</td></tr>
         </tbody>
       </table>
       <p class="after">4개 항목 · 기준값에 불확실도가 공개되지 않은 항목은 「—」로 둡니다</p>
 
-      <div class="answer">
+      <div class="answer d-out">
         <h4>차이가 어디에서 왔는지 적어 보세요</h4>
         <div class="in">
           <p class="lead">근거로 쓸 값은 앞 단계에 있습니다. 눌러서 다시 확인한 뒤 쓰세요.</p>
@@ -121,8 +121,8 @@
 
   <div class="cols" style="grid-template-columns:340px 1fr">
     <div>
-      <div class="ctrls" style="margin-bottom:16px">
-        <h4>TESS 섹터</h4>
+      <div class="ctrls d-set" style="margin-bottom:16px">
+        <h4>TESS 섹터 — 어느 시기 자료로 잴 것인가</h4>
         <div class="in">
           <label class="sector"><input type="radio" checked><span class="nm">Sector 2</span><span class="mt">1,245 프레임</span></label>
           <label class="sector off"><input type="radio" disabled><span class="nm">Sector 29</span><span class="mt">번들 아님</span></label>
@@ -130,7 +130,7 @@
           <label class="sector off"><input type="radio" disabled><span class="nm">Sector 96</span><span class="mt">번들 아님</span></label>
         </div>
       </div>
-      <div class="ctrls">
+      <div class="ctrls d-set">
         <h4>측광 조건 — 바꾸면 결과가 달라집니다</h4>
         <div class="in">
           <div class="row"><span class="k">구경 반지름</span><span class="v">2.5 px</span></div>
@@ -141,7 +141,7 @@
       </div>
     </div>
 
-    <div>
+    <div style="max-width:840px">
       <div class="fig">
         <img src="real_output/wasp6b_lightcurve.png" alt="WASP-6 b 차등측광 광도곡선">
         <div class="cap">가로 = 공전 위상 · 세로 = 상대 밝기 · 아래 = 잔차 (표준편차 1.6 ‰)</div>
@@ -149,7 +149,7 @@
       <div class="figread">행성이 별 앞을 지나는 동안 밝기가 내려갔다가 되돌아옵니다.
         <b>어느 구간을 근거로 삼겠습니까?</b></div>
 
-      <div class="answer">
+      <div class="answer d-out">
         <h4>탐구 기록</h4>
         <div class="in">
           <p class="lead">그림에 표시를 켜 두고 보면서 쓰면 됩니다.</p>
