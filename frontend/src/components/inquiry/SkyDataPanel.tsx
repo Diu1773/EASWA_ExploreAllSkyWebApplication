@@ -53,40 +53,57 @@ export function SkyDataPanel({
   const gridOn = gridAvailable && view === 'grid';
   const binnedOn = gridAvailable && view === 'binned';
 
-  // TESS 한 픽셀(cellPx)을 한 칸으로 삼아 DSS 그림을 굵게 다시 그린다. 축소해서
-  // 그린 뒤 매끄럽게 늘리지 않고 확대하면 각 칸이 한 색으로 뭉친다 — 같은 하늘을
-  // TESS 해상도로 보면 이웃한 별들이 한 픽셀에 섞인다는 것을 그대로 보여 준다.
+  // 원본을 한 번만 받아 ref 에 들고 있는다. 보기를 오갈 때마다 새로 받으면
+  // 전환마다 로딩이 걸린다(2026-09-06 소유자 지적). crossOrigin 을 붙인 요청은
+  // <img> 가 이미 받은 것과 별개 항목이라 브라우저 캐시로도 해결되지 않았다.
+  const sourceImageRef = useRef<HTMLImageElement | null>(null);
+  const [sourceReady, setSourceReady] = useState(false);
+
   useEffect(() => {
-    if (!binnedOn || imgFailed) return;
-    const canvas = binnedRef.current;
-    if (!canvas) return;
-    const cols = Math.max(1, Math.round(IMG_W / cellPx));
-    const rows = Math.max(1, Math.round(IMG_H / cellPx));
+    setSourceReady(false);
+    sourceImageRef.current = null;
     const image = new Image();
     image.crossOrigin = 'anonymous';
     let cancelled = false;
     image.onload = () => {
       if (cancelled) return;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-      const small = document.createElement('canvas');
-      small.width = cols;
-      small.height = rows;
-      const sctx = small.getContext('2d');
-      if (!sctx) return;
-      sctx.drawImage(image, 0, 0, cols, rows);
-      canvas.width = IMG_W;
-      canvas.height = IMG_H;
-      ctx.imageSmoothingEnabled = false;
-      ctx.clearRect(0, 0, IMG_W, IMG_H);
-      ctx.drawImage(small, 0, 0, cols, rows, 0, 0, IMG_W, IMG_H);
+      sourceImageRef.current = image;
+      setSourceReady(true);
     };
-    image.onerror = () => setImgFailed(true);
+    image.onerror = () => {
+      if (!cancelled) setImgFailed(true);
+    };
     image.src = src;
     return () => {
       cancelled = true;
     };
-  }, [binnedOn, imgFailed, src, cellPx]);
+  }, [src]);
+
+  // TESS 한 픽셀(cellPx)을 한 칸으로 삼아 그림을 굵게 다시 그린다. 축소해서 그린
+  // 뒤 매끄럽게 늘리지 않고 확대하면 각 칸이 한 색으로 뭉친다 — 같은 하늘을 TESS
+  // 해상도로 보면 이웃한 별들이 한 픽셀에 섞인다는 것을 그대로 보여 준다.
+  // 이미 받아 둔 이미지를 쓰므로 다시 그리는 데 네트워크가 필요 없다.
+  useEffect(() => {
+    if (!sourceReady || imgFailed) return;
+    const canvas = binnedRef.current;
+    const image = sourceImageRef.current;
+    if (!canvas || !image) return;
+    const cols = Math.max(1, Math.round(IMG_W / cellPx));
+    const rows = Math.max(1, Math.round(IMG_H / cellPx));
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const small = document.createElement('canvas');
+    small.width = cols;
+    small.height = rows;
+    const sctx = small.getContext('2d');
+    if (!sctx) return;
+    sctx.drawImage(image, 0, 0, cols, rows);
+    canvas.width = IMG_W;
+    canvas.height = IMG_H;
+    ctx.imageSmoothingEnabled = false;
+    ctx.clearRect(0, 0, IMG_W, IMG_H);
+    ctx.drawImage(small, 0, 0, cols, rows, 0, 0, IMG_W, IMG_H);
+  }, [sourceReady, imgFailed, cellPx]);
 
   const { verticals, horizontals, highlight } = useMemo(() => {
     if (!gridAvailable) return { verticals: [], horizontals: [], highlight: null };
@@ -152,20 +169,21 @@ export function SkyDataPanel({
               </div>
             ) : (
               <>
-                {binnedOn ? (
-                  <canvas
-                    ref={binnedRef}
-                    className="inquiry-skydata-binned"
-                    aria-label={`${targetName} ${lang === 'ko' ? '주변 하늘을 TESS 픽셀 크기로 다시 그린 그림' : 'sky field redrawn at TESS pixel scale'}`}
-                  />
-                ) : (
-                  <img
-                    src={src}
-                    alt={`${targetName} ${lang === 'ko' ? '주변 하늘 (DSS)' : 'sky field (DSS)'}`}
-                    loading="lazy"
-                    onError={() => setImgFailed(true)}
-                  />
-                )}
+                {/* 둘 다 켜 두고 보이기만 바꾼다. 조건부로 갈아 끼우면 전환할
+                    때마다 <img> 가 다시 마운트돼 로딩이 보인다. */}
+                <img
+                  src={src}
+                  alt={`${targetName} ${lang === 'ko' ? '주변 하늘 (DSS)' : 'sky field (DSS)'}`}
+                  loading="lazy"
+                  onError={() => setImgFailed(true)}
+                  hidden={binnedOn}
+                />
+                <canvas
+                  ref={binnedRef}
+                  className="inquiry-skydata-binned"
+                  aria-label={`${targetName} ${lang === 'ko' ? '주변 하늘을 TESS 픽셀 크기로 다시 그린 그림' : 'sky field redrawn at TESS pixel scale'}`}
+                  hidden={!binnedOn}
+                />
                 {gridOn && highlight && (
                   <svg
                     className="inquiry-skydata-grid"

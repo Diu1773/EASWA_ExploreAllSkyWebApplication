@@ -12112,3 +12112,19 @@ body {
   height: auto;
   image-rendering: pixelated;
 }
+
+/* 클래스 선택자가 [hidden] 의 기본 display:none 보다 강해서, 이것이 없으면
+   숨겼는데도 캔버스가 그대로 보인다. <img> 쪽도 같은 이유로 함께 적는다. */
+.inquiry-skydata-stage img[hidden],
+.inquiry-skydata-binned[hidden] {
+  display: none;
+}
+
+/* DSS 원본은 어두워서(이 시야의 최대 밝기가 255 중 106) 별이 잘 드러나지 않는다.
+   원본·격자·해상도 세 보기에 **같은** 보정을 걸어야 비교가 공정하다 — 한쪽만
+   밝히면 뭉침이 아니라 밝기 차이로 읽힌다. 위치·크기 비교용 그림이고 분석에 쓰는
+   자료는 TESS cutout 이므로, 보이게 하는 보정은 자료를 바꾸는 것이 아니다. */
+.inquiry-skydata-stage img,
+.inquiry-skydata-binned {
+  filter: brightness(1.7) contrast(1.12);
+}
