@@ -200,12 +200,17 @@ export const exoplanetTransitModule: ExplorationModuleConfig = {
         {
           id: 'next_step',
           question: {
-            ko: '분석을 다시 수행한다면 무엇을 바꾸겠는가?',
-            en: 'If you repeated this analysis, what would you change?',
+            // 「다시 수행한다면 ~겠는가」는 영어 조건문을 그대로 옮긴 말투다.
+            // 1차 조사에서 이 문항 응답이 0건이었으므로 묻는 것을 좁혀,
+            // 앞 단계에서 학습자가 실제로 정한 것을 떠올리게 한다.
+            ko: '다시 한다면 어떤 설정을 바꿔 보고 싶나요?',
+            en: 'If you ran this again, which setting would you change?',
           },
           helperText: {
-            ko: '예: 시야 확대, 비교성 변경, 다른 Sector 분석',
-            en: 'e.g., a wider field, different comparison stars, another sector',
+            // 답을 나열하지 않는다(기준값 비교 화면과 같은 원칙). 어디를
+            // 보면 되는지만 가리킨다.
+            ko: '앞 단계에서 직접 고르거나 정한 것들을 떠올려 보세요.',
+            en: 'Think back to what you picked or set in the earlier steps.',
           },
         },
       ],
