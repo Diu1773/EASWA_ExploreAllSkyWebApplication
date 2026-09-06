@@ -57,10 +57,12 @@ export function SkyDataPanel({
   // 전환마다 로딩이 걸린다(2026-09-06 소유자 지적). crossOrigin 을 붙인 요청은
   // <img> 가 이미 받은 것과 별개 항목이라 브라우저 캐시로도 해결되지 않았다.
   const sourceImageRef = useRef<HTMLImageElement | null>(null);
-  const [sourceReady, setSourceReady] = useState(false);
+  // 「어느 주소의 그림을 받아 두었나」로 들고 있으면, 주소가 바뀔 때 값이 저절로
+  // 어긋나 준비 안 된 상태가 된다. effect 안에서 상태를 바로 되돌릴 필요가 없다.
+  const [loadedSrc, setLoadedSrc] = useState<string | null>(null);
+  const sourceReady = loadedSrc === src;
 
   useEffect(() => {
-    setSourceReady(false);
     sourceImageRef.current = null;
     const image = new Image();
     image.crossOrigin = 'anonymous';
@@ -68,7 +70,7 @@ export function SkyDataPanel({
     image.onload = () => {
       if (cancelled) return;
       sourceImageRef.current = image;
-      setSourceReady(true);
+      setLoadedSrc(src);
     };
     image.onerror = () => {
       if (!cancelled) setImgFailed(true);
