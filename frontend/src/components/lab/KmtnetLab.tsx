@@ -1062,14 +1062,10 @@ export function KmtnetLab({
   return (
     <div className="kmtnet-lab">
       {/* Same flow for every learner — see the note on TransitLab's banner. */}
+      {/* 단계 제목·요약·질문 위에 개요까지 겹치지 않게 소요 시간만 남긴다
+          (TransitLab 의 같은 배너 주석 참조). */}
       <div className="learning-mode-banner">
-        <div>
-          <span>탐구 개요</span>
-          <strong>
-            단계별 안내를 따라 세 관측소 자료와 추출 조건을 비교하며 사건 해석의 근거를 점검합니다.
-          </strong>
-        </div>
-        <p>권장 45~90분 · 결과물: 관측소 비교, 이어 붙인 곡선 근거, 모델 해석 기록</p>
+        <p>권장 45~90분</p>
       </div>
       {draftId && draftStatusLabel && (
         <div className={`transit-draft-bar ${draftSaveStatus}`}>

@@ -78,7 +78,9 @@ const STAGES: Stage[] = [
   },
   {
     label: { ko: '해석·기록', en: 'Interpret' },
-    actor: { ko: '내가 판단', en: 'You decide' },
+    // 다른 단계는 「TESS 위성」·「플랫폼 자동」처럼 주체를 이름으로 적는데 여기만
+    // 1인칭이었다. 같은 형식으로 맞춘다(2026-09-06 소유자 지적).
+    actor: { ko: '직접 해석', en: 'You decide' },
     why: {
       ko: 'NASA 기준값과 비교하고, 차이의 근거와 한계를 스스로 설명합니다.',
       en: 'Compare with the NASA reference and explain the evidence and limits yourself.',

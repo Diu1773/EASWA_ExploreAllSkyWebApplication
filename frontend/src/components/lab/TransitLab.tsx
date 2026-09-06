@@ -1725,19 +1725,12 @@ export function TransitLab({
       {/* Every learner follows the same flow — aperture, ROI and comparison stars
           are adjustable regardless of learningMode — so this banner must not
           imply a guided/advanced split the UI does not offer. */}
+      {/* 단계 제목·요약·질문이 이미 위에 있어 개요까지 두면 한 화면에 안내가 네 겹이
+          된다(2026-09-06 소유자 지적: "3개 4개가 이렇게 있으니 헷갈리지 사람들이
+          뭘 볼지 모르지"). 소요 시간만 남기고 나머지는 뺀다. */}
       <div className="learning-mode-banner">
-        <div>
-          <span>{lang === 'ko' ? '탐구 개요' : 'Overview'}</span>
-          <strong>
-            {lang === 'ko'
-              ? '단계별 안내를 따라 분석하고, 분석 조건과 모델 가정을 확인하며 결과를 해석합니다.'
-              : 'Follow the guided steps, check the analysis conditions and model assumptions, and interpret the result.'}
-          </strong>
-        </div>
         <p>
-          {lang === 'ko'
-            ? '권장 45~90분 · 결과물: 광도곡선 근거, NASA Exoplanet Archive 기준값 비교, 차이 원인 설명'
-            : 'Suggested 45–90 minutes · Output: light-curve evidence, NASA Exoplanet Archive comparison, and an explanation of differences'}
+          {lang === 'ko' ? '권장 45~90분' : 'Suggested 45–90 minutes'}
           {labSavedAt !== null && (
             <em className="inquiry-autosave-status">
               {lang === 'ko' ? '이 브라우저에 자동 저장됨 ' : 'Autosaved in this browser '}

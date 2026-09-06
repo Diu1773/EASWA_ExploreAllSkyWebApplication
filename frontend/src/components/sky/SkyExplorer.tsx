@@ -139,7 +139,9 @@ export function SkyExplorer({
 
         {/* Search overlay — full-catalog name/constellation search */}
         <div className="sky-search-overlay">
-          <div className="sky-search-box">
+          {/* 평소에는 아이콘 폭으로 접혀 지도를 가리지 않는다. 글자가 들어 있는
+              동안에는 펼친 채로 둔다(CSS 의 .has-query). */}
+          <div className={`sky-search-box${nameSearch ? ' has-query' : ''}`}>
             <svg
               className="sky-search-icon"
               viewBox="0 0 24 24"

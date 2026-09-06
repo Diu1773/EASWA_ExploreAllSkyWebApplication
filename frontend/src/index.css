@@ -9810,11 +9810,15 @@ body {
   z-index: 10;
 }
 
+/* 지도 위에 떠 있는 상자라 늘 별을 가렸다(2026-09-06 소유자 지적). 평소에는
+   아이콘 폭으로 접어 두고, 누르거나 글자를 넣은 동안에만 펼친다. 입력 자체는
+   그대로라 검색 흐름은 바뀌지 않는다. */
 .sky-search-box {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  width: 232px;
+  width: 34px;
+  overflow: hidden;
   padding: 0.4rem 0.6rem;
   background: rgba(15, 20, 32, 0.92);
   border: 1px solid var(--border);
@@ -9824,10 +9828,15 @@ body {
   transition: border-color 0.15s, box-shadow 0.15s, width 0.2s;
 }
 
+.sky-search-box:focus-within,
+.sky-search-box:hover,
+.sky-search-box.has-query {
+  width: 264px;
+}
+
 .sky-search-box:focus-within {
   border-color: var(--accent);
   box-shadow: 0 0 0 2px rgba(232, 114, 42, 0.25);
-  width: 264px;
 }
 
 .sky-search-icon {
@@ -9890,11 +9899,11 @@ body {
   backdrop-filter: blur(4px);
 }
 
+/* 움직임을 줄여 달라는 설정에서는 펼침 애니메이션만 끄고, 접힘 자체는 그대로
+   둔다. 예전에는 여기서 232px 로 되돌려 상자가 늘 지도를 가렸다. */
 @media (prefers-reduced-motion: reduce) {
-  .sky-search-box,
-  .sky-search-box:focus-within {
+  .sky-search-box {
     transition: none;
-    width: 232px;
   }
 }
 
