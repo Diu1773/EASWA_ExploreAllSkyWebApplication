@@ -9803,7 +9803,10 @@ body {
 .sky-search-overlay {
   position: absolute;
   top: 0.65rem;
-  right: 0.75rem;
+  /* 모서리에 두면 그 자리의 별을 가린다. 위쪽 가운데는 시야에서 먼저 눈에
+     들어오고, 접힌 상태에서는 아이콘 하나만 덮는다(2026-09-06 소유자 지시). */
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -10810,13 +10813,15 @@ body {
   .sky-search-overlay {
     top: 0.75rem;
     left: 0.75rem;
-    right: 0.75rem;
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
     gap: 0.5rem;
   }
 
-  .sky-search-box,
-  .sky-search-box:focus-within {
-    width: 100%;
+  .sky-search-box:focus-within,
+  .sky-search-box.has-query {
+    width: min(264px, 70vw);
   }
 
   .target-popup {
