@@ -57,6 +57,11 @@ class MicrolensingFitResponse(BaseModel):
     tE_err: float
     mag_base_err: float
     chi2_dof: float
+    # Parameters that stopped at the edge of their allowed range. A fit that
+    # ends on a bound was not determined by the data, and its curve can spike in
+    # a way that reads as a real feature (reported 2026-09-06: a bound-stopped
+    # u0 was mistaken for a planetary anomaly).
+    bounds_hit: list[str] = Field(default_factory=list)
     model_curve: list[MicrolensingModelPoint]
 
 
@@ -102,6 +107,14 @@ class MicrolensingPreviewResponse(BaseModel):
     registration_dx_px: float
     registration_dy_px: float
     registration_quality_score: float
+    # How the two frames were matched before subtracting: the Gaussian blur
+    # added (negative means the frame itself was blurred, not the reference)
+    # and the brightness ratio applied to the reference.
+    # How well the aligned frame matches the reference (-1 to 1). Below about
+    # 0.5 the two frames are not showing the same thing.
+    registration_correlation: float = 0.0
+    psf_match_sigma_px: float = 0.0
+    flux_scale: float = 1.0
     registration_hit_limit: bool
     registration_warning: str | None = None
     frame_metadata: MicrolensingPreviewFrameMetadata

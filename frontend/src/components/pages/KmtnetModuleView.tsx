@@ -1,7 +1,15 @@
 import { Suspense, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { axisTitle } from '../../utils/axisLabels';
 import { useSearchParams } from 'react-router-dom';
 import PlotlyModule from 'plotly.js-dist-min';
-import { fetchTargets, fetchMicrolensingLightcurve, fitMicrolensingModel } from '../../api/client';
+import { plotConfig } from '../../utils/plotConfig';
+import {
+  fetchTargets,
+  fetchMicrolensingLightcurve,
+  fitMicrolensingModel,
+  fetchMicrolensingFrameStripIndex,
+  type MicrolensingFrameStripEntry,
+} from '../../api/client';
 import type { Target } from '../../types/target';
 import type {
   MicrolensingLightCurveResponse,
@@ -13,6 +21,7 @@ import type { ExplorationModuleConfig } from '../../explorationBlocks/types';
 import { InquiryLayout } from '../inquiry';
 import microlensingNasaImg from '../../assets/microlensing-nasa-svs.jpg';
 import { lazyWithRetry } from '../../utils/lazyWithRetry';
+import { KmtnetDiaSandbox } from '../lab/KmtnetDiaSandbox';
 
 const KmtnetSkyMap = lazyWithRetry('KmtnetSkyMap', () =>
   import('../sky/KmtnetSkyMap').then((m) => ({ default: m.KmtnetSkyMap })),
@@ -37,14 +46,24 @@ interface KmtnetModuleViewProps {
   module: ExplorationModuleConfig;
 }
 
+const FIT_PARAM_LABEL: Record<string, { ko: string; en: string }> = {
+  t0: { ko: '최대 시각 t₀', en: 'peak time t₀' },
+  u0: { ko: '최소 거리 u₀', en: 'minimum separation u₀' },
+  tE: { ko: '지속 시간 t_E', en: 'timescale t_E' },
+  mag_base: { ko: '기준 밝기', en: 'baseline brightness' },
+};
+
 function LightCurvePanel({
   lc,
   fit,
   lang,
+  markEpochs = [],
 }: {
   lc: MicrolensingLightCurveResponse;
   fit: MicrolensingFitResponse | null;
   lang: 'ko' | 'en';
+  /** HJDs of the frames looked at in Step 3, drawn as thin vertical rules. */
+  markEpochs?: number[];
 }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -77,18 +96,27 @@ function LightCurvePanel({
       ref.current,
       traces,
       {
-        xaxis: { title: { text: 'HJD', font: { color: '#9aa3b0', size: 11 } }, gridcolor: 'rgba(255,255,255,0.06)', color: '#9aa3b0' },
-        yaxis: { title: { text: lc.y_label, font: { color: '#9aa3b0', size: 11 } }, autorange: 'reversed', gridcolor: 'rgba(255,255,255,0.06)', color: '#9aa3b0' },
+        xaxis: { title: { text: axisTitle('HJD', lang), font: { color: '#9aa3b0', size: 11 } }, gridcolor: 'rgba(255,255,255,0.06)', color: '#9aa3b0' },
+        yaxis: { title: { text: axisTitle(lc.y_label, lang), font: { color: '#9aa3b0', size: 11 } }, autorange: 'reversed', gridcolor: 'rgba(255,255,255,0.06)', color: '#9aa3b0' },
         plot_bgcolor: '#12161e',
         paper_bgcolor: '#1a2030',
         font: { family: 'IBM Plex Mono, monospace', color: '#9aa3b0', size: 11 },
-        margin: { t: 16, r: 16, b: 44, l: 60 },
+        margin: { t: 40, r: 16, b: 44, l: 60 },  // room for the modebar above the plot
         showlegend: true,
         legend: { x: 1, y: 1, xanchor: 'right', yanchor: 'top', bgcolor: 'rgba(26,32,48,0.85)', font: { size: 10, color: '#d4dae5' } },
+        shapes: markEpochs.map((hjd) => ({
+          type: 'line',
+          x0: hjd,
+          x1: hjd,
+          yref: 'paper',
+          y0: 0,
+          y1: 1,
+          line: { color: '#e8722a', width: 1, dash: 'dot' },
+        })),
       },
-      { responsive: true, displayModeBar: false },
+      plotConfig({ lang, imageName: `lightcurve-${lc.target_id ?? 'kmtnet'}` }),
     );
-  }, [lc, fit, lang]);
+  }, [lc, fit, lang, markEpochs]);
   return <div ref={ref} className="kmt-lc-plot" />;
 }
 
@@ -106,15 +134,25 @@ export function KmtnetModuleView({ module }: KmtnetModuleViewProps) {
   const [fitting, setFitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [listOpen, setListOpen] = useState(false);
+  // Set by Step 3's difference-imaging sandbox; Step 4 marks those epochs on the
+  // light curve so the images and the curve are visibly the same observations.
+  const [diaEpochs, setDiaEpochs] = useState<number[]>([]);
+  // Which events have archive cutouts from their own observing season — only
+  // two of the nine do, so Step 1 marks them and Step 3 explains the rest.
+  const [frameStrips, setFrameStrips] = useState<MicrolensingFrameStripEntry[]>([]);
 
   useEffect(() => {
     fetchTargets('microlensing')
       .then(setEvents)
       .catch(() => setEvents([]));
+    fetchMicrolensingFrameStripIndex()
+      .then((data) => setFrameStrips(data.entries))
+      .catch(() => setFrameStrips([]));
   }, []);
 
   useEffect(() => {
     setFit(null);
+    setDiaEpochs([]);
     if (!selectedId) {
       setLc(null);
       return;
@@ -137,6 +175,15 @@ export function KmtnetModuleView({ module }: KmtnetModuleViewProps) {
   }, [selectedId, sites]);
 
   const selectedEvent = useMemo(() => events.find((e) => e.id === selectedId) ?? null, [events, selectedId]);
+
+  const sitesWithFrames = useMemo(
+    () => frameStrips.filter((entry) => entry.target_id === selectedId).map((entry) => entry.site),
+    [frameStrips, selectedId],
+  );
+  const eventsWithFrames = useMemo(() => {
+    const ids = new Set(frameStrips.map((entry) => entry.target_id));
+    return events.filter((event) => ids.has(event.id)).map((event) => ({ id: event.id, name: event.name }));
+  }, [frameStrips, events]);
 
   const handleSelect = (id: string) => {
     const next = new URLSearchParams(searchParams);
@@ -259,6 +306,9 @@ export function KmtnetModuleView({ module }: KmtnetModuleViewProps) {
                 </span>
                 <strong>{ev.name}</strong>
                 <span className="kmt-pick-desc">{ev.magnitude_range}</span>
+                {frameStrips.some((entry) => entry.target_id === ev.id) && (
+                  <span className="kmt-pick-frames">{ko ? '관측 영상 있음' : 'frames available'}</span>
+                )}
               </button>
             ))}
           </div>
@@ -290,7 +340,7 @@ export function KmtnetModuleView({ module }: KmtnetModuleViewProps) {
         {error && <p className="error-message">{error}</p>}
         {lc && lc.points.length > 0 && (
           <>
-            <LightCurvePanel lc={lc} fit={fit} lang={lang} />
+            <LightCurvePanel lc={lc} fit={fit} lang={lang} markEpochs={diaEpochs} />
             <p className="kmt-lc-meta">
               {ko
                 ? `실제 KMTNet pySIS 차분측광 · ${lc.points.length}점 · 관측소 ${lc.included_sites.map((s) => s.toUpperCase()).join('·')}`
@@ -301,11 +351,25 @@ export function KmtnetModuleView({ module }: KmtnetModuleViewProps) {
                 곡선이 그냥 나타난 것이 되고, 이 단계의 자가점검도 화면에서 확인할 수 없는 것을
                 묻게 된다(원리 3). 실제 처리는 kmtnet_lightcurve_service — 측광 오차 0.3등급 초과
                 제외(_MAX_MAG_ERR), 관측소별 밝기 영점을 공통 기준선에 맞춘 뒤 병합. */}
+            {diaEpochs.length > 0 && (
+              <p className="kmt-lc-meta">
+                {ko
+                  ? `세로 점선 ${diaEpochs.length}개 = 분석 준비 단계에서 본 관측 영상의 촬영 시각`
+                  : `${diaEpochs.length} dotted rules = when the frames you looked at in the preparation step were taken`}
+              </p>
+            )}
             <p className="kmt-lc-meta kmt-lc-provenance">
               {ko
                 ? '플랫폼이 한 처리: 측광 오차가 0.3등급을 넘는 점을 빼고, 관측소마다 다른 밝기 영점을 하나의 기준에 맞춘 뒤 시각 순으로 이어 붙였습니다.'
                 : 'What the platform did: dropped points with a photometric error above 0.3 mag, put each site onto one common brightness zero-point, then merged them in time order.'}
             </p>
+            {(fit?.bounds_hit?.length ?? 0) > 0 && (
+              <p className="kmt-fit-warning">
+                {ko
+                  ? `적합이 ${fit!.bounds_hit!.map((n) => FIT_PARAM_LABEL[n]?.ko ?? n).join('·')} 값의 허용 범위 끝에서 멈췄습니다. 자료가 그 값을 가리킨 것이 아니라 계산이 더 갈 곳이 없어 멈춘 자리이므로, 곡선이 뾰족하게 솟더라도 실제 신호로 읽지 마세요.`
+                  : `The fit stopped at the edge of the allowed range for ${fit!.bounds_hit!.map((n) => FIT_PARAM_LABEL[n]?.en ?? n).join(', ')}. That value was not chosen by the data but by where the search ran out of room, so a sharp spike in the curve is not a real signal.`}
+              </p>
+            )}
             <div className="kmt-fit-row">
               <button type="button" className="btn-primary" disabled={fitting} onClick={handleFit}>
                 {fitting ? (ko ? '적합 중…' : 'Fitting…') : ko ? '단일 렌즈(Paczyński) 모델 적합' : 'Fit single-lens (Paczyński) model'}
@@ -324,6 +388,19 @@ export function KmtnetModuleView({ module }: KmtnetModuleViewProps) {
       </div>
     );
   })();
+
+  const conditionsSlot = selectedId ? (
+    <KmtnetDiaSandbox
+      targetId={selectedId}
+      sites={sitesWithFrames}
+      alternatives={eventsWithFrames}
+      onEpochs={setDiaEpochs}
+    />
+  ) : (
+    <div className="inquiry-lab-handoff">
+      <p>{ko ? '먼저 위에서 미시중력렌즈 이벤트를 선택하세요.' : 'Select a microlensing event above first.'}</p>
+    </div>
+  );
 
   const comparisonSlot = fit && lc?.ref_u0 ? (
     <section className="inquiry-info-panel">
@@ -412,6 +489,7 @@ export function KmtnetModuleView({ module }: KmtnetModuleViewProps) {
           en: 'Select a microlensing event on the sky view first.',
         },
       }}
+      conditionsSlot={conditionsSlot}
       analysisSlot={analysisSlot}
       comparisonSlot={comparisonSlot}
       maxUnlockedStepIndex={fit ? undefined : 4}

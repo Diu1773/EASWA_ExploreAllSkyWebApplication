@@ -384,11 +384,11 @@ export function TransitCutoutViewer({
               </strong>
             </div>
             <div className="transit-frame-row">
-              <span>{lang === 'ko' ? 'Flux 중앙값' : 'Flux Median'}</span>
+              <span>{lang === 'ko' ? '밝기값 중앙값' : 'Flux Median'}</span>
               <strong>{frameMetadata?.flux_median ?? 'n/a'}</strong>
             </div>
             <div className="transit-frame-row">
-              <span>{lang === 'ko' ? 'Flux 범위' : 'Flux Range'}</span>
+              <span>{lang === 'ko' ? '밝기값 범위' : 'Flux Range'}</span>
               <strong>
                 {frameMetadata?.flux_min ?? 'n/a'}
                 {frameMetadata?.flux_max !== null && frameMetadata?.flux_max !== undefined

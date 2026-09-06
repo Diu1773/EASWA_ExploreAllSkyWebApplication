@@ -53,6 +53,8 @@ export interface MicrolensingFitResponse {
   tE_err: number;
   mag_base_err: number;
   chi2_dof: number;
+  /** Fitted parameters that stopped at the edge of their allowed range. */
+  bounds_hit?: string[];
   model_curve: MicrolensingModelPoint[];
 }
 
@@ -98,6 +100,10 @@ export interface MicrolensingPreviewResponse {
   registration_dx_px: number;
   registration_dy_px: number;
   registration_quality_score: number;
+  /** Gaussian blur added to match the two frames; negative means the frame itself was blurred. */
+  psf_match_sigma_px?: number;
+  /** Brightness ratio applied to the reference before subtracting. */
+  flux_scale?: number;
   registration_hit_limit: boolean;
   registration_warning: string | null;
   frame_metadata: MicrolensingPreviewFrameMetadata;

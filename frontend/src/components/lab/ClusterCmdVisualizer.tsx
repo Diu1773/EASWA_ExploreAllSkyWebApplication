@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { axisTitle } from '../../utils/axisLabels';
 import PlotlyModule from 'plotly.js-dist-min';
+import { plotConfig } from '../../utils/plotConfig';
 import { useLangStore } from '../../i18n';
 import type { ClusterCmdResponse } from '../../api/client';
 import { MEMBERSHIP_LABELS, type MembershipLevel } from '../../utils/clusterMembership';
@@ -206,14 +208,26 @@ export function ClusterCmdVisualizer({
         xanchor: 'left',
       },
       xaxis: {
-        title: { text: data.color_label, font: { color: '#cbd5e1' } },
+        title: {
+          text:
+            lang === 'ko'
+              ? axisTitle(data.color_label, lang)
+              : `${data.color_label} (redder to the right)`,
+          font: { color: '#cbd5e1' },
+        },
         range: [colorMin - 0.2, colorMax + 0.2],
         gridcolor: 'rgba(148, 163, 184, 0.18)',
         color: '#cbd5e1',
         zeroline: false,
       },
       yaxis: {
-        title: { text: `${data.mag_label} (${lang === 'ko' ? '밝을수록 위' : 'brighter up'})`, font: { color: '#cbd5e1' } },
+        title: {
+          text:
+            lang === 'ko'
+              ? axisTitle(data.mag_label, lang)
+              : `${data.mag_label} (mag · brighter up)`,
+          font: { color: '#cbd5e1' },
+        },
         range: [magMax + 0.4, magMin - 0.4],
         gridcolor: 'rgba(148, 163, 184, 0.18)',
         color: '#cbd5e1',
@@ -264,7 +278,7 @@ export function ClusterCmdVisualizer({
     }
 
     plotly
-      .react(node, traces, layout, { responsive: true, displayModeBar: false })
+      .react(node, traces, layout, plotConfig({ lang, imageName: `cmd-${data.cluster.id}` }))
       .catch((error: unknown) => {
         console.error('Failed to render cluster CMD', error);
       });

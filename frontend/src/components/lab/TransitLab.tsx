@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState, type ReactNode } from 'react';
+import { axisTitle } from '../../utils/axisLabels';
 import {
   fetchMyRecordSubmission,
 } from '../../api/client';
@@ -1455,18 +1456,33 @@ export function TransitLab({
   // 그리지 않으려고 ref 에 있으므로, 이미 있는 labDraftTick 으로만 다시 센다.
   // 배포본에서만 켜진다 — utils/answerGate.
   const labGateOn = isAnswerGateOn();
-  const unansweredGuide = useMemo(() => {
-    if (!labGateOn) return 0;
+  // Counted by kind: ox/choice are CHOSEN, open is WRITTEN. The "모르겠다"
+  // hint belongs only to the written ones — the O/X buttons have no text box.
+  const unansweredGuideByKind = useMemo(() => {
+    if (!labGateOn) return { picks: 0, writes: 0, total: 0 };
     void labDraftTick;
-    return (STEP_GUIDES[step] ?? []).filter(
+    const pending = (STEP_GUIDES[step] ?? []).filter(
       (q) => !isAnswerFilled(guideAnswersRef.current[q.id]),
-    ).length;
+    );
+    const writes = pending.filter((q) => q.type === 'open').length;
+    return { picks: pending.length - writes, writes, total: pending.length };
   }, [labGateOn, step, labDraftTick]);
+  const unansweredGuide = unansweredGuideByKind.total;
   const guideBlockedHint =
     unansweredGuide > 0
       ? lang === 'ko'
-        ? `생각해보기에 아직 답하지 않은 문항이 ${unansweredGuide}개 있습니다. 모두 답해야 다음으로 넘어갑니다. 모르겠으면 「모르겠다」라고 적어도 됩니다.`
-        : `${unansweredGuide} question${unansweredGuide > 1 ? 's' : ''} in 생각해보기 still have no answer. Answer them all to continue — writing "I don't know" counts.`
+        ? `생각해보기에 아직 답하지 않은 문항이 ${unansweredGuide}개 있습니다. 모두 답해야 다음으로 넘어갑니다.` +
+          (unansweredGuideByKind.picks > 0
+            ? ' 고르는 문항은 확신이 없어도 지금 생각에 더 가까운 쪽을 고른 뒤 해설을 확인하세요.'
+            : '') +
+          (unansweredGuideByKind.writes > 0 ? ' 서술 칸은 모르겠으면 「모르겠다」라고 적어도 됩니다.' : '')
+        : `${unansweredGuide} question${unansweredGuide > 1 ? 's' : ''} in 생각해보기 still have no answer. Answer them all to continue.` +
+          (unansweredGuideByKind.picks > 0
+            ? ' For the multiple-choice items, pick whichever answer is closer to what you think, then read the explanation.'
+            : '') +
+          (unansweredGuideByKind.writes > 0
+            ? ' In the written boxes, saying you are unsure counts as an answer.'
+            : '')
       : undefined;
 
   const canGoNext =
@@ -1615,14 +1631,17 @@ export function TransitLab({
     fitDataSource === 'phase_fold'
       ? lang === 'ko' ? '위상 접기' : 'Phase Fold'
       : lang === 'ko' ? 'BJD 구간' : 'BJD Window';
-  const fitDisplayXAxisLabel =
-    fitDisplayXAxis === 'orbital_phase'
-      ? lang === 'ko' ? '공전 위상' : 'Orbital Phase'
-      : 'BTJD';
-  const fitDisplayYAxisLabel =
-    fitDisplayYAxis === 'delta_mag'
-      ? lang === 'ko' ? '등급 변화량' : 'Delta mag'
-      : lang === 'ko' ? '정규화 Flux' : 'Normalized Flux';
+  // Axis names go through the shared dictionary so the Lab, the QC plot and the
+  // module views all say the same thing — and so the Korean screen names the
+  // unit, which the July review asked for.
+  const fitDisplayXAxisLabel = axisTitle(
+    fitDisplayXAxis === 'orbital_phase' ? 'Orbital Phase' : 'BTJD',
+    lang,
+  );
+  const fitDisplayYAxisLabel = axisTitle(
+    fitDisplayYAxis === 'delta_mag' ? 'Delta mag' : 'Normalized Flux',
+    lang,
+  );
   const canDisplayFitAsPhase = Boolean(fitDisplayReferencePeriod && fitDisplayReferencePeriod > 0);
   const fitPreviewOverlay =
     activeFitPreviewResult
@@ -2175,11 +2194,11 @@ export function TransitLab({
                     <span>{result.frame_count.toLocaleString()}</span>
                   </div>
                   <div className="transit-config-row">
-                    <span>{lang === 'ko' ? '목표별 Flux 중앙값' : 'Median Target'}</span>
+                    <span>{lang === 'ko' ? '목표별 밝기값(flux) 중앙값' : 'Median Target'}</span>
                     <span>{result.target_median_flux.toFixed(1)}</span>
                   </div>
                   <div className="transit-config-row">
-                    <span>{lang === 'ko' ? '비교성 Flux 중앙값' : 'Median Comp'}</span>
+                    <span>{lang === 'ko' ? '비교성 밝기값(flux) 중앙값' : 'Median Comp'}</span>
                     <span>{result.comparison_median_flux.toFixed(1)}</span>
                   </div>
                   <div className="transit-config-row">
@@ -2300,11 +2319,11 @@ export function TransitLab({
                     <span>{result.frame_count.toLocaleString()}</span>
                   </div>
                   <div className="transit-config-row">
-                    <span>{lang === 'ko' ? '목표별 Flux 중앙값' : 'Median Target'}</span>
+                    <span>{lang === 'ko' ? '목표별 밝기값(flux) 중앙값' : 'Median Target'}</span>
                     <span>{result.target_median_flux.toFixed(1)}</span>
                   </div>
                   <div className="transit-config-row">
-                    <span>{lang === 'ko' ? '비교성 Flux 중앙값' : 'Median Comp'}</span>
+                    <span>{lang === 'ko' ? '비교성 밝기값(flux) 중앙값' : 'Median Comp'}</span>
                     <span>{result.comparison_median_flux.toFixed(1)}</span>
                   </div>
                   <div className="transit-config-row">
@@ -3645,7 +3664,7 @@ export function TransitLab({
                             ? lang === 'ko' ? 'BJD 구간을 선택하고 transit 중심을 맞추는 중...' : 'Selecting BJD window and aligning the transit center...'
                             : lang === 'ko' ? '위상 접기와 dip 탐지 중...' : 'Phase folding & dip detection...'
                         : fitProgress.stage === 'preprocess'
-                           ? lang === 'ko' ? 'Step 4 ROI 정규화와 모델 준비 중...' : 'Normalizing the Step 4 ROI and preparing the model...'
+                           ? lang === 'ko' ? 'Step 4 분석 구간(ROI) 정규화와 모델 준비 중...' : 'Normalizing the Step 4 ROI and preparing the model...'
                         : fitProgress.stage === 'least_squares'
                            ? lang === 'ko' ? '초기 최적화(최소제곱) 중...' : 'Initial optimization (least squares)...'
                           : fitProgress.stage === 'mcmc'

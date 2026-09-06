@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import PlotlyModule from 'plotly.js-dist-min';
+import { plotConfig } from '../../utils/plotConfig';
 import { useLangStore } from '../../i18n';
 import type { Target } from '../../types/target';
 
@@ -351,10 +352,7 @@ export function CmdExplorer({ target, defaultOpen = false }: CmdExplorerProps) {
             size: 11,
           },
         },
-        {
-          responsive: true,
-          displayModeBar: false,
-        }
+        plotConfig({ lang, imageName: `cmd-${target.name}` })
       )
       .catch((error: unknown) => {
         console.error('Failed to render CMD plot', error);

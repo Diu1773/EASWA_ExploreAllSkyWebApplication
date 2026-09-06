@@ -20,6 +20,7 @@ from astropy.nddata import Cutout2D
 from astropy.utils.exceptions import AstropyWarning
 from astropy.wcs import FITSFixedWarning, WCS
 from PIL import Image
+from scipy.ndimage import gaussian_filter
 from scipy import ndimage
 
 from adapters.kmtnet_archive import archive
@@ -52,7 +53,23 @@ _LIGHTCURVE_QUICK_SAMPLE_LIMIT_PER_SITE = 4
 _LIGHTCURVE_DETAILED_SAMPLE_LIMIT_PER_SITE = 10
 _REFERENCE_SAMPLE_COUNT = 3
 _DOWNLOAD_TIMEOUT_SECONDS = 90.0
-_REGISTRATION_MAX_SHIFT_PX = 5
+# KMTNet pointing repeats to well within a cutout, but not to 5 px: measured
+# 2026-09-06 on kmt-2019-blg-0128 CTIO, the true offsets were (-14, +2) and
+# (-9, -18) px. With the old ±5 px ceiling the search stopped at the edge and
+# returned a wrong shift, so "aligned" frames correlated with the reference at
+# 0.01 — the difference images were noise, and the light-curve extraction threw
+# those frames away as unregistrable. At ±20 px the same frames correlate at
+# 0.81-0.87. A later check found offsets past 20 px as well (frame 23 of the
+# same event sits at -30, +4 and only correlates once the search reaches it), so
+# the ceiling is 40 — about a third of a 96 px cutout, beyond which too little
+# of the two frames overlaps to compare.
+_REGISTRATION_MAX_SHIFT_PX = 40
+# Two passes: a coarse grid, then one pixel at a time around the winner. A full
+# ±20 px single-pixel search is 1681 shifts and costs 0.7 s per frame.
+_REGISTRATION_COARSE_STEP_PX = 2
+# A whole-pixel shift still leaves every bright star as a light/dark pair in the
+# difference image. One more pass at quarter-pixel steps removes most of it.
+_REGISTRATION_SUBPIXEL_STEP_PX = 0.25
 _SITE_LIGHTCURVE_WORKERS = 4
 _MERGED_LIGHTCURVE_WORKERS = 3
 _DEFAULT_EXTRACTION_MODE = "quick"
@@ -354,6 +371,46 @@ def _bundled_preview(target_id: str, site: str) -> MicrolensingPreviewResponse |
         return None
 
 
+_PREVIEW_BUNDLE_STRIP_DIR = Path(__file__).resolve().parent.parent / "bundled_kmtnet" / "preview_bundle"
+
+
+def _bundled_preview_bundle(target_id: str, site: str) -> MicrolensingPreviewBundleResponse | None:
+    """The three-frame strip Step 3 opens with, rendered ahead of time.
+
+    Same reason as _bundled_preview: the live path spends 30-40 s on the first
+    frame and ~20 s on each further one, and a three-frame strip is the whole
+    activity. Written by backend/scripts/bundle_kmtnet_preview_frames.py from
+    the same real KASI frames the live path downloads.
+    """
+    path = _PREVIEW_BUNDLE_STRIP_DIR / f"{target_id}__{site}.json"
+    if not path.is_file():
+        return None
+    try:
+        with path.open(encoding="utf-8") as handle:
+            payload = json.load(handle)
+        return MicrolensingPreviewBundleResponse.model_validate(payload["bundle"])
+    except (OSError, ValueError, KeyError):
+        return None
+
+
+def list_bundled_preview_strips() -> list[tuple[str, str]]:
+    """(target_id, site) pairs that have a Step 3 frame strip on disk.
+
+    Only two of the nine events have public archive cutouts from their own
+    observing season; the rest would have to be illustrated with frames from
+    other years. The block asks for this list so it can say so on the screen
+    instead of spending 30-90 s fetching frames that never saw the event.
+    """
+    if not _PREVIEW_BUNDLE_STRIP_DIR.is_dir():
+        return []
+    pairs: list[tuple[str, str]] = []
+    for path in sorted(_PREVIEW_BUNDLE_STRIP_DIR.glob("*__*.json")):
+        target_id, _, site = path.stem.partition("__")
+        if target_id and site:
+            pairs.append((target_id, site))
+    return pairs
+
+
 def get_preview(
     target_id: str,
     site: str,
@@ -387,6 +444,12 @@ def get_preview_bundle(
     reference_frame_index: int | None = None,
 ) -> MicrolensingPreviewBundleResponse:
     site_key = _normalize_site_key(site)
+    # Only the default strip is bundled; asking for another focus or reference
+    # frame goes to the live path below.
+    if focus_frame_index is None and reference_frame_index is None:
+        bundled = _bundled_preview_bundle(target_id, site_key)
+        if bundled is not None:
+            return bundled
     rows = _list_rows(target_id, site_key)
     if not rows:
         raise ValueError(f"No KMTNet observations available for {target_id} at {site_key}.")
@@ -439,7 +502,14 @@ def _get_preview_cached(
 
     reference_frame = _load_cutout_frame(target, reference_row, resolved_size_px)
     aligned_frame = _register_frame_to_reference(selected_frame, reference_frame)
-    difference_frame = aligned_frame.bg_subtracted - reference_frame.bg_subtracted
+    registration_correlation = _aligned_correlation(
+        aligned_frame.bg_subtracted,
+        reference_frame.bg_subtracted,
+    )
+    difference_frame, psf_match_sigma_px, flux_scale = _match_and_subtract(
+        aligned_frame.bg_subtracted,
+        reference_frame.bg_subtracted,
+    )
 
     reference_flux = max(
         _measure_aperture_sum(
@@ -505,6 +575,9 @@ def _get_preview_cached(
         registration_dx_px=round(float(aligned_frame.shift_x), 2),
         registration_dy_px=round(float(aligned_frame.shift_y), 2),
         registration_quality_score=round(float(aligned_frame.quality_score), 6),
+        registration_correlation=round(float(registration_correlation), 3),
+        psf_match_sigma_px=round(float(psf_match_sigma_px), 2),
+        flux_scale=round(float(flux_scale), 4),
         registration_hit_limit=aligned_frame.hit_limit,
         registration_warning=_compose_preview_warning(
             coverage_warning=coverage_warning,
@@ -950,6 +1023,57 @@ def _estimate_background(image: np.ndarray) -> float:
     return float(np.nanmedian(finite))
 
 
+def _aligned_correlation(aligned: np.ndarray, reference: np.ndarray) -> float:
+    """How well the aligned frame matches the reference, -1 to 1.
+
+    Some archive frames never line up however far the search looks
+    (kmt-2019-blg-0080 CTIO frames 1 and 22 sit at 0.16 and 0.14 at their best
+    offset). Those are not registration failures to be tuned away — the frames
+    show something else — so the number is reported and used to leave them out.
+    """
+    mask = np.isfinite(aligned) & np.isfinite(reference)
+    if int(mask.sum()) < 50:
+        return 0.0
+    x = aligned[mask].astype(np.float64)
+    y = reference[mask].astype(np.float64)
+    if float(np.std(x)) <= 0 or float(np.std(y)) <= 0:
+        return 0.0
+    value = float(np.corrcoef(x, y)[0, 1])
+    return value if np.isfinite(value) else 0.0
+
+
+def _phase_correlation_shift(
+    reference_image: np.ndarray,
+    moving_image: np.ndarray,
+) -> tuple[float, float]:
+    """Whole-pixel offset between two cutouts, from phase correlation.
+
+    The bounded grid search below only finds shifts inside its window, and even
+    at ±20 px some KMTNet frames stayed uncorrelated with the reference
+    (kmt-2019-blg-0080 CTIO frames 1 and 22: 0.16 and 0.14). Phase correlation
+    has no window — it reads the offset straight off the Fourier phase — so it
+    is used as the starting guess and the grid result is kept as a fallback.
+    """
+    ref = np.nan_to_num(np.asarray(reference_image, dtype=np.float64), nan=0.0)
+    mov = np.nan_to_num(np.asarray(moving_image, dtype=np.float64), nan=0.0)
+    if ref.shape != mov.shape or ref.size == 0:
+        return 0.0, 0.0
+    ref = ref - np.median(ref)
+    mov = mov - np.median(mov)
+    window = np.hanning(ref.shape[0])[:, None] * np.hanning(ref.shape[1])[None, :]
+    spectrum_ref = np.fft.rfft2(ref * window)
+    spectrum_mov = np.fft.rfft2(mov * window)
+    cross = spectrum_ref * np.conj(spectrum_mov)
+    magnitude = np.abs(cross)
+    cross = np.divide(cross, magnitude, out=np.zeros_like(cross), where=magnitude > 1e-12)
+    correlation = np.fft.irfft2(cross, s=ref.shape)
+    peak_y, peak_x = np.unravel_index(int(np.argmax(correlation)), correlation.shape)
+    height, width = ref.shape
+    shift_y = peak_y if peak_y <= height // 2 else peak_y - height
+    shift_x = peak_x if peak_x <= width // 2 else peak_x - width
+    return float(shift_x), float(shift_y)
+
+
 def _estimate_registration_shift(
     reference_image: np.ndarray,
     moving_image: np.ndarray,
@@ -971,20 +1095,56 @@ def _estimate_registration_shift(
     else:
         feature_mask = np.abs(ref_centered) >= feature_level
 
-    best_shift = (0.0, 0.0)
+    def score_for(shift_x: float, shift_y: float) -> float:
+        shifted = _shift_image(mov_centered, shift_x=shift_x, shift_y=shift_y, cval=0.0)
+        residual = ref_centered[feature_mask] - shifted[feature_mask]
+        return float(np.mean(residual**2))
+
+    best_shift = (0, 0)
     best_score = float("inf")
 
-    for shift_y in range(-max_shift_px, max_shift_px + 1):
-        for shift_x in range(-max_shift_px, max_shift_px + 1):
-            shifted = _shift_image(mov_centered, shift_x=shift_x, shift_y=shift_y, cval=0.0)
-            residual = ref_centered[feature_mask] - shifted[feature_mask]
-            score = float(np.mean(residual**2))
+    # Phase correlation first: it is not limited to a search window.
+    guess_x, guess_y = _phase_correlation_shift(ref_centered, mov_centered)
+    if abs(guess_x) <= max_shift_px and abs(guess_y) <= max_shift_px:
+        guess_score = score_for(guess_x, guess_y)
+        if guess_score < best_score:
+            best_score = guess_score
+            best_shift = (int(round(guess_x)), int(round(guess_y)))
+
+    step = max(1, _REGISTRATION_COARSE_STEP_PX)
+    coarse_range = range(-max_shift_px, max_shift_px + 1, step)
+    for shift_y in coarse_range:
+        for shift_x in coarse_range:
+            score = score_for(shift_x, shift_y)
             if score < best_score:
                 best_score = score
-                best_shift = (float(shift_x), float(shift_y))
+                best_shift = (shift_x, shift_y)
 
-    hit_limit = abs(best_shift[0]) >= max_shift_px or abs(best_shift[1]) >= max_shift_px
-    return best_shift[0], best_shift[1], best_score, hit_limit
+    if step > 1:
+        for shift_y in range(best_shift[1] - step, best_shift[1] + step + 1):
+            for shift_x in range(best_shift[0] - step, best_shift[0] + step + 1):
+                if abs(shift_x) > max_shift_px or abs(shift_y) > max_shift_px:
+                    continue
+                score = score_for(shift_x, shift_y)
+                if score < best_score:
+                    best_score = score
+                    best_shift = (shift_x, shift_y)
+
+    fine_shift = (float(best_shift[0]), float(best_shift[1]))
+    step_px = _REGISTRATION_SUBPIXEL_STEP_PX
+    offsets = np.arange(-1.0, 1.0 + step_px / 2, step_px)
+    for offset_y in offsets:
+        for offset_x in offsets:
+            candidate = (best_shift[0] + float(offset_x), best_shift[1] + float(offset_y))
+            if abs(candidate[0]) > max_shift_px or abs(candidate[1]) > max_shift_px:
+                continue
+            score = score_for(candidate[0], candidate[1])
+            if score < best_score:
+                best_score = score
+                fine_shift = candidate
+
+    hit_limit = abs(fine_shift[0]) >= max_shift_px or abs(fine_shift[1]) >= max_shift_px
+    return fine_shift[0], fine_shift[1], best_score, hit_limit
 
 
 def _shift_image(
@@ -1148,6 +1308,121 @@ def _encode_intensity_image(image: np.ndarray) -> str:
     )
     rgb = np.nan_to_num(rgb, nan=0.0, posinf=255.0, neginf=0.0).astype(np.uint8)
     return _encode_rgb_image(rgb)
+
+
+# KMTNet's seeing varies from night to night, so a plain subtraction leaves
+# every star as a bright or dark blob and the difference image says nothing
+# (checked 2026-09-06 on kmt-2019-blg-0128: two frames 40 minutes apart still
+# left the whole field speckled).
+
+
+def _fit_scale_and_offset(source: np.ndarray, target: np.ndarray) -> tuple[float, float]:
+    """Brightness ratio target/source, plus the sky offset between them.
+
+    Taken as a flux ratio over the star pixels rather than a pixel-by-pixel
+    regression. Regression needs every pixel to correspond, and a fraction of a
+    pixel of leftover misregistration is enough to collapse the slope: on
+    kmt-2019-blg-0080 it reported a ratio of 0.16 where the frames differ by a
+    few per cent. Summing over a dilated star mask tolerates that.
+    """
+    mask = np.isfinite(source) & np.isfinite(target)
+    if int(mask.sum()) < 50:
+        return 1.0, 0.0
+    source_clean = np.where(mask, source, np.nan)
+    target_clean = np.where(mask, target, np.nan)
+
+    sky_source = float(np.nanmedian(source_clean))
+    sky_target = float(np.nanmedian(target_clean))
+    spread = float(np.nanmedian(np.abs(source_clean - sky_source)))
+    star_mask = np.nan_to_num(source_clean, nan=-np.inf) >= sky_source + max(5.0 * spread, 1e-9)
+    if int(star_mask.sum()) < 20:
+        threshold = float(np.nanpercentile(source_clean, 97.0))
+        star_mask = np.nan_to_num(source_clean, nan=-np.inf) >= threshold
+    if int(star_mask.sum()) < 10:
+        return 1.0, 0.0
+    # Grow the mask by a pixel so a small leftover shift still lands inside it.
+    star_mask = ndimage.binary_dilation(star_mask, iterations=2) & mask
+
+    source_flux = float(np.nansum(source_clean[star_mask] - sky_source))
+    target_flux = float(np.nansum(target_clean[star_mask] - sky_target))
+    if source_flux <= 0 or target_flux <= 0:
+        return 1.0, 0.0
+    scale = target_flux / source_flux
+    if not np.isfinite(scale) or not 0.05 < scale < 20.0:
+        return 1.0, 0.0
+    offset = sky_target - scale * sky_source
+    return float(scale), float(offset)
+
+
+def _psf_sigma_px(image: np.ndarray) -> float:
+    """Rough Gaussian width of the stars in a cutout, in pixels.
+
+    Taken from the flux-weighted second moment of the few brightest sources.
+    Searching for the blur that minimises the residual scatter does not work as
+    a substitute: blurring always lowers scatter, so the search just picks the
+    largest blur on offer (measured 2026-09-06 — every frame came back at the
+    2.5 px ceiling).
+    """
+    data = np.nan_to_num(image.astype(np.float64), nan=0.0, posinf=0.0, neginf=0.0)
+    if data.shape[0] < 20 or data.shape[1] < 20:
+        return 1.5
+    half = 7
+    working = data.copy()
+    sigmas: list[float] = []
+    for _ in range(5):
+        peak = int(np.argmax(working))
+        y0, x0 = np.unravel_index(peak, working.shape)
+        if working[y0, x0] <= 0:
+            break
+        y_lo, y_hi = max(0, y0 - half), min(data.shape[0], y0 + half + 1)
+        x_lo, x_hi = max(0, x0 - half), min(data.shape[1], x0 + half + 1)
+        stamp = data[y_lo:y_hi, x_lo:x_hi]
+        working[y_lo:y_hi, x_lo:x_hi] = 0.0
+        weights = np.clip(stamp - np.median(data), 0.0, None)
+        total = float(weights.sum())
+        if total <= 0:
+            continue
+        yy, xx = np.mgrid[y_lo:y_hi, x_lo:x_hi]
+        cy = float((weights * yy).sum() / total)
+        cx = float((weights * xx).sum() / total)
+        variance = float((weights * ((yy - cy) ** 2 + (xx - cx) ** 2)).sum() / total / 2.0)
+        if 0.09 < variance < 36.0:
+            sigmas.append(float(np.sqrt(variance)))
+    if not sigmas:
+        return 1.5
+    return float(np.median(sigmas))
+
+
+def _match_and_subtract(
+    aligned: np.ndarray,
+    reference: np.ndarray,
+) -> tuple[np.ndarray, float, float]:
+    """Difference image, the blur added, and the brightness ratio applied.
+
+    The sharper of the two frames is blurred until its stars are as wide as the
+    other's, then the reference is put on the frame's brightness scale before
+    subtracting. Without both steps a plain subtraction leaves every star in the
+    field as a bright or dark blob and the difference image says nothing.
+
+    A negative blur width means the frame itself was blurred, not the reference.
+    """
+    sigma_frame = _psf_sigma_px(aligned)
+    sigma_reference = _psf_sigma_px(reference)
+    difference_variance = sigma_frame ** 2 - sigma_reference ** 2
+    kernel_sigma = float(np.sqrt(abs(difference_variance)))
+    kernel_sigma = min(kernel_sigma, 4.0)
+
+    if kernel_sigma < 0.15:
+        source, frame, signed_sigma = reference, aligned, 0.0
+    elif difference_variance > 0:
+        # The reference is the sharper frame: blur it up to the frame.
+        source, frame, signed_sigma = gaussian_filter(reference, kernel_sigma), aligned, kernel_sigma
+    else:
+        source, frame, signed_sigma = reference, gaussian_filter(aligned, kernel_sigma), -kernel_sigma
+
+    scale, offset = _fit_scale_and_offset(source, frame)
+    difference = frame - (scale * source + offset)
+    return difference, float(signed_sigma), float(scale)
 
 
 def _encode_difference_image(image: np.ndarray) -> str:

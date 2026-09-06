@@ -71,6 +71,17 @@ def get_microlensing_preview(
         raise HTTPException(status_code=400, detail=str(error)) from error
 
 
+@router.get("/kmtnet/preview-bundle-index")
+def get_microlensing_preview_bundle_index():
+    """Which events have archive frames from their own observing season."""
+    return {
+        "entries": [
+            {"target_id": target_id, "site": site}
+            for target_id, site in microlensing_service.list_bundled_preview_strips()
+        ]
+    }
+
+
 @router.get("/kmtnet/preview-bundle/{target_id}", response_model=MicrolensingPreviewBundleResponse)
 def get_microlensing_preview_bundle(
     target_id: str,

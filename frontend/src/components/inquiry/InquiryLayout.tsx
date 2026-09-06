@@ -415,12 +415,16 @@ export function InquiryLayout<TContext = unknown>({
     isAnswerFilled(notes[`${step.id}:${fieldId}`]);
 
   /** Every 생각해보기 and every record field on this step, still blank. */
+  // Split by kind: a self-check is CHOSEN, a record field is WRITTEN. The
+  // "you may write 모르겠다" hint only applies to the latter — O/X items have no
+  // text box, so telling a learner to type there sends them looking for a
+  // control that does not exist.
   const unansweredOnStep = (step: (typeof module.steps)[number]) => {
     const checks = (step.selfChecks ?? []).filter(
       (item) => selfCheckAnswers[`${step.id}:${item.id}`] === undefined,
     ).length;
     const fields = step.recordFields.filter((field) => !isFieldFilled(step, field.id)).length;
-    return checks + fields;
+    return { checks, fields, total: checks + fields };
   };
 
   // The full-completion gate runs on the deployed site only. Locally (5173 dev
@@ -428,14 +432,14 @@ export function InquiryLayout<TContext = unknown>({
   // app is being built and checked, and filling every box on the way is not
   // that. Hostname, not import.meta.env.PROD: 5895 serves the production build.
   const answerGateOn = isAnswerGateOn();
-  const unansweredHere = answerGateOn ? unansweredOnStep(activeStep) : 0;
+  const unansweredHere = answerGateOn ? unansweredOnStep(activeStep) : { checks: 0, fields: 0, total: 0 };
 
   // The selection step now gates "다음 단계" directly on having a target — no
   // separate "이 대상으로 확인" button. Picking a target on the map (which pops
   // its info panel showing it as selected) is the confirmation.
   const selectionUnmet =
     activeStep.kind === 'selection' && Boolean(selectionConfirm) && !selectionConfirm?.ready;
-  const gateBlocked = !isStepAnswered(activeStep) || selectionUnmet || unansweredHere > 0;
+  const gateBlocked = !isStepAnswered(activeStep) || selectionUnmet || unansweredHere.total > 0;
 
   // Why "다음 단계" is unavailable, or null when it is. Never hide the button:
   // a missing control reads as a broken page (the learner finished the Lab fit
@@ -443,10 +447,20 @@ export function InquiryLayout<TContext = unknown>({
   const nextBlockedReason: string | null = selectionUnmet
     ? selectionConfirm?.hint[lang] ??
       (lang === 'ko' ? '먼저 지도에서 대상을 선택하세요.' : 'Select a target on the map first.')
-    : unansweredHere > 0
+    : unansweredHere.total > 0
     ? lang === 'ko'
-      ? `이 단계에 아직 답하지 않은 문항이 ${unansweredHere}개 있습니다. 모두 답해야 다음 단계로 넘어갑니다. 답을 모르겠으면 「모르겠다」라고 적어도 됩니다.`
-      : `${unansweredHere} item${unansweredHere > 1 ? 's' : ''} on this step still have no answer. Answer them all to continue — writing "I don't know" counts.`
+      ? `이 단계에 아직 답하지 않은 문항이 ${unansweredHere.total}개 있습니다. 모두 답해야 다음 단계로 넘어갑니다.` +
+        (unansweredHere.checks > 0
+          ? ' 생각해보기는 확신이 없어도 지금 생각에 더 가까운 쪽을 고른 뒤 해설을 확인하세요.'
+          : '') +
+        (unansweredHere.fields > 0 ? ' 서술 칸은 모르겠으면 「모르겠다」라고 적어도 됩니다.' : '')
+      : `${unansweredHere.total} item${unansweredHere.total > 1 ? 's' : ''} on this step still have no answer. Answer them all to continue.` +
+        (unansweredHere.checks > 0
+          ? ' For the check questions, pick whichever side is closer to what you think, then read the explanation.'
+          : '') +
+        (unansweredHere.fields > 0
+          ? ' In the written boxes, saying you are unsure counts as an answer.'
+          : '')
     : !isStepAnswered(activeStep)
     ? lang === 'ko'
       ? '다음 단계로 가려면 이 단계의 탐구 기록을 한 가지 이상 작성하세요.'

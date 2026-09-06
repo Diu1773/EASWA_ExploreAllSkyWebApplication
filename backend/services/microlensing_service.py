@@ -62,6 +62,10 @@ def get_preview(
     )
 
 
+def list_bundled_preview_strips() -> list[tuple[str, str]]:
+    return kmtnet_actual_service.list_bundled_preview_strips()
+
+
 def get_preview_bundle(
     target_id: str,
     site: str,
@@ -85,6 +89,33 @@ def _paczynski_mag(t: np.ndarray, t0: float, u0: float, tE: float, mag_base: flo
     u = np.sqrt(u0 ** 2 + tau ** 2)
     A = (u ** 2 + 2.0) / (u * np.sqrt(u ** 2 + 4.0))
     return mag_base - 2.5 * np.log10(A)
+
+
+_FIT_PARAM_NAMES = ("t0", "u0", "tE", "mag_base")
+
+
+def _parameters_at_bounds(
+    popt: np.ndarray,
+    bounds: tuple[list[float], list[float]],
+    rel_tol: float = 1e-3,
+) -> list[str]:
+    """Which fitted parameters stopped at the edge of their allowed range.
+
+    curve_fit reports no error when a bounded fit converges onto a bound, and
+    the resulting curve can look like a sharp real feature. Two of the nine
+    bundled events do this (0106: u0 at the 2.0 ceiling; 0273: u0 at the ceiling
+    and tE at the 0.5 d floor), and the spike it draws was read as a planetary
+    anomaly on 2026-09-06.
+    """
+    hits: list[str] = []
+    for name, value, low, high in zip(_FIT_PARAM_NAMES, popt, bounds[0], bounds[1]):
+        span = float(high) - float(low)
+        if span <= 0:
+            continue
+        margin = span * rel_tol
+        if float(value) - float(low) <= margin or float(high) - float(value) <= margin:
+            hits.append(name)
+    return hits
 
 
 def fit_paczynski(req: MicrolensingFitRequest) -> MicrolensingFitResponse:
@@ -143,5 +174,6 @@ def fit_paczynski(req: MicrolensingFitRequest) -> MicrolensingFitResponse:
         tE_err=round(float(tE_err), 3),
         mag_base_err=round(float(mag_base_err), 4),
         chi2_dof=round(chi2_dof, 3),
+        bounds_hit=_parameters_at_bounds(popt, bounds),
         model_curve=model_curve,
     )

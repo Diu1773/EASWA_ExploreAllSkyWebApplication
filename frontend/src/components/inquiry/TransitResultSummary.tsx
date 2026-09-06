@@ -51,9 +51,23 @@ export function TransitResultSummary({ fit, targetName, target }: TransitResultS
       </span>
       <div className="transit-result-metrics">
         <div className="transit-result-metric primary">
-          <span className="metric-label">Rp/R*</span>
+          {/* 7월 검토에서 교사가 직접 지목한 기호다. 값이 나오는 이 자리에서
+              무엇의 비인지 밝힌다 — Step 0 용어 목록만으로는 부족했다. */}
+          <span
+            className="metric-label"
+            title={
+              lang === 'ko'
+                ? '행성 반지름을 별 반지름으로 나눈 값. 두 길이의 비이므로 단위가 없다.'
+                : 'Planet radius divided by stellar radius — a ratio of two lengths, so it has no unit.'
+            }
+          >
+            Rp/R*
+          </span>
           <span className="metric-value">{fmt(fit.rpRs)}</span>
           <span className="metric-sub">± {fmt(fit.rpRsErr)}</span>
+          <span className="metric-sub">
+            {lang === 'ko' ? '행성 반지름 ÷ 별 반지름 (단위 없음)' : 'planet radius ÷ stellar radius (unitless)'}
+          </span>
           {refRpRs !== null && (
             <span className="metric-sub">
               {refLabel} {fmt(refRpRs)}

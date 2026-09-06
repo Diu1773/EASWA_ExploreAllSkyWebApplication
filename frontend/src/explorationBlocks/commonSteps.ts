@@ -193,6 +193,11 @@ export function createCommonInquirySteps(
   });
 }
 
-export function makePrompt(id: string, ko: string, en: string): { id: string; question: LocalizedText } {
-  return { id, question: { ko, en } };
+export function makePrompt(
+  id: string,
+  ko: string,
+  en: string,
+  helper?: { ko: string; en: string },
+): { id: string; question: LocalizedText; helperText?: LocalizedText } {
+  return helper ? { id, question: { ko, en }, helperText: helper } : { id, question: { ko, en } };
 }

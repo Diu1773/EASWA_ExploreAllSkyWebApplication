@@ -33,7 +33,9 @@ export const strings: Record<Lang, Record<string, string>> = {
     'home.liveStats.sites': '관측소',
 
     // Sky Explorer
-    'explorer.searchPlaceholder': '대상 검색  예: WASP-6 b',
+    // 모듈마다 대상이 다르다(외계행성·미시중력렌즈 이벤트·산개성단). 한 모듈의
+    // 예시를 공용 문구에 박아 두면 성단 화면에서 «예: WASP-6 b»가 뜬다.
+    'explorer.searchPlaceholder': '대상 이름으로 검색',
     'explorer.searchNoMatch': '일치하는 대상이 없어요. 이름이나 별자리로 다시 검색해 보세요.',
     'explorer.searchClear': '검색어 지우기',
     'explorer.loading': '대상 불러오는 중…',
@@ -153,7 +155,7 @@ export const strings: Record<Lang, Record<string, string>> = {
     'home.liveStats.sites': 'Observatories',
 
     // Sky Explorer
-    'explorer.searchPlaceholder': 'Search target  e.g. WASP-6 b',
+    'explorer.searchPlaceholder': 'Search by target name',
     'explorer.searchNoMatch': 'No matching target. Try a name or constellation.',
     'explorer.searchClear': 'Clear search',
     'explorer.loading': 'Loading targets…',

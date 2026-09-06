@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import PlotlyModule from 'plotly.js-dist-min';
+import { plotConfig } from '../../utils/plotConfig';
 import { useLangStore } from '../../i18n';
+import { axisTitle } from '../../utils/axisLabels';
 import type { LightCurveResponse } from '../../types/photometry';
 
 type LightCurveOverlay = {
@@ -101,11 +103,17 @@ function formatResidualStdLabel(residualStd: number | null, yLabel: string): str
   return `STD = ${(residualStd * 100).toFixed(2)}%`;
 }
 
-function getResidualAxisLabel(yLabel: string): string {
+function getResidualAxisLabel(yLabel: string, lang: 'ko' | 'en'): string {
+  if (lang === 'ko') {
+    return isMagnitudeAxisLabel(yLabel) ? '잔차 (mag · 모델과 관측의 차)' : '잔차 (모델과 관측의 차)';
+  }
   return isMagnitudeAxisLabel(yLabel) ? 'Residuals (mag)' : 'Residuals';
 }
 
-function getPrimarySeriesName(yLabel: string): string {
+function getPrimarySeriesName(yLabel: string, lang: 'ko' | 'en'): string {
+  if (lang === 'ko') {
+    return isMagnitudeAxisLabel(yLabel) ? '밝기 차 (mag)' : '목표 별 밝기 ÷ 비교성 밝기';
+  }
   return isMagnitudeAxisLabel(yLabel) ? 'Delta mag' : 'F_target / F_comp';
 }
 
@@ -211,7 +219,7 @@ export function LightCurvePlot({
             opacity: fitPreviewMode ? 0.9 : shouldRenderDenseSeries ? 0.88 : 0.94,
           },
           line: { color: '#111111', width: 0 },
-          name: getPrimarySeriesName(plotData.y_label),
+          name: getPrimarySeriesName(plotData.y_label, lang),
           xaxis: 'x',
           yaxis: 'y',
         },
@@ -361,7 +369,7 @@ export function LightCurvePlot({
               xaxis2: {
                 domain: [0, 1],
                 anchor: 'y2',
-                title: { text: plotData.x_label, font: { color: '#333', size: 13 } },
+                title: { text: axisTitle(plotData.x_label, lang), font: { color: '#333', size: 13 } },
                 matches: 'x',
                 gridcolor: 'rgba(0,0,0,0.08)',
                 zerolinecolor: 'rgba(0,0,0,0.16)',
@@ -371,7 +379,7 @@ export function LightCurvePlot({
               },
               yaxis: {
                 domain: [0.28, 1],
-                title: { text: plotData.y_label, font: { color: '#333', size: 13 } },
+                title: { text: axisTitle(plotData.y_label, lang), font: { color: '#333', size: 13 } },
                 autorange: isMagnitudeAxis ? 'reversed' : true,
                 gridcolor: 'rgba(0,0,0,0.1)',
                 zerolinecolor: 'rgba(0,0,0,0.14)',
@@ -382,7 +390,7 @@ export function LightCurvePlot({
               yaxis2: {
                 domain: [0, 0.18],
                 title: {
-                  text: getResidualAxisLabel(plotData.y_label),
+                  text: getResidualAxisLabel(plotData.y_label, lang),
                   font: { color: '#333', size: isCompactPlot ? 11 : 12 },
                 },
                 range: [-residualRange, residualRange],
@@ -456,7 +464,7 @@ export function LightCurvePlot({
             dragmode: enableRangeSelection && !isFolded ? 'select' : 'zoom',
             selectdirection: enableRangeSelection && !isFolded ? 'h' : undefined,
             xaxis: {
-              title: { text: plotData.x_label, font: { color: '#333' } },
+              title: { text: axisTitle(plotData.x_label, lang), font: { color: '#333' } },
               gridcolor: 'rgba(0,0,0,0.1)',
               zerolinecolor: 'rgba(0,0,0,0.2)',
               color: '#333',
@@ -464,7 +472,7 @@ export function LightCurvePlot({
               linewidth: 1,
             },
             yaxis: {
-              title: { text: plotData.y_label, font: { color: '#333' } },
+              title: { text: axisTitle(plotData.y_label, lang), font: { color: '#333' } },
               autorange: isMagnitudeAxis ? 'reversed' : true,
               gridcolor: 'rgba(0,0,0,0.1)',
               zerolinecolor: 'rgba(0,0,0,0.2)',
@@ -525,11 +533,7 @@ export function LightCurvePlot({
         plotRef.current,
         traces,
         layout,
-        {
-          responsive: true,
-          displayModeBar: !isVeryCompactPlot,
-          modeBarButtonsToRemove: ['lasso2d', 'select2d'],
-        }
+        plotConfig({ hidden: isVeryCompactPlot, lang, imageName: 'lightcurve' })
       );
 
       const graphDiv = plotRef.current as any;

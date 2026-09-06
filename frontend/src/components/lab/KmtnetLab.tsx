@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { axisTitle } from '../../utils/axisLabels';
 import PlotlyModule from 'plotly.js-dist-min';
+import { plotConfig } from '../../utils/plotConfig';
 import {
   fetchMicrolensingLightcurve,
   fetchMicrolensingPreview,
@@ -185,6 +187,7 @@ function PlotPanel({
 }) {
   const plotRef = useRef<HTMLDivElement>(null);
 
+  const lang = useLangStore((state) => state.lang);
   useEffect(() => {
     if (!plotRef.current) return;
 
@@ -220,12 +223,12 @@ function PlotPanel({
         font: { size: 14, color: '#eceff4', family: 'Pretendard, sans-serif' },
       },
       xaxis: {
-        title: { text: 'HJD', font: { color: '#9aa3b0', size: 12 } },
+        title: { text: axisTitle('HJD', lang), font: { color: '#9aa3b0', size: 12 } },
         gridcolor: 'rgba(255,255,255,0.06)', color: '#9aa3b0',
         linecolor: '#252d3a', linewidth: 1,
       },
       yaxis: {
-        title: { text: lcData.y_label, font: { color: '#9aa3b0', size: 12 } },
+        title: { text: axisTitle(lcData.y_label, lang), font: { color: '#9aa3b0', size: 12 } },
         autorange: 'reversed',
         gridcolor: 'rgba(255,255,255,0.06)', color: '#9aa3b0',
         linecolor: '#252d3a', linewidth: 1,
@@ -240,8 +243,8 @@ function PlotPanel({
         bgcolor: 'rgba(26,32,48,0.9)', bordercolor: '#252d3a', borderwidth: 1,
         font: { family: 'Pretendard, sans-serif', size: 11, color: '#d4dae5' },
       },
-    }, { responsive: true });
-  }, [lcData, showSites, fitResult, targetName]);
+    }, plotConfig({ lang, imageName: `lightcurve-${targetName}` }));
+  }, [lcData, showSites, fitResult, targetName, lang]);
 
   return <div ref={plotRef} className="plot-canvas ml-plot-canvas" />;
 }
@@ -1622,24 +1625,24 @@ export function KmtnetLab({
                     <td><code>u₀</code></td>
                     <td>{fitResult.u0.toFixed(4)}</td>
                     <td>± {fitResult.u0_err.toFixed(4)}</td>
-                    <td>최소 충격 파라미터</td>
+                    <td>최소 충격 파라미터 (아인슈타인 반경을 1로 본 거리 · 단위 없음)</td>
                   </tr>
                   <tr>
                     <td><code>t<sub>E</sub></code></td>
-                    <td>{fitResult.tE.toFixed(2)} d</td>
-                    <td>± {fitResult.tE_err.toFixed(2)} d</td>
-                    <td>아인슈타인 반경 통과 시간</td>
+                    <td>{fitResult.tE.toFixed(2)} 일</td>
+                    <td>± {fitResult.tE_err.toFixed(2)} 일</td>
+                    <td>아인슈타인 반경 통과 시간 (일)</td>
                   </tr>
                   <tr>
                     <td><code>I<sub>base</sub></code></td>
                     <td>{fitResult.mag_base.toFixed(3)}</td>
                     <td>± {fitResult.mag_base_err.toFixed(3)}</td>
-                    <td>기준 밝기</td>
+                    <td>증광 전 기준 밝기 (I 필터 등급, mag)</td>
                   </tr>
                   <tr>
                     <td><code>χ²/dof</code></td>
                     <td colSpan={2}>{fitResult.chi2_dof.toFixed(3)}</td>
-                    <td>모델 적합도 (≈1이 이상적)</td>
+                    <td>모델 적합도 (잔차를 오차로 나눠 평균한 값 · 1에 가까울수록 자료를 잘 설명, 단위 없음)</td>
                   </tr>
                 </tbody>
               </table>

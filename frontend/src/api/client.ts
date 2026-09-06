@@ -496,6 +496,18 @@ export async function fetchMicrolensingPreview(
   return get(`/kmtnet/preview/${encodeURIComponent(targetId)}?${params.toString()}`);
 }
 
+export interface MicrolensingFrameStripEntry {
+  target_id: string;
+  site: string;
+}
+
+/** Which events have archive frames from their own observing season. */
+export async function fetchMicrolensingFrameStripIndex(): Promise<{
+  entries: MicrolensingFrameStripEntry[];
+}> {
+  return get('/kmtnet/preview-bundle-index');
+}
+
 export async function fetchMicrolensingPreviewBundle(
   targetId: string,
   site: string,

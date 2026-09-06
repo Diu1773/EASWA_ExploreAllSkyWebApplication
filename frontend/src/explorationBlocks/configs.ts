@@ -719,7 +719,19 @@ export const kmtnetModule: ExplorationModuleConfig = {
     },
     step4_run_visualize: {
       questions: [
-        makePrompt('kmt_anomaly_signal', '광도곡선에서 매끄러운 증광 위에 행성 아노말리(짧은 이상신호)는 어디에 나타나는가?', 'Where on the smooth magnification does a planetary anomaly (brief deviation) appear?'),
+        // The old wording asked where the planetary anomaly appears. None of the
+        // nine selectable events is a planetary one, and a single-lens
+        // (Paczyński) model cannot draw an anomaly even where there is one — so
+        // the question pointed at something no learner could find on screen.
+        makePrompt(
+          'kmt_anomaly_signal',
+          '적합한 매끄러운 곡선에서 벗어나는 점이 있는가? 있다면 언제이고, 무엇 때문일 수 있는가?',
+          'Do any points depart from the smooth fitted curve? If so, when, and what could cause it?',
+          {
+            ko: '행성이 딸린 렌즈라면 이런 짧은 어긋남으로 나타납니다. 관측 오차나 관측소 사이의 밝기 기준 차이로도 어긋날 수 있습니다.',
+            en: 'A lens with a planet shows up as exactly this kind of brief departure. Measurement error, or a mismatch between sites, can also cause one.',
+          },
+        ),
       ],
       selfChecks: [
         {
