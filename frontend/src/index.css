@@ -11999,3 +11999,70 @@ body {
     max-height: 62vh;
   }
 }
+
+/* ── 기준값 비교 표 ───────────────────────────────────────────────────────
+   카드 나열을 표로 바꿨다(2026-09-06 소유자 지시). 항목마다 같은 자리에 같은
+   종류의 수가 오므로 세로로 훑어 비교할 수 있다. 수는 오른쪽 정렬하고 자릿수를
+   고정폭 글꼴로 맞춰 자리끼리 비교되게 한다. */
+.transit-compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 14px 0 6px;
+  font-size: 0.82rem;
+}
+
+.transit-compare-table thead th {
+  padding: 6px 10px;
+  text-align: right;
+  font-weight: 500;
+  color: var(--text-muted);
+  font-size: 0.74rem;
+  border-bottom: 1px solid var(--border-light);
+  white-space: nowrap;
+}
+
+.transit-compare-table thead th:first-child {
+  text-align: left;
+}
+
+.transit-compare-table tbody th {
+  padding: 9px 10px;
+  text-align: left;
+  font-weight: 500;
+  color: var(--text-heading);
+  white-space: nowrap;
+}
+
+.transit-compare-table td {
+  padding: 9px 10px;
+  border-top: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.transit-compare-table td.num {
+  text-align: right;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.transit-compare-table td.measured {
+  color: var(--text-heading);
+}
+
+.transit-compare-table .rel {
+  color: var(--text-muted);
+  font-size: 0.92em;
+}
+
+@media (max-width: 720px) {
+  .transit-compare-table {
+    font-size: 0.76rem;
+  }
+
+  .transit-compare-table thead th,
+  .transit-compare-table tbody th,
+  .transit-compare-table td {
+    padding: 7px 6px;
+  }
+}

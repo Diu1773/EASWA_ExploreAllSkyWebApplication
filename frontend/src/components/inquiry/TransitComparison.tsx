@@ -38,7 +38,10 @@ function diffOf(
   return { abs, rel, nSigma };
 }
 
-/** 한 줄 = 항목 · 내 측정 · 문헌값 · 차이. */
+/** 표의 한 행 = 항목 · 내 측정 · 문헌값 · 차이 · 오차의 몇 배.
+ *  카드를 위아래로 쌓던 것을 실제 표로 바꿨다(2026-09-06 소유자 지시:
+ *  "그냥 엑셀표처럼 만들어서 보여주는게 훨씬 보기좋은듯"). 항목마다 같은 자리에
+ *  같은 종류의 수가 오므로 세로로 훑어 비교할 수 있다. */
 function CompareRow({
   label, measured, reference, diff, diffUnit, lang,
 }: {
@@ -50,40 +53,36 @@ function CompareRow({
   lang: 'ko' | 'en';
 }) {
   return (
-    <div className="transit-compare-row">
-      <div className="transit-compare-label">{label}</div>
-      <div className="transit-compare-cell">
-        <span className="cap">{lang === 'ko' ? '내 측정' : 'Measured'}</span>
-        <b>{measured}</b>
-      </div>
-      <div className="transit-compare-cell">
-        <span className="cap">{lang === 'ko' ? '문헌값' : 'Reference'}</span>
-        <span className="ref">{reference}</span>
-      </div>
-      <div className="transit-compare-cell diff">
-        <span className="cap">{lang === 'ko' ? '차이' : 'Difference'}</span>
+    <tr>
+      <th scope="row">{label}</th>
+      <td className="num measured">{measured}</td>
+      <td className="num">{reference}</td>
+      <td className="num">
         {diff ? (
-          <span>
-            <b>{diff.abs}{diffUnit}</b>
+          <>
+            {diff.abs}{diffUnit}
             {diff.rel && <span className="rel"> ({diff.rel})</span>}
-            {diff.nSigma != null && (
-              <span
-                className="rel"
-                title={
-                  lang === 'ko'
-                    ? '차이를 이 측정의 오차(1σ)로 나눈 값이다. 이 배수가 클수록 측정 오차만으로는 설명하기 어려운 차이가 된다.'
-                    : 'The difference divided by this measurement’s 1σ error; the larger the multiple, the harder it is to attribute the gap to measurement error alone.'
-                }
-              >
-                {' '}· 오차의 <b>{diff.nSigma.toFixed(1)}배</b>
-              </span>
-            )}
+          </>
+        ) : (
+          '—'
+        )}
+      </td>
+      <td className="num">
+        {diff?.nSigma != null ? (
+          <span
+            title={
+              lang === 'ko'
+                ? '차이를 이 측정의 오차(1σ)로 나눈 값이다. 이 배수가 클수록 측정 오차만으로는 설명하기 어려운 차이가 된다.'
+                : 'The difference divided by this measurement’s 1σ error; the larger the multiple, the harder it is to attribute the gap to measurement error alone.'
+            }
+          >
+            {diff.nSigma.toFixed(1)}
           </span>
         ) : (
-          <span className="ref">—</span>
+          '—'
         )}
-      </div>
-    </div>
+      </td>
+    </tr>
   );
 }
 
@@ -289,7 +288,17 @@ export function TransitComparison({ fit, target }: TransitComparisonProps) {
           질문인데 그 수치가 어디에도 없어서, 학습자가 두 숫자를 눈으로 빼야 했다.
           이제 차이를 한 열로 따로 세운다. 막대는 뺐다 — 위 곡선 겹침 그림이
           이미 그 역할을 하고, 같은 정보를 두 번 그리면 화면만 무거워진다. */}
-      <div className="transit-compare-grid">
+      <table className="transit-compare-table">
+        <thead>
+          <tr>
+            <th scope="col">{lang === 'ko' ? '항목' : 'Quantity'}</th>
+            <th scope="col">{lang === 'ko' ? '내 측정' : 'Measured'}</th>
+            <th scope="col">{lang === 'ko' ? '문헌값' : 'Reference'}</th>
+            <th scope="col">{lang === 'ko' ? '차이' : 'Difference'}</th>
+            <th scope="col">{lang === 'ko' ? '오차의 몇 배' : '× error'}</th>
+          </tr>
+        </thead>
+        <tbody>
         <CompareRow
           label={lang === 'ko' ? '식 깊이' : 'Depth'}
           measured={`${fmt(measuredDepth, 3)}%`}
@@ -306,7 +315,8 @@ export function TransitComparison({ fit, target }: TransitComparisonProps) {
           diffUnit=""
           lang={lang}
         />
-      </div>
+        </tbody>
+      </table>
 
       {/* Rp/R*가 어디서 나오는지: 식 깊이의 제곱근이다. Step 0의 '깊이 ∝ (Rp/R★)²'
           공식이 여기서 실제 숫자로 닫힌다. fit이 실제로 산출하는 값이라 이 유도는
