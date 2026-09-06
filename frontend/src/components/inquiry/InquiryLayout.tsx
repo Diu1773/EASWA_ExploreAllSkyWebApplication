@@ -33,6 +33,16 @@ import {
   type SelfCheckSummary,
 } from '../../utils/recordSink';
 import { useAuthStore } from '../../stores/useAuthStore';
+import { GlossaryDock } from '../common/GlossaryDock';
+import type { GlossaryScope } from '../../data/glossary';
+
+/** 탐구모듈 id → 용어함이 먼저 보여 줄 갈래. 모르는 모듈이면 공통만 앞에 온다. */
+function glossaryScopeFor(moduleId: string): GlossaryScope | null {
+  if (moduleId.includes('transit')) return 'transit';
+  if (moduleId.includes('kmtnet')) return 'kmtnet';
+  if (moduleId.includes('cluster') || moduleId.includes('cmd')) return 'cluster';
+  return null;
+}
 
 /** Debounce for the autosave write — long enough not to hit localStorage on
  *  every keystroke, short enough that a reload right after typing keeps it. */
@@ -746,6 +756,9 @@ export function InquiryLayout<TContext = unknown>({
           )}
         </main>
       </div>
+      {/* 흐름 밖에 상주하는 용어함. 값이 나오는 단계에서 Step 0 으로 되돌아가지
+          않고 뜻을 확인하게 한다(2026-07 현직 검토의 최다 요구). */}
+      <GlossaryDock scope={glossaryScopeFor(module.id)} />
     </div>
   );
 }

@@ -11659,24 +11659,16 @@ body {
 .cmd-fit-assumptions p { margin: 6px 0 0; font-size: 12px; line-height: 1.5; color: var(--text-muted); }
 
 /* ── KMTNet Step 3 · 차분측광 체험 ─────────────────────────────────────────
-   Selected state is a thin orange rule and orange text, never a filled block
-   (2026-08-13 decision). The stage image keeps a fixed box so stepping through
-   원본 → 정렬 → 기준 → 차감 changes the pixels and nothing else moves. */
+   네 단계를 한 줄에 나란히 둔다. 단계를 눌러 넘기게 했더니 앞 화면을 기억해야
+   비교가 되어서, 이 단계가 보여 주려는 것이 가려졌다. 선택 상태는 얇은 선과
+   글자색으로만 표시한다(2026-08-13 결정). */
 .kmt-dia-lead {
   margin: 0;
   font-size: 0.86rem;
   color: var(--text-primary);
 }
 
-.kmt-dia-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 22px;
-  align-items: center;
-}
-
-.kmt-dia-frames,
-.kmt-dia-stages {
+.kmt-dia-frames {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -11689,8 +11681,7 @@ body {
   margin-right: 2px;
 }
 
-.kmt-dia-chip,
-.kmt-dia-step {
+.kmt-dia-chip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -11704,14 +11695,12 @@ body {
   cursor: pointer;
 }
 
-.kmt-dia-chip:hover,
-.kmt-dia-step:hover {
+.kmt-dia-chip:hover {
   border-color: var(--border-light);
   color: var(--text-primary);
 }
 
-.kmt-dia-chip.is-on,
-.kmt-dia-step.is-on {
+.kmt-dia-chip.is-on {
   border-color: var(--accent);
   color: var(--accent);
 }
@@ -11726,27 +11715,33 @@ body {
   color: var(--accent);
 }
 
-.kmt-dia-step-num {
+.kmt-dia-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.kmt-dia-panel {
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.kmt-dia-panel figcaption {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.kmt-dia-panel-num {
+  padding: 0 5px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
   font-family: var(--font-mono, monospace);
   font-size: 0.7rem;
   color: var(--text-muted);
-}
-
-.kmt-dia-step.is-on .kmt-dia-step-num {
-  color: var(--accent);
-}
-
-.kmt-dia-body {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 18px;
-  align-items: flex-start;
-}
-
-.kmt-dia-stage {
-  flex: 0 1 340px;
-  min-width: 260px;
-  margin: 0;
 }
 
 .kmt-dia-frame {
@@ -11775,19 +11770,22 @@ body {
   border-radius: 50%;
 }
 
-.kmt-dia-stage figcaption {
-  margin-top: 8px;
-  font-size: 0.8rem;
-  line-height: 1.5;
-  color: var(--text-secondary);
+.kmt-dia-coord {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+/* 정렬 뒤 세 판이 같은 좌표로 모이는 것이 이 단계의 요점이라 색으로 묶는다. */
+.kmt-dia-coord.is-matched {
+  color: var(--accent);
 }
 
 .kmt-dia-facts {
-  flex: 1 1 260px;
-  min-width: 220px;
   margin: 0;
   display: grid;
-  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 8px 24px;
 }
 
 .kmt-dia-facts > div {
@@ -11819,12 +11817,6 @@ body {
   color: var(--text-muted);
 }
 
-@media (max-width: 640px) {
-  .kmt-dia-stage {
-    flex-basis: 100%;
-  }
-}
-
 .kmt-fit-warning {
   margin: 0;
   padding-left: 10px;
@@ -11837,4 +11829,150 @@ body {
 .kmt-pick-frames {
   font-size: 0.7rem;
   color: var(--accent);
+}
+
+/* ── 용어함 (우하단 고정) ─────────────────────────────────────────────────
+   2026-07 현직 검토에서 가장 넓게 나온 요구가 용어 설명이었다. 종전 목록은
+   식현상 Step 0 접힘 안에만 있어 값이 나오는 화면에서 되돌아가야 했다.
+   흐름 밖에 상주하되, 스스로 열 때만 보이게 한다. 글로우·형광 없이 선과
+   글자로만 구분한다. */
+.glossary-dock {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.glossary-toggle {
+  padding: 8px 16px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+}
+
+.glossary-toggle:hover,
+.glossary-toggle:focus-visible {
+  border-color: var(--accent);
+  color: var(--text-heading);
+}
+
+.glossary-toggle[aria-expanded='true'] {
+  border-color: var(--accent);
+}
+
+.glossary-panel {
+  width: min(360px, calc(100vw - 40px));
+  max-height: min(60vh, 520px);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+}
+
+.glossary-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px 8px;
+  color: var(--text-heading);
+  font-size: 0.9rem;
+}
+
+.glossary-close {
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.glossary-close:hover {
+  color: var(--text-heading);
+}
+
+.glossary-search {
+  margin: 0 14px 10px;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+}
+
+.glossary-search:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.glossary-list {
+  overflow-y: auto;
+  padding: 0 14px;
+}
+
+.glossary-item {
+  padding: 9px 0;
+  border-top: 1px solid var(--border);
+}
+
+.glossary-item:first-child {
+  border-top: none;
+}
+
+.glossary-item dt {
+  color: var(--text-heading);
+  font-size: 0.82rem;
+  margin-bottom: 3px;
+}
+
+.glossary-item dd {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+.glossary-empty {
+  margin: 12px 0;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+.glossary-foot {
+  margin: 0;
+  padding: 9px 14px 12px;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+
+/* 좁은 화면에서는 왼쪽 아래로 옮긴다. 그래프 도구막대(확대·그림 저장)가 늘
+   플롯 오른쪽 위에 붙는데, 폭이 좁아지면 그 자리가 화면 오른쪽 아래와 만나
+   버튼이 서로를 가린다(375px 실측, 2026-09-06). 왼쪽에는 그 도구가 없다. */
+@media (max-width: 720px) {
+  .glossary-dock {
+    right: auto;
+    left: 12px;
+    bottom: 12px;
+    align-items: flex-start;
+  }
+
+  .glossary-panel {
+    max-height: 50vh;
+  }
 }
