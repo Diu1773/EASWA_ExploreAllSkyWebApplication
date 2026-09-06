@@ -86,7 +86,13 @@ export function SkyDataPanel({
   // 해상도로 보면 이웃한 별들이 한 픽셀에 섞인다는 것을 그대로 보여 준다.
   // 이미 받아 둔 이미지를 쓰므로 다시 그리는 데 네트워크가 필요 없다.
   useEffect(() => {
-    if (!sourceReady || imgFailed) return;
+    // gridAvailable 을 함께 본다. 기기 픽셀 크기를 받지 못한 화면(성단 2단계는
+    // pixelScaleArcsec 를 넘기지 않는다)에서는 cellPx 가 0 이라 cols·rows 가
+    // Infinity 가 되고, 그 크기로 만든 캔버스는 폭·높이가 0 이 되어 drawImage 가
+    // 예외를 던진다 — 화면 전체가 오류 화면으로 바뀐다. 종전에는 이 캔버스가
+    // binnedOn 일 때만 DOM 에 붙어 있어 effect 가 먼저 빠져나갔는데, 보기 전환
+    // 로딩을 없애면서 항상 붙여 두게 바꾼 뒤로 이 조건이 사라졌다.
+    if (!sourceReady || imgFailed || !gridAvailable) return;
     const canvas = binnedRef.current;
     const image = sourceImageRef.current;
     if (!canvas || !image) return;
@@ -105,7 +111,7 @@ export function SkyDataPanel({
     ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0, 0, IMG_W, IMG_H);
     ctx.drawImage(small, 0, 0, cols, rows, 0, 0, IMG_W, IMG_H);
-  }, [sourceReady, imgFailed, cellPx]);
+  }, [sourceReady, imgFailed, gridAvailable, cellPx]);
 
   const { verticals, horizontals, highlight } = useMemo(() => {
     if (!gridAvailable) return { verticals: [], horizontals: [], highlight: null };
