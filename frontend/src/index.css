@@ -12066,3 +12066,40 @@ body {
     padding: 7px 6px;
   }
 }
+
+/* ── Step 0: 3D 장면 옆에 식곡선 ─────────────────────────────────────────
+   종전에는 곡선이 3D 아래에 붙어 화면이 세로로 길었고, 별을 가리는 순간과
+   곡선이 내려앉는 순간을 함께 보기 어려웠다. 넓은 화면에서는 나란히 둔다
+   (2026-09-06 소유자 지시: "그냥 webgl 오른쪽에 두자 그게 보기 편할듯").
+   좁은 화면에서는 위아래 배치를 그대로 쓴다. */
+@media (min-width: 1024px) {
+  /* 자식이 셋이다 — 무대·조작·곡선. 무대를 왼쪽 한 칸에 세로로 걸치고,
+     오른쪽 칸에 조작과 곡선을 위아래로 쌓는다. */
+  .transit3d-wrap {
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    align-items: start;
+    gap: 14px 18px;
+  }
+
+  .transit3d-wrap .transit3d-stage {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    /* 위의 QA sweep 규칙이 무대를 920px 로 묶고 가운데 정렬한다. 두 칸이
+       되면 그 여백이 곡선 쪽을 밀어내므로 칸 안에서는 폭을 풀어 준다. */
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .transit3d-wrap .transit3d-controls {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .transit3d-wrap .transit3d-curve {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: center;
+  }
+}
