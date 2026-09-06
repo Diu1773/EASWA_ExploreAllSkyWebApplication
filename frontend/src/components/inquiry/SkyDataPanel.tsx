@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLangStore } from '../../i18n';
 import { localize } from '../../explorationBlocks/localize';
 import type { LocalizedText } from '../../explorationBlocks/types';
@@ -36,8 +36,11 @@ export function SkyDataPanel({
   analysedDataNote,
 }: SkyDataPanelProps) {
   const lang = useLangStore((state) => state.lang);
-  const [showGrid, setShowGrid] = useState(true);
+  // 보기 셋 — 원본 / 격자 / TESS 해상도. 격자선만으로는 «한 픽셀에 여러 별이
+  // 들어간다»가 잘 와닿지 않는다는 지적(2026-09-06)에 따라 세 번째를 더했다.
+  const [view, setView] = useState<'dss' | 'grid' | 'binned'>('grid');
   const [imgFailed, setImgFailed] = useState(false);
+  const binnedRef = useRef<HTMLCanvasElement | null>(null);
 
   const src = useMemo(
     () => buildDssPreviewUrl(ra, dec, { width: IMG_W, height: IMG_H, fovDeg }),
@@ -47,7 +50,43 @@ export function SkyDataPanel({
   // One instrument pixel, expressed in preview-image pixels.
   const cellPx = pixelScaleArcsec ? (IMG_W * pixelScaleArcsec) / 3600 / fovDeg : 0;
   const gridAvailable = cellPx > 4;
-  const gridOn = gridAvailable && showGrid;
+  const gridOn = gridAvailable && view === 'grid';
+  const binnedOn = gridAvailable && view === 'binned';
+
+  // TESS 한 픽셀(cellPx)을 한 칸으로 삼아 DSS 그림을 굵게 다시 그린다. 축소해서
+  // 그린 뒤 매끄럽게 늘리지 않고 확대하면 각 칸이 한 색으로 뭉친다 — 같은 하늘을
+  // TESS 해상도로 보면 이웃한 별들이 한 픽셀에 섞인다는 것을 그대로 보여 준다.
+  useEffect(() => {
+    if (!binnedOn || imgFailed) return;
+    const canvas = binnedRef.current;
+    if (!canvas) return;
+    const cols = Math.max(1, Math.round(IMG_W / cellPx));
+    const rows = Math.max(1, Math.round(IMG_H / cellPx));
+    const image = new Image();
+    image.crossOrigin = 'anonymous';
+    let cancelled = false;
+    image.onload = () => {
+      if (cancelled) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      const small = document.createElement('canvas');
+      small.width = cols;
+      small.height = rows;
+      const sctx = small.getContext('2d');
+      if (!sctx) return;
+      sctx.drawImage(image, 0, 0, cols, rows);
+      canvas.width = IMG_W;
+      canvas.height = IMG_H;
+      ctx.imageSmoothingEnabled = false;
+      ctx.clearRect(0, 0, IMG_W, IMG_H);
+      ctx.drawImage(small, 0, 0, cols, rows, 0, 0, IMG_W, IMG_H);
+    };
+    image.onerror = () => setImgFailed(true);
+    image.src = src;
+    return () => {
+      cancelled = true;
+    };
+  }, [binnedOn, imgFailed, src, cellPx]);
 
   const { verticals, horizontals, highlight } = useMemo(() => {
     if (!gridAvailable) return { verticals: [], horizontals: [], highlight: null };
@@ -81,18 +120,26 @@ export function SkyDataPanel({
             <div className="inquiry-skydata-toggles" role="group">
               <button
                 type="button"
-                className={`inquiry-skydata-toggle ${!gridOn ? 'active' : ''}`}
-                onClick={() => setShowGrid(false)}
+                className={`inquiry-skydata-toggle ${view === 'dss' ? 'active' : ''}`}
+                onClick={() => setView('dss')}
               >
                 {lang === 'ko' ? 'DSS 원본' : 'DSS only'}
               </button>
               <button
                 type="button"
-                className={`inquiry-skydata-toggle ${gridOn ? 'active' : ''}`}
-                onClick={() => setShowGrid(true)}
+                className={`inquiry-skydata-toggle ${view === 'grid' ? 'active' : ''}`}
+                onClick={() => setView('grid')}
                 disabled={!gridAvailable}
               >
                 {lang === 'ko' ? 'TESS 픽셀 격자' : 'TESS pixel grid'}
+              </button>
+              <button
+                type="button"
+                className={`inquiry-skydata-toggle ${view === 'binned' ? 'active' : ''}`}
+                onClick={() => setView('binned')}
+                disabled={!gridAvailable}
+              >
+                {lang === 'ko' ? 'TESS 해상도' : 'TESS resolution'}
               </button>
             </div>
           )}
@@ -105,12 +152,20 @@ export function SkyDataPanel({
               </div>
             ) : (
               <>
-                <img
-                  src={src}
-                  alt={`${targetName} ${lang === 'ko' ? '주변 하늘 (DSS)' : 'sky field (DSS)'}`}
-                  loading="lazy"
-                  onError={() => setImgFailed(true)}
-                />
+                {binnedOn ? (
+                  <canvas
+                    ref={binnedRef}
+                    className="inquiry-skydata-binned"
+                    aria-label={`${targetName} ${lang === 'ko' ? '주변 하늘을 TESS 픽셀 크기로 다시 그린 그림' : 'sky field redrawn at TESS pixel scale'}`}
+                  />
+                ) : (
+                  <img
+                    src={src}
+                    alt={`${targetName} ${lang === 'ko' ? '주변 하늘 (DSS)' : 'sky field (DSS)'}`}
+                    loading="lazy"
+                    onError={() => setImgFailed(true)}
+                  />
+                )}
                 {gridOn && highlight && (
                   <svg
                     className="inquiry-skydata-grid"
@@ -159,6 +214,10 @@ export function SkyDataPanel({
               (lang === 'ko'
                 ? ' 격자는 TESS 픽셀 크기(21″)이며, 강조된 한 픽셀 안에 몇 개의 별이 들어가는지 보세요.'
                 : ' The grid shows the TESS pixel size (21″) — note how many stars share the highlighted pixel.')}
+            {binnedOn &&
+              (lang === 'ko'
+                ? ' 같은 하늘을 TESS 픽셀 크기로 다시 그린 그림입니다. 원본에서 따로 보이던 별들이 한 칸에 섞입니다.'
+                : ' The same field redrawn at the TESS pixel size — stars separate in the original fall into one cell.')}
           </p>
         </div>
         {chips.length > 0 && (

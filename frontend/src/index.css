@@ -12103,3 +12103,12 @@ body {
     align-self: center;
   }
 }
+
+/* Step 2 「TESS 해상도」 — DSS 그림을 기기 픽셀 크기로 다시 그린 캔버스.
+   원본 <img> 와 같은 자리·같은 크기를 쓰므로 두 보기를 오가도 화면이 튀지 않는다. */
+.inquiry-skydata-binned {
+  display: block;
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+}
