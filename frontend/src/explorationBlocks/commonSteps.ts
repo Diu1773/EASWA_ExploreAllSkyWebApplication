@@ -54,7 +54,6 @@ const baseSteps: InquiryStepConfig[] = [
     kind: 'metadata',
     title: { ko: '자료 확인 — 자료 출처와 관측 정보', en: 'Check the Data — Source and Observations' },
     summary: {
-      ko: '자료가 어디서 왔고 어떤 관측 조건을 갖는지 눈으로 확인합니다.',
       en: 'See where the data came from and what observing conditions it carries.',
     },
     questions: [
@@ -65,7 +64,7 @@ const baseSteps: InquiryStepConfig[] = [
           en: 'How might the source and observing conditions limit your interpretation?',
         },
         helperText: {
-          ko: '아래 정보를 다 외우지 말고, 결과를 흔들 수 있는 항목 한두 개만 골라보세요 (예: 노출·필터·구성원 선별 기준).',
+          ko: '결과에 영향을 줄 만한 항목을 한두 개 골라 보세요.',
           en: 'Don’t memorize everything below — pick just one or two items that could most affect the result (e.g., exposure, filter, member selection).',
         },
       },
@@ -111,7 +110,7 @@ const baseSteps: InquiryStepConfig[] = [
       {
         id: 'visual_evidence',
         question: {
-          ko: '시각화 결과에서 현상을 뒷받침하는 근거는 어디에 보이는가?',
+          ko: '광도곡선에서 식현상이라고 볼 만한 부분은 어디인가?',
           en: 'Where does the visualization show evidence for the phenomenon?',
         },
       },

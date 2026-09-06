@@ -344,7 +344,7 @@ export function TransitComparison({ fit, target }: TransitComparisonProps) {
           </div>
           <p className="transit-period-source-note">
             {lang === 'ko'
-              ? '주기는 측정한 값이 아니라 NASA Exoplanet Archive에서 가져온 값입니다. 이 분석은 이 주기로 광도곡선을 위상 접기 했습니다. 단일 관측에는 식이 한 번뿐이라 주기를 직접 구할 수 없고 — 주기는 식과 식 사이 간격에서 나옵니다 — 여러 번의 식을 관측해야 측정할 수 있습니다.'
+              ? '측정한 값이 아니라 아카이브에서 가져온 값입니다.'
               : 'The period is not a measured value — it is taken from the NASA Exoplanet Archive and used to phase-fold this light curve. A single observation shows only one transit, so the period cannot be derived from it: period comes from the spacing between transits, which needs several observed transits.'}
           </p>
         </div>

@@ -655,16 +655,12 @@ export function TransitLab({
   const fitLimbDarkeningExplanation = fitResult
     ? fitLimbDarkening
       ? lang === 'ko'
-        ? `u₁과 u₂는 ${describeLimbDarkeningSource(fitLimbDarkeningSource)}${
-            fitLimbDarkeningFilter ? ` (${fitLimbDarkeningFilter} band)` : ''
-          }에서 시작해 적합 과정에서 변하도록 설정했습니다.`
+        ? '주연감광 계수는 필터와 별의 물성으로 정한 값에서 시작해, 적합 과정에서 함께 맞췄습니다.'
         : `u₁ and u₂ were allowed to vary during the fit, starting from ${describeLimbDarkeningSource(
             fitLimbDarkeningSource,
           )}${fitLimbDarkeningFilter ? ` for the ${fitLimbDarkeningFilter} band` : ''}.`
       : lang === 'ko'
-        ? `u₁과 u₂는 ${describeLimbDarkeningSource(fitLimbDarkeningSource)}${
-            fitLimbDarkeningFilter ? ` (${fitLimbDarkeningFilter} band)` : ''
-          } 및 가능한 경우 주성 파라미터로 자동 설정한 뒤 적합 중에는 고정했습니다.`
+        ? '주연감광 계수는 필터와 별의 물성으로 정하고, 적합 중에는 바꾸지 않았습니다.'
         : `u₁ and u₂ were automatically set from ${describeLimbDarkeningSource(
             fitLimbDarkeningSource,
           )}${fitLimbDarkeningFilter ? ` for the ${fitLimbDarkeningFilter} band` : ''}, using the host-star parameters when available, and then held fixed during the fit.`
@@ -1862,7 +1858,7 @@ export function TransitLab({
               <h4>{lang === 'ko' ? '별 선택' : 'Stars'}</h4>
               <p className="hint">
                 {lang === 'ko'
-                  ? `아래 별을 선택해 구경을 조절하세요. Cutout 영상을 눌러 비교성을 추가하거나 기존 구경을 드래그해 위치를 옮길 수 있습니다. 최대 ${MAX_COMPARISON_STARS}개까지 선택할 수 있습니다.`
+                  ? `Cutout 영상을 눌러 비교성을 추가하세요.`
                   : `Select a star below to adjust its aperture. Click the cutout to add comparison stars, or drag an existing aperture to reposition it (up to ${MAX_COMPARISON_STARS}).`}
               </p>
               <div className="transit-star-list">
@@ -2062,32 +2058,6 @@ export function TransitLab({
                     </details>
                   )}
                 </div>
-                {comparisonStars.length < MAX_COMPARISON_STARS &&
-                  recommendedComparisonStars.length > 0 && (
-                  <button
-                    className="btn-sm"
-                    style={{ marginTop: 8, width: '100%' }}
-                    onClick={() => {
-                      const recommended = recommendedComparisonStars.filter((star) => {
-                        if (
-                          targetComparisonCollisionPosition &&
-                          arePixelPositionsNear(star.pixel, targetComparisonCollisionPosition)
-                        ) {
-                          return false;
-                        }
-                        return !comparisonStars.some((item) =>
-                          arePixelPositionsNear(item.position, star.pixel)
-                        );
-                      });
-                      const slotsLeft = MAX_COMPARISON_STARS - comparisonStars.length;
-                      recommended.slice(0, slotsLeft).forEach((star) => {
-                        handleAddComparison(star.pixel);
-                      });
-                    }}
-                  >
-                    {lang === 'ko' ? '추천 비교성 자동 선택' : 'Auto-select recommended'}
-                  </button>
-                )}
               </div>
             )}
           </>
@@ -2857,12 +2827,12 @@ export function TransitLab({
                     알 길이 이 Lab 어디에도 없었다. */}
                 <p className="hint">
                   {lang === 'ko'
-                    ? '망원경이 미세하게 흔들리거나 온도가 변하면 사진 속 모든 별의 밝기가 함께 출렁입니다. 목표별만 재면 이 출렁임과 행성이 가린 신호를 구별할 수 없습니다. 같은 사진에 찍힌 비교성도 똑같이 출렁이므로, 목표별을 비교성으로 나누면 공통 출렁임이 지워지고 목표별 고유의 변화만 남습니다.'
+                    ? '목표별과 비교성이 함께 겪은 변화는 나눗셈에서 지워지고, 목표별에만 있는 변화가 남습니다. 그래서 식현상이 드러납니다.'
                     : 'When the telescope jitters or its temperature drifts, every star in the frame wobbles together. Measure the target alone and you cannot tell that wobble from the planet\'s signal. The comparison stars in the same frame wobble the same way, so dividing the target by them erases the shared wobble and leaves only what belongs to the target.'}
                 </p>
                 <p className="hint">
                   {lang === 'ko'
-                    ? 'TESS는 우주망원경이라 대기 흔들림은 없지만, 위성의 미세한 흔들림·온도 드리프트·산란광이 같은 역할을 합니다. 각 cadence마다 구경 측광을 수행해 아래 값을 계산합니다.'
+                    ? '각 관측 시각마다 구경 측광을 해서 아래 값을 구합니다.'
                     : 'TESS is a space telescope, so there is no atmospheric seeing — but spacecraft jitter, thermal drift and scattered light play the same role. Aperture photometry runs on every cadence to compute:'}{' '}
                   (F<sub>target</sub> / F<sub>comp</sub>)
                 </p>
@@ -3135,8 +3105,8 @@ export function TransitLab({
                       {(() => {
                         const tier = qcRmsTier(selectedComparisonDiagnosticData.differential_rms);
                         const meta = {
-                          steady: { label: { ko: '안정적', en: 'Steady' }, hint: { ko: '다른 별들과 나란히 평평해요. 좋은 기준별입니다.', en: 'Flat, in step with the others. A good reference.' } },
-                          typical: { label: { ko: '보통', en: 'Typical' }, hint: { ko: '대체로 평평해요. 함께 써도 됩니다.', en: 'Mostly flat. Fine to use together.' } },
+                          steady: { label: { ko: '안정적', en: 'Steady' }, hint: { ko: '흔들림이 이 중에서 작은 편입니다.', en: 'Scatter is on the low side among these.' } },
+                          typical: { label: { ko: '보통', en: 'Typical' }, hint: { ko: '흔들림이 중간입니다.', en: 'Scatter is middling among these.' } },
                           noisy: { label: { ko: '불안정', en: 'Noisy' }, hint: { ko: '혼자 출렁여요. 이 별은 빼는 게 좋겠습니다.', en: 'Wobbles on its own. Better to drop this one.' } },
                         }[tier];
                         return (
@@ -3687,9 +3657,6 @@ export function TransitLab({
                     </div>
                   )}
                   <div className="transit-callout">
-                    {lang === 'ko'
-                      ? '적합된 식현상 모델이 현재 Step 5 ROI 그래프에 직접 표시됩니다.'
-                      : 'The fitted transit model is drawn directly on the current Step 5 ROI view.'}
                   </div>
                   <div className="transit-config-summary">
                     <div className="transit-config-row">

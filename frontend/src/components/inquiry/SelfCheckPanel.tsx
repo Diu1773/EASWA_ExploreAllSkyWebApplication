@@ -33,7 +33,7 @@ export function SelfCheckPanel({ items, scope, answers, onAnswer }: SelfCheckPan
           mechanism. */}
       <p className="inquiry-selfcheck-note">
         {lang === 'ko'
-          ? '처음 고른 답이 기록되고, 고른 뒤에는 바꿀 수 없습니다.'
+          ? '고른 뒤에는 바꿀 수 없습니다.'
           : 'Your first choice is what gets recorded; it cannot be changed afterwards.'}
       </p>
       {items.map((item) => {

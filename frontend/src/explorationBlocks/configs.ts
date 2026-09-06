@@ -56,7 +56,7 @@ export const exoplanetTransitModule: ExplorationModuleConfig = {
       questions: [
         makePrompt(
           'transit_intro_question',
-          '별빛 감소만으로 행성의 상대적 크기를 얼마나 신뢰성 있게 추정할 수 있을까?',
+          '별빛이 줄어든 정도만으로 행성의 크기를 얼마나 알 수 있을까?',
           'How reliably can we estimate a planet-to-star radius ratio from a brightness dip?',
         ),
       ],
@@ -93,7 +93,7 @@ export const exoplanetTransitModule: ExplorationModuleConfig = {
         {
           id: 'tr_cond_sc1',
           type: 'ox',
-          question: { ko: '측광 구경(aperture)은 크게 잡을수록 더 정확하다.', en: 'A larger photometry aperture gives a more accurate measurement.' },
+          question: { ko: '측광 구경을 두 배로 키우면 별빛을 더 많이 담으므로 측정이 그만큼 정확해진다.', en: 'A larger photometry aperture gives a more accurate measurement.' },
           correct: 'X',
           explanation: { ko: '너무 키우면 주변 별·배경이 섞여 오히려 잡음이 커집니다 — 적정 크기가 중요합니다.', en: 'Too large an aperture lets in nearby stars and background, raising noise; the right size matters.' },
         },

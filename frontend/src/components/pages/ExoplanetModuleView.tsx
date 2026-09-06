@@ -297,7 +297,7 @@ export function ExoplanetModuleView({ module }: ExoplanetModuleViewProps) {
       <div className="inquiry-comparison-toolbar">
         <span className="inquiry-comparison-toolbar-note">
           {lang === 'ko'
-            ? '이 값은 Lab에서 저장한 적합 결과입니다.'
+            ? ''
             : 'This value is the fit result saved from the Lab.'}
         </span>
         <button
