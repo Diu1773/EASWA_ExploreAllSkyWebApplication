@@ -99,6 +99,9 @@ class TransitComparisonDiagnostic(BaseModel):
     median_flux: float
     differential_rms: float
     differential_mad: float
+    #: 관측 구간 전체에서 밝기가 한쪽으로 변한 양(%). RMS 는 산포만 재므로
+    #: 기울어진 곡선을 평평하다고 부르는 것을 막기 위해 함께 내려보낸다.
+    differential_trend_pct: float | None = None
     ensemble_weight: float
     # True when the diagnostic curve is this star ÷ the other comparisons (the
     # target-free QC). False when there was no independent peer to check against

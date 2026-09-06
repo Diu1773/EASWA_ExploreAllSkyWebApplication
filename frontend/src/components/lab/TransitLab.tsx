@@ -3113,6 +3113,17 @@ export function TransitLab({
                               </span>
                             </div>
                             <p className="transit-qc-quality-hint">{meta.hint[lang]}</p>
+                            {/* 등급은 이 별들 사이의 순위일 뿐이고 흔들림(RMS)은
+                                산포만 잰다. 한쪽으로 기울어진 곡선은 산포가 작아도
+                                기준별로 쓸 수 없으므로 따로 적는다. */}
+                            {typeof selectedComparisonDiagnosticData.differential_trend_pct === 'number' &&
+                              Math.abs(selectedComparisonDiagnosticData.differential_trend_pct) >= 0.2 && (
+                                <p className="transit-qc-quality-hint">
+                                  {lang === 'ko'
+                                    ? `관측 구간 동안 밝기가 한쪽으로 ${selectedComparisonDiagnosticData.differential_trend_pct > 0 ? '+' : ''}${selectedComparisonDiagnosticData.differential_trend_pct.toFixed(2)}% 변했습니다.`
+                                    : `Brightness drifted ${selectedComparisonDiagnosticData.differential_trend_pct > 0 ? '+' : ''}${selectedComparisonDiagnosticData.differential_trend_pct.toFixed(2)}% across the run.`}
+                                </p>
+                              )}
                           </div>
                         );
                       })()}

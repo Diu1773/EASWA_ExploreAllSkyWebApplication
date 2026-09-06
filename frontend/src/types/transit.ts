@@ -106,6 +106,9 @@ export interface TransitComparisonDiagnostic {
   median_flux: number;
   differential_rms: number;
   differential_mad: number;
+  /** 관측 구간 전체에서 밝기가 한쪽으로 변한 양(%). RMS 는 산포만 재므로,
+   *  기울어진 곡선을 평평하다고 부르지 않으려면 이 값을 함께 봐야 한다. */
+  differential_trend_pct?: number | null;
   ensemble_weight: number;
   /** True: diagnostic curve is this star ÷ the other comparisons (target-free
    *  QC). False: no independent peer, fell back to target ÷ this star — the UI

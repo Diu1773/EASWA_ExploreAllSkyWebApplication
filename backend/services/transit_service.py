@@ -973,6 +973,19 @@ def run_transit_photometry(
 
         diag_rms = float(np.nanstd(diag_flux))
         diag_mad = _robust_mad(diag_flux)
+        # RMS is scatter only: a curve that climbs steadily across the run can
+        # have a small RMS while being anything but flat, and the UI then called
+        # it "flat, in step with the others" (reported from a screenshot,
+        # 2026-09-06). Fit a straight line in time and report the total drift it
+        # implies over the observed span, in percent of the normalised flux.
+        diag_trend_pct = None
+        finite = np.isfinite(diag_flux) & np.isfinite(diag_times)
+        if int(finite.sum()) >= 3:
+            t = diag_times[finite]
+            span = float(t.max() - t.min())
+            if span > 0:
+                slope = float(np.polyfit(t, diag_flux[finite], 1)[0])
+                diag_trend_pct = round(slope * span * 100.0, 4)
 
         diagnostic_payloads.append(
             {
@@ -985,6 +998,7 @@ def run_transit_photometry(
                 "median_flux": record["median_flux"],
                 "differential_rms": round(diag_rms, 6),
                 "differential_mad": round(diag_mad, 6),
+                "differential_trend_pct": diag_trend_pct,
                 "raw_weight": record["raw_weight"],
                 "checked_against_peers": against_peers,
                 "light_curve": _build_light_curve_response(
@@ -1071,6 +1085,7 @@ def run_transit_photometry(
             median_flux=item["median_flux"],
             differential_rms=item["differential_rms"],
             differential_mad=item["differential_mad"],
+            differential_trend_pct=item.get("differential_trend_pct"),
             ensemble_weight=round(
                 item["raw_weight"] / normalized_total_weight if normalized_total_weight > 0 else 0.0,
                 4,
