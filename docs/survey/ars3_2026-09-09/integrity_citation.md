@@ -10,17 +10,37 @@
 
 ---
 
-## 0. 검사한 문헌 수 — 분모를 먼저 밝힌다
+## 0. 한 줄 결론
+
+**본문에 있는데 참고문헌에 없는 인용은 0건이다.** 대신 **참고문헌에 있는데 본문이 한 번도 부르지
+않는 항목이 1건**(Goodman et al. 2012, WWT) 남아 있고, **원고가 문헌에 붙인 주장 가운데 여덟 자리가
+원문과 어긋난다.** 그중 셋 — Ridsdale의 정의에 없는 「해석·소통」, O'Reilly에 없는 「교사가 자료를
+재구성」, Sweller(1988)에 없는 「외재적 부하」 — 은 원문을 열면 바로 드러나는 자리다.
+서지 자체는 대체로 정확하고, 틀린 것은 Giordano의 쪽 범위(97-108→97-103)와 McDonald의
+논문번호를 쪽으로 적은 것 둘이다.
+
+**형식은 별개 문제다.** 학회 규정 제10조의 영문 형태를 지킨 항목이 50건 중 1건뿐이다.
+
+---
+
+## 1. 검사한 문헌 수 — 분모를 먼저 밝힌다
 
 | 구분 | 수 |
 |---|---|
 | 참고문헌 총 항목 | **60** (국문 10 · 영문 50) |
 | 로컬 PDF로 원문을 직접 연 항목 | **34 / 60** |
-| 웹에서 원문·서지를 확인한 항목 | 3절 참조 |
-| 원문을 전혀 못 본 항목 | 4절 참조 |
+| 웹에서 원문 또는 출판사·DOI 등록 기록을 확인한 항목 | **23 / 60** |
+| 원문도 서지도 확인하지 않은 항목 | **3 / 60** (교과서 3종 — 종이책) |
+| **원고가 붙인 주장을 원문에서 확인한 항목** | **44 / 60** |
+| **주장이 원문과 어긋나거나 일부만 뒷받침되는 자리** | **8자리** |
+| **주장을 확인하지 못한 항목** | **8 / 60** + 1건 부분 확인 |
 
-`Desktop\Research\ERP2026\`의 PDF는 35개이지만 그중 **`Paczyski1986.pdf`는 Paczyński(1986)가 아니다**(2-3 참조).
+`Desktop\Research\ERP2026\`의 PDF는 35개이지만 그중 **`Paczyski1986.pdf`는 Paczyński(1986)가 아니다**(3-3 참조).
 따라서 로컬에서 실제로 대조에 쓸 수 있었던 원문은 34편이다.
+
+주장을 확인하지 못한 8항목은 공병민 외(2023) · 조훈·손정주(2022) · 김연귀 외(2024) ·
+이기영 외(2025a·2025b) · 교육부(2022) · 신영준 외(2022a·2022b)이고,
+Herrold & Prather(2023)는 지면과 제목만 확인했다. 이유는 5절에 적었다.
 
 **「전부 확인했다」고 말할 수 없다.** 아래 각 판정에는 그 판정의 근거가 원문 어느 쪽인지를 함께 적었다.
 
@@ -185,15 +205,133 @@ Paczyński(1986)가 아니다. 따라서 **Paczyński(1986)는 로컬에서 확�
 
 ---
 
-## 3. 원문 대조 — 웹 확인
+## 3. 원문 대조 — 로컬에 없는 문헌은 웹에서 원문을 받아 확인했다
 
-(작성 중)
+각 판정은 실제로 받아온 페이지·PDF에서 인용한 문장에 근거한다.
+
+### 3-1. 원고가 붙인 주장이 원문과 어긋난 5건
+
+#### (1) Ridsdale et al. (2015)의 데이터 리터러시 정의 — **일부가 원문에 없음** · **상**
+
+**원고 L81**: 「Ridsdale et al.(2015)은 데이터 리터러시를 자료를 비판적으로 수집·관리·평가·활용하고
+**결과를 해석하여 의사소통할 수 있는 능력**으로 설명하였다.」
+
+보고서 **p.8**의 정의는 이렇다.
+
+> "Data literacy is the ability to collect, manage, evaluate, and apply data, in a critical manner."
+
+같은 문장이 p.2·p.3·p.11에도 반복되고, p.11은 상위 요소를 `collect, manage, evaluate, apply`
+넷으로만 열거한다. **「해석하여 의사소통」은 정의에 없다.** 해석·소통은 부록 1의 역량 매트릭스에
+`Data Interpretation`, `Presenting Data`, `Data Visualization` 같은 하위 항목으로 있을 뿐이다.
+원고의 「활용」은 원문 `apply`에 해당하므로 그 부분은 맞다.
+
+→ **정의를 인용하려면 네 낱말까지만 정의로 쓰고, 해석·소통은 「역량 매트릭스에서는 …도 둔다」로
+분리해야 한다.**
+
+#### (2) Qiao et al. (2024)의 세 번째 차원 이름 — **부정확** · **중**
+
+**원고 L81**: 「데이터 인식, 데이터 기능, **규범과 윤리**의 세 차원」
+
+논문 **p.6/21**의 원문은 이렇다.
+
+> "SDL has been initially categorized into three dimensions: science data awareness, science data skills, and **science data regulations and ethics**, including a total of 11 elements"
+
+`regulations`는 **법·규정**이고, 저자들은 이 차원을 `data laws and regulations (DLAR)`와
+`data ethics (DE)` 두 요소로 정의한다. 원고의 「규범」에는 법규가 들어오지 않는다.
+→ **「법규와 윤리」**로 고치는 것이 원문에 맞다.
+
+두 가지 덧붙임.
+- 원고가 데이터 기능 차원에 넣은 「**평가**」는 여섯 요소(자료 탐색·수집 / 조직·관리 / 처리·분석 /
+  시각화 / 해석 / 소통·공유)에 독립 항목으로 없다. 「접근·처리·분석·해석·소통」까지만 쓰면 어긋나지 않는다.
+- p.6의 3차원 11요소는 **예비(preliminary) 틀**이고, 델파이 2라운드 뒤 시각화 요소가 빠지고
+  자료 추론 요소가 들어간 **최종안**(p.9~10, Table 4)이 따로 있다. 최종안을 근거로 쓰는 편이 안전하다.
+
+#### (3) O'Reilly et al. (2022)의 뒷부분 — **원문에 없음** · **상**
+
+**원고 L45**: 「공개자료를 사용하려면 분석 소프트웨어의 사용법이나 프로그래밍 환경을 익혀야 하고,
+**수업에 적절한 자료를 선별하여 학습자의 수준에 맞게 재구성해야 한다**(O'Reilly et al., 2022).」
+
+- **앞부분은 원문 확인 (§3 "Practical issues with software in the classroom")**:
+  > "All software used for data-based activities in the classroom will take time for both the instructor and students to learn. Instructors will often have to put in extra time to not only become comfortable with the software, but to learn it enough that they can help their students when they are stuck…"
+  Python·R·RStudio·스프레드시트가 실제로 열거된다.
+- **뒷부분은 원문에 없다.** 이 논문에서 난이도를 조절하는 주체와 수단이 원고와 반대다.
+  > "This gives students confidence that they can conduct the same analysis by choosing part of a larger dataset." (Figure 2 — **큰 자료의 일부를 고르는 주체가 학생**이다)
+  > "Pre-written code also allows you to teach at a variety of difficulty levels…" (**미리 쓴 코드를 얼마나 주느냐**로 난이도를 맞춘다)
+
+→ **「교사가 자료를 재단한다」는 문장을 이 문헌으로 뒷받침할 수 없다.** 문장을 원문에 맞게
+「미리 쓴 코드를 얼마나 제공할지로 난이도를 맞춘다」로 고치거나, 자료 재구성 주장은 다른 근거를
+달아야 한다.
+
+#### (4) Light et al. (2018)의 워크스루 단계 — **원고의 각색** · **중**
+
+**원고 L109**: 「진입, 검색·질의, 결과 확인, 자료 활용의 흐름을 기록하는 워크스루 방식으로
+수행하였다(Light et al., 2018; Wharton et al., 1994).」
+
+Light 외의 단계는 **세 가지**다.
+
+> "It then deploys a walkthrough technique to systematically and forensically step through the various stages of **app registration and entry, everyday use and discontinuation of use**."
+
+원고의 네 단계는 저자들의 명칭이 아니라 원고가 자기 대상(자료 서비스)에 맞게 만든 것이다.
+각색 자체는 문제가 아니지만 **각색임을 밝히지 않으면 저자들의 절차를 그대로 쓴 것으로 읽힌다.**
+
+여기에 더 신경 쓸 것이 하나 있다. **Light 외의 워크스루는 앱의 문화적·기술적 분석 방법이고,
+Wharton 외의 cognitive walkthrough는 사용성 점검 방법이다.** 성격이 다른 두 방법을 세미콜론
+하나로 묶어 같은 근거로 쓰면 심사에서 지적당하기 쉽다. 원고의 3.2가 실제로 한 일은 두 방법 중
+어느 쪽에 가까운지 밝히고 나머지 하나는 「참고했다」로 위계를 나누는 편이 낫다.
+
+#### (5) Zellem et al. (2020)에 「NASA Exoplanet Watch」가 없다 — **중**
+
+**원고 L51**: 「**NASA Exoplanet Watch**는 시민 관측자료를 외계행성 추적 관측에 활용한다
+(Zellem et al., 2020).」
+
+이 논문 44쪽 전체에서 `Watch`가 **0회**다. 논문이 말하는 것은 프로그램의 이름이 아니라 그 앞 단계다.
+
+> "we demonstrate the power of citizen scientists operating smaller observatories (≤1-m) to keep ephemerides 'fresh'"
+> "**We advocate for the creation of** a community-wide effort to perform ephemeris maintenance on transiting exoplanets by citizen scientists."
+
+즉 **「시민 관측자료로 식현상 추적 관측을 한다」는 실천은 원문 확인**이지만,
+**「NASA Exoplanet Watch」라는 프로그램 이름은 이 문헌이 근거가 되지 못한다.**
+프로그램 이름을 유지하려면 NASA Exoplanet Watch 공식 페이지를 접속일과 함께 따로 달거나,
+문장을 「시민 관측자료를 외계행성 추적 관측에 쓰는 활동이 제안되었다(Zellem et al., 2020)」로 고쳐야 한다.
+
+### 3-2. 원문 확인 — 웹에서 확인한 나머지
+
+| 문헌 | 원고가 붙인 주장(행) | 판정 | 근거 |
+|---|---|---|---|
+| Paczyński (1986) | 점렌즈·점광원 모델(L231) | **원문 확인 (ApJ 304, 1-5, II장 「A MODEL」)** | *"We consider a flat space and a point mass"*, 점광원 가정. 식 (5)가 표준 증광식 `A = (u²+2)/[u(u²+4)^½]`, 그림 2가 충격매개변수별 광도곡선 |
+| Hsieh & Shannon (2005) | 질적 내용분석 절차(L155·부록2) | **원문 확인 (초록)** | *"current applications of content analysis show three distinct approaches: conventional, directed, or summative"*, *"The authors delineate analytic procedures specific to each approach"* |
+| Graneheim & Lundman (2004) | 문장·문단을 **의미 단위**로 분절(L155) | **원문 확인 — 단, 쪽수는 2차 출처** | 원논문 초록에 *"important concepts (manifest and latent content, unit of analysis, **meaning unit**, condensation, abstraction, content area, code, category and theme)"*가 있어 개념 존재는 원문 확인. 「words, sentences or paragraphs」라는 정의 문장의 쪽(p.106)은 Elsevier 유료벽 때문에 원논문에서 직접 못 봤고 다른 학위논문의 직접인용으로 확인했다 |
+| McDonald et al. (2019) | 연구자 한 사람일 때 부호화자 간 합의가 반드시 적절하지는 않다(L157) | **원문 확인 (72:3)** | *"Guidelines for deciding when agreement and/or IRR is not desirable (and may even be harmful): ... Pragmatic examples include when developing codes is part of the process, **when there is a single researcher**, when researchers are embedded in the research context"* |
+| Richey & Klein (2007) | 설계·개발 연구의 관점(L101·부록2) | **원문 확인 (책 소개)** | 「design and development research를 수행하는 방법과 전략」이 이 책의 주제 |
+| Quintana et al. (2004) | 절차 구조화 · 판단에 필요한 표상 제공(L91) | **원문 확인 (pp.354·359·366)** | p.359 *"structure tasks, specifying when and how to perform different activities in a science investigation"*, p.345 표1 지침3 *"Use representations that learners can inspect in different ways to reveal important properties of underlying data"* |
+| Quintana et al. (2004) | **「필요한 자료와 정보를 적절한 시점에 제공」** | **일부만 확인** | 자료 제공은 p.360 *"providing learners with an authentic but more manageable data set"*, 시점은 p.363 *"what software tools are provided and when"*. 다만 `just-in-time`류 표현은 전문에 0회이고, 자료 제공의 취지는 「적시」가 아니라 「다룰 수 있는 크기로 미리 줄여 준다」다. **「적절한 시점에」는 원고의 의역**이다 — 8절 |
+| Banchi & Bell (2008) | 확인형·구조화형·안내형·개방형을 질문·절차·결론을 얼마나 주느냐로 구분(L95·L121) | **원문 확인 (p.26, 그림1 p.27)** | *"We've found a four-level continuum—confirmation, structured, guided, open—to be useful ... The continuum focuses on how much information (e.g., guiding question, procedure, and expected results) is provided to students"*. 그림1의 열이 Question / Procedure / Solution |
+| Collins et al. (1989) | 스캐폴딩 소거(fading)(L95·부록2) | **원문 확인 — 단, 1987년 기술보고서 판** | 1989년 장은 공개본이 없어 같은 원고의 ERIC 기술보고서(ED284181, Technical Report No. 403) p.17에서 확인: *"Fading consists of the gradual removal of supports until students are on their own."* p.9 *"gradually faded out, with students taking on more and more of the task as they become more skillful"* |
+| Koedinger & Aleven (2007) | 도움의 딜레마와 「교수과학의 미해결 문제」(L91·L375) | **원문 확인 (p.239 초록)** | *"How best to achieve this balance remains a fundamental open problem in instructional science. We call this problem the 'assistance dilemma'"*. 원고의 「부족하면 중단, 과도하면 사고를 대체」는 표2의 비용 항목(`Floundering, confusion, wasted time` / `Shallow processing`)에 대한 의역이므로 따옴표를 쓰면 안 된다 |
+| Wharton et al. (1994) | cognitive walkthrough(L109) | **원문 확인 — 단, 쪽 범위는 4절** | 챕터 원문: *"The cognitive walkthrough is a way to test the usability of interactive software."* 저자 4인·편저자(Nielsen, Mack)·출판사·연도 일치 |
+| Udomprasert et al. (2012) | WWT 기반 교육 프로그램(L51) | **원문 확인 (ASP Conf. Ser. 457, pp.149-154)** | 조판 원문 표제지에서 권·편저자 4인·저자 3인·시작쪽 149 확인 |
+| Guo et al. (2024) | WWT 기반 교육 프로그램(L51) | **원문 확인 (제목·JOST 33(6): 954-969)** | 저자 4인(Guo Q, Chen Y, Qiao C, Yu Y) |
+| 공병민 외 (2023) | 실제 영상자료 처리에서 학생이 소프트웨어·프로그래밍에 어려움(L45) | **확인 못 함** — 4절 | 서지는 KCI에서 확인(현장과학교육 17(3): 331-345, 저자 5인 일치)했으나 **본문 내용은 원문을 못 봤다** |
+| 조훈·손정주 (2022) | 브라우저 노트북 환경, 프로그램 구조 단순화(L45·L47) | **확인 못 함** — 4절 | 서지는 KCI에서 확인(현장과학교육 16(5): 602-618)했으나 **본문 내용은 원문을 못 봤다** |
+| Herrold & Prather (2023) | Rubin Observatory 온라인 탐구활동(L51) | **부분 확인** — 4절 | 지면 이름은 페이지에서 확인: *"part of a biweekly series of blog posts from astronomers and educators in the extended AAS community"*, 지면 표기는 **「AAS Education Blog」**(AAS Education Committee가 큐레이션)다. 원고의 「AAS Education Committee Blog」는 정확한 지면명이 아니다 |
 
 ---
 
 ## 4. 확인 못 한 것
 
-(작성 중)
+**기억으로 메우지 않았다.** 아래는 확인을 시도했으나 근거를 얻지 못한 항목이다.
+
+| # | 항목 | 무엇을 못 봤나 | 막힌 이유 |
+|---|---|---|---|
+| 1 | **공병민 외 (2023)** 본문 | 「일부 학생이 소프트웨어와 프로그래밍 활용에 어려움을 경험」이 원문에 있는지 | 학술DB 원문. 교원대 도서관 2026-07-23 공지가 자동 접근을 통한 학술DB 원문 다운로드를 금지한다 |
+| 2 | **조훈·손정주 (2022)** 본문 | 「프로그램 구조를 단순화」·「브라우저에서 열리는 노트북 환경」이 원문에 있는지 | 위와 같음 |
+| 3 | **Herrold & Prather (2023)** 저자 줄 | 페이지 본문에서 저자명을 직접 못 읽었다. 검색엔진이 렌더링한 요약에는 *"Guest authors Ardis Herrold and Ed Prather write about…"*가 있으나 **내가 받아온 페이지의 텍스트가 아니다** | aas.org가 Cloudflare 봇 검사 뒤에 있어 직접 접근은 403. 프록시로 받은 본문에는 저자 블록이 빠져 있었다 |
+| 4 | **Wharton et al. (1994)** 쪽 범위 | `pp. 105-140` | 챕터 원문에는 「Ch. 5」로만 표기. ACM DL 403, Semantic Scholar 429, Open Library 연결 거부 |
+| 5 | **Collins et al. (1989)** 끝 쪽 | `494` | 편저 목차에서 시작 쪽 453만 확인. 494는 색인(505쪽) 앞이라는 정황만 맞다 |
+| 6 | **Graneheim & Lundman (2004)** p.106 | 「words, sentences or paragraphs」 정의 문장을 원논문에서 직접 | ResearchGate·ScienceDirect 403, Semantic Scholar에 오픈액세스 없음 |
+| 7 | **신영준 외 (2022a·2022b)** 연구책임자 | 「신영준」이 연구책임자인지 | 한국과학창의재단 성과관은 제목·발간번호·수행기관(경인교육대 산학협력단)까지만 표시하고 연구책임자를 따로 적지 않는다. 보고서 PDF는 글꼴 인코딩 문제로 본문 추출 불가, PRISM은 자바스크립트 렌더링이라 접근 실패 |
+| 8 | **김연귀 외 (2024)** / **이기영 외 (2025a·2025b)** 교과서 3종 | 표 4-2가 인용한 쪽(p.39, p.54, pp.74–75, p.79, pp.93–95, p.109, p.113, pp.182–183)의 내용 | 종이 교과서라 대조하지 않았다. **표 4-2의 쪽 인용 8건은 이 검사에서 검증되지 않았다** |
+| 9 | **Paczyński (1986)** 로컬 원본 | — | `Desktop\Research\ERP2026\Paczyski1986.pdf`가 다른 논문이다(2-3). 다만 NASA ADS 원문 스캔으로 웹에서 확인했으므로 판정 자체는 「원문 확인」이다 |
 
 ---
 
@@ -383,10 +521,116 @@ Delrez et al. 2016)이다. 둘 다 최신 문헌으로 바꿀 수 없는 자리�
 
 ## 8. 원고를 고쳐야 하는 것
 
-(작성 중)
+사실이 어긋난 것들이다. 취향이나 양식 선택의 문제가 아니라, 원문과 대조해 틀린 것으로 확인됐다.
+행 번호는 v17 기준이다.
+
+| # | 위치 | 무엇이 틀렸나 | 어떻게 고치나 | 심각도 |
+|---|---|---|---|---|
+| 1 | L81 | Ridsdale et al.(2015)의 데이터 리터러시 **정의에 「결과를 해석하여 의사소통」이 없다**. 원문 p.8의 정의는 `collect, manage, evaluate, and apply` 네 낱말이다 | 정의는 「비판적으로 수집·관리·평가·활용하는 능력」까지만 쓰고, 해석·소통은 「같은 보고서의 역량 매트릭스는 자료 해석과 발표·시각화도 하위 항목으로 둔다」로 문장을 나눈다 | **상** |
+| 2 | L45 | O'Reilly et al.(2022)에 **「수업에 적절한 자료를 선별하여 학습자의 수준에 맞게 재구성해야 한다」가 없다**. 이 논문은 자료 일부를 고르는 주체를 학생으로 두고, 난이도는 미리 쓴 코드를 얼마나 주느냐로 조절한다 | 뒷절을 원문에 맞게 「미리 작성한 코드를 얼마나 제공할지로 활동의 난이도를 정해야 한다」로 바꾸거나, 자료 재구성 주장은 다른 근거를 단다 | **상** |
+| 3 | L468 | Giordano et al.(2018)의 **쪽 범위 `97-108`이 틀렸다**. 출판사 등록 기록과 NASA ADS 모두 97에서 시작하며 CrossRef는 `97-103`이다 | `Astronomy and Computing 24: 97-103.` | **상** |
+| 4 | L484 | McDonald et al.(2019)의 **`3: 72`에서 72는 쪽이 아니라 논문 번호**다. 실제 쪽은 1-23이다 | `Proceedings of the ACM on Human-Computer Interaction 3(CSCW): Article 72, 1-23.` | **상** |
+| 5 | L470 | **Goodman et al.(2012) WWT 항목이 본문 어디에도 인용되지 않는다.** 본문의 `(Goodman, 2012)` 두 곳은 모두 바로 위의 시각화 논문을 가리킨다 | 항목을 지우거나, WWT를 설명하는 자리(L49)에 실제로 인용한다. 남긴다면 두 Goodman 2012에 `2012a`·`2012b`를 붙인다 | **상** |
+| 6 | L115·L118 | 표 3-1이 **「외재적 부하」의 근거로 Sweller(1988)를 달았는데 그 용어가 이 논문에 없다**(`extraneous` 0회). 내재적·외재적 구분은 1990년대 이후 문헌의 개념이다 | 본문 2.3이 이미 쓰고 있는 표현대로 「학습 목표와 무관한 처리 요구」로 바꾸거나, 외재적 부하를 쓸 근거 문헌을 따로 단다 | **상** |
+| 7 | L51 | Zellem et al.(2020)에 **「NASA Exoplanet Watch」라는 이름이 없다**(`Watch` 0회). 이 논문은 그런 활동을 **제안**한 단계다 | 「시민 관측자료를 외계행성 추적 관측에 쓰는 활동이 제안되었다(Zellem et al., 2020)」로 바꾸거나, 프로그램 이름을 유지하려면 NASA Exoplanet Watch 공식 페이지를 접속일과 함께 따로 단다 | **중** |
+| 8 | L81 | Qiao et al.(2024)의 세 번째 차원이 **「규범과 윤리」가 아니라 「법규와 윤리」**(`regulations and ethics`)다. 저자들은 이 차원을 법·규정 요소와 윤리 요소 둘로 정의한다. 또 「평가」는 데이터 기능 차원의 여섯 요소에 없다 | 「법규와 윤리」로 고치고, 기능 차원 서술에서 「평가」를 뺀다 | **중** |
+| 9 | L157 | Elo & Kyngäs(2008)에 **「연구자 한 사람이 분석을 수행할 때」라는 조건이 없다.** 이 논문(p.113)은 연구자 수와 무관하게 합의 추구에 여러 견해가 있다고 말한다. 그 조건을 실제로 담은 것은 함께 인용한 McDonald et al.(2019)뿐이다 | 문장을 둘로 나눠 「방법이 하나로 정해져 있지 않다(Elo & Kyngäs, 2008)」와 「연구자 한 사람이 분석할 때는 부호화자 간 합의가 적절하지 않을 수 있다(McDonald et al., 2019)」로 각각 근거를 맞춘다 | **중** |
+| 10 | L109 | Light et al.(2018)의 워크스루 단계는 **「등록·진입 / 일상적 사용 / 사용 중단」 셋**이다. 원고의 네 단계는 원고가 만든 것이다. 또 Light의 워크스루는 앱의 문화적·기술적 분석 방법이고 Wharton의 cognitive walkthrough는 사용성 점검 방법이라 성격이 다르다 | 「Light et al.(2018)의 절차를 자료 서비스에 맞게 네 단계로 재구성하였다」처럼 각색임을 밝히고, 두 문헌 가운데 실제로 따른 쪽을 주 근거로 두고 나머지는 참고로 위계를 나눈다 | **중** |
+| 11 | L91 | Quintana et al.(2004)에 **「적절한 시점에 제공」에 해당하는 표현이 없다**(`just-in-time`류 0회). 원문의 취지는 학습자가 다룰 수 있는 크기로 미리 줄인 자료를 주고, 단계에 따라 어떤 도구를 열지 정한다는 것이다 | 「학습자가 다룰 수 있는 범위로 선별한 자료와, 활동 단계에 맞는 도구를 제공하며」로 바꾼다 | **중** |
+| 12 | L472 | Hasan & Hasan(2021)에 **권과 쪽이 빠졌다** | `Proceedings of the International Astronomical Union 15(S367): 151-154.` | **중** |
+| 13 | L471 | Guo et al.(2024)의 **저자는 4명뿐인데 `et al.`로 한 명(Yu, Y.)을 가렸다.** 바로 아래 Qiao et al.(2024)는 같은 4인을 다 적어서 표기가 갈린다 | `Guo, Q., Chen, Y., Qiao, C. and Yu, Y. (2024)` | **중** |
+| 14 | L458 | Cantat-Gaudin et al.(2020)의 **저자는 13명인데 말줄임표(…)로 여섯 명을 뺐다.** 말줄임표는 저자 21명 이상일 때 쓰는 표기다 | 13명을 모두 적는다 | **중** |
+| 15 | L474 | Herrold & Prather(2023)의 **지면 이름이 「AAS Education Committee Blog」가 아니라 「AAS Education Blog」**다(AAS Education Committee가 큐레이션하는 격주 블로그) | 지면명을 고치고, 블로그 글이므로 URL과 접속일을 함께 단다 | **중** |
+| 16 | L473~L477 | 참고문헌 **알파벳 순서가 어긋난다** — Elo와 Graneheim이 Herrold 뒤에 있다. v16 검사에서 지적됐고 그대로다 | Elo를 Delrez와 Fischer 사이로, Graneheim을 Goodman과 Guo 사이로 옮긴다 | **중** |
+| 17 | L123 | 3.2가 「이 표집과 수행 방식의 한계는 **5.5**에서 다룬다」고 하는데, 5.5는 생성형 AI 코딩 도구 이야기다. 사례분석의 한계는 **5.6 넷째**에 있다 | `5.6`으로 고친다 | **중** |
+| 18 | 목록 전체 | **영문 50건 중 49건이 학회 규정 제10조의 영문 형태가 아니다.** 규정 형태를 지킨 것은 `Herrold A and Prather E (2023)` 하나뿐이고 나머지는 APA식이다 | 한 방향으로 통일한다 — 9절 판단 항목 | **상** |
+| 19 | 목록 4건 | **한 목록 안에 두 서지 양식이 섞여 있다.** L469·L479·L487·L489만 APA식(쉼표 + 괄호 호수 + DOI)이고 나머지 56건은 학회식이다. DOI도 이 3건에만 붙었다 | 양식과 DOI 표기를 목록 전체에 같은 규칙으로 적용한다 | **중** |
+| 20 | 본문 여러 곳 | **같은 문헌이 자리마다 `&`와 `and`로 갈린다** — Kjelvik & Schultheis(L35 vs L365), Koedinger·Aleven(L91 vs L375), Richey & Klein(L101 vs 부록2), Hsieh & Shannon(L155 vs 부록2) | 하나로 통일한다 | **중** |
+| 21 | L118·L155 | **복수 인용의 알파벳 순서가 어긋난다** — `(Sweller, 1988; Quintana et al., 2004)`는 Quintana가 먼저, `(Hsieh & Shannon, 2005; Elo & Kyngäs, 2008)`는 Elo가 먼저다 | 순서를 바꾼다(학회 규정이 순서를 정하지 않았다면 두어도 된다) | **하** |
+| 22 | 표 4-2 | **교과서를 저자·연도로 부르지 않는다.** `(행성우주과학, 비상, p.39)`는 참고문헌 L449 `이기영 외 (2025b)`와 이어지지 않는다 | `(이기영 외, 2025b, p.39)` 식으로 목록과 잇는다 | **하** |
 
 ---
 
 ## 9. 소유자가 판단할 것
 
-(작성 중)
+### 9-1. 영문 참고문헌 50건을 어느 형태로 통일할 것인가
+
+학회 규정 제10조의 영문 예시는 `Smith PA, Spencer CD and Jones DE (1992)` — **성 뒤에 이니셜을
+붙이고 마침표·쉼표를 쓰지 않는** 형태다. 지금 목록은 APA식이고, 규정 형태를 지킨 것은 딱 한 항목이다.
+
+- **규정 쪽으로 통일**하면 49건을 고쳐야 하지만 투고 규정과는 완전히 맞는다.
+- **APA 쪽으로 통일**하면 1건만 고치면 되지만 규정 예시와 다르다.
+
+투고 규정 전문을 다시 읽어 「예시일 뿐인지, 지켜야 할 형식인지」를 확인한 뒤 정하는 것이 좋다.
+어느 쪽이든 **60건 전체가 같은 형태여야 한다**는 것만은 바뀌지 않는다.
+
+### 9-2. 저자를 어디까지 적을 것인가
+
+지금은 4명짜리(Guo)를 줄이고 4명짜리(Qiao)를 다 적는 상태다. 저자가 20~44명인 천문 논문까지
+전원 표기하라는 뜻은 아니다. **「몇 명까지는 전원, 그 이상은 앞 N명 + et al.」이라는 기준선을
+정하고 목록 전체에 똑같이 적용하면 된다.** 기준선을 정하는 것은 소유자의 몫이다.
+
+### 9-3. Herrold & Prather (2023)을 살릴 것인가
+
+aas.org가 봇 검사 뒤에 있어 **저자 줄을 페이지에서 직접 읽지 못했다.** 지면 이름과 제목,
+격주 블로그라는 성격은 확인했다. 소유자가 브라우저로
+`https://aas.org/posts/news/2023/07/implementing-data-driven-investigations-rubin-observatory`
+를 열어 저자 줄과 게재일을 한 번 보면 서지가 확정된다. 1분이면 된다.
+확정이 어려우면 이 인용을 Rubin Observatory 교육 페이지(`rubinobservatory.org/education`)로
+바꾸는 선택지도 있다 — 다만 그러면 「누가 무엇을 했다」가 아니라 「이런 활동이 있다」로 문장의
+성격이 바뀐다.
+
+### 9-4. Collins et al. (1989)의 쪽수를 본문에 적을 것인가
+
+fading 정의를 확인한 것은 **1989년 편저 장이 아니라 같은 원고의 1987년 기술보고서**(ED284181,
+p.17)다. 1989년 장을 인용하는 것은 교육학의 표준 관행이므로 그대로 두는 쪽을 권한다.
+다만 본문에 쪽수를 적을 생각이라면 1989년 장 원본을 먼저 확인해야 한다.
+`pp. 453-494`의 시작 쪽 453은 편저 목차에서 확인했고 끝 쪽 494는 확인하지 못했다.
+
+### 9-5. Belland et al. (2017)을 「소–중」으로 부를 것인가
+
+원고 L91은 `ḡ = 0.46`을 「소–중 정도의 평균 효과」라고 쓴다. Cohen 기준으로는 맞고,
+저자들도 p.332에서 `0.37`을 두고 *"would be labeled small to medium by Cohen's (1988) guidelines"*
+라고 쓴다. 그런데 **저자들 자신의 종합 평가는 더 강하다** — 초록의 *"scaffolding is a highly
+effective intervention"*, p.335의 *"highly efficacious"*. 원고가 이 문헌을 「평균 효과의 크기가
+개별 설계를 정해 주지 않는다」는 논지로 쓰고 있으므로 지금 표현이 논지에는 맞지만,
+심사자가 원문을 열면 「저자는 매우 효과적이라고 했는데 왜 소–중이라고 썼나」를 물을 수 있다.
+한 문장으로 「저자들은 이를 효과적인 개입으로 평가했으나」를 넣어 둘지 정하면 된다.
+
+### 9-6. 표 4-2의 교과서 쪽 인용 8건을 누가 대조할 것인가
+
+표 4-2는 교과서 여덟 쪽(p.39, p.54, pp.74–75, p.79, pp.93–95, p.109, p.113, pp.182–183)의 내용을
+구체적으로 서술한다. **이 검사에서 이 8건은 검증하지 않았다** — 종이 교과서이기 때문이다.
+원고에서 「교과서가 NASA 외계행성 아카이브를 안내한다」·「SIMBAD 자료를 활용한다」·「SDSS 스펙트럼
+자료를 활용한다」처럼 검증 가능한 사실 주장이 이 표에 들어 있으므로, 소유자가 실물 교과서로 한 번
+대조해 두면 심사에서 가장 확인하기 쉬운 자리 하나가 막힌다.
+
+### 9-7. 국내 문헌 두 편의 본문 내용을 어떻게 확인할 것인가
+
+`공병민 외 (2023)`과 `조훈·손정주 (2022)`는 서지(저자·권·호·쪽)는 KCI에서 확인했지만
+**원고가 붙인 내용 주장은 원문을 보지 못해 확인하지 못했다.** 교원대 도서관이 2026-07-23 공지로
+자동 접근을 통한 학술DB 원문 다운로드를 금지하므로 소유자가 브라우저로 직접 받아야 한다.
+확인할 문장은 두 개다.
+
+- 조훈·손정주(2022): 「코딩 경험이 적은 학생과 교사의 부담을 낮추기 위해 프로그램 구조를 단순화」,
+  「브라우저에서 열리는 노트북 환경을 썼다」
+- 공병민 외(2023): 「일부 학생이 소프트웨어와 프로그래밍 활용에 어려움을 경험」,
+  「별도 소프트웨어와 코드를 함께 사용하였다」
+
+### 9-8. Goodman et al. (2012)을 남긴다면 어느 판을 인용할 것인가
+
+이 항목을 살리기로 한다면(8절 5번), arXiv 프리프린트보다 정식 논문집 쪽이 심사에서 안전하다 —
+**ASP Conference Series Vol. 461, *Astronomical Data Analysis Software and Systems XXI*, 2012, p.267.**
+다만 원고의 다른 arXiv 인용(Michels·Song·Uddin)과 표기가 갈리는 문제가 새로 생긴다.
+
+---
+
+## 부록. 이번 검사에서 새로 알게 된 자료 쪽 문제
+
+원고가 아니라 **자료 수집 쪽**의 문제 두 가지다.
+
+1. `C:\Users\bmffr\Desktop\Research\ERP2026\Paczyski1986.pdf`는 Paczyński(1986)가 아니라
+   **Gates, Gyuk & Turner (1995), arXiv:astro-ph/9508071**이다. 다시 받아야 한다.
+2. `참고문헌_수집현황_2026-09-09.md`가 `Goodman2012.pdf` 한 파일을 두 문헌
+   (`Principles of high-dimensional data visualization`과 `WorldWide Telescope in research and education`)에
+   중복으로 적어 두었다. 실제 파일은 앞의 것 하나뿐이다.
