@@ -53,6 +53,10 @@ h1.apx{page-break-before:always}
    머리글(날짜·제목)과 바닥글(파일 경로·쪽번호)을 그릴 자리를 잃는다.
    --print-to-pdf-no-header / --no-pdf-header-footer 플래그는 이 버전에서 듣지 않았다. */
 @page{size:A4;margin:0}
+figure.tbl.big,figure.tbl.big table{page-break-inside:auto}
+figure.tbl.big thead{display:table-header-group}
+figure.tbl.big tr{page-break-inside:avoid}
+.tcap{page-break-after:avoid}
 @media print{
   #toc{display:none}
   #page-area{padding-left:0}
@@ -106,7 +110,10 @@ while i < len(lines):
         while i < len(lines) and lines[i].strip().startswith("|"):
             rows.append([c.strip() for c in lines[i].strip().strip("|").split("|")])
             i += 1
-        t = ['<figure class="tbl">']
+        # 한 쪽에 안 들어가는 표에까지 page-break-inside:avoid 를 걸면 통째로 다음
+        # 쪽으로 밀려 앞 쪽이 비어 버린다(2026-09-09, 소유자가 10 쪽에서 발견).
+        # 행이 많으면 나뉘도록 두고 머리행을 쪽마다 반복한다.
+        t = ['<figure class="tbl%s">' % (" big" if len(rows) > 12 else "")]
         if cap:
             t.append('<div class="tcap">%s</div>' % cap)
         t.append('<div class="tw"><table><thead><tr>')
@@ -218,7 +225,7 @@ doc = """<!doctype html><html lang="ko"><head><meta charset="utf-8">
 io.open(OUT, "w", encoding="utf-8", newline="\n").write(doc)
 
 n_fig = body.count('<figure class="fig">')
-n_tbl = body.count('<figure class="tbl">')
+n_tbl = body.count('<figure class="tbl"') + body.count('<figure class="tbl big"')
 print("조판 완료 — %s" % OUT)
 print("  표 %d개 · 그림 %d개 · 목차 %d항목 · %,d바이트"
       .replace("%,d", "%d") % (n_tbl, n_fig, len(toc), len(doc)))
