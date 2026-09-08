@@ -23,6 +23,8 @@ import sys
 BASE = "C:/Users/bmffr/Desktop/Me/ERP2026_Cosmos"
 SRC = BASE + "/EASWA_논문_v17.md"
 STYLE_FROM = BASE + "/EASWA_논문_v15_조판.html"
+# 두 판을 따로 돌리면 한쪽이 옛 내용으로 남는다(2026-09-09, 소유자가 그 판을 보고
+# 이미 지운 문장을 지적했다). --only-plain 을 주지 않으면 두 판을 모두 만든다.
 INLINE = "--inline" in sys.argv
 OUT = BASE + ("/EASWA_논문_v17_조판_자기완결.html" if INLINE else "/EASWA_논문_v17_조판.html")
 
