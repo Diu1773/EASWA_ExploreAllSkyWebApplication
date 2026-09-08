@@ -50,7 +50,9 @@ for n in range(APP, len(L)):
     if len(c) < 3 or set(''.join(c)) <= set('- '):
         continue
     term, ref = c[0], c[-1]
-    if not re.fullmatch(r'\d+\.\d+', ref):
+    # 4.4.4 처럼 세 자리로 적힌 것도 잡는다 — v16 의 하위 절 번호가 남아 있었고
+    # 두 자리만 받으면 조용히 걸러져 「0건」으로 통과했다(2026-09-09).
+    if not re.fullmatch(r'\d+\.\d+(?:\.\d+)?', ref):
         continue
     first = None
     for v in variants(term):
