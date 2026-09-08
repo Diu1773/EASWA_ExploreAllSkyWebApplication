@@ -53,6 +53,8 @@ h1.apx{page-break-before:always}
    머리글(날짜·제목)과 바닥글(파일 경로·쪽번호)을 그릴 자리를 잃는다.
    --print-to-pdf-no-header / --no-pdf-header-footer 플래그는 이 버전에서 듣지 않았다. */
 @page{size:A4;margin:0}
+figure.fig .panels{display:flex;gap:5px;align-items:flex-start;justify-content:center}
+figure.fig .panels img{flex:1 1 0;min-width:0;width:100%}
 figure.tbl.big,figure.tbl.big table{page-break-inside:auto}
 figure.tbl.big thead{display:table-header-group}
 figure.tbl.big tr{page-break-inside:avoid}
@@ -127,6 +129,24 @@ while i < len(lines):
 
     # ── 그림 ──────────────────────────────────────────────────────
     # 이미지 줄 다음에 오는 「**그림 N. …**」를 같은 figure의 캡션으로 끌어온다.
+    # 한 줄에 이미지가 둘 이상이면 나란히 놓는 패널 그림으로 만든다.
+    # 화면 여러 장을 각각 한 쪽씩 잡아먹지 않게 하는 장치다(2026-09-09).
+    panels = re.findall(r"!\[([^\]]*)\]\(([^)]+)\)", s)
+    if len(panels) > 1 and re.fullmatch(r"(?:\s*!\[[^\]]*\]\([^)]+\)\s*)+", s):
+        cap = ""
+        j = i + 1
+        while j < len(lines) and not lines[j].strip():
+            j += 1
+        if j < len(lines) and re.match(r"^\*\*그림\s", lines[j].strip()):
+            cap = lines[j].strip()
+            i = j
+        imgs = "".join('<img src="%s" alt="%s">' % (html.escape(img_src(src)), html.escape(alt))
+                       for alt, src in panels)
+        out.append('<figure class="fig"><div class="panels">%s</div>%s</figure>'
+                   % (imgs, "<figcaption>%s</figcaption>" % inline(cap) if cap else ""))
+        i += 1
+        continue
+
     mi = re.match(r"^!\[([^\]]*)\]\(([^)]+)\)\s*$", s)
     if mi:
         cap = ""
