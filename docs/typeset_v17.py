@@ -55,6 +55,8 @@ h1.apx{page-break-before:always}
 @page{size:A4;margin:0}
 figure.fig .panels{display:flex;gap:5px;align-items:flex-start;justify-content:center}
 figure.fig .panels img{flex:1 1 0;min-width:0;width:100%}
+figure.fig .panels.grid2{flex-wrap:wrap}
+figure.fig .panels.grid2 img{flex:0 0 calc(50% - 3px);width:calc(50% - 3px)}
 figure.tbl.big,figure.tbl.big table{page-break-inside:auto}
 figure.tbl.big thead{display:table-header-group}
 figure.tbl.big tr{page-break-inside:avoid}
@@ -142,8 +144,9 @@ while i < len(lines):
             i = j
         imgs = "".join('<img src="%s" alt="%s">' % (html.escape(img_src(src)), html.escape(alt))
                        for alt, src in panels)
-        out.append('<figure class="fig"><div class="panels">%s</div>%s</figure>'
-                   % (imgs, "<figcaption>%s</figcaption>" % inline(cap) if cap else ""))
+        grid = " grid2" if len(panels) == 4 else ""
+        out.append('<figure class="fig"><div class="panels%s">%s</div>%s</figure>'
+                   % (grid, imgs, "<figcaption>%s</figcaption>" % inline(cap) if cap else ""))
         i += 1
         continue
 
