@@ -12,9 +12,14 @@ v16 전환에서 3장의 절 번호가 바뀌었는데 부록 C를 함께 고치
 import io, re, sys
 
 DEFAULT = r'C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos\EASWA_논문_v16.md'
-P = sys.argv[1] if len(sys.argv) > 1 else DEFAULT
+P = next((a for a in sys.argv[1:] if not a.startswith('--')), DEFAULT)
+PATH_OUT = P
 L = io.open(P, encoding='utf-8').read().replace('\r\n', '\n').split('\n')
-APP = next((n for n, x in enumerate(L) if x.startswith('# 부록 A')), len(L))
+# v17 에서 부록이 「# 부록. 용어 풀이」 하나로 줄었다. 옛 이름만 찾으면 표를 한 줄도
+# 못 읽고 「0건」으로 통과한다 — 둘 다 받는다.
+APP = next((n for n, x in enumerate(L) if x.startswith('# 부록')), len(L))
+if APP == len(L):
+    raise SystemExit('부록을 찾지 못했다 — 제목이 「# 부록」으로 시작하는지 본다')
 BODY = next((n for n, x in enumerate(L) if x.startswith('# Ⅰ')), 0)   # 초록은 절이 없으므로 뺀다
 
 # 행 번호 → 절 번호
@@ -62,6 +67,20 @@ for n in range(APP, len(L)):
         miss.append((n + 1, term, ref))
     elif sec_at[first[0]] != ref:
         bad.append((n + 1, term, ref, sec_at[first[0]], first[0] + 1, first[1]))
+
+# --fix: 표의 절 번호를 실제 첫 등장 절로 맞춘다. 절이 움직일 때마다 스물 몇 줄을
+# 손으로 고치면 반드시 몇 개를 빠뜨린다.
+if '--fix' in sys.argv and bad:
+    for ln, term, ref, real, fl, v in bad:
+        if not real:
+            continue
+        cells = L[ln - 1].rstrip().rstrip('|').split('|')
+        assert cells[-1].strip() == ref, (ln, cells[-1], ref)
+        cells[-1] = ' %s ' % real
+        L[ln - 1] = '|'.join(cells) + '|'
+    io.open(PATH_OUT, 'w', encoding='utf-8', newline='\n').write('\n'.join(L))
+    print('절 번호 %d건을 실제 첫 등장 절로 맞췄다 — %s' % (len([b for b in bad if b[3]]), PATH_OUT))
+    print()
 
 print('부록 C 참조 검사 — 용어 %d개 (본문 %d~%d행)' % (len(rows), BODY + 1, APP))
 print()
