@@ -29,6 +29,16 @@ KATFISH = {
     "연결어미 뒤 쉼표 비율": (4.10, 19.83, "%"),
 }
 
+# 문두 접속어. 「다만·이때·이에·그런데」를 빼 두면 실제의 3분의 2만 세어진다
+# (2026-09-09: 23곳으로 보고했으나 실제로는 36곳이었다).
+CONJ = ["그리고", "그러나", "하지만", "또한", "따라서", "그러므로", "또", "한편",
+        "반면", "다만", "이때", "이에", "그런데", "즉", "특히", "결국"]
+CONJ_RX = r"^(?:%s)(?=[\s,])" % "|".join(CONJ)
+
+# 어미 뭉치 — 낱말이 달라도 같은 어미면 한 덩어리로 본다
+END_FAMILY = ["하였다", "되었다", "이었다", "있었다", "였다", "한다", "된다", "이다",
+              "있다", "없다", "않았다", "않는다", "았다", "었다", "겠다"]
+
 PATTERNS = [
     ("A-1  ~에 대한/대하여", r"에 (?:대한|대하여|대해서|대해)\b"),
     ("A-2  ~를 통해/통하여", r"(?:을|를) 통(?:해|하여|한)\b"),
@@ -45,14 +55,16 @@ PATTERNS = [
     ("A-15 추상 주어 + 만능 동사", r"(?:이는|이것은|그것은)\s.{0,24}(?:의미한다|보여준다|시사한다)"),
     ("A-20 ~되고 있다", r"(?:되고|지고) 있"),
     ("A-21 단순한 X를 넘어", r"(?:단순한|단순히)\s.{0,20}(?:넘어|아니라)"),
-    ("C-8  대구 A가 아니라 B", r"(?:이|가|은|는) 아니(?:라|며)"),
+    # 「A가 아니라 B」와 「~것은 아니다」는 같은 버릇이다. 앞엣것만 세면 절반을 놓친다
+    # (2026-09-09: 12곳으로 보고했으나 실제로는 20곳이었다).
+    ("C-8  아니라/아니다 한정", r"(?:이|가|은|는|것이|것은) 아니(?:라|며|고|다)"),
     ("C-11 연결어미 뒤 쉼표", r"(?:하고|하며|하지만|이며|이지만|되고|되며|으며|지만),"),
     ("D-1  종결·요약류", r"(?:요컨대|결론적으로|정리하면|종합하면|요약하면)"),
     ("D-2  의의·중요성 과장", r"(?:중요한 의미를|의의가 크|핵심적인 역할)"),
     ("D-9  결국 ~로 이어진다", r"(?:결국|궁극적으로)\s.{0,30}(?:이어진다|귀결)"),
     ("D-11 향후·앞으로", r"(?:향후|앞으로|중장기적)"),
     ("D-12 과제도 남아 있다", r"과제(?:도|가) 남아"),
-    ("접속부사 문두", r"^(?:그리고|그러나|하지만|또한|따라서|그러므로|또|한편|반면)"),
+    ("접속어 문두", CONJ_RX),
     ("F-1  정도부사", r"(?:매우|상당히|훨씬|크게|특히|보다 더|매우도)"),
     ("F-5  ~적 N 체인", r"[가-힣]적\s[가-힣]+적\s"),
     ("F-7  범용 정책동사", r"(?:확대하|강화하|개선하|제고하|모색하)"),
@@ -123,11 +135,98 @@ def nested_left(s):
         r"(?:하|되|이|있|없|같)는 \S+ (?:하|되|이|있|없|같)는 \S+ (?:하|되|이|있|없|같)는 ", s))
 
 
+def end_family(s):
+    t = re.sub(r"\([^)]*\)\s*$", "", s.rstrip(".")).strip()
+    for k in END_FAMILY:
+        if t.endswith(k):
+            return k
+    return t[-3:]
+
+
+def humanize_report(sents):
+    """되풀이·접속어·끝 단어·「아니라」 네 가지를 자리까지 다 찍는다."""
+    n = len(sents)
+
+    print("[가] 접속어 — 문장 첫머리")
+    cnt, where = Counter(), defaultdict(list)
+    for sec, s in sents:
+        m = re.match(CONJ_RX, s)
+        if m:
+            w = m.group(0)
+            cnt[w] += 1
+            where[w].append(sec)
+    print("    모두 %d곳 · 문장 %d개당 1회" % (sum(cnt.values()), round(n / max(1, sum(cnt.values())))))
+    for w, c in cnt.most_common():
+        print("    %-6s %2d회  %s" % (w, c, " · ".join(sorted(set(x[:14] for x in where[w])))))
+
+    print("\n[나] 문구 끝 단어")
+    fam = Counter(end_family(s) for _, s in sents)
+    print("    어미 뭉치 (낱말이 달라도 같은 어미면 한 덩어리)")
+    for e, c in fam.most_common(8):
+        print("      %-8s %3d회 (%.1f%%)" % (e, c, 100.0 * c / n))
+    ends = Counter(ending(s) for _, s in sents)
+    print("    낱말 그대로 — %d가지 · 상위 8" % len(ends))
+    for e, c in ends.most_common(8):
+        print("      %-10s %3d회 (%.1f%%)" % (e, c, 100.0 * c / n))
+    print("    같은 끝 단어가 3문장 이상 잇달아")
+    run, prev, start = 1, None, 0
+    found = 0
+    for i, (sec, s) in enumerate(sents + [("", "")]):
+        e = ending(s) if s else None
+        if e == prev:
+            run += 1
+            continue
+        if run >= 3 and prev:
+            found += 1
+            print("      %d연속 [%s] · %s" % (run, prev, sents[start][0][:26]))
+            for j in range(start, start + run):
+                print("          %s" % sents[j][1][:68])
+        run, prev, start = 1, e, i
+    if not found:
+        print("      없음")
+
+    print("\n[다] 되풀이되는 말")
+    grams = Counter()
+    for _, s in sents:
+        w = s.split()
+        for k in (3, 4, 5, 6):
+            for i in range(len(w) - k + 1):
+                grams[" ".join(w[i:i + k])] += 1
+    cand = [(c, g) for g, c in grams.items() if c >= 3 and len(g) >= 9]
+    cand.sort(key=lambda t: (-len(t[1].split()), -t[0]))
+    keep = []
+    for c, g in cand:
+        if any(g in k and c <= kc for kc, k in keep):
+            continue
+        keep.append((c, g))
+    print("    어절 뭉치 (3회 이상)")
+    for c, g in sorted(keep, reverse=True)[:20]:
+        print("      %2d회  %s" % (c, g))
+    head = Counter(" ".join(s.split()[:2]) for _, s in sents)
+    print("    문장 첫머리 (3회 이상)")
+    for g, c in head.most_common(12):
+        if c >= 3:
+            print("      %2d회  %s ..." % (c, g))
+
+    print("\n[라] 「A가 아니라 B」 · 「~것은 아니다」")
+    rx = re.compile(r"(?:이|가|은|는|것이|것은) 아니(?:라|며|고|다)")
+    hit = [(sec, s, rx.search(s)) for sec, s in sents if rx.search(s)]
+    print("    모두 %d곳 · 문장 %d개당 1회" % (len(hit), round(n / max(1, len(hit)))))
+    for sec, s, m in hit:
+        a = s[max(0, m.start() - 30):m.start()]
+        b = s[m.end():m.end() + 34]
+        print("      %-20s ...%s 아니%s..." % (sec[:20], a, b))
+
+
 def main():
     md = io.open(SRC, encoding="utf-8").read()
     paras = sections(md)
     sents = [(sec, s) for sec, p in paras for s in split_sent(p)]
     n = len(sents)
+    if "--humanize" in sys.argv:
+        print("문체 검사 (되풀이·접속어·끝 단어·대구) — 문장 %d개\n" % n)
+        humanize_report(sents)
+        return
     print("원고 %s" % SRC)
     print("문단 %d · 문장 %d · 글자 %d\n"
           % (len(paras), n, sum(len(s) for _, s in sents)))

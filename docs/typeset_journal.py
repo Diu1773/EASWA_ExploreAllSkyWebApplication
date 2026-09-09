@@ -97,7 +97,7 @@ CSS = """
   h3{margin:.6em 0 .25em}
 
   /* ── 표: 가로선만 ─────────────────────────────────────── */
-  figure.tbl{margin:1.3em 0 1.6em;break-inside:auto}
+  figure.tbl{margin:1.0em 0 1.25em;break-inside:auto}
   figure.tbl.wide{column-span:all}
   figure.tbl.tall{column-span:all;break-before:page}
   .tcap{font-size:8.8pt;font-weight:700;margin-bottom:.42em;text-indent:0;letter-spacing:-.1px}
@@ -105,7 +105,7 @@ CSS = """
         border-top:2.2pt double #000;border-bottom:2.2pt double #000}
   thead{display:table-header-group}
   tr{break-inside:avoid}
-  th,td{border:0 !important;padding:3.4px 5px;vertical-align:top}
+  th,td{border:0 !important;padding:3.0px 5px;vertical-align:top}
   thead th{border-bottom:.5pt solid #000 !important;
            font-weight:700;white-space:normal;text-align:left;padding-top:4px;padding-bottom:4px}
   tbody tr:first-child td{padding-top:5px}
@@ -255,7 +255,7 @@ def main():
     print("  그림 %d개 (세로 한 단 / 가로 양단)" % nf)
 
     # 숫자만 든 칸은 가운데로
-    s = re.sub(r"<td>(\s*[\d.,\-–—%()]+\s*)</td>", r'<td class="num">\1</td>', s)
+    s = re.sub(r"<td>(\s*[\d.,\-–—%()/ ]+\s*)</td>", r'<td class="num">\1</td>', s)
 
     s = s.replace("</head>", CSS, 1)
     io.open(OUT, "w", encoding="utf-8").write(s)
