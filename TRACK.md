@@ -27,6 +27,13 @@
 
 ## 지금
 
+- **2026-09-09 저녁 — 참고문헌 원문 54/59건. 남은 것은 Richey & Klein (2007) 하나다 (Claude).** 목록은 `Desktop/Research/ERP2026/받을것_2026-09-09.md`.
+  - **교육부 고시 별책 9 를 받았다** — NCIC 는 단계마다 스크립트라 막히지만, 교육부 정보·법령 › 법령정보(`boardSeq=93458`)의 **(붙임2) [별책5_14] …zip** 안에 `[별책9] 과학과 교육과정.hwp` 가 들어 있다.
+  - `Quintana2004`(미시간대 저자 사본, JLS 13(3) 337-386 확인) · `Wharton1994`(UC Irvine 사본, 1쪽에 「Usability Inspection Methods, Ch. 5」) · `Collins1989_기술보고서판`(ERIC ED284181).
+  - **Collins 는 판이 다르다** — 받은 것은 1987 기술보고서고 원고 인용은 1989 단행본 장(pp. 453-494)이다. **쪽 인용에는 쓰지 않는다.** 원고가 붙인 주장은 「스캐폴딩 소거(fading)」 하나이고 보고서판에 `fading` 15회로 개념은 확인된다.
+  - 소유자가 도서관에서 `Light2018` `Guo2024` `Koedinger2007` `OReilly2022` `공병민2023` 을 받아 넣었다(표지 대조 완료). `조훈2022` 는 Research 상위 폴더에 이미 있었다.
+  - **인증서 체인이 깨진 대학 서버는 `ssl.CERT_NONE` 으로 받는다** — `web.eecs.umich.edu` 가 URLError 를 냈다.
+
 - **2026-09-09 — 참고문헌 원문 45/59건을 모았다 (Claude).** 목록은 `Desktop/Research/ERP2026/참고문헌_수집현황_2026-09-09.md`.
   - 오늘 추가: `조훈2022`(Research 상위 폴더에 이미 있었다) · `신영준2022a`(KOSAC, 발간번호 11-1342000-000877-01 확인) · `McDonald2019`(NSF PAR, 원고가 3.6에 새로 인용한 것) · `Ridsdale2015`(DalSpace) · `Udomprasert2012`(ADS) · `Banchi2008`(Michigan Sea Grant 사본, 26쪽·Science and Children 확인). 소유자가 `Hsieh2005` `Graneheim2004` `qiao(2024)` `Ricker2015` 를 직접 넣었다.
   - **남은 11건**(교과서 3종 제외): 도서관 전자저널 5(Guo·Koedinger·Light·O'Reilly·Quintana) · DBpia 1(공병민) · 단행본 3(Richey·Collins·Wharton) · 무료지만 사람이 열어야 하는 2(교육부 고시 NCIC 다단계 스크립트, Herrold AAS **Cloudflare 봇 검증**).
