@@ -21,7 +21,7 @@ import re
 import sys
 from collections import defaultdict
 
-DEFAULT = r'C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos\EASWA_논문_v16.md'
+DEFAULT = r'C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos\EASWA_논문_v17.md'
 P = sys.argv[1] if len(sys.argv) > 1 else DEFAULT
 L = io.open(P, encoding='utf-8').read().replace('\r\n', '\n').split('\n')
 APP = next((n for n, x in enumerate(L) if x.startswith('# 부록')), len(L))
