@@ -277,6 +277,20 @@ def set_pagenum(h):
         print('  ! 쪽 번호를 넣지 못했다')
 
 
+def break_section(h, needle, label):
+    """찾은 문단 앞에서 구역을 나눈다.
+
+    머리말은 구역마다 따로 둘 수 있다. 1쪽(표제부)에만 「| 연구논문|」을 두고
+    2쪽부터는 홀수·짝수를 나누려면 구역이 둘이어야 한다 — 템플릿이 그렇다.
+    머리말 자체는 docs/hwpx_headers.py 가 HWPX 로 바꿔서 넣는다.
+    """
+    if not _find(h, needle):
+        print('  ! 「%s」을 찾지 못해 구역을 나누지 않았다' % needle)
+        return
+    h.HAction.Run('BreakSection')
+    print('%s 앞에서 구역 나누기' % label)
+
+
 def break_before(h, needle, label):
     """찾은 문자열이 있는 문단 앞에 쪽 나누기를 넣는다.
 
@@ -475,7 +489,7 @@ def main():
     place_figures(h)
     fit_tables(h)
     apply_para_rules(h)
-    break_before(h, 'Ⅰ. 서론', '서론')
+    break_section(h, 'Ⅰ. 서론', '서론')
     print('%d쪽' % h.PageCount)
 
     global OUT
