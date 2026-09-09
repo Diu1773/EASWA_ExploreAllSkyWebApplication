@@ -32,6 +32,7 @@
   - **우리 연구는 Type 1 이다** — 원문이 나눈 두 유형 중 「특정 산출물·프로그램·과정·도구에 초점을 두고 설계·개발뿐 아니라 평가도 다루는」 쪽. 3.1 에 이 위치를 밝혔다.
   - **DDR ≠ DBR 을 저자가 직접 못 박았다**(25 쪽) — 설계기반연구는 *"the study of learning as a result of designing unique instructional interventions"*. 3.1 에 구분을 넣었다. 심사에서 나올 물음을 먼저 막는다.
   - 참고문헌 60 건(2005 추가). **Richey & Klein (2007) 단행본은 여전히 미확보**지만, 같은 저자가 2 년 전에 쓴 정의와 원고 서술이 이제 어긋나지 않는다.
+  - **Richey & Klein (2007) 단행본은 온라인으로 구할 수 없다** — Internet Archive 대출본 없음 · Open Library `no_ebook` · Google Books 「사용 가능한 eBook 없음」(스니펫도 없다). 남은 길은 도서관 e-Book(Clarivate eBook Academic Complete)이나 구매뿐이다. 그래서 3.1 의 정의 진술 인용을 `(Richey and Klein, 2005, 2007)` 병기로 바꿔, 원문 확인이 끝난 문헌에도 근거가 걸리게 했다.
   - 널리 도는 DDR 정의의 실제 출처는 **Seels & Richey (1994, p. 127)** 이다 — 2005 논문이 그것을 인용한다. 인터넷에 도는 문장을 그대로 옮기면 재인용 사슬을 밟는다.
 
 - **2026-09-09 저녁 — 참고문헌 원문 54/59건. 남은 것은 Richey & Klein (2007) 하나다 (Claude).** 목록은 `Desktop/Research/ERP2026/받을것_2026-09-09.md`.
