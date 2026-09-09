@@ -264,3 +264,29 @@ else:
     print()
     for sev, ch, rule, ev in findings:
         print("[%s] %-7s %s\n        %s" % (sev, ch, rule, ev))
+
+# ── 한 문장 안의 절 번호가 뒤로 갔는지 ──────────────────────────────
+# 2026-09-09 에 3.1 이 「3.3 에 대조하여 … 3.2 로 확인하였다」가 되었다. 사장님이 읽다가
+# 잡았다 — *「이게 맞아? 순서가? 무슨말이지 이게?」*. 실제 수행 순서는 3.2 → 3.3 → 3.4 이고
+# 표 1 의 연구 절차도 그렇게 적혀 있었다. 같은 원고 안에 정답이 있었는데 문장만 반대였다.
+# 기계는 내림차순 문장을 꺼내 놓기만 한다. 뒤 장을 가리키는 것은 정상이므로 사람이 본다.
+_body = "\n".join(
+    l for l in RAW.split("\n")
+    if not l.startswith(("|", "**표", "**그림", "!["))
+) if "RAW" in dir() else "\n".join(
+    l for l in io.open(P, encoding="utf-8").read().split("\n")
+    if not l.startswith(("|", "**표", "**그림", "!["))
+)
+_down = []
+for _line in _body.split("\n"):
+    for _sent in re.split(r"(?<=다\.)\s+", _line):
+        # 3.8%p 같은 수치는 절 번호가 아니다. 숫자 뒤에 % 나 배·명·건이 붙으면 뺀다.
+        _ns = [float(x) for x in re.findall(r"(?<![\d.])([1-6]\.[1-9])(?![\d]|%|배|명|건|쪽|초|일)", _sent)]
+        if len(_ns) < 2:
+            continue
+        if any(b < a for a, b in zip(_ns, _ns[1:])):
+            _down.append((_ns, _sent.strip()))
+print()
+print("[절 번호가 뒤로 간 문장] %d건 — 뒤 장을 가리키는 것은 정상이다. 사람이 읽고 판정한다." % len(_down))
+for _ns, _sent in _down:
+    print("   %s  %s" % (" → ".join("%.1f" % x for x in _ns), _sent[:130] + ("…" if len(_sent) > 130 else "")))
