@@ -22,64 +22,31 @@ M_LEFT, M_RIGHT, M_TOP, M_BOTTOM, M_HEAD, M_FOOT = 22.5, 22.0, 15.0, 12.0, 6.4, 
 MM = 7200.0 / 25.4          # HWPUNIT per mm
 
 
-# 한글이 HTML 을 가져오면 CSS 의 글꼴 목록을 그대로 쓰지 못하고 한컴바탕·굴림으로
-# 대체한다(2026-09-09 확인). 문단을 순회하며 크기는 그대로 두고 글꼴 이름만 템플릿
-# 값으로 다시 지정한다.
-SERIF = 'KoPubWorld바탕체 Light'
-SERIF_B = 'KoPubWorld바탕체_Pro Bold'
-SANS_B = 'KoPubWorld돋움체 Bold'
-SANS_L = 'KoPubWorld돋움체 Light'
+# 글꼴은 조판 HTML 이 요소마다 style="font-family:…" 로 들고 온다. <style> 블록에
+# 적으면 한글이 이름을 대문자로 바꾸고 따옴표까지 붙여 저장하므로(KOPUBWORLD바탕체
+# LIGHT") 여기서 다시 지정하지 않는다 — 덮어쓰면 제목·표의 글꼴 위계가 무너진다.
 
 
-def _face(size):
-    if size >= 18: return SERIF_B      # 논문 제목
-    if size >= 12: return SANS_B       # 장·절 제목
-    if size <= 9.0: return SANS_L      # 표와 캡션
-    return SERIF                       # 본문
-
-
-def apply_fonts(h):
-    """문서 전체를 한 번에 지정한다. 문단마다 COM 을 부르면 400문단에 5분이 넘는다.
-
-    크기(Height)는 건드리지 않으므로 제목·표의 크기 위계는 그대로 남고 글꼴 이름만
-    바뀐다. 표 안의 8.5pt 도 같은 글꼴이 되지만, 학회지 조판이 어차피 다시 이루어지고
-    투고본에서 중요한 것은 글꼴 이름이 규정대로 저장되는 것이다.
-    """
-    h.CreateAction('SelectAll').Run()
-    act = h.CreateAction('CharShape')
-    s = act.CreateSet()
-    act.GetDefault(s)
-    for k in ('FaceNameHangul', 'FaceNameLatin', 'FaceNameHanja',
-              'FaceNameJapanese', 'FaceNameOther', 'FaceNameSymbol', 'FaceNameUser'):
-        try:
-            s.SetItem(k, SERIF)
-        except Exception:
-            pass
-    act.Execute(s)
-    h.CreateAction('Cancel').Run()
-    print('글꼴 일괄 지정: %s' % SERIF)
-
-
-def break_before_intro(h):
-    """1쪽을 표제부와 요약으로 끝낸다.
+def break_before(h, needle, label):
+    """찾은 문자열이 있는 문단 앞에 쪽 나누기를 넣는다.
 
     게재본(조훈·손정주 2022 · 김미림·손정주 2022)은 1쪽이 주제어와 교신저자 각주로
     끝나고 본문은 2쪽에서 시작한다. 한글은 HTML 의 page-break-before 를 무시하므로
-    변환 뒤에 쪽 나누기를 직접 넣는다.
+    변환 뒤에 직접 넣는다.
     """
     h.MovePos(2, 0, 0)
     opt = h.HParameterSet.HFindReplace
     h.HAction.GetDefault('RepeatFind', opt.HSet)
-    opt.FindString = 'Ⅰ. 서론'
+    opt.FindString = needle
     opt.IgnoreMessage = 1
     opt.Direction = 0
     if not h.HAction.Execute('RepeatFind', opt.HSet):
-        print('  ! 「Ⅰ. 서론」을 찾지 못해 쪽 나누기를 넣지 않았다')
+        print('  ! 「%s」을 찾지 못해 쪽 나누기를 넣지 않았다' % needle)
         return
     h.HAction.Run('Cancel')
     h.HAction.Run('MoveParaBegin')
     h.HAction.Run('BreakPage')
-    print('서론 앞에 쪽 나누기')
+    print('%s 앞에 쪽 나누기' % label)
 
 
 def main():
@@ -117,8 +84,9 @@ def main():
     print('용지 %.0f×%.0f mm · 여백 %.0f/%.0f/%.0f/%.0f 적용 · %d쪽'
           % (PAPER_W, PAPER_H, M_LEFT, M_RIGHT, M_TOP, M_BOTTOM, h.PageCount))
 
-    apply_fonts(h)
-    break_before_intro(h)
+    break_before(h, 'Ⅰ. 서론', '서론')
+    break_before(h, '부록. 서술형', '부록')
+    print('%d쪽' % h.PageCount)
 
     if os.path.exists(OUT):
         os.remove(OUT)
