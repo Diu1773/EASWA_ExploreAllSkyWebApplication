@@ -23,6 +23,7 @@ v15 조판본(`EASWA_논문_v15_조판.html`)의 <style>을 그대로 물려쓰�
 """
 import base64
 import io
+import json
 import html
 import os
 import re
@@ -81,7 +82,7 @@ td.hdr{border:0;padding:0;font-size:9pt;text-align:right;vertical-align:bottom}
       border-top:.5px solid #333;text-indent:0}
 
 /* 본문 */
-.ch{font-weight:bold;font-size:15pt;text-align:center;margin:7mm 0 3.2mm;text-indent:0;page-break-after:avoid}
+.ch{font-weight:bold;font-size:15pt;text-align:left;margin:7mm 0 3.2mm;text-indent:0;page-break-after:avoid}
 .sec{font-weight:bold;font-size:10.1pt;text-align:left;margin:4.6mm 0 1.5mm;text-indent:0;page-break-after:avoid}
 .sub{font-weight:bold;font-size:9.8pt;text-align:left;margin:3.2mm 0 1mm;text-indent:0;page-break-after:avoid}
 .sub4{font-weight:bold;font-size:9.8pt;text-align:left;margin:2.6mm 0 .8mm;text-indent:0;page-break-after:avoid}
@@ -150,14 +151,15 @@ def _titlepage_class(s):
 
 
 # 한글은 HTML 을 가져올 때 CSS 의 max-width/max-height 를 무시하고 이미지 픽셀을
-# 96dpi 로 환산해 넣는다(2880px → 762mm). 그래서 img 태그에 픽셀 크기를 직접 적는다.
+# 96dpi 로 환산해 넣는다(2880px → 762mm). 그렇다고 <img width height> 로 주면 그
+# 픽셀 수에 맞춰 원본을 다시 샘플링해 버린다(5770px → 581px · 89dpi). 그래서 크기는
+# 태그에 적지 않고 변환 뒤 COM 으로 mm 단위로 준다(docs/make_hwp.py).
 # 게재본 실측: 그림 폭 105~171mm · 높이 최대 123mm (김미림·손정주 2022 그림 2).
-PX_PER_MM = 96.0 / 25.4
 MAX_W_MM, MAX_H_MM = 165.5, 123.0
 
 
-def img_box(src, share=1.0):
-    """이미지 하나가 차지할 픽셀 폭·높이를 돌려준다. share 는 한 줄에 몇 몫인지."""
+def img_mm(src, share=1.0):
+    """이미지 하나가 차지할 폭·높이를 mm 로 돌려준다. share 는 한 줄에 몇 몫인지."""
     try:
         from PIL import Image
         p = src if os.path.isabs(src) else os.path.join(BASE, src)
@@ -169,7 +171,7 @@ def img_box(src, share=1.0):
     w_mm = MAX_W_MM * share
     if w_mm * ratio > MAX_H_MM:
         w_mm = MAX_H_MM / ratio
-    return int(w_mm * PX_PER_MM), int(w_mm * ratio * PX_PER_MM)
+    return w_mm, w_mm * ratio
 
 
 def montage(srcs, cols=2, gut=10):
@@ -206,9 +208,19 @@ def montage(srcs, cols=2, gut=10):
 
 
 def img_tag(src, alt, share=1.0):
-    box = img_box(src, share)
-    dim = ' width="%d" height="%d"' % box if box else ''
-    return '<img src="%s" alt="%s"%s>' % (html.escape(img_src(src)), html.escape(alt), dim)
+    """그림 자리에 표시만 남긴다.
+
+    한글의 HTML 가져오기는 그림을 무조건 96dpi 로 다시 샘플링한다 — <img> 에 크기를
+    적든 안 적든 마찬가지다(2026-09-09 확인: 5770px 원본이 582px 로 줄었다). 그래서
+    HTML 에는 [[FIG1]] 같은 표시만 넣고, 변환 뒤 COM 의 InsertPicture 로 원본을 넣은
+    다음 mm 크기를 준다(docs/make_hwp.py 의 place_figures).
+    """
+    box = img_mm(src, share) or (0, 0)
+    figs.append({
+        "path": os.path.abspath(src if os.path.isabs(src) else os.path.join(BASE, src)),
+        "w": round(box[0], 2), "h": round(box[1], 2),
+    })
+    return "[[FIG%d]]" % len(figs)
 
 
 
@@ -236,6 +248,27 @@ ROLE_FONT = {
     'bd': F_SERIF, 'cap': F_SANS_M, 'figcap': F_SANS_M, 'ref': F_SERIF,
     'li': F_SERIF, 'quote': F_SERIF,
 }
+
+
+def colwidths(hdr, rows, lo=7, hi=45):
+    """칸마다 들어갈 글자 수로 열 너비 비율을 정한다."""
+    n = len(hdr)
+    def w(x):
+        return sum(1.0 if ord(c) > 0x2000 else 0.55 for c in x)
+    raw = []
+    for j in range(n):
+        cells = [r[j] for r in rows if j < len(r)] + [hdr[j]]
+        # 가장 긴 칸과 평균을 반씩 본다 — 한 칸만 긴 열이 판을 뒤집지 않게.
+        mx = max(w(c) for c in cells)
+        av = sum(w(c) for c in cells) / len(cells)
+        raw.append(0.5 * mx + 0.5 * av)
+    tot = sum(raw) or 1.0
+    pct = [max(lo, min(hi, 100.0 * x / tot)) for x in raw]
+    k = 100.0 / sum(pct)
+    pct = [x * k for x in pct]
+    out = [int(round(x)) for x in pct]
+    out[-1] += 100 - sum(out)
+    return out
 
 
 def caption(t):
@@ -285,7 +318,7 @@ def balance(t):
     return "<br>".join(lines_)
 
 
-out, toc = [], []
+out, toc, heads, figs = [], [], [], []
 seen_body = False
 sid = 0
 i = 0
@@ -314,11 +347,16 @@ while i < len(lines):
         t = ['<div class="tbl%s">' % (" big" if len(rows) > 12 else "")]
         if cap:
             t.append(P("cap", cap.replace("</strong> ", "</strong>&nbsp;")))
+            heads.append({"t": html.unescape(re.sub("<[^>]+>", "", cap)), "role": "cap",
+                          "prev": 4, "keep": True})
         # 표 칸은 style="font-family" 를 무시한다. <font face> 는 이름 그대로 남는다.
-        def cell(tag, c):
-            return '<%s><font face="%s">%s</font></%s>' % (tag, F_SANS_L, inline(c), tag)
+        def cell(tag, c, w=""):
+            return '<%s%s><font face="%s">%s</font></%s>' % (tag, w, F_SANS_L, inline(c), tag)
+        # 칸 너비는 한글이 내용과 무관하게 똑같이 나눈다. 글자 수에 맞춰 나눠 준다
+        # (2026-09-09: 「수행 내용」이 좁아 여섯 줄로 접히고 「방법 절」이 넓었다).
+        wid = colwidths(hdr, rows)
         t.append("<table><thead><tr>")
-        t += [cell("th", c) for c in hdr]
+        t += [cell("th", c, ' width="%d%%"' % wid[j]) for j, c in enumerate(hdr)]
         t.append("</tr></thead><tbody>")
         for r in rows:
             t.append("<tr>" + "".join(cell("td", c) for c in r) + "</tr>")
@@ -396,6 +434,11 @@ while i < len(lines):
             in_abs = False
             in_ref = txt.startswith("참고문헌")
             if lvl == 1: seen_body = True
+            # 장 바로 밑의 첫 절에는 간격을 주지 않는다 — 게재본이 그렇다.
+            prev = {"ch": 15, "sec": 9, "sub": 6, "sub4": 5}[role]
+            if heads and heads[-1]["role"] == "ch" and role == "sec":
+                prev = 0
+            heads.append({"t": txt, "role": role, "prev": prev, "keep": True})
             out.append(P(role, inline(txt)))
             if lvl <= 2:
                 toc.append('<a class="lv%d" href="#%s">%s</a>' % (lvl, aid, html.escape(txt)))
@@ -481,6 +524,12 @@ doc = """<!doctype html><html lang="ko"><head><meta charset="utf-8">
 </body></html>""" % (html.escape(title), style, body)
 
 io.open(OUT, "w", encoding="utf-8", newline="\n").write(doc)
+
+# 문단 간격과 「다음 문단과 함께」 지시서. 한글이 CSS margin 과
+# page-break-after:avoid 를 무시하므로 docs/make_hwp.py 가 변환 뒤에 읽어 적용한다.
+io.open(OUT[:-5] + ".문단.json", "w", encoding="utf-8").write(
+    json.dumps({"paras": heads, "figs": figs, "body_w": MAX_W_MM},
+               ensure_ascii=False, indent=1))
 
 n_fig = body.count('<div class="fig"')
 n_tbl = body.count('<div class="tbl')
