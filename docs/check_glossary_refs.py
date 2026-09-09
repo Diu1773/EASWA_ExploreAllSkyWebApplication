@@ -11,7 +11,7 @@ v16 전환에서 3장의 절 번호가 바뀌었는데 부록 C를 함께 고치
 """
 import io, re, sys
 
-DEFAULT = r'C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos\EASWA_논문_v16.md'
+DEFAULT = r'C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos\EASWA_논문_v17.md'
 P = next((a for a in sys.argv[1:] if not a.startswith('--')), DEFAULT)
 PATH_OUT = P
 L = io.open(P, encoding='utf-8').read().replace('\r\n', '\n').split('\n')

@@ -18,7 +18,7 @@ OUT = os.path.join(BASE, 'EASWA_논문_v17_투고본.hwp')
 
 # 논문템플릿.hwp 의 PAGE_DEF 실측값 (mm)
 PAPER_W, PAPER_H = 210.0, 285.0
-M_LEFT, M_RIGHT, M_TOP, M_BOTTOM, M_HEAD, M_FOOT = 22.0, 22.0, 22.0, 15.0, 18.0, 17.0
+M_LEFT, M_RIGHT, M_TOP, M_BOTTOM, M_HEAD, M_FOOT = 22.5, 22.0, 15.0, 12.0, 6.4, 7.0
 MM = 7200.0 / 25.4          # HWPUNIT per mm
 
 
@@ -60,6 +60,28 @@ def apply_fonts(h):
     print('글꼴 일괄 지정: %s' % SERIF)
 
 
+def break_before_intro(h):
+    """1쪽을 표제부와 요약으로 끝낸다.
+
+    게재본(조훈·손정주 2022 · 김미림·손정주 2022)은 1쪽이 주제어와 교신저자 각주로
+    끝나고 본문은 2쪽에서 시작한다. 한글은 HTML 의 page-break-before 를 무시하므로
+    변환 뒤에 쪽 나누기를 직접 넣는다.
+    """
+    h.MovePos(2, 0, 0)
+    opt = h.HParameterSet.HFindReplace
+    h.HAction.GetDefault('RepeatFind', opt.HSet)
+    opt.FindString = 'Ⅰ. 서론'
+    opt.IgnoreMessage = 1
+    opt.Direction = 0
+    if not h.HAction.Execute('RepeatFind', opt.HSet):
+        print('  ! 「Ⅰ. 서론」을 찾지 못해 쪽 나누기를 넣지 않았다')
+        return
+    h.HAction.Run('Cancel')
+    h.HAction.Run('MoveParaBegin')
+    h.HAction.Run('BreakPage')
+    print('서론 앞에 쪽 나누기')
+
+
 def main():
     if not os.path.exists(SRC):
         sys.exit('투고본 HTML 이 없다 — 먼저 docs/typeset_hwp.py 를 돌린다')
@@ -96,6 +118,7 @@ def main():
           % (PAPER_W, PAPER_H, M_LEFT, M_RIGHT, M_TOP, M_BOTTOM, h.PageCount))
 
     apply_fonts(h)
+    break_before_intro(h)
 
     if os.path.exists(OUT):
         os.remove(OUT)

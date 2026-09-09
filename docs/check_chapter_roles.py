@@ -9,7 +9,7 @@
 """
 import io, re, sys, collections
 
-DEFAULT = r"C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos\EASWA_논문_v16.md"
+DEFAULT = r"C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos\EASWA_논문_v17.md"
 P = sys.argv[1] if len(sys.argv) > 1 else DEFAULT
 s = io.open(P, encoding="utf-8").read().replace("\r\n", "\n")
 L = s.split("\n")

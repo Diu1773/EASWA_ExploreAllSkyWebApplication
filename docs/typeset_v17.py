@@ -178,7 +178,7 @@ while i < len(lines):
             close_abs()
             out.append('<h1 class="doctitle" id="%s">%s</h1>' % (aid, inline(txt)))
             toc.append('<a class="lv1" href="#%s">%s</a>' % (aid, html.escape(txt)))
-        elif txt in ("국문초록", "Abstract"):
+        elif txt in ("요약", "국문초록", "Abstract"):
             close_abs()
             out.append('<section class="abs"><h2 class="abshead" id="%s">%s</h2>' % (aid, inline(txt)))
             in_abs = True
