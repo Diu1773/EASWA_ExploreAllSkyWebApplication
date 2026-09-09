@@ -27,6 +27,13 @@
 
 ## 지금
 
+- **2026-09-09 저녁 — DDR 정의를 원문으로 확인하고 3.1 을 고쳤다 (Claude).** 소유자가 `Richey & Klein (2005)`(JCHE 16(2): 23-38)을 받아 주었다. 파일 `Research/ERP2026/RicheyKlein2005.pdf`.
+  - **원고가 「하는 것」과 「연구하는 것」을 뒤섞고 있었다.** 원문 24 쪽은 *"we should be **studying** design, development, and evaluation **as well as doing it**"* 이라고 둘을 갈라 놓는데, 원고는 「산출물과 그 개발 과정을 **설계·개발하고 검토하는** 연구」라고 doing 쪽으로 썼다. 「설계·개발과 평가 과정을 **체계적으로 연구하는**」으로 고쳤다.
+  - **우리 연구는 Type 1 이다** — 원문이 나눈 두 유형 중 「특정 산출물·프로그램·과정·도구에 초점을 두고 설계·개발뿐 아니라 평가도 다루는」 쪽. 3.1 에 이 위치를 밝혔다.
+  - **DDR ≠ DBR 을 저자가 직접 못 박았다**(25 쪽) — 설계기반연구는 *"the study of learning as a result of designing unique instructional interventions"*. 3.1 에 구분을 넣었다. 심사에서 나올 물음을 먼저 막는다.
+  - 참고문헌 60 건(2005 추가). **Richey & Klein (2007) 단행본은 여전히 미확보**지만, 같은 저자가 2 년 전에 쓴 정의와 원고 서술이 이제 어긋나지 않는다.
+  - 널리 도는 DDR 정의의 실제 출처는 **Seels & Richey (1994, p. 127)** 이다 — 2005 논문이 그것을 인용한다. 인터넷에 도는 문장을 그대로 옮기면 재인용 사슬을 밟는다.
+
 - **2026-09-09 저녁 — 참고문헌 원문 54/59건. 남은 것은 Richey & Klein (2007) 하나다 (Claude).** 목록은 `Desktop/Research/ERP2026/받을것_2026-09-09.md`.
   - **교육부 고시 별책 9 를 받았다** — NCIC 는 단계마다 스크립트라 막히지만, 교육부 정보·법령 › 법령정보(`boardSeq=93458`)의 **(붙임2) [별책5_14] …zip** 안에 `[별책9] 과학과 교육과정.hwp` 가 들어 있다.
   - `Quintana2004`(미시간대 저자 사본, JLS 13(3) 337-386 확인) · `Wharton1994`(UC Irvine 사본, 1쪽에 「Usability Inspection Methods, Ch. 5」) · `Collins1989_기술보고서판`(ERIC ED284181).
