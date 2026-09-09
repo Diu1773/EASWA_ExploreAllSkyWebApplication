@@ -27,6 +27,11 @@
 
 ## 지금
 
+- **2026-09-09 — 참고문헌 원문 45/59건을 모았다 (Claude).** 목록은 `Desktop/Research/ERP2026/참고문헌_수집현황_2026-09-09.md`.
+  - 오늘 추가: `조훈2022`(Research 상위 폴더에 이미 있었다) · `신영준2022a`(KOSAC, 발간번호 11-1342000-000877-01 확인) · `McDonald2019`(NSF PAR, 원고가 3.6에 새로 인용한 것) · `Ridsdale2015`(DalSpace) · `Udomprasert2012`(ADS) · `Banchi2008`(Michigan Sea Grant 사본, 26쪽·Science and Children 확인). 소유자가 `Hsieh2005` `Graneheim2004` `qiao(2024)` `Ricker2015` 를 직접 넣었다.
+  - **남은 11건**(교과서 3종 제외): 도서관 전자저널 5(Guo·Koedinger·Light·O'Reilly·Quintana) · DBpia 1(공병민) · 단행본 3(Richey·Collins·Wharton) · 무료지만 사람이 열어야 하는 2(교육부 고시 NCIC 다단계 스크립트, Herrold AAS **Cloudflare 봇 검증**).
+  - **논문은 Discovery 로 찾는다** — 통합검색은 소장 도서라 저널 논문이 안 나온다(소유자 지적 *「통합검색에 쳐도 안나와」*).
+
 - **2026-09-09 새벽~아침 — ARS 전체 심사(5석)를 돌리고 확인된 것만 반영했다 (Claude).** 커밋 `64d3fbc` `a298f0d` `97d715e`. 심사 원문은 `docs/survey/ars3_2026-09-09/` 네 파일.
   - **판정**: 연구방법 Major · 도메인 Major · 관점 Major · 반대심문 Major · 학회지 적합성 **Minor**. 반대심문이 CRITICAL을 하나도 안 매긴 이유는 *「일곱 건의 MAJOR 어디에도 새 자료가 필요하지 않기 때문」*이다.
   - **내가 어제 잘못 쓴 것 셋을 잡혔다**: 「식 중심 시각을 문헌값으로 고정」(적합기가 t0를 재중심하고 위상 오프셋을 적합한다) · 환산 카이제곱의 「분모」(자유도는 같고 달라지는 것은 점당 오차) · McDonald et al.의 「3: 72」(72는 논문 번호).
