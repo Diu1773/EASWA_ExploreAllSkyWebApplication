@@ -55,7 +55,8 @@ CSS = """
 /* 여백은 @page 로 준다. #paper 의 padding 은 요소 전체에 한 번만 걸려서
    둘째 쪽부터 위아래 여백이 사라진다(2026-09-09 사장님이 잡음). */
 @page{size:210mm 285mm;margin:21.5mm 21.5mm 14mm}
-@media print{
+/* 화면과 인쇄에 같은 규칙을 건다. @media print 안에 두면 크롬 화면과
+   한글이 이 조판을 못 본다(2026-09-09 사장님이 잡음). */
   #toc{display:none !important}
   #page-area{padding-left:0 !important}
   #paper{max-width:none !important;box-shadow:none !important;margin:0 !important;
@@ -132,7 +133,6 @@ CSS = """
   figure.fig.wide img{max-width:100%;max-height:105mm;width:auto;border:.4pt solid #999}
   figure.fig.tallfig img{max-width:100%;max-height:132mm;width:auto;border:.4pt solid #999}
   figure.fig figcaption,.figcap{font-size:8.6pt;text-align:left;text-indent:0;margin-top:.3em}
-}
 </style>
 </head>"""
 
@@ -224,6 +224,7 @@ def main():
         print("먼저 typeset_v17.py --inline 을 돌린다 —", SRC)
         return 1
     s = io.open(SRC, encoding="utf-8").read()
+    s = re.sub(r'<div id="toc">[\s\S]*?</div>\s*(?=<div id="page-area")', '', s, count=1)
     s = build_cover(s)
 
     stat = {"narrow": 0, "wide": 0}
