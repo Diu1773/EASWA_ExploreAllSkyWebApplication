@@ -281,7 +281,7 @@ _down = []
 for _line in _body.split("\n"):
     for _sent in re.split(r"(?<=다\.)\s+", _line):
         # 3.8%p 같은 수치는 절 번호가 아니다. 숫자 뒤에 % 나 배·명·건이 붙으면 뺀다.
-        _ns = [float(x) for x in re.findall(r"(?<![\d.])([1-6]\.[1-9])(?![\d]|%|배|명|건|쪽|초|일)", _sent)]
+        _ns = [float(x) for x in re.findall(r"(?<![\d.])([1-6]\.[1-9])(?![\d]|%|배|명|건|쪽|초|일|픽셀|시간|분|점)", _sent)]
         if len(_ns) < 2:
             continue
         if any(b < a for a, b in zip(_ns, _ns[1:])):
@@ -290,3 +290,19 @@ print()
 print("[절 번호가 뒤로 간 문장] %d건 — 뒤 장을 가리키는 것은 정상이다. 사람이 읽고 판정한다." % len(_down))
 for _ns, _sent in _down:
     print("   %s  %s" % (" → ".join("%.1f" % x for x in _ns), _sent[:130] + ("…" if len(_sent) > 130 else "")))
+
+# ── 절 상호참조가 가리키는 절의 제목 ────────────────────────────────
+# 2026-09-09 에 3.2 가 사례분석의 한계를 「5.5 에서 다룬다」고 했는데 실제로는 5.6 이었다.
+# 5.5 도 있는 절이라 「없는 절」 검사로는 안 잡힌다. 가리키는 절의 제목을 나란히 찍어
+# 사람이 훑게 한다.
+_titles = dict(re.findall(r"^## (\d\.\d)\.\s*(.+)$", _body if False else
+                          io.open(P, encoding="utf-8").read(), flags=re.M))
+_refs = []
+for _n, _line in enumerate(_body.split("\n"), 1):
+    for _m in re.finditer(r"(?<![\d.])([1-6]\.[1-9])(?![\d]|%|배|명|건|쪽|초|일|픽셀|시간|분|점)", _line):
+        _refs.append((_m.group(1), _titles.get(_m.group(1), "?? 없는 절"),
+                      _line[max(0, _m.start() - 38):_m.start() + 22]))
+print()
+print("[절 상호참조] %d건 — 가리키는 절의 제목이 문맥과 맞는지 사람이 본다." % len(_refs))
+for _num, _t, _c in _refs:
+    print("   %-4s → %-26s …%s…" % (_num, _t, _c))
