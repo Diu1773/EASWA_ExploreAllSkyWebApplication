@@ -56,8 +56,8 @@ export const exoplanetTransitModule: ExplorationModuleConfig = {
       questions: [
         makePrompt(
           'transit_intro_question',
-          '별빛이 줄어든 정도만으로 행성의 크기를 얼마나 알 수 있을까?',
-          'How reliably can we estimate a planet-to-star radius ratio from a brightness dip?',
+          '행성이 별 앞을 지날 때 나타나는 밝기 변화로 행성의 크기를 어떻게 알아낼 수 있을까?',
+          'How can the brightness change when a planet passes in front of its star tell us the size of the planet?',
         ),
       ],
     },
@@ -399,7 +399,7 @@ export const clusterCmdModule: ExplorationModuleConfig = {
   steps: createCommonInquirySteps({
     step0_intro: {
       questions: [
-        makePrompt('cmd_intro_phenomenon', '성단의 별들은 거의 같은 시기에 태어났다고 가정한다. 그렇다면 색-등급도(CMD)의 모양만으로 성단의 나이와 거리를 어디까지 알 수 있을까?', 'Cluster stars are assumed to have formed at nearly the same time. How far can the shape of a color-magnitude diagram (CMD) alone reveal the age and distance of a cluster?'),
+        makePrompt('cmd_intro_phenomenon', '성단을 이루는 별들의 색과 밝기를 이용해 성단의 나이와 거리를 어떻게 알아낼 수 있을까?', 'How can the colors and brightnesses of the stars in a cluster tell us its age and distance?'),
         makePrompt('cmd_intro_mainseq', '같은 성단의 별들이 CMD에서 하나의 주계열을 이루는 이유는 무엇일까?', 'Why do stars in the same cluster form a single main sequence on the CMD?'),
       ],
     },
@@ -715,8 +715,8 @@ export const kmtnetModule: ExplorationModuleConfig = {
       questions: [
         makePrompt(
           'kmt_intro_lens',
-          '별이 잠깐 밝아졌다 어두워진 곡선 하나만으로, 보이지 않는 렌즈 천체의 질량과 거리를 어디까지 알 수 있을까?',
-          'From a single curve of a star brightening and fading, how far can we determine the mass and distance of an unseen lens object?',
+          '천체의 중력으로 배경별이 밝아지는 변화를 이용해 보이지 않는 천체의 특성을 어떻게 알아낼 수 있을까?',
+          'How can the brightening of a background star caused by an unseen object’s gravity tell us about that object?',
         ),
         makePrompt(
           'kmt_intro_anomaly',
