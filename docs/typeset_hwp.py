@@ -64,7 +64,7 @@ EXTRA_CSS = ""
 STYLE = """<style>
 @page{size:210mm 285mm;margin:0}
 html{background:#fff}
-body{margin:0;font-size:9.8pt;line-height:1.62;color:#000}
+body{margin:0;font-size:9.7pt;line-height:1.62;color:#000}
 #page-area{padding:0}
 #paper{max-width:210mm;margin:0 auto;padding:21.4mm 22.0mm 19mm 22.5mm;background:#fff}
 p{margin:0;word-break:keep-all;line-break:strict}
@@ -88,19 +88,19 @@ td.hdr{border:0;padding:0;font-size:9pt;text-align:right;vertical-align:bottom}
       border-top:.5px solid #333;text-indent:0}
 
 /* 본문 */
-.ch{font-weight:bold;font-size:15pt;text-align:left;margin:7mm 0 3.2mm;text-indent:0;page-break-after:avoid}
-.sec{font-weight:bold;font-size:10.1pt;text-align:left;margin:4.6mm 0 1.5mm;text-indent:0;page-break-after:avoid}
-.sub{font-weight:bold;font-size:9.8pt;text-align:left;margin:3.2mm 0 1mm;text-indent:0;page-break-after:avoid}
+.ch{font-weight:bold;font-size:15pt;text-align:center;margin:7mm 0 3.2mm;text-indent:0;page-break-after:avoid}
+.sec{font-weight:bold;font-size:10.7pt;text-align:left;margin:4.6mm 0 1.5mm;text-indent:0;page-break-after:avoid}
+.sub{font-weight:bold;font-size:10.0pt;text-align:left;margin:3.2mm 0 1mm;text-indent:0;page-break-after:avoid}
 .sub4{font-weight:bold;font-size:9.8pt;text-align:left;margin:2.6mm 0 .8mm;text-indent:0;page-break-after:avoid}
-.bd{font-size:9.8pt;text-align:justify;text-indent:9.8pt;margin:0}
-.ref{font-size:9.8pt;text-align:justify;text-indent:-9mm;margin:0 0 0 9mm;line-height:1.55}
+.bd{font-size:9.7pt;text-align:justify;text-indent:9.7pt;margin:0}
+.ref{font-size:9.7pt;text-align:justify;text-indent:-9mm;margin:0 0 0 9mm;line-height:1.55}
 .quote{font-size:9.3pt;text-align:justify;margin:1.6mm 0 1.6mm 6mm;text-indent:0}
-li{font-size:9.8pt;text-align:justify}
+li{font-size:9.7pt;text-align:justify}
 ul,ol{margin:1.2mm 0 1.2mm 8mm;padding:0}
 
 /* 표 — 게재본은 가로선만 (굵은 선 1.14pt, 가는 선 0.36pt) */
 .tbl{margin:2.4mm 0 3.4mm}
-.cap{font-size:9.8pt;text-align:left;margin:0 0 1.2mm;text-indent:0;page-break-after:avoid}
+.cap{font-size:10.0pt;text-align:left;margin:0 0 1.2mm;text-indent:0;page-break-after:avoid}
 table{border-collapse:collapse;width:100%;line-height:1.40}
 th,td{border:0;border-top:.36px solid #333;padding:1.2mm 1.6mm;
       vertical-align:top;font-size:8.4pt;text-align:left}
@@ -113,7 +113,7 @@ tbody tr:last-child td{border-bottom:1.14px solid #000}
 /* 그림 — 게재본 실측 폭 105~171mm · 높이 최대 123mm */
 .fig{margin:3.2mm 0 3.6mm;text-align:center;page-break-inside:avoid}
 .fig p{margin:0;text-indent:0}
-.figcap{font-size:9.8pt;text-align:justify;margin:1.6mm 0 0;text-indent:0}
+.figcap{font-size:10.0pt;text-align:justify;margin:1.6mm 0 0;text-indent:0}
 /* 여러 장짜리 그림 — 표 칸에 넣어 쪽이 갈리지 않게 한다 */
 .pnltbl{width:100%;border:0;margin:0 auto}
 td.pnl{border:0;padding:0 1mm 1.5mm;text-align:center;vertical-align:top}
@@ -174,7 +174,7 @@ def _titlepage_class(s):
 # 픽셀 수에 맞춰 원본을 다시 샘플링해 버린다(5770px → 581px · 89dpi). 그래서 크기는
 # 태그에 적지 않고 변환 뒤 COM 으로 mm 단위로 준다(docs/make_hwp.py).
 # 게재본 실측: 그림 폭 105~171mm · 높이 최대 123mm (김미림·손정주 2022 그림 2).
-MAX_W_MM, MAX_H_MM = 165.5, 123.0
+MAX_W_MM, MAX_H_MM = 166.0, 123.0
 
 
 def img_mm(src, share=1.0):
@@ -223,6 +223,51 @@ def montage(srcs, cols=2, gut=10):
     out_im.save(path)
     for im in ims:
         im.close()
+    return "원고_그림/" + name
+
+
+def split_tall(src, ratio=1.15, gut=40):
+    """세로로 긴 화면 한 장을 조용한 가로 띠에서 잘라 좌우로 편다.
+
+    2880×4560 짜리 홈 화면 한 장이 쪽의 절반을 먹었다(2026-09-09 소유자 지적:
+    「사진을 두개로 나누던 세로를 반갈을하던」). 가운데 40% 구간에서 가로줄의 픽셀
+    분산이 가장 낮은 띠 — 곧 배경만 있는 자리 — 를 찾아 자르므로 내용이 갈리지
+    않는다. home_modules.png 는 1822행에서 갈려 진입 화면과 모듈 목록으로 나뉜다.
+    """
+    from PIL import Image
+    import numpy as np
+    p = src if os.path.isabs(src) else os.path.join(BASE, src)
+    with Image.open(p) as im0:
+        w, h = im0.size
+        if h < w * ratio:
+            return src
+        a = np.asarray(im0.convert("L"), dtype=float)
+        lo, hi = int(h * 0.30), int(h * 0.70)
+        sd = a[lo:hi].std(axis=1)
+        quiet = sd < np.percentile(sd, 3)
+        runs, cur = [], None
+        for k, v in enumerate(quiet):
+            if v and cur is None:
+                cur = k
+            elif not v and cur is not None:
+                runs.append((cur, k)); cur = None
+        if cur is not None:
+            runs.append((cur, len(quiet)))
+        if not runs:
+            return src
+        r0 = max(runs, key=lambda r: r[1] - r[0])
+        cut = lo + (r0[0] + r0[1]) // 2
+        im = im0.convert("RGB")
+        left, right = im.crop((0, 0, w, cut)), im.crop((0, cut, w, h))
+    H = max(left.height, right.height)
+    out_im = Image.new("RGB", (w * 2 + gut, H), (255, 255, 255))
+    out_im.paste(left, (0, 0))
+    out_im.paste(right, (w + gut, 0))
+    name = "_split_%s.png" % os.path.splitext(os.path.basename(p))[0]
+    path = os.path.join(BASE, "원고_그림", name)
+    out_im.save(path)
+    left.close(); right.close()
+    print("  세로 %.2f배 그림을 %d행에서 갈라 좌우로 폈다 — %s" % (h / w, cut, name))
     return "원고_그림/" + name
 
 
@@ -279,20 +324,37 @@ def _w(x):
     return sum(1.0 if ord(c) > 0x2000 else 0.55 for c in x)
 
 
-def head_floor(hdr, hi):
-    """머리글이 접히지 않을 최소 열 너비를 % 로 돌려준다.
+def _tokens(x):
+    """줄이 갈릴 수 있는 자리로 끊는다 — 공백·가운뎃점·슬래시."""
+    return [t for t in re.split(r"[\s·/]+", x) if t] or [x]
 
-    한글은 표 칸에서 어절을 무시하고 글자 단위로 줄을 나눈다 — 「분석 기준」이
-    「분석 기 / 준」이 됐다(2026-09-09, 표 3 에서 소유자가 잡았다). 그래서 한글이
-    든 머리글은 전체 길이를, 라틴만 있는 머리글은 가장 긴 낱말을 기준으로 잡는다.
-    표 폭 165.5mm · 표 글꼴 8.4pt · 칸 좌우 여백 1.6mm씩.
+
+def col_floor(hdr, rows, hi):
+    """어떤 칸도 세로로 쌓이지 않을 최소 열 너비를 % 로 돌려준다.
+
+    **머리글 전체를 한 줄에 넣으려 들면 안 된다.** 머리글이 다 긴 표에서는 최소 폭
+    합이 100%를 넘고, 부족분을 넉넉한 열에서 빼는 과정에서 짧은 머리글 열 하나가
+    부담을 다 진다 — 표 10 의 「응답」 열이 5%(8.8mm)로 쪼그라들어 글자가 세로로
+    한 줄씩 쌓였다(2026-09-09, 소유자가 잡았다).
+
+    그래서 보장하는 것은 **가장 긴 낱말 하나가 들어갈 폭**이다. 머리글이 여러 줄로
+    접히는 것은 정상이고, 낱말이 중간에서 갈리는 것만 막는다.
+    표 폭 165.5mm · 표 글꼴 8.4pt · 칸 좌우 여백 1.6mm씩 + 여유 1mm.
     """
     ch = 8.4 * 25.4 / 72.0
     out = []
-    for hd in hdr:
-        t = hd if any(ord(c) > 0x2000 for c in hd) else max(hd.split() or [hd], key=len)
-        # 여유 1mm — 딱 맞게 주면 반올림 한 번에 다시 접힌다.
-        out.append(min(hi, (_w(t) * ch + 4.2) / MAX_W_MM * 100.0))
+    for j, hd in enumerate(hdr):
+        cells = [r[j] for r in rows if j < len(r)] + [hd]
+        longest = max([_w(t) for c in cells for t in _tokens(c)] or [2.0])
+        # 무리 이름만 드문드문 든 열은 그 이름 전체가 한 줄에 들어가게 한다 — 표 11 의
+        # 「보완 요소」가 「보완 / 요소」로 접혔다. 칸이 대부분 비어 넓혀도 비용이 작다.
+        body = [r[j] for r in rows if j < len(r)]
+        filled = [c for c in body if c.strip()]
+        # 무리 이름이 하나뿐인 열은 넓혀도 얻는 게 없다 — 표 11 에서 「구분」을 넓혔더니
+        # 「응답 항목」이 좁아져 세 행이 두 줄이 되고 표가 쪽을 넘었다(2026-09-10).
+        if body and len(set(filled)) >= 2 and len(filled) * 2 <= len(body):
+            longest = max(longest, max(_w(c) for c in filled))
+        out.append(min(hi, (longest * ch + 4.2) / MAX_W_MM * 100.0))
     if sum(out) > 100:
         k = 100.0 / sum(out)
         out = [x * k for x in out]
@@ -312,7 +374,12 @@ def colwidths(hdr, rows, lo=7, hi=45):
         raw.append(0.5 * mx + 0.5 * av)
     tot = sum(raw) or 1.0
     pct = [max(lo, min(hi, 100.0 * x / tot)) for x in raw]
-    floor = head_floor(hdr, hi)
+    # 숫자만 든 열은 넓혀 봐야 빈칸이다 — 그만큼 글이 든 열이 좁아진다.
+    for j in range(n):
+        body = [r[j] for r in rows if j < len(r)]
+        if body and all(re.fullmatch(r"[\d\s./%()—–+-]*", c or "") for c in body):
+            pct[j] = min(pct[j], 13.0)
+    floor = col_floor(hdr, rows, hi)
     # 모자란 열을 최소 폭까지 올리고 그만큼을 넉넉한 열에서 비례로 뺀다.
     for _ in range(6):
         k = 100.0 / sum(pct)
@@ -378,7 +445,7 @@ def balance(t):
     return "<br>".join(lines_)
 
 
-out, toc, heads, figs = [], [], [], []
+out, toc, heads, figs, tbls = [], [], [], [], []
 seen_body = False
 sid = 0
 i = 0
@@ -404,22 +471,35 @@ while i < len(lines):
         # 한 쪽에 안 들어가는 표에까지 page-break-inside:avoid 를 걸면 통째로 다음
         # 쪽으로 밀려 앞 쪽이 비어 버린다(2026-09-09, 소유자가 10 쪽에서 발견).
         # 행이 많으면 나뉘도록 두고 머리행을 쪽마다 반복한다.
-        t = ['<div class="tbl%s">' % (" big" if len(rows) > 12 else "")]
+        # 「큰 표」는 갈려도 어쩔 수 없는 표다. 한글은 갈린 표의 다음 쪽에 머리행을
+        # 되풀이해 주지 않으므로(2026-09-10, 표 12 의 뒷부분이 머리글 없이 21쪽에
+        # 남았다) 갈리는 표는 최소로 둔다. 20행짜리 표 12 는 한 쪽에 들어간다.
+        big = len(rows) > 20
+        # 마지막 행에서 빈칸이 아닌 첫 칸 — 표가 쪽에서 갈렸는지 재는 표시가 된다
+        last = next((c for c in (rows[-1] if rows else []) if c.strip()), "")
+        tbls.append({"rows": len(rows), "cols": len(hdr), "big": big,
+                     "cap": html.unescape(re.sub("<[^>]+>", "", cap)) if cap else "",
+                     "last": html.unescape(re.sub("<[^>]+>", "", last))})
+        t = ['<div class="tbl%s">' % (" big" if big else "")]
         if cap:
             t.append(P("cap", cap.replace("</strong> ", "</strong>&nbsp;")))
             heads.append({"t": html.unescape(re.sub("<[^>]+>", "", cap)), "role": "cap",
                           "prev": 9, "keep": True})
         # 표 칸은 style="font-family" 를 무시한다. <font face> 는 이름 그대로 남는다.
-        def cell(tag, c, w=""):
-            return '<%s%s><font face="%s">%s</font></%s>' % (tag, w, F_SANS_L, inline(c), tag)
+        def cell(tag, c, attr=""):
+            return '<%s%s><font face="%s">%s</font></%s>' % (tag, attr, F_SANS_L, inline(c), tag)
         # 칸 너비는 한글이 내용과 무관하게 똑같이 나눈다. 글자 수에 맞춰 나눠 준다
         # (2026-09-09: 「수행 내용」이 좁아 여섯 줄로 접히고 「방법 절」이 넓었다).
         wid = colwidths(hdr, rows)
         t.append("<table><thead><tr>")
         t += [cell("th", c, ' width="%d%%"' % wid[j]) for j, c in enumerate(hdr)]
         t.append("</tr></thead><tbody>")
+        # 첫 칸이 빈 행은 위 행과 같은 무리다. 그 사이에는 선을 긋지 않는다 —
+        # 20행짜리 표 12 가 행마다 선이 그어져 읽히지 않았다(2026-09-09 소유자 지적).
         for r in rows:
-            t.append("<tr>" + "".join(cell("td", c) for c in r) + "</tr>")
+            same = bool(r) and not r[0].strip()
+            at = ' style="border-top:none"' if same else ""
+            t.append("<tr>" + "".join(cell("td", c, at) for c in r) + "</tr>")
         t.append("</tbody></table></div>")
         t.append(GAP(5))
         out.append("".join(t))
@@ -459,8 +539,12 @@ while i < len(lines):
             # 앞뒤 두 글자를 무조건 자르면 설명의 끝이 날아가므로 원문을 그대로 넘긴다.
             cap = lines[j].strip()
             i = j
+        wide = split_tall(mi.group(2))
+        # 편 그림도 폭을 다 쓴다. 좁히면 그 쪽이 더 비어서(그림+캡션이 한 덩어리로
+        # 움직이므로) 낭비가 오히려 늘었다 — 0.80 으로 줄였더니 빈 자리가 84mm 에서
+        # 100mm 로 커졌다(2026-09-10 실측).
         out.append('<div class="fig"><p>%s</p>%s</div>'
-                   % (img_tag(mi.group(2), mi.group(1)),
+                   % (img_tag(wide, mi.group(1)),
                       P("figcap", caption(cap)) if cap else ""))
         i += 1
         continue
@@ -473,20 +557,17 @@ while i < len(lines):
         aid = "s%d" % sid
         if lvl == 1 and sid == 1:
             in_abs = False
-            out.append(
-                '<table class="hdtbl"><tr>'
-                '<td class="hdl" style="border:none;font-family:%s">| 연구논문 |</td>'
-                '<td class="hdr" style="border:none;font-family:%s">'
-                '현장과학교육 &nbsp;( )&nbsp; PP &nbsp;-</td>'
-                '</tr></table>' % (F_SANS_M, F_SERIF))
-            out.append(GAP(17))
+            # 「| 연구논문|」과 학회지명은 본문이 아니라 머리말에 있어야 한다
+            # (템플릿 실측: 1쪽 머리말 y22.0). make_hwp.py 의 set_header 가 넣는다.
+            out.append(GAP(6))
             # h1 으로 두면 한글 내장 개요 문단모양이 크기·정렬을 덮어쓴다.
             out.append(P("doctitle", balance(inline(txt))))
-            out.append(GAP(13))
+            out.append(GAP(9))
             toc.append('<a class="lv1" href="#%s">%s</a>' % (aid, html.escape(txt)))
         elif txt in ("요약", "국문초록", "Abstract", "ABSTRACT"):
             out.append(GAP(11) if txt in ("요약", "국문초록") else GAP(9))
-            out.append(P("abshead", inline(txt)))
+            # 템플릿은 「요 약」처럼 두 글자를 벌려 쓴다
+            out.append(P("abshead", inline("요 약" if txt in ("요약", "국문초록") else txt)))
             out.append(GAP(4))
             in_abs, in_ref = True, False
             toc.append('<a class="lv2" href="#%s">%s</a>' % (aid, html.escape(txt)))
@@ -499,7 +580,8 @@ while i < len(lines):
             prev = {"ch": 15, "sec": 9, "sub": 6, "sub4": 5}[role]
             if heads and heads[-1]["role"] == "ch" and role == "sec":
                 prev = 0
-            heads.append({"t": txt, "role": role, "prev": prev, "keep": True})
+            heads.append({"t": txt, "role": role, "prev": prev, "keep": True,
+                          "align": "center" if role == "ch" else None})
             out.append(P(role, inline(txt)))
             if lvl <= 2:
                 toc.append('<a class="lv%d" href="#%s">%s</a>' % (lvl, aid, html.escape(txt)))
@@ -560,10 +642,12 @@ while i < len(lines):
                 body_txt = body_txt[1:-1]           # *영문 소속*
             # au·enau 끝의 *(교신저자)와 corr 앞의 *는 그대로 둔다
             if cls == 'corr':
-                out.append(GAP(20))          # 게재본은 교신저자 각주가 쪽 아래에 있다
+                # 게재본은 각주 기능으로 쪽 아래에 붙인다. 우리는 문단이라 빈 줄로
+                # 밀어 왔는데, 그 빈 줄이 1쪽을 넘겨 각주만 남은 쪽을 만들었다.
+                out.append(GAP(6))
             out.append(P(cls, inline(body_txt)))
             if cls in ('af', 'enaf'):
-                out.append(GAP(13))
+                out.append(GAP(9))
             elif cls == 'entitle':
                 out.append(GAP(9))
             i += 1
@@ -589,7 +673,7 @@ io.open(OUT, "w", encoding="utf-8", newline="\n").write(doc)
 # 문단 간격과 「다음 문단과 함께」 지시서. 한글이 CSS margin 과
 # page-break-after:avoid 를 무시하므로 docs/make_hwp.py 가 변환 뒤에 읽어 적용한다.
 io.open(OUT[:-5] + ".문단.json", "w", encoding="utf-8").write(
-    json.dumps({"paras": heads, "figs": figs, "body_w": MAX_W_MM},
+    json.dumps({"paras": heads, "figs": figs, "tbls": tbls, "body_w": MAX_W_MM},
                ensure_ascii=False, indent=1))
 
 n_fig = body.count('<div class="fig"')

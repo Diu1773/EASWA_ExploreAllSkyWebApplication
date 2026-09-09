@@ -19,9 +19,9 @@ SRC = os.path.join(BASE, 'EASWA_논문_v17_투고본.html')
 RULES = os.path.join(BASE, 'EASWA_논문_v17_투고본.문단.json')
 OUT = os.path.join(BASE, 'EASWA_논문_v17_투고본.hwp')
 
-# 논문템플릿.hwp 의 PAGE_DEF 실측값 (mm)
+# 논문템플릿.hwp 의 PAGE_DEF 실측값 (mm) — COM 으로 직접 읽었다(2026-09-10)
 PAPER_W, PAPER_H = 210.0, 285.0
-M_LEFT, M_RIGHT, M_TOP, M_BOTTOM, M_HEAD, M_FOOT = 22.5, 22.0, 15.0, 12.0, 6.4, 7.0
+M_LEFT, M_RIGHT, M_TOP, M_BOTTOM, M_HEAD, M_FOOT = 22.0, 22.0, 22.0, 15.0, 18.0, 17.0
 MM = 7200.0 / 25.4          # HWPUNIT per mm
 
 
@@ -67,6 +67,9 @@ def apply_para_rules(h):
         ps.KeepWithNext = 1 if it['keep'] else 0
         ps.PrevSpacing = int(it['prev'] * 100)      # 1pt = 100 HWPUNIT
         h.HAction.Execute('ParagraphShape', ps.HSet)
+        # 장 제목은 가운데 — 템플릿의 「서론」·「연구 방법」·「참고문헌」이 모두 가운데다
+        if it.get('align') == 'center':
+            h.HAction.Run('ParagraphShapeAlignCenter')
         done += 1
     print('문단 간격·쪽 나눔 규칙 %d개 적용' % done)
     if miss:
@@ -180,6 +183,12 @@ def place_figures(h):
         # 그림이 든 문단을 가운데로. 한글은 CSS 의 text-align:center 를 무시해서
         # 폭이 좁은 그림이 왼쪽에 붙는다(2026-09-09, 그림 2 에서 소유자가 잡았다).
         h.HAction.Run('ParagraphShapeAlignCenter')
+        # 그림과 그 캡션은 떨어지면 안 된다 — 그림 2 는 14쪽, 캡션은 15쪽 맨 위에
+        # 있었다(2026-09-10). CSS 의 page-break-inside 를 한글이 무시한다.
+        ps = h.HParameterSet.HParaShape
+        h.HAction.GetDefault('ParagraphShape', ps.HSet)
+        ps.KeepWithNext = 1
+        h.HAction.Execute('ParagraphShape', ps.HSet)
         put += 1
     # 넣은 순서와 문서 차례가 같으므로 앞에서부터 크기를 준다.
     k = 0
@@ -197,21 +206,75 @@ def place_figures(h):
 
 
 def fit_tables(h):
-    """표를 본문 폭에 맞춘다 — HTML 의 width:100% 를 무시하고 150mm 로 넣는다."""
+    """표를 본문 폭에 맞추고, 쪽에서 갈릴지 말지를 정한다.
+
+    행이 적은 표가 쪽 경계에서 갈리면 머리글 없는 조각이 다음 쪽 맨 위에 남는다
+    (2026-09-10, 표 10 이 19~20 쪽으로 갈렸다). 한 쪽에 들어갈 표는 통째로 넘기고,
+    12행이 넘는 표만 갈리도록 둔다. CSS 의 page-break-inside 는 한글이 무시한다.
+    """
     if not os.path.exists(RULES):
         return
-    body_w = json.load(io.open(RULES, encoding='utf-8'))['body_w']
-    nt = 0
+    conf = json.load(io.open(RULES, encoding='utf-8'))
+    body_w = conf['body_w']
+    tbls = conf.get('tbls', [])
+    nt, nb = 0, 0
+    k = 0
     c = h.HeadCtrl
     while c:
         if c.CtrlID == 'tbl':
             pr = c.Properties
             if abs(pr.Item('Width') - body_w * MM) > MM:
                 pr.SetItem('Width', int(body_w * MM))
-                c.Properties = pr
                 nt += 1
+            if k < len(tbls):
+                # 0 나눔 · 1 셀 단위로 나눔 · 2 나누지 않음
+                pr.SetItem('PageBreak', 1 if tbls[k]['big'] else 2)
+                nb += 1
+            c.Properties = pr
+            k += 1
         c = c.Next
-    print('표 %d개를 본문 폭 %.1fmm 로' % (nt, body_w))
+    print('표 %d개를 본문 폭 %.1fmm 로 · %d개에 쪽 나눔 규칙' % (nt, body_w, nb))
+
+
+HEADER_LEFT = '| 연구논문|'
+HEADER_MID = '현장과학교육 권(호)'
+
+
+def set_header(h):
+    """머리말을 넣는다 — 템플릿 1쪽과 같은 「| 연구논문|」 + 학회지명.
+
+    한글 COM 으로는 홀수 쪽·짝수 쪽 머리말을 나눌 수 없다(2026-09-10 확인:
+    ApplyClass·WhichPage·Where 를 무엇으로 줘도 머리말 컨트롤이 하나만 생기고
+    마지막 것이 앞의 것을 덮는다). 그래서 양쪽 같은 머리말 하나를 쓴다.
+    템플릿은 홀수 쪽에 학회지명, 짝수 쪽에 논문 제목을 넣는다.
+    """
+    h.MovePos(2, 0, 0)
+    o = h.HParameterSet.HHeaderFooter
+    h.HAction.GetDefault('HeaderFooter', o.HSet)
+    o.HSet.SetItem('Type', 0)
+    if not h.HAction.Execute('HeaderFooter', o.HSet):
+        print('  ! 머리말에 들어가지 못했다')
+        return
+    t = h.HParameterSet.HInsertText
+    h.HAction.GetDefault('InsertText', t.HSet)
+    t.Text = '%s				%s' % (HEADER_LEFT, HEADER_MID)
+    h.HAction.Execute('InsertText', t.HSet)
+    h.HAction.Run('CloseEx')
+    print('머리말 「%s … %s」' % (HEADER_LEFT, HEADER_MID))
+
+
+def set_pagenum(h):
+    """쪽 번호를 바깥쪽 아래에 — 템플릿 실측 DrawPos=8."""
+    o = h.HParameterSet.HPageNumPos
+    h.HAction.GetDefault('PageNumPos', o.HSet)
+    o.DrawPos = 8
+    o.NumberFormat = 0
+    o.SideChar = 0
+    o.NewNumber = 1
+    if h.HAction.Execute('PageNumPos', o.HSet):
+        print('쪽 번호 바깥쪽 아래')
+    else:
+        print('  ! 쪽 번호를 넣지 못했다')
 
 
 def break_before(h, needle, label):
@@ -226,6 +289,145 @@ def break_before(h, needle, label):
         return
     h.HAction.Run('BreakPage')
     print('%s 앞에 쪽 나누기' % label)
+
+
+def free_path(path):
+    """저장할 자리를 비운다. 한글에서 열어 둔 파일이면 옆 이름으로 비켜 준다.
+
+    소유자가 투고본을 한글로 열어 화면을 보는 중에 다시 돌리면 SaveAs 가
+    PermissionError 로 죽는다(2026-09-09). 한 번의 변환을 통째로 버리지 않는다.
+    """
+    if not os.path.exists(path):
+        return path
+    try:
+        os.remove(path)
+        return path
+    except PermissionError:
+        alt = path[:-4] + '_새판' + path[-4:]
+        print('  ! %s 가 한글에서 열려 있다 — %s 로 저장한다'
+              % (os.path.basename(path), os.path.basename(alt)))
+        if os.path.exists(alt):
+            try:
+                os.remove(alt)
+            except PermissionError:
+                pass
+        return alt
+
+
+def fix_split_tables(rounds=3):
+    """쪽에서 갈린 표 앞에 쪽 나누기를 넣는다.
+
+    한글 표 속성의 「나누지 않음」(PageBreak=2)은 저장은 되지만 실제 배치에 듣지
+    않았다(2026-09-10 확인: 표 10 이 19~20 쪽으로 갈렸고 머리글의 마지막 줄만
+    다음 쪽에 남았다). 그래서 저장한 hwp 를 PDF 로 재서 캡션이 있는 쪽과 마지막
+    행이 있는 쪽이 다른 표를 찾아, 그 캡션 앞에 쪽 나누기를 넣는다.
+    행이 12개가 넘어 어차피 한 쪽에 안 들어가는 표는 그대로 둔다.
+    """
+    import fitz
+    if not os.path.exists(RULES):
+        return
+    tbls = [t for t in json.load(io.open(RULES, encoding='utf-8')).get('tbls', [])
+            if not t['big'] and t.get('cap') and t.get('last')]
+    if not tbls:
+        return
+    tmp = os.path.join(BASE, '_splitcheck.pdf')
+    done = set()          # 한 번 민 표는 다시 밀지 않는다
+    for _ in range(rounds):
+        h = _hwp()
+        h.Open(OUT, 'HWP', 'forceopen:true')
+        if os.path.exists(tmp):
+            os.remove(tmp)
+        h.SaveAs(tmp, 'PDF', '')
+        h.Clear(1)
+        h.Quit()
+        pages, firsts = [], []
+        d = fitz.open(tmp)
+        for pg in d:
+            pages.append(pg.get_text())
+            ls = [x.strip() for x in pg.get_text().splitlines() if x.strip()]
+            firsts.append(ls[3] if len(ls) > 3 else '')   # 머리말 두 줄과 쪽 번호를 건너뛴다
+        d.close()
+        bad, stuck = [], []
+        for t in tbls:
+            head = t['cap'][:14]
+            cp = next((i for i, p in enumerate(pages) if head in p), None)
+            if cp is None:
+                continue
+            lp = next((i for i in range(cp, len(pages)) if t['last'] in pages[i]), None)
+            if lp is None or lp <= cp:
+                continue
+            if t['cap'] in done or firsts[cp].startswith(head):
+                # 이미 쪽 맨 위인데도 갈린다 — 한 쪽에 안 들어가는 표다. 더 밀면
+                # 앞 쪽만 비운다(2026-09-10, 표 6 이 세 번 밀렸다).
+                stuck.append(t['cap'])
+                continue
+            bad.append(t['cap'])
+        if stuck:
+            print('  한 쪽에 안 들어가 그대로 두는 표: %s'
+                  % ' / '.join(c[:16] for c in stuck))
+        if not bad:
+            print('쪽에서 갈린 표 없음 (밀 수 있는 것 기준)')
+            break
+        done |= set(bad)
+        h = _hwp()
+        h.Open(OUT, 'HWP', 'forceopen:true')
+        for cap in bad:
+            if _find(h, cap[:20]):
+                h.HAction.Run('BreakPage')
+        h.SaveAs(OUT, 'HWP', '')
+        h.Clear(1)
+        h.Quit()
+        print('갈린 표 %d개 앞에 쪽 나누기: %s'
+              % (len(bad), ' / '.join(c[:16] for c in bad)))
+    if os.path.exists(tmp):
+        os.remove(tmp)
+
+
+def place_appendix_break(head='부록. 서술형', min_lines=6):
+    """부록을 새 쪽에서 시작시킨다 — 앞 쪽이 거의 비지 않을 때만.
+
+    조건 없이 밀었더니 참고문헌 마지막 한 줄만 있는 쪽이 생겼다(2026-09-10,
+    28쪽이 241mm 비었다). 한 줄 때문에 한 쪽을 버리지 않는다. 저장한 hwp 를
+    PDF 로 재서 그 쪽에 몇 줄이 남는지 세고 판단한다.
+    """
+    import fitz
+    tmp = os.path.join(BASE, '_appendix.pdf')
+    h = _hwp()
+    h.Open(OUT, 'HWP', 'forceopen:true')
+    if os.path.exists(tmp):
+        os.remove(tmp)
+    h.SaveAs(tmp, 'PDF', '')
+    h.Clear(1)
+    h.Quit()
+    before = None
+    d = fitz.open(tmp)
+    for pg in d:
+        lines = [x.strip() for x in pg.get_text().splitlines() if x.strip()]
+        for k, l in enumerate(lines):
+            if l.startswith(head):
+                before = k
+                break
+        if before is not None:
+            break
+    d.close()
+    os.remove(tmp)
+    if before is None:
+        print('  ! 부록을 찾지 못해 쪽 나누기를 넣지 않았다')
+        return
+    # 머리말 두 줄과 쪽 번호 한 줄은 본문이 아니다
+    body_before = max(0, before - 3)
+    if body_before == 0:
+        print('부록은 이미 새 쪽에서 시작한다')
+        return
+    if body_before < min_lines:
+        print('부록 앞에 %d줄만 남아 쪽을 나누지 않는다 (한 쪽을 버리지 않는다)' % body_before)
+        return
+    h = _hwp()
+    h.Open(OUT, 'HWP', 'forceopen:true')
+    break_before(h, head, '부록')
+    h.SaveAs(OUT, 'HWP', '')
+    h.Clear(1)
+    h.Quit()
 
 
 def _hwp():
@@ -268,20 +470,23 @@ def main():
     print('용지 %.0f×%.0f mm · 여백 %.0f/%.0f/%.0f/%.0f 적용 · %d쪽'
           % (PAPER_W, PAPER_H, M_LEFT, M_RIGHT, M_TOP, M_BOTTOM, h.PageCount))
 
+    set_header(h)
+    set_pagenum(h)
     place_figures(h)
     fit_tables(h)
     apply_para_rules(h)
     break_before(h, 'Ⅰ. 서론', '서론')
-    break_before(h, '부록. 서술형', '부록')
     print('%d쪽' % h.PageCount)
 
-    if os.path.exists(OUT):
-        os.remove(OUT)
+    global OUT
+    OUT = free_path(OUT)
     ok = h.SaveAs(OUT, 'HWP', '')
     h.Clear(1)
     h.Quit()
     if not (ok and os.path.exists(OUT)):
         sys.exit('저장 실패')
+    place_appendix_break()
+    fix_split_tables()
     fix_widow_headings()
     print('저장 완료 — %s (%.1f MB)' % (OUT, os.path.getsize(OUT) / 1e6))
 
