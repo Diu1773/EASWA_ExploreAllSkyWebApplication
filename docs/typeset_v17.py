@@ -62,7 +62,13 @@ figure.tbl.big,figure.tbl.big table{page-break-inside:auto}
 figure.tbl.big thead{display:table-header-group}
 figure.tbl.big tr{page-break-inside:avoid}
 .tcap{page-break-after:avoid}
+/* 표가 본문 폭보다 넓으면 감싼 상자가 가로로 스크롤되고 그 스크롤막대가 PDF 에 그대로
+   찍힌다. 2026-09-09 에 표 10 이 그랬다 — 여섯 열의 머리글이 nowrap 이라 표가 지면보다
+   넓어졌고, 첫 열 글자가 한 자씩 세로로 떨어졌다. 머리글을 접게 하고 인쇄에서는
+   스크롤을 끈다. 짧은 머리글은 어차피 줄바꿈되지 않는다. */
+thead th{white-space:normal}
 @media print{
+  .tw{overflow-x:visible}
   #toc{display:none}
   #page-area{padding-left:0}
   #paper{margin:0;max-width:none;padding:40mm 22mm 32mm;box-shadow:none}
