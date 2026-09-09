@@ -52,7 +52,8 @@ h1.apx{page-break-before:always}
 /* 인쇄 여백을 @page가 아니라 본문 padding으로 준다. @page margin이 0이면 Chrome이
    머리글(날짜·제목)과 바닥글(파일 경로·쪽번호)을 그릴 자리를 잃는다.
    --print-to-pdf-no-header / --no-pdf-header-footer 플래그는 이 버전에서 듣지 않았다. */
-@page{size:A4;margin:0}
+/* 학회 논문템플릿.hwp 실측 판형 — A4 가 아니라 210×285 mm 다. */
+@page{size:210mm 285mm;margin:0}
 figure.fig .panels{display:flex;gap:5px;align-items:flex-start;justify-content:center}
 figure.fig .panels img{flex:1 1 0;min-width:0;width:100%}
 figure.fig .panels.grid2{flex-wrap:wrap}
@@ -64,7 +65,7 @@ figure.tbl.big tr{page-break-inside:avoid}
 @media print{
   #toc{display:none}
   #page-area{padding-left:0}
-  #paper{margin:0;max-width:none;padding:22mm 20mm 20mm;box-shadow:none}
+  #paper{margin:0;max-width:none;padding:40mm 22mm 32mm;box-shadow:none}
   html{background:#fff}
 }
 </style>"""
