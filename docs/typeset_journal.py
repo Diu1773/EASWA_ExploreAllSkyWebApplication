@@ -43,16 +43,19 @@ OUT = BASE + "/EASWA_논문_v17_게재서식.html"
 
 NARROW_MAX_COLS = 3
 NARROW_MAX_ROWS = 12
+NARROW_MAX_CHARS = 350   # 한 단에 넣어도 세로로 길어지지 않는 크기
 
 CSS = """
 <style id="journal">
 /* ── 게재본 실측 판형 (조훈·손정주 2022 · 김미림·손정주 2022) ───────────── */
-@page{size:210mm 285mm;margin:0}
+/* 여백은 @page 로 준다. #paper 의 padding 은 요소 전체에 한 번만 걸려서
+   둘째 쪽부터 위아래 여백이 사라진다(2026-09-09 사장님이 잡음). */
+@page{size:210mm 285mm;margin:21.5mm 21.5mm 14mm}
 @media print{
   #toc{display:none !important}
   #page-area{padding-left:0 !important}
   #paper{max-width:none !important;box-shadow:none !important;margin:0 !important;
-         padding:21.5mm 21.5mm 14mm !important;
+         padding:0 !important;
          column-count:2;column-gap:9.2mm;column-fill:auto}
 
   body{font-size:9.9pt !important;line-height:1.52 !important}
@@ -70,6 +73,8 @@ CSS = """
   .cover .enau{font-size:10.5pt;margin:0 0 3mm;text-indent:0}
   .cover .enaf{font-family:"Times New Roman",serif;font-style:italic;font-size:10pt;
                margin:0 0 13mm;text-indent:0}
+  .cover section.abs{background:none !important;border:0 !important;padding:0 !important;
+                     margin:0 !important;box-shadow:none !important}
   .cover .abshead{font-size:10pt;font-weight:700;margin:0 0 4mm;border:0;text-align:center}
   .cover .absbody p{font-size:8.6pt;line-height:1.6;text-align:justify;text-indent:0;
                     margin:0 0 .5em}
@@ -78,9 +83,12 @@ CSS = """
                padding-top:2mm;border-top:.5pt solid #444;width:62mm}
 
   /* 장·절 제목은 단을 넘기지 않는다 (제목만 남고 잘리는 것을 막는다) */
-  h1,h2,h3{break-inside:avoid;break-after:avoid}
-  h1{column-span:all;margin:1.1em 0 .5em}
-  h2{margin:.9em 0 .35em}
+  /* 장 제목을 양단으로 걸면 남은 세로가 모자랄 때 앞 쪽이 통째로 빈다
+     (2026-09-09 사장님이 5쪽에서 잡음). 게재본도 장 제목을 단 안에 둔다. */
+  h1,h2,h3{break-inside:avoid;break-after:avoid;column-span:none}
+  h1{margin:1.0em 0 .45em;font-size:12.5pt}
+  h1:first-child{margin-top:0}
+  h2{margin:.85em 0 .3em;font-size:10.5pt}
   h3{margin:.6em 0 .25em}
 
   /* ── 표: 가로선만 ─────────────────────────────────────── */
@@ -98,10 +106,18 @@ CSS = """
   td.num,th.num{text-align:center}
   td.hl{background:#e6e6e6}
 
+  /* 영문초록도 상자 없이 본문으로 (게재본 관행) */
+  section.abs{background:none !important;border:0 !important;padding:0 !important;
+              box-shadow:none !important;margin:.8em 0 !important}
+  .abshead{font-size:10pt;font-weight:700;border:0;margin:0 0 .3em}
+
+  /* 참고문헌은 글머리표 없이 내어쓰기 */
+  ul{list-style:none;margin:0;padding:0}
+  li{text-indent:-1em;padding-left:1em;margin:0 0 .12em;font-size:9.2pt;line-height:1.42}
+
   /* ── 그림: 양단, 쪽 맨 위 ──────────────────────────────── */
-  figure.fig{column-span:all;break-inside:avoid;break-before:page;
-             text-align:center;margin:0 0 1em}
-  figure.fig img{max-width:100%;max-height:150mm;width:auto;border:.4pt solid #999}
+  figure.fig{column-span:all;break-inside:avoid;text-align:center;margin:.9em 0 1em}
+  figure.fig img{max-width:100%;max-height:105mm;width:auto;border:.4pt solid #999}
   figure.fig figcaption,.figcap{font-size:8.6pt;text-align:left;text-indent:0;margin-top:.3em}
 }
 </style>
@@ -144,7 +160,9 @@ def classify(block):
     head = re.search(r"<tr>(.*?)</tr>", block, re.S)
     ncol = len(re.findall(r"<t[hd]", head.group(1))) if head else 99
     nrow = len(re.findall(r"<tr>", block))
-    return "narrow" if (ncol <= NARROW_MAX_COLS and nrow <= NARROW_MAX_ROWS + 1) else "wide"
+    chars = len(re.sub(r"<[^>]+>|\s", "", block))
+    return ("narrow" if (ncol <= NARROW_MAX_COLS and nrow <= NARROW_MAX_ROWS + 1
+                         and chars <= NARROW_MAX_CHARS) else "wide")
 
 
 def main():
