@@ -177,6 +177,9 @@ def place_figures(h):
             print('  ! 그림 없음: %s' % fg['path'])
             continue
         h.InsertPicture(fg['path'], True, 0, False, False, 0, 0, 0)
+        # 그림이 든 문단을 가운데로. 한글은 CSS 의 text-align:center 를 무시해서
+        # 폭이 좁은 그림이 왼쪽에 붙는다(2026-09-09, 그림 2 에서 소유자가 잡았다).
+        h.HAction.Run('ParagraphShapeAlignCenter')
         put += 1
     # 넣은 순서와 문서 차례가 같으므로 앞에서부터 크기를 준다.
     k = 0

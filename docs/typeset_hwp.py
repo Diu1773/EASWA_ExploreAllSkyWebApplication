@@ -35,7 +35,13 @@ STYLE_FROM = BASE + "/EASWA_논문_v15_조판.html"
 # 두 판을 따로 돌리면 한쪽이 옛 내용으로 남는다(2026-09-09, 소유자가 그 판을 보고
 # 이미 지운 문장을 지적했다). --only-plain 을 주지 않으면 두 판을 모두 만든다.
 INLINE = "--inline" in sys.argv
-OUT = BASE + ("/EASWA_논문_v17_투고본.html" if INLINE else "/EASWA_논문_v17_투고본.html")
+# 한글용 판은 그림 자리에 [[FIGn]] 표시만 남긴다(img_tag 주석). 그 판을 그대로
+# 크롬에서 PDF 로 뽑으면 그림이 없고 여백이 첫 쪽에만 생긴다(2026-09-09 소유자가
+# 잡았다). --preview 는 사람이 눈으로 볼 판이다 — 그림을 실제로 넣고 여백은
+# @page 로 준다. 한글에 넣을 판은 옵션 없이 돌린 것이다.
+PREVIEW = "--preview" in sys.argv
+OUT = BASE + ("/EASWA_논문_v17_투고본_미리보기.html" if PREVIEW
+              else "/EASWA_논문_v17_투고본.html")
 
 
 def img_src(rel):
@@ -116,7 +122,20 @@ td.pnl{border:0;padding:0 1mm 1.5mm;text-align:center;vertical-align:top}
 .hdtbl,.hdtbl tr,.hdtbl td{border:0;border-top:0;border-bottom:0;padding:0}
 </style>"""
 
+PREVIEW_CSS = """
+/* 미리보기 — 종이 여백을 @page 로 준다. 요소 padding 으로 주면 첫 쪽과 마지막
+   쪽에만 여백이 생기고 가운데 쪽은 글이 종이 끝에 붙는다(2026-09-09 소유자 지적).
+   값은 make_hwp.py 가 한글에 주는 여백과 같다 — 위 15+머리말 6.4, 아래 12+꼬리말 7. */
+@page{size:210mm 285mm;margin:21.4mm 22.0mm 19mm 22.5mm}
+#page-area{padding:0}
+#paper{max-width:165.5mm;margin:0 auto;padding:0}
+.newpage{page-break-before:always}
+img{max-width:100%;height:auto}
+"""
+
 style = STYLE
+if PREVIEW:
+    style = STYLE.replace("</style>", PREVIEW_CSS + "</style>")
 
 md = io.open(SRC, encoding="utf-8").read().replace("\r\n", "\n")
 md = re.sub(r"<!--\s*EASWA_[A-Z_]+\s*-->\n?", "", md)   # 검증기 마커
@@ -216,6 +235,11 @@ def img_tag(src, alt, share=1.0):
     다음 mm 크기를 준다(docs/make_hwp.py 의 place_figures).
     """
     box = img_mm(src, share) or (0, 0)
+    if PREVIEW:
+        rel = src if not os.path.isabs(src) else os.path.relpath(src, BASE).replace(os.sep, "/")
+        size = (' style="width:%.2fmm;height:%.2fmm"' % box) if box[0] else ""
+        return '<img src="%s" alt="%s"%s>' % (html.escape(rel, quote=True),
+                                              html.escape(alt, quote=True), size)
     figs.append({
         "path": os.path.abspath(src if os.path.isabs(src) else os.path.join(BASE, src)),
         "w": round(box[0], 2), "h": round(box[1], 2),
@@ -250,11 +274,35 @@ ROLE_FONT = {
 }
 
 
+def _w(x):
+    """칸 하나가 차지할 폭을 전각 글자 수로 센다."""
+    return sum(1.0 if ord(c) > 0x2000 else 0.55 for c in x)
+
+
+def head_floor(hdr, hi):
+    """머리글이 접히지 않을 최소 열 너비를 % 로 돌려준다.
+
+    한글은 표 칸에서 어절을 무시하고 글자 단위로 줄을 나눈다 — 「분석 기준」이
+    「분석 기 / 준」이 됐다(2026-09-09, 표 3 에서 소유자가 잡았다). 그래서 한글이
+    든 머리글은 전체 길이를, 라틴만 있는 머리글은 가장 긴 낱말을 기준으로 잡는다.
+    표 폭 165.5mm · 표 글꼴 8.4pt · 칸 좌우 여백 1.6mm씩.
+    """
+    ch = 8.4 * 25.4 / 72.0
+    out = []
+    for hd in hdr:
+        t = hd if any(ord(c) > 0x2000 for c in hd) else max(hd.split() or [hd], key=len)
+        # 여유 1mm — 딱 맞게 주면 반올림 한 번에 다시 접힌다.
+        out.append(min(hi, (_w(t) * ch + 4.2) / MAX_W_MM * 100.0))
+    if sum(out) > 100:
+        k = 100.0 / sum(out)
+        out = [x * k for x in out]
+    return out
+
+
 def colwidths(hdr, rows, lo=7, hi=45):
-    """칸마다 들어갈 글자 수로 열 너비 비율을 정한다."""
+    """칸마다 들어갈 글자 수로 열 너비 비율을 정하되, 머리글은 접지 않는다."""
     n = len(hdr)
-    def w(x):
-        return sum(1.0 if ord(c) > 0x2000 else 0.55 for c in x)
+    w = _w
     raw = []
     for j in range(n):
         cells = [r[j] for r in rows if j < len(r)] + [hdr[j]]
@@ -264,8 +312,20 @@ def colwidths(hdr, rows, lo=7, hi=45):
         raw.append(0.5 * mx + 0.5 * av)
     tot = sum(raw) or 1.0
     pct = [max(lo, min(hi, 100.0 * x / tot)) for x in raw]
-    k = 100.0 / sum(pct)
-    pct = [x * k for x in pct]
+    floor = head_floor(hdr, hi)
+    # 모자란 열을 최소 폭까지 올리고 그만큼을 넉넉한 열에서 비례로 뺀다.
+    for _ in range(6):
+        k = 100.0 / sum(pct)
+        pct = [x * k for x in pct]
+        short = [j for j in range(n) if pct[j] < floor[j] - 1e-9]
+        if not short:
+            break
+        need = sum(floor[j] - pct[j] for j in short)
+        pool = sum(pct[j] for j in range(n) if j not in short)
+        if pool <= need:
+            break
+        for j in range(n):
+            pct[j] = floor[j] if j in short else pct[j] * (pool - need) / pool
     out = [int(round(x)) for x in pct]
     out[-1] += 100 - sum(out)
     return out
@@ -348,7 +408,7 @@ while i < len(lines):
         if cap:
             t.append(P("cap", cap.replace("</strong> ", "</strong>&nbsp;")))
             heads.append({"t": html.unescape(re.sub("<[^>]+>", "", cap)), "role": "cap",
-                          "prev": 4, "keep": True})
+                          "prev": 9, "keep": True})
         # 표 칸은 style="font-family" 를 무시한다. <font face> 는 이름 그대로 남는다.
         def cell(tag, c, w=""):
             return '<%s%s><font face="%s">%s</font></%s>' % (tag, w, F_SANS_L, inline(c), tag)
@@ -361,6 +421,7 @@ while i < len(lines):
         for r in rows:
             t.append("<tr>" + "".join(cell("td", c) for c in r) + "</tr>")
         t.append("</tbody></table></div>")
+        t.append(GAP(5))
         out.append("".join(t))
         continue
 
