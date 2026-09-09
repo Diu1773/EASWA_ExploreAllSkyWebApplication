@@ -18,7 +18,7 @@ import time
 import win32com.client as win32
 
 BASE = r"C:/Users/bmffr/Desktop/Me/ERP2026_Cosmos"
-SRC = os.path.join(BASE, "EASWA_논문_v17_게재서식.html")
+SRC = os.path.join(BASE, "EASWA_논문_v17_게재서식_파일참조.html")
 OUT = os.path.join(BASE, "EASWA_논문_v17_투고본.hwp")
 
 MM = 7200 / 25.4          # 1 mm = 283.46 HWPUNIT

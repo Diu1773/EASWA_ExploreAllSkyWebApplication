@@ -39,8 +39,11 @@ import re
 import sys
 
 BASE = r"C:/Users/bmffr/Desktop/Me/ERP2026_Cosmos"
-SRC = BASE + "/EASWA_논문_v17_조판_자기완결.html"
-OUT = BASE + "/EASWA_논문_v17_게재서식.html"
+# --files 를 주면 그림을 파일 참조로 둔 판을 읽는다. 한글은 base64 로 6MB 를 넘는
+# HTML 을 열지 못하고 멈춘다(2026-09-09 확인). 한글로 넘길 때는 이쪽을 쓴다.
+FILES = "--files" in sys.argv
+SRC = BASE + ("/EASWA_논문_v17_조판.html" if FILES else "/EASWA_논문_v17_조판_자기완결.html")
+OUT = BASE + ("/EASWA_논문_v17_게재서식_파일참조.html" if FILES else "/EASWA_논문_v17_게재서식.html")
 
 NARROW_MAX_COLS = 3
 NARROW_MAX_ROWS = 12
