@@ -41,7 +41,25 @@ CORPUS = [
 MINE = r"C:/Users/bmffr/Desktop/Me/ERP2026_Cosmos/EASWA_논문_v17_투고본_미리보기.pdf"
 
 H1 = ("또한", "따라서", "즉", "나아가", "아울러", "게다가", "더욱이")
-NEG = re.compile(r"(?:이|가|은|는|것이|것은) 아니(?:라|며|고|다)")
+# 부정 대구는 두 꼴이다. 나눠서 세야 어느 쪽이 튀는지 보인다.
+#   갈래 1 「A가 아니라 B」 — 부정하고 대신 B 를 내세운다
+#   갈래 2 「~은 아니다」   — 부정으로 끝난다(한정·유보)
+NEG = re.compile(r"(?:이|가|은|는|것이|것은)\s*아니(라|며|고|다)")
+
+
+def neg_kinds(sents):
+    a = b = 0
+    for s in sents:
+        m = NEG.search(s)
+        if not m:
+            continue
+        if m.group(1) == "다" or len(s[m.end():].strip()) < 3:
+            b += 1
+        else:
+            a += 1
+    return a, b
+
+
 ENDC = re.compile(r"(?:하고|하며|하지만|이며|이지만|되고|되며|으며|지만|어서|아서),")
 
 
@@ -90,6 +108,7 @@ def measure(sents):
     if n < 40:
         return None
     eo = sum(len(s.split()) for s in sents)
+    ka, kb = neg_kinds(sents)
     ncom = sum(s.count(",") for s in sents)
     seg = [len(x.split()) for s in sents for x in s.split(",") if x.strip()]
     return {
@@ -97,7 +116,9 @@ def measure(sents):
         "어절": eo,
         "평균 문장 길이(어절)": eo / n,
         "문두 접속사(천어절당)": 1000.0 * sum(1 for s in sents if s.startswith(H1)) / eo,
-        "부정 대구(천어절당)": 1000.0 * sum(1 for s in sents if NEG.search(s)) / eo,
+        "부정 대구(천어절당)": 1000.0 * (ka + kb) / eo,
+        "  ├ A가 아니라 B(천어절당)": 1000.0 * ka / eo,
+        "  └ ~은 아니다(천어절당)": 1000.0 * kb / eo,
         "100자+ 문장(천문장당)": 1000.0 * sum(1 for s in sents if len(s) >= 100) / n,
         "「이는 ~」(천문장당)": 1000.0 * sum(1 for s in sents if s.startswith("이는 ")) / n,
         "쉼표를 가진 문장(%)": 100.0 * sum(1 for s in sents if "," in s) / n,
