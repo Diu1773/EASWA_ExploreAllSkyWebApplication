@@ -218,6 +218,66 @@ def humanize_report(sents):
         print("      %-20s ...%s 아니%s..." % (sec[:20], a, b))
 
 
+def against_baseline(paras, sents):
+    """실측 기준값과 견준다.
+
+    출처는 humanize-korean 의 ai-tell-taxonomy v2 에 적힌 대조 실측이다. 기준 코퍼스는
+    칼럼·에세이·위키이고 학술 논문이 아니다 — 학술문은 「따라서」가 논리 연결자로 쓰이고
+    열거가 많아 쉼표도 많다. 그래서 밀도보다 각 항목이 정한 «처방 역치»를 함께 본다.
+    """
+    n = len(sents)
+    eo = sum(len(s.split()) for _, s in sents)
+    print("\n[마] 실측 기준값과 견줌 — 문장 %d · 어절 %d" % (n, eo))
+    print("     기준 코퍼스는 칼럼·에세이·위키다. 학술 논문 기준선은 없다.")
+
+    h1 = ("또한", "따라서", "즉", "나아가", "아울러", "게다가", "더욱이")
+    c = sum(1 for _, s in sents if s.startswith(h1))
+    dense = sum(1 for _, p in paras
+                if sum(1 for s in split_sent(p) if s.startswith(h1)) >= 3)
+    print("\n  H-1 문두 접속사   %5.2f/천어절   사람 0.43 · gpt 0.83 · haiku 6.85"
+          % (1000.0 * c / eo))
+    print("      처방 역치는 «한 문단 3회 이상»인 문단만 — %d개" % dense)
+
+    rx = re.compile(r"(?:이|가|은|는|것이|것은) 아니(?:라|며|고|다)")
+    c8 = sum(1 for _, s in sents if rx.search(s))
+    chain = 0
+    for sec, p in paras:
+        ss = split_sent(p)
+        chain += sum(1 for i in range(len(ss) - 1)
+                     if rx.search(ss[i]) and rx.search(ss[i + 1]))
+    print("\n  C-8 부정 대구     %5.2f/천어절   인간 0.6 · AI 5.8 (9.2배 차)"
+          % (1000.0 * c8 / eo))
+    print("      결정타는 출현 수가 아니라 «연쇄»다 — 인접 두 문장이 모두 대구인 곳 %d" % chain)
+
+    print("\n  H-4 「즉」         %d회          기준 문서당 2회 이하"
+          % sum(1 for _, s in sents if s.startswith("즉")))
+
+    lg = sum(1 for _, s in sents if len(s) >= 100)
+    print("\n  E-1 100자+ 장문   %5.1f/천문장   인간 91.3 · AI 8.1 (많을수록 사람)"
+          % (1000.0 * lg / n))
+
+    k = []
+    for sec, p in paras:
+        ss = split_sent(p)
+        run, prev = 1, None
+        for s in ss + [""]:
+            e = end_family(s) if s else None
+            if e == prev:
+                run += 1
+                continue
+            if run >= 4 and prev:
+                k.append((run, prev, sec))
+            run, prev = 1, e
+    print("\n  E-2 같은 종결어미  %d곳          기준 «한 문단 4문장 이상 연속»" % len(k))
+    for r, e, sec in k:
+        print("      %d연속 [%s] · %s" % (r, e, sec[:30]))
+
+    h3 = sum(1 for _, p in paras
+             if sum(1 for s in split_sent(p)
+                    if s.startswith(("이는 ", "이 점에서", "이 관점에서", "이 말은"))) >= 3)
+    print("\n  H-3 「이는 ~」      %d개          기준 «한 문단 3회 이상»인 문단" % h3)
+
+
 def main():
     md = io.open(SRC, encoding="utf-8").read()
     paras = sections(md)
@@ -226,6 +286,7 @@ def main():
     if "--humanize" in sys.argv:
         print("문체 검사 (되풀이·접속어·끝 단어·대구) — 문장 %d개\n" % n)
         humanize_report(sents)
+        against_baseline(paras, sents)
         return
     print("원고 %s" % SRC)
     print("문단 %d · 문장 %d · 글자 %d\n"
