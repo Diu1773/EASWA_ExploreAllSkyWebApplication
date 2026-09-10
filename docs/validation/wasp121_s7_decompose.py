@@ -112,6 +112,9 @@ def easwa_photometry(cube, aper_mask):
     return net, (cx, cy, n_pix, int(ring.sum()))
 
 
+LD = {}
+
+
 def fit(flux, err, time, label, **fit_kw):
     """광도곡선을 플랫폼 적합기에 넣는다. fit_kw 로 적합 설정을 바꿀 수 있다."""
     from schemas.lightcurve import LightCurvePoint
@@ -130,6 +133,11 @@ def fit(flux, err, time, label, **fit_kw):
     res = fit_transit_model(pts, period=PERIOD, t0=T0_BJD, target_id=TARGET,
                             fit_mode='phase_fold', **fit_kw)
     f = res.fitted_params
+    # 주연감광 계수를 기록한다. 표 7 주에 실제 값을 적으라는 심사 지적(2026-09-10).
+    pre = getattr(res, 'preprocessing', None)
+    LD[label] = (f.u1, f.u1_err, f.u2, f.u2_err,
+                 getattr(pre, 'limb_darkening_source', None),
+                 getattr(pre, 'limb_darkening_filter', None))
     return f.rp_rs, f.rp_rs_err, f.reduced_chi_squared, len(pts)
 
 
@@ -219,6 +227,9 @@ def main() -> None:
            'aperture': {'radius_px': APER_R, 'annulus_px': [ANN_IN, ANN_OUT],
                         'centre_px': [cx, cy], 'n_pixels': npix},
            'crowdsap': meta['crowdsap'] if meta else None,
+           'limb_darkening': {k: {'u1': v[0], 'u1_err': v[1], 'u2': v[2],
+                                  'u2_err': v[3], 'source': v[4], 'filter': v[5]}
+                              for k, v in LD.items()},
            'rows': [{'key': k, 'desc': d, 'rp_rs': v, 'rp_rs_err': e,
                      'reduced_chi_squared': x2, 'points': n,
                      'vs_literature_pct': (v - RATROR_LIT) / RATROR_LIT * 100}
