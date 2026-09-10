@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """투고본의 머리말을 학회 템플릿처럼 세 종류로 넣는다 (HWPX 경유).
 
-템플릿은 1쪽에 「| 연구논문|」과 학회지명을 한 줄에 두고, 2쪽부터는 홀수 쪽에
+템플릿은 1쪽에 「| 연구논문 |」과 학회지명을 한 줄에 두고, 2쪽부터는 홀수 쪽에
 학회지명, 짝수 쪽에 논문 제목을 넣는다. **한글 COM 으로는 이것을 만들 수 없다** —
 `HeaderFooter` 액션에 `ApplyClass`·`WhichPage`·`Where` 를 무엇으로 줘도 머리말
 컨트롤이 하나만 생기고 마지막 것이 앞의 것을 덮는다(2026-09-10 확인).
@@ -36,7 +36,7 @@ HWP = os.path.join(BASE, "EASWA_논문_v17_투고본.hwp")
 HWPX = os.path.join(BASE, "_투고본_머리말.hwpx")
 MD = os.path.join(BASE, "EASWA_논문_v17.md")
 
-LEFT = "| 연구논문|"          # 템플릿 1쪽 왼쪽
+LEFT = "| 연구논문 |"          # 템플릿 1쪽 왼쪽
 JOURNAL = "현장과학교육 권(호)"   # 템플릿 홀수 쪽
 TAB = '<hp:tab width="0" leader="0" type="0"/>'   # 1쪽에서 둘 사이를 벌린다
 
@@ -113,7 +113,7 @@ def retext(ctrl, text, apply_to, new_id):
     """머리말 컨트롤의 텍스트·적용 쪽·정렬을 바꾼다.
 
     텍스트 요소 안에는 탭 컨트롤이 섞여 있다 —
-    `<hp:t>| 연구논문|<hp:tab …/>…현장과학교육 권(호)</hp:t>`.
+    `<hp:t>| 연구논문 |<hp:tab …/>…현장과학교육 권(호)</hp:t>`.
     그래서 `[^<]*` 로 잡으면 통째로 빗나간다(2026-09-10, 텍스트가 안 바뀌었다).
     """
     out = re.sub(r'applyPageType="[^"]*"', 'applyPageType="%s"' % apply_to, ctrl)
