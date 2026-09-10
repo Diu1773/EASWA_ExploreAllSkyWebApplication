@@ -162,37 +162,54 @@ bullets(sl, M, y, W - 2 * M, [
 ], size=18, gap=11)
 cite(sl, "교육부 (2022) 과학과 교육과정 [별책 9]")
 
-# ═════ 3. 기존 웹의 지형 — 두 갈래를 화면으로 ═════════════════════════
-sl = S()
-y = title(sl, "기존 웹 환경",
-          "자료 제공 서비스는 탐구 흐름이 없고, 교육 지향 환경은 주제가 고정되거나 운영이 끝났음")
+# ═════ 3·4. 기존 웹 환경 — 갈래마다 한 장씩 ═══════════════════════════
+IW = 5.93
+LX, RX = M, M + IW + 0.23
 
-IW = 5.92
-LX, RX = M, M + IW + 0.25
-IY, IH = y + 0.02, 3.35
-pic(sl, "svc_simbad.png", LX, IY, IW, IH, root=HERE, top=True)
-pic(sl, "svc_agent.png", RX, IY, IW, IH, root=HERE, top=True)
 
-CY = IY + IW / 1.8 + 0.16
-for x, head, sub in (
-    (LX, "자료 제공 서비스",
-     "SIMBAD · VizieR · WorldWide Telescope · ESASky\n"
-     "천체명·좌표·카탈로그에서 시작. 분석과 탐구 흐름은 서비스 밖의 몫"),
-    (RX, "교육 지향 환경",
-     "Agent Exoplanet · DIY Planet Search · SDSS Voyages · ESA CESAR · Rubin\n"
-     "활동은 갖췄으나 주제가 고정. 자료를 그리려면 Excel·Google Sheets 가 필요"),
-):
-    f = tb(sl, x, CY, IW, 1.0)
-    put(f, head, 16, ACC, True, first=True, space_after=3)
-    for line in sub.split("\n"):
-        put(f, line, 12.5, BODY, line=1.2, space_after=2)
+def web_slide(no, head, sub, left, right, tail=None):
+    """화면 둘을 크게 놓고 그 아래 한 줄씩 설명한다."""
+    sl = S()
+    y = title(sl, "기존 웹 환경 — 예시 %s %s" % (no, head), sub)
+    iy = y + 0.04
+    ih = 3.30
+    for x, (name, cap1, cap2) in ((LX, left), (RX, right)):
+        pic(sl, name, x, iy, IW, ih, root=HERE, top=True)
+        f = tb(sl, x, iy + ih + 0.14, IW, 1.0)
+        put(f, cap1, 16, ACC, True, first=True, space_after=3)
+        put(f, cap2, 13, BODY, line=1.2)
+    if tail:
+        rule(sl, H - 0.98)
+        g = tb(sl, M, H - 0.84, W - 2 * M, 0.5)
+        put(g, tail, 16, ACC, True, first=True)
+    return sl
 
-rule(sl, H - 0.98)
-f = tb(sl, M, H - 0.84, W - 2 * M, 0.5)
-put(f, "EASWA — 공개 아카이브 자료를 쓰면서, 자료 구조가 다른 세 주제를 같은 탐구 흐름 "
-       "안에서 분석까지", 16, ACC, True, first=True)
-cite(sl, "SIMBAD 2026-07 워크스루 · SDSS Voyages 성단 활동 2026-09-11 확인. "
-         "네 서비스 전체 화면과 교사 장벽 응답은 부록 2, 분석 기준은 논문 표 2·3.")
+
+sl = web_slide(
+    "①", "자료 제공 서비스",
+    "천체명·좌표·카탈로그에서 시작. 분석과 탐구 흐름은 서비스 밖의 몫",
+    ("web_simbad.png", "SIMBAD",
+     "천체명·좌표로 식별 정보와 문헌을 확인 (Wenger et al., 2000). "
+     "탐구 분석용 원자료는 따로 구해야 함"),
+    ("web_vizier.png", "VizieR",
+     "카탈로그와 표를 조건 검색 (Ochsenbein et al., 2000). "
+     "항목·단위 선택과 해석이 부담"))
+cite(sl, "WorldWide Telescope · ESASky 를 포함한 네 곳의 진입 화면은 부록 2. "
+         "분석 기준과 결과는 논문 표 2·3. 2026-07 워크스루.")
+
+sl = web_slide(
+    "②", "교육 지향 환경",
+    "활동은 갖췄으나 주제와 자료가 정해져 있고, 분석은 밖으로 넘어감",
+    ("web_voyages.png", "SDSS Voyages — 성단 색등급도 활동",
+     "단계가 짜여 있으나 대상이 정해져 있고, 안내문이 "
+     "「자료를 그리려면 Excel·Google Sheets 가 필요하다」고 밝힘"),
+    ("web_hunters.png", "Planet Hunters TESS — 시민과학 분류",
+     "이미 만들어진 광도곡선에서 식현상을 눈으로 표시함. "
+     "대상 선택도 측광도 모델 적합도 없음 (Fischer et al., 2012)"),
+    "EASWA — 공개 아카이브 자료를 쓰면서, 자료 구조가 다른 세 주제를 같은 탐구 흐름 "
+    "안에서 분석까지")
+cite(sl, "SDSS Voyages · Planet Hunters TESS 2026-09-11 확인. "
+         "Agent Exoplanet(LCO)은 같은 갈래의 가장 가까운 선례였으나 운영 종료(부록 3).")
 
 # ═════ 4. EASWA 개요 ══════════════════════════════════════════════════
 sl = S()
@@ -392,6 +409,17 @@ put(f, "교사에게 예시 화면을 보이고 예상 장벽을 물은 결과 �
        "영어 인터페이스·전문 용어 10명(76.9%)", 16, ACC2, True, first=True)
 cite(sl, "학교 활용 관점의 연구자 워크스루 · 분석 기준과 결과는 논문 표 2·3. "
          "장벽 응답은 1차 현직 중심 N=13.")
+
+# ═════ 부록 3. Agent Exoplanet — 가장 가까운 선례 ═════════════════════
+sl = S()
+y = title(sl, "부록 · Agent Exoplanet (Las Cumbres Observatory)",
+          "공개 외계행성 자료로 웹에서 측광하던 가장 가까운 선례. 2026-09-11 확인 시 운영 종료")
+pic(sl, "svc_agent_home.png", M, y + 0.04, W - 2 * M, (H - 1.05) - y - 0.10, root=HERE, top=True)
+f = tb(sl, M, H - 0.98, W - 2 * M, 0.5)
+put(f, "첫 화면에 목표성·비교성·하늘 영역 표시가 남아 있음 — EASWA 의 분석 조건 화면과 "
+       "같은 개념. 활동 페이지는 접근 불가", 15, ACC, True, first=True)
+cite(sl, "https://agentexoplanet.lco.global · 2026-09-11 확인. "
+         "「Mission End — Agent Exoplanet is no longer active, this is a legacy website」")
 
 os.makedirs(DEST, exist_ok=True)
 prs.save(OUT)
