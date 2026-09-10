@@ -224,8 +224,11 @@ def fit_tables(h):
     while c:
         if c.CtrlID == 'tbl':
             pr = c.Properties
-            if abs(pr.Item('Width') - body_w * MM) > MM:
-                pr.SetItem('Width', int(body_w * MM))
+            # 표 폭을 본문 폭으로 늘리는 것은 한글이 받아 주지 않는다 — 열 너비 합에
+            # 매여 150mm 로 남는다(2026-09-10 확인). 대신 가운데로 놓는다. 템플릿의
+            # 표 1 도 76mm 짜리가 가운데였다.
+            if pr.Item('HorzAlign') != 1:
+                pr.SetItem('HorzAlign', 1)     # 0 왼쪽 · 1 가운데 · 2 오른쪽
                 nt += 1
             if k < len(tbls):
                 # 0 나눔 · 1 셀 단위로 나눔 · 2 나누지 않음
@@ -234,7 +237,7 @@ def fit_tables(h):
             c.Properties = pr
             k += 1
         c = c.Next
-    print('표 %d개를 본문 폭 %.1fmm 로 · %d개에 쪽 나눔 규칙' % (nt, body_w, nb))
+    print('표 %d개를 가운데로 · %d개에 쪽 나눔 규칙' % (nt, nb))
 
 
 HEADER_LEFT = '| 연구논문|'
@@ -347,6 +350,7 @@ def fix_split_tables(rounds=3):
         return
     tmp = os.path.join(BASE, '_splitcheck.pdf')
     done = set()          # 한 번 민 표는 다시 밀지 않는다
+    never = set()         # 밀어도 갈리는 표 — 후보에서 아주 뺀다
     for _ in range(rounds):
         h = _hwp()
         h.Open(OUT, 'HWP', 'forceopen:true')
@@ -355,15 +359,21 @@ def fix_split_tables(rounds=3):
         h.SaveAs(tmp, 'PDF', '')
         h.Clear(1)
         h.Quit()
-        pages, firsts = [], []
+        pages, firsts, gaps = [], [], []
         d = fitz.open(tmp)
         for pg in d:
             pages.append(pg.get_text())
             ls = [x.strip() for x in pg.get_text().splitlines() if x.strip()]
             firsts.append(ls[3] if len(ls) > 3 else '')   # 머리말 두 줄과 쪽 번호를 건너뛴다
+            b = [x for x in pg.get_text('blocks') if x[4].strip()
+                 and x[3] / MM_PT > 26 and x[1] / MM_PT < 258]
+            low = max([x[3] for x in b] or [0]) / MM_PT
+            gaps.append(pg.rect.height / MM_PT - low - 32.0)
         d.close()
-        bad, stuck = [], []
+        bad, stuck, undo = [], [], []
         for t in tbls:
+            if t['cap'] in never:
+                continue
             head = t['cap'][:14]
             cp = next((i for i, p in enumerate(pages) if head in p), None)
             if cp is None:
@@ -375,11 +385,41 @@ def fix_split_tables(rounds=3):
                 # 이미 쪽 맨 위인데도 갈린다 — 한 쪽에 안 들어가는 표다. 더 밀면
                 # 앞 쪽만 비운다(2026-09-10, 표 6 이 세 번 밀렸다).
                 stuck.append(t['cap'])
+                never.add(t['cap'])
+                if t['cap'] in done:
+                    undo.append(t['cap'])
                 continue
             bad.append(t['cap'])
+        # 밀었더니 앞 쪽이 크게 빈 표도 되돌린다 — 갈림을 없앤 이득보다 손해가 크다
+        # (2026-09-10, 표 11 을 밀었더니 21쪽이 165mm 비었다).
+        for cap in list(done):
+            cp = next((i for i, pg in enumerate(pages) if cap[:14] in pg), None)
+            if cp and cp > 0 and gaps[cp - 1] > 120.0:
+                undo.append(cap)
+                never.add(cap)
+                print('  「%s」 를 밀었더니 앞 쪽이 %.0fmm 비었다 — 되돌린다'
+                      % (cap[:18], gaps[cp - 1]))
+
         if stuck:
             print('  한 쪽에 안 들어가 그대로 두는 표: %s'
                   % ' / '.join(c[:16] for c in stuck))
+        # 밀어 봐야 갈리는 표는 앞서 넣은 쪽 나누기를 도로 뺀다 — 그것 때문에 앞 쪽이
+        # 통째로 빈다(2026-09-10, 14쪽이 134mm 비었는데 표 6 은 26mm 였다).
+        if undo:
+            h = _hwp()
+            h.Open(OUT, 'HWP', 'forceopen:true')
+            n = 0
+            for cap in undo:
+                if _find(h, cap[:20]):
+                    h.HAction.Run('MoveLineBegin')
+                    h.HAction.Run('DeleteBack')      # 앞의 쪽 나누기를 지운다
+                    n += 1
+                    done.discard(cap)
+            if n:
+                h.SaveAs(OUT, 'HWP', '')
+                print('  넣었던 쪽 나누기 %d개를 도로 뺐다' % n)
+            h.Clear(1)
+            h.Quit()
         if not bad:
             print('쪽에서 갈린 표 없음 (밀 수 있는 것 기준)')
             break
@@ -459,7 +499,7 @@ def pull_table_forward(rounds=2, waste_mm=80.0):
         h.Quit()
 
 
-def place_appendix_break(head='부록. 서술형', min_lines=6):
+def place_appendix_break(head='부록. 서술형', min_lines=14):
     """부록을 새 쪽에서 시작시킨다 — 앞 쪽이 거의 비지 않을 때만.
 
     조건 없이 밀었더니 참고문헌 마지막 한 줄만 있는 쪽이 생겼다(2026-09-10,

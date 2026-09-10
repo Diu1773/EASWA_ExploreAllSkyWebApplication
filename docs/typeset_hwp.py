@@ -206,12 +206,23 @@ def montage(srcs, cols=2, gut=10):
     from PIL import Image
     ims = [Image.open(src if os.path.isabs(src) else os.path.join(BASE, src)).convert("RGB")
            for src in srcs]
-    cw = min(im.width for im in ims)
-    ims = [im if im.width == cw else im.resize((cw, max(1, round(im.height * cw / im.width))),
-                                               Image.LANCZOS) for im in ims]
+    if len(ims) == 2 and cols == 2:
+        # 비율이 다른 두 장을 같은 폭으로 맞추면 낮은 쪽 아래가 빈다(그림 1 의
+        # 전천 화면과 주제 카드가 0.51 대 0.80 이었다). 높이를 맞추고 폭을 비율의
+        # 역으로 나눈다 — 그림 2 에서 쓴 방법과 같다(2026-09-10).
+        r0, r1 = ims[0].height / ims[0].width, ims[1].height / ims[1].width
+        total = max(im.width for im in ims) * 2
+        w0 = int(round(total * r1 / (r0 + r1)))
+        ims = [ims[0].resize((w0, max(1, round(w0 * r0))), Image.LANCZOS),
+               ims[1].resize((total - w0, max(1, round((total - w0) * r1))), Image.LANCZOS)]
+    else:
+        cw = min(im.width for im in ims)
+        ims = [im if im.width == cw
+               else im.resize((cw, max(1, round(im.height * cw / im.width))), Image.LANCZOS)
+               for im in ims]
     rows = [ims[k:k + cols] for k in range(0, len(ims), cols)]
     rh = [max(im.height for im in r) for r in rows]
-    W = cw * cols + gut * (cols - 1)
+    W = max(sum(im.width for im in r) + gut * (len(r) - 1) for r in rows)
     H = sum(rh) + gut * (len(rows) - 1)
     out_im = Image.new("RGB", (W, H), (255, 255, 255))
     y = 0
@@ -219,7 +230,7 @@ def montage(srcs, cols=2, gut=10):
         x = 0
         for im in r:
             out_im.paste(im, (x, y))
-            x += cw + gut
+            x += im.width + gut
         y += h + gut
     name = "_panel_%s.png" % ("-".join(os.path.splitext(os.path.basename(x))[0] for x in srcs))[:80]
     path = os.path.join(BASE, "원고_그림", name)
