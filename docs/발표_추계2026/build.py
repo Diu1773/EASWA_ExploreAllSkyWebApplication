@@ -162,52 +162,37 @@ bullets(sl, M, y, W - 2 * M, [
 ], size=18, gap=11)
 cite(sl, "교육부 (2022) 과학과 교육과정 [별책 9]")
 
-# ═════ 3. 기존 웹의 지형 — 두 갈래 ════════════════════════════════════
+# ═════ 3. 기존 웹의 지형 — 두 갈래를 화면으로 ═════════════════════════
 sl = S()
 y = title(sl, "기존 웹 환경",
-          "자료 제공 서비스는 탐구 흐름이 없고, 교육 지향 환경은 자료와 주제가 미리 정해져 있음")
+          "자료 제공 서비스는 탐구 흐름이 없고, 교육 지향 환경은 주제가 고정되고 분석은 밖으로 넘김")
 
-CW = 5.95
-LX, RX = M, M + CW + 0.25
+IW = 5.92
+LX, RX = M, M + IW + 0.25
+IY, IH = y + 0.02, 3.35
+pic(sl, "svc_simbad.png", LX, IY, IW, IH, root=HERE, top=True)
+pic(sl, "svc_voyages.png", RX, IY, IW, IH, root=HERE, top=True)
 
+CY = IY + IW / 1.8 + 0.16
+for x, head, sub in (
+    (LX, "자료 제공 서비스",
+     "SIMBAD · VizieR · WorldWide Telescope · ESASky\n"
+     "천체명·좌표·카탈로그에서 시작. 분석과 탐구 흐름은 서비스 밖의 몫"),
+    (RX, "교육 지향 환경",
+     "SDSS Voyages · ESA CESAR · Rubin · Agent Exoplanet(운영 종료) 등\n"
+     "주제가 고정. 자료를 그리려면 Excel·Google Sheets 가 필요"),
+):
+    f = tb(sl, x, CY, IW, 1.0)
+    put(f, head, 16, ACC, True, first=True, space_after=3)
+    for line in sub.split("\n"):
+        put(f, line, 12.5, BODY, line=1.2, space_after=2)
 
-def col(x, head, note, items, tail):
-    f = tb(sl, x, y + 0.02, CW, 0.4)
-    put(f, head, 17, ACC, True, first=True, space_after=2)
-    put(f, note, 12, GREY)
-    g = tb(sl, x, y + 0.82, CW, 3.3)
-    for k, t in enumerate(items):
-        put(g, t, 13, BODY, space_after=9, first=(k == 0), line=1.18)
-    h = tb(sl, x, y + 3.74, CW, 0.85)
-    put(h, tail, 14, ACC, True, first=True, line=1.2)
-
-
-col(LX, "자료 제공 서비스", "네 곳을 학교 활용 관점에서 워크스루 (사례분석 대상)", [
-    "SIMBAD — 천체명·좌표로 식별 정보와 문헌 확인 (Wenger et al., 2000). "
-    "탐구 분석용 원자료는 따로 구해야 함",
-    "VizieR — 카탈로그·표를 조건 검색 (Ochsenbein et al., 2000). 항목·단위 선택이 부담",
-    "WorldWide Telescope — 하늘 지도 위 시각 탐색 (Rosenfield et al., 2018). "
-    "정량 분석은 외부로 위임",
-    "ESASky — 미션·파장별 통합 탐색과 내려받기 (Baines et al., 2017). "
-    "자료 판단과 탐구 연계는 학습자 몫",
-], "→ 질문에서 출발하는 진입 경로는 없었음")
-
-col(RX, "교육 지향 환경", "탐구 흐름은 이미 갖추고 있어 사례분석에서는 제외", [
-    "Agent Exoplanet (LCO) — 공개 외계행성 자료로 웹에서 측광·광도곡선. "
-    "2026년 9월 확인 시 운영 종료",
-    "DIY Planet Search — 위 후속. 학습자가 원격 망원경으로 직접 얻은 영상을 사용",
-    "Planet Hunters · Galaxy Zoo — 대중이 관측자료를 분류·검토 "
-    "(Fischer et al., 2012; Raddick et al., 2019)",
-    "WWT 기반 교육 프로그램 (Guo et al., 2024; Udomprasert et al., 2012) · "
-    "SDSS Voyages · ESA CESAR · Rubin Observatory 온라인 탐구활동 "
-    "(Herrold and Prather, 2023)",
-], "→ 학습 주제와 자료 유형이 미리 정해져 있음")
-
-rule(sl, H - 1.30)
-f = tb(sl, M, H - 1.12, W - 2 * M, 0.7)
-put(f, "EASWA 의 자리 — 공개 아카이브 자료를 쓰면서, 자료 구조가 다른 세 주제를 "
-       "같은 탐구 흐름에 둠", 17, ACC, True, first=True)
-cite(sl, "목록과 판정은 논문 1.2 · 3.2 · 표 3. 네 서비스의 진입 화면과 교사 장벽 응답은 부록 2.")
+rule(sl, H - 0.98)
+f = tb(sl, M, H - 0.84, W - 2 * M, 0.5)
+put(f, "EASWA — 공개 아카이브 자료를 쓰면서, 자료 구조가 다른 세 주제를 같은 탐구 흐름 "
+       "안에서 분석까지", 16, ACC, True, first=True)
+cite(sl, "SIMBAD 2026-07 워크스루 · SDSS Voyages 2026-09-11 확인. "
+         "네 서비스 전체 화면과 교사 장벽 응답은 부록 2, 분석 기준은 논문 표 2·3.")
 
 # ═════ 4. EASWA 개요 ══════════════════════════════════════════════════
 sl = S()
