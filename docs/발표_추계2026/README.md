@@ -12,18 +12,25 @@
 ## 만드는 법
 
 ```
-python -X utf8 docs/발표_추계2026/fig_table7.py        # 표 7 그림 (흰 바탕)
-python -X utf8 docs/발표_추계2026/fig_review.py        # 표 8 그림 (흰 바탕)
-python -X utf8 docs/발표_추계2026/fig_table7_dark.py   # 다크판
-python -X utf8 docs/발표_추계2026/fig_review_dark.py   # 다크판
+python -X utf8 docs/make_survey_figs.py                # 사용자 검토 그림 (논문용 정본)
+python -X utf8 docs/발표_추계2026/fig_survey_dark.py   # 그 다크판
+python -X utf8 docs/발표_추계2026/fig_table7.py        # 표 7 그림
+python -X utf8 docs/발표_추계2026/fig_table7_dark.py   # 그 다크판
 python -X utf8 docs/발표_추계2026/build.py             # 흰 바탕
 python -X utf8 docs/발표_추계2026/build.py --dark      # EASWA 서식
 python -X utf8 docs/발표_추계2026/notes.py             # 두 파일에 노트를 넣는다
 ```
 
 산출물은 `Desktop/Me/ERP2026_Cosmos/추계학술발표회/` 에 나온다.
-그림 스크립트는 스크래치패드의 `deck/` 를 기준으로 상대 경로를 쓰므로,
-저장소에서 돌릴 때는 `deck/` 디렉터리를 만들어 두거나 경로를 고쳐야 한다.
+`build.py` 는 그림을 자기 디렉터리에서 찾으므로 위 네 그림이 옆에 있어야 한다.
+
+## 그림은 논문과 같은 것을 쓴다
+
+사용자 검토 그림 둘(`fig_survey_likert.png` · `fig_survey_needs.png`)은
+**다른 세션이 논문용으로 만든 `docs/make_survey_figs.py` 의 산출물이다.**
+발표와 논문이 같은 자료를 다르게 그리면 안 되므로 그것을 그대로 가져온다.
+`fig_survey_dark.py` 는 그 스크립트의 사본으로 **색과 저장 위치만 바꾼 것이다** —
+자료와 문항 순서는 손대지 않는다. 원본이 바뀌면 이 사본도 다시 만들어야 한다.
 
 ## 서식 두 벌
 
@@ -48,9 +55,10 @@ python -X utf8 docs/발표_추계2026/notes.py             # 두 파일에 노�
 | 8 | 생성형 AI 코딩 도구로 만들었고 그래서 따로 검증했다 | 6:40 |
 | 9 | 결과 ① 재현성과 WASP-121 b 조건별 분해 | 7:50 |
 | 10 | 결과 ② 남은 차이와 확인 못 한 것 | 9:20 |
-| 11 | 결과 ③ 교사 26명 검토 | 10:00 |
-| 12 | 현장 적용 + 결론 | 11:00 |
-| 13 | 참고문헌 | — |
+| 11 | 결과 ③ 교사 26명 반응 문항 (논문 그림 A) | 10:00 |
+| 12 | 도움 수준과 보완 요구 (논문 그림 B) | 11:00 |
+| 13 | 결론 | 11:35 |
+| 14 | 참고문헌 | — |
 
 ## 못 하는 주장 — 슬라이드에서 지킨 것
 

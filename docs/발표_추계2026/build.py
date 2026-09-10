@@ -277,53 +277,39 @@ bullets(sl, M, y + 0.1, W - 2 * M, [
 ], size=18, gap=14)
 
 # ═════ 11. 결과 ③ 사용자 검토 ═════════════════════════════════════════
+# 그림 둘은 다른 세션이 논문용으로 만든 정본이다(docs/make_survey_figs.py).
+# 발표와 논문이 같은 그림을 쓰도록 그것을 그대로 가져온다. 다크판은 색만 바꾼 사본이다.
 sl = S()
 y = title(sl, "현직·예비교사 26명 검토에서 실행 부담은 낮았고, 기준값 해석은 과제로 남았다")
-pic(sl, "fig_review%s.png" % CS, M, y - 0.02, W - 2 * M, H - y - 0.62, root=HERE)
-cite(sl, "1차 현직교사 중심 13명 (2026-07-24) · 2차 예비교사 13명 (2026-09-06~07). 5점 척도.")
+pic(sl, "fig_survey_likert%s.png" % CS, M, y - 0.02, W - 2 * M, H - y - 0.62, root=HERE)
+cite(sl, "1차 현직교사 중심 13명 (2026-07-24) · 2차 예비교사 13명 (2026-09-06~07). "
+         "5점 척도. * 는 역채점한 부정 진술.")
 
-# ═════ 12. 현장 적용 + 결론 ═══════════════════════════════════════════
+# ═════ 12. 현장 적용 ══════════════════════════════════════════════════
 sl = S()
-y = title(sl, "현장 적용 요구는 수업 자료 · 해석 도움말 · 기준값 설명 세 갈래로 모인다",
-          "보완 요구 문항 (복수선택) · 1차 N=13 · 2차 N=13")
-items = [("수업용 활동지와 교사용 안내 자료", 6, 10),
-         ("그래프·분석 결과 해석 도움말", 8, 6),
-         ("기준값 비교 · 차이 원인 설명 · 결과 기록 강화", 7, 6),
-         ("추가 탐구 주제", 2, 6),
-         ("STEP별 질문과 생각해보기 보완", 4, 4)]
-top = y + 0.12
-for i, (lab, a, b) in enumerate(items):
-    yy = top + i * 0.62
-    g = tb(sl, M, yy + 0.05, 5.1, 0.45)
-    put(g, lab, 16, BODY, i < 3, first=True)
-    for k, (v, col) in enumerate(((a, ACC), (b, ACC2))):
-        bw = max(4.6 * v / 10.0, 0.06)
-        s = sl.shapes.add_shape(MSO_SHAPE.RECTANGLE, I(M + 5.35),
-                                I(yy + k * 0.24 + 0.02), I(bw), I(0.19))
-        s.fill.solid()
-        s.fill.fore_color.rgb = col
-        s.line.fill.background()
-        s.shadow.inherit = False
-        n = tb(sl, M + 5.35 + bw + 0.10, yy + k * 0.24 - 0.02, 0.9, 0.3)
-        put(n, "%d명" % v, 12, col, True, first=True)
-ly = top + len(items) * 0.62 + 0.02
-for k, (lab, col) in enumerate((("1차 현직 중심", ACC), ("2차 예비교사", ACC2))):
-    s = sl.shapes.add_shape(MSO_SHAPE.RECTANGLE, I(M + 5.35 + k * 2.0), I(ly + 0.05),
-                            I(0.28), I(0.15))
-    s.fill.solid()
-    s.fill.fore_color.rgb = col
-    s.line.fill.background()
-    s.shadow.inherit = False
-    g = tb(sl, M + 5.35 + k * 2.0 + 0.38, ly, 1.6, 0.3)
-    put(g, lab, 12, col, True, first=True)
-rule(sl, H - 1.62)
-f = tb(sl, M, H - 1.44, W - 2 * M, 1.0)
-put(f, "기술 실행을 지원하는 일과 자료 해석을 지원하는 일은 서로 다른 설계 과제다.",
-    19, ACC, True, first=True, space_after=7)
-put(f, "https://easwa-webapp.onrender.com   ·   박민준 · 한국교원대학교 지구과학교육과 · pmj3265@gmail.com",
-    13, GREY)
+y = title(sl, "해석에는 사람의 도움이 필요했고, 보완 요구는 수업 자료로 모인다")
+pic(sl, "fig_survey_needs%s.png" % CS, M, y - 0.05, W - 2 * M, H - y - 0.58, root=HERE)
+cite(sl, "(a) 2차 예비교사 13명 · (b) 두 조사의 보완 요구(복수선택).")
 
-# ═════ 13. 참고문헌 ═══════════════════════════════════════════════════
+# ═════ 13. 결론 ═══════════════════════════════════════════════════════
+sl = S()
+y = title(sl, "결론 — 자동화가 아니라 조건을 드러내는 것이 이 설계의 핵심이다")
+bullets(sl, M, y + 0.15, W - 2 * M, [
+    ("공개 천문 아카이브의 세 자료를 같은 일곱 단계 탐구 흐름에 올려, 코딩 없이 웹에서 "
+     "분석하도록 구현하였다.", BODY, False),
+    ("생성형 AI 코딩 도구로 만들었기 때문에 산출값을 따로 검증했다. 반복 실행에서 재현되었고, "
+     "문헌값과의 차이는 처리 조건으로 -12.8%에서 -2.8%까지 설명되었다.", BODY, False),
+    ("교사 26명 검토에서 실행 부담 완화는 확인되었고, 기준값 비교 화면의 해석 지원이 "
+     "다음 과제로 남았다.", BODY, False),
+    ("", BODY, False),
+    ("기술 실행을 지원하는 일과 자료 해석을 지원하는 일은 서로 다른 설계 과제다.", ACC, True),
+], size=18, gap=14)
+rule(sl, H - 1.38)
+f = tb(sl, M, H - 1.20, W - 2 * M, 0.9)
+put(f, "https://easwa-webapp.onrender.com", 18, ACC, True, first=True, space_after=5)
+put(f, "박민준 · 한국교원대학교 지구과학교육과 · pmj3265@gmail.com", 13, GREY)
+
+# ═════ 14. 참고문헌 ═══════════════════════════════════════════════════
 sl = S()
 y = title(sl, "참고문헌")
 refs = [
