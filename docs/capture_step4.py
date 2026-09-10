@@ -64,9 +64,9 @@ class CDP:
 def launch():
     # 프로필을 재사용하면 지난 실행의 sessionStorage 가 남아 6단계에서 시작한다
     # (2026-09-10, 「Step 1 로 (못 함)」이 그 증거였다). 매번 새로 만든다.
-    import shutil
-    profile = os.path.join(os.environ["TEMP"], "easwa_shot_profile")
-    shutil.rmtree(profile, ignore_errors=True)
+    # 같은 경로를 쓰면 앞 실행이 살아 있어 삭제가 조용히 실패하고, 진행 상태를
+    # 그대로 이어받아 4단계에서 시작한다(2026-09-10, 세 화면이 같은 그림이 됐다).
+    profile = os.path.join(os.environ["TEMP"], "easwa_shot_%d" % int(time.time()))
     p = subprocess.Popen([
         CHROME, "--headless=new", "--remote-debugging-port=%d" % PORT,
         "--window-size=%d,%d" % (W, H), "--force-device-scale-factor=2",
@@ -111,10 +111,21 @@ window.__click = async (t, exact, sec) => {
 """
 
 STEPS = [
+    # 진행 상태가 localStorage 에 남아 6단계에서 시작한다. 프로필을 지워도 그대로다
+    # (2026-09-10, 로그의 step=6 이 첫 줄부터 찍혔다). 비우고 다시 읽는다.
+    ("기록 지우고 새로 시작", """
+        // localStorage 를 비우고 다시 읽어도 4단계로 돌아온다(2026-09-10). 화면의
+        // 「기록 지우고 새로 시작」이 앱이 아는 방식으로 상태를 지운다.
+        window.confirm = () => true;
+        window.alert = () => {};
+        return (document.body.innerText.match(/Step (\d)/)||[])[1] || '?';""",
+     4, "step0_entry.png"),
     ("Step 1 로", "return await window.__click('다음 단계', true, 20);", 1),
     ("대상 WASP-6 b", "return await window.__click('WASP-6 b', false, 30);", 2),
-    ("Step 2 로", "return await window.__click('다음 단계', true, 20);", 2),
-    ("Step 3 로", "return await window.__click('다음 단계', true, 20);", 2),
+    ("Step 2 로", "return await window.__click('다음 단계', true, 20);", 3,
+     "step2_metadata.png"),
+    ("Step 3 로", "return await window.__click('다음 단계', true, 20);", 3,
+     "step3_conditions.png"),
     ("생각해보기 기록", """
         const end = Date.now() + 20000;
         let ta = null;
@@ -148,8 +159,9 @@ STEPS = [
         return rs.length;""", 2),
     ("차등측광 단계", "return await window.__click('차등측광 실행', false, 20);", 2),
     ("측광 실행", "return await window.__click('측광 실행', true, 20);", 5),
-    ("품질·광도곡선·적합 단계", """
-        for (let i = 0; i < 3; i++) {
+    ("품질·광도곡선까지", """
+        const log = [];
+        for (let i = 0; i < 2; i++) {
           const end = Date.now() + 90000;
           let b = null;
           while (Date.now() < end) {
@@ -158,20 +170,66 @@ STEPS = [
             if (b) break;
             await new Promise(r => setTimeout(r, 800));
           }
-          if (!b) return i;
+          if (!b) { log.push('no-btn'); break; }
+          log.push(b.textContent.trim().slice(0, 14));
           b.click();
-          await new Promise(r => setTimeout(r, 3000));
+          await new Promise(r => setTimeout(r, 5000));
         }
-        return 3;""", 3),
-    ("모델 적합 실행", "return await window.__click('식현상 모델 적합 실행', true, 30);", 5),
+        return log.join(' > ');""", 3),
+    ("ROI 를 관측 전체로", """
+        // ROI 가 좁으면 식현상이 한 번만 들어가 점이 스무 개 남짓이다. 관측 구간
+        // 전체를 잡으면 주기마다의 식이 위상 접기에서 겹쳐 곡선이 또렷해진다.
+        const end = Date.now() + 30000;
+        let ins = [];
+        while (Date.now() < end) {
+          ins = Array.from(document.querySelectorAll('input[type=number]'))
+                 .filter(x => x.min && x.max);
+          if (ins.length >= 2) break;
+          await new Promise(r => setTimeout(r, 600));
+        }
+        if (ins.length < 2) return 'no-input';
+        const set = Object.getOwnPropertyDescriptor(
+            window.HTMLInputElement.prototype, 'value').set;
+        for (const [el, v] of [[ins[0], ins[0].min], [ins[1], ins[1].max]]) {
+          set.call(el, String(v));
+          el.dispatchEvent(new Event('input', {bubbles: true}));
+          el.dispatchEvent(new Event('change', {bubbles: true}));
+          await new Promise(r => setTimeout(r, 900));
+        }
+        return ins[0].value + ' ~ ' + ins[1].value;""", 3),
+    ("모델 적합 단계로", """
+        return await window.__click('다음: 식현상 모델 적합', false, 30);""", 4),
+    ("위상 접기", """
+        const ok = await window.__click('위상 접기', true, 20);
+        return ok ? 'on' : 'not-found';""", 3),
+    ("모델 적합 실행", """
+        const ok = await window.__click('식현상 모델 적합 실행', true, 30);
+        return ok ? 'clicked' : 'not-found';""", 40),
     ("적합 완료 대기", """
         const end = Date.now() + 90000;
         while (Date.now() < end) {
-          if (/Rp\/R\*\s*=|반지름비\s*=/.test(document.body.innerText)) return true;
+          const t = document.body.innerText;
+          if (/측정값|Rp\/R\*\s*=|적합 결과/.test(t)) break;
           await new Promise(r => setTimeout(r, 1000));
         }
-        return false;""", 2),
+        return (document.body.innerText.match(/Step (\d)/)||[])[1] || '?';""", 2),
 ]
+
+
+def snap(c, fname):
+    """지금 화면을 파일로. 본문이 안쪽 div 에서 스크롤하므로 위로 올린 뒤 찍는다."""
+    c.js("""
+        const sc = Array.from(document.querySelectorAll('*'))
+            .find(e => e.scrollHeight > e.clientHeight + 200 && e.clientHeight > 400);
+        if (sc) sc.scrollTop = 0;
+        window.scrollTo(0, 0);
+        await new Promise(r => setTimeout(r, 900));
+        return 1;""")
+    shot = c.send("Page.captureScreenshot", format="png")
+    path = os.path.join(OUT_DIR, fname)
+    with open(path, "wb") as f:
+        f.write(base64.b64decode(shot["data"]))
+    print("    찍음 %s" % fname, flush=True)
 
 
 def main():
@@ -182,51 +240,63 @@ def main():
         c.send("Runtime.enable")
         c.send("Emulation.setDeviceMetricsOverride",
                width=W, height=H, deviceScaleFactor=2, mobile=False)
-        time.sleep(3)
+        # 진행 상태는 sessionStorage 에 있다 — localStorage 를 비우고 리로드해도
+        # 같은 탭이라 남는다(2026-09-10, 여덟 번 4~6단계에서 시작했다).
+        # CDP 로 오리진 저장소를 통째로 지우고 새로 연다.
+        try:
+            c.send("Storage.clearDataForOrigin",
+                   origin="http://localhost:5895", storageTypes="all")
+            c.send("Page.navigate", url=URL)
+            print("  저장소 비우고 다시 열었다", flush=True)
+        except Exception as e:
+            print("  ! 저장소 비우기 실패 —", str(e)[:100], flush=True)
+        time.sleep(6)
         c.js("%s return 1;" % HELPER)
-        for name, js, wait in STEPS:
+        for item in STEPS:
+            name, js, wait = item[0], item[1], item[2]
+            shot_name = item[3] if len(item) > 3 else None
             try:
-                v = c.js(js)
+                v = c.js(HELPER + js)
             except Exception as e:
-                print("  ! %s — %s" % (name, str(e)[:120]))
+                print("  ! %s — %s" % (name, str(e)[:160]), flush=True)
                 v = None
             time.sleep(wait)
-            print("  %-22s %s" % (name, "" if v else "(못 함)"))
+            try:
+                st = c.js("return (document.body.innerText.match(/Step (\d)/)||[])[1] || '?';")
+            except Exception:
+                st = "?"
+            print("  %-22s %-14r step=%s" % (name, v, st), flush=True)
+            if shot_name:
+                snap(c, shot_name)
 
         txt = c.js("return document.body.innerText.slice(0,4000);")
         if "Rp/R" not in (txt or ""):
             print("  ! 적합 결과를 찾지 못했다 — 화면만 찍는다")
 
-        # 적합 실행 뒤 화면이 Step 6 까지 흘러갔다(2026-09-10). 이미 지나온 단계는
-        # 위쪽 표시를 눌러 되돌아갈 수 있다. 4단계로 돌아가 그 화면을 찍는다.
-        back = c.js("""
-            const b = Array.from(document.querySelectorAll('button'))
-                .find(x => x.textContent.includes('분석·시각화'));
-            if (!b) return 'no-step4';
-            b.click();
-            await new Promise(r => setTimeout(r, 2500));
-            return (document.body.innerText.match(/Step \d/)||[''])[0];
-        """)
-        print("  4단계로 —", back)
-
-        # body 가 overflow:hidden 이고 안쪽 div 가 스크롤한다 — scrollHeight 로는
-        # 전체를 못 받는다(2026-09-10). 적합 그래프로 스크롤한 뒤 뷰포트를 찍는다.
+        # 4단계 화면은 적합 그래프가 가운데 오게
         moved = c.js("""
-            const cards = Array.from(document.querySelectorAll('div,section,article'));
-            const t = cards.reverse().find(e =>
-                /Rp\/R|반지름비/.test(e.textContent) && e.querySelector('svg')
-                && e.getBoundingClientRect().height > 200);
-            if (!t) return 'no-target';
-            t.scrollIntoView({block:'center'});
+            const gd = document.querySelector('.js-plotly-plot');
+            if (!gd) return 'no-plot';
+            gd.scrollIntoView({block: 'center'});
             await new Promise(r => setTimeout(r, 1200));
-            return Math.round(t.getBoundingClientRect().top);
+            return Math.round(gd.getBoundingClientRect().top);
         """)
-        print("  적합 그래프로 스크롤 —", moved)
+        print("  적합 그래프로 스크롤 —", moved, flush=True)
         time.sleep(1.5)
         shot = c.send("Page.captureScreenshot", format="png")
-        path = os.path.join(OUT_DIR, "step4_analysis.png")
-        with open(path, "wb") as f:
+        with open(os.path.join(OUT_DIR, "step4_analysis.png"), "wb") as f:
             f.write(base64.b64decode(shot["data"]))
+        print("    찍음 step4_analysis.png", flush=True)
+
+        # 5·6단계도 이어서
+        for label, fname in (("기준값 비교", "step5_reference.png"),
+                             ("해석·기록", "step6_record.png")):
+            ok = c.js(HELPER + "return await window.__click('다음 단계', true, 30);")
+            time.sleep(6)
+            st = c.js("return (document.body.innerText.match(/Step (\d)/)||[])[1] || '?';")
+            print("  %s 로 %r step=%s" % (label, ok, st), flush=True)
+            snap(c, fname)
+        path = os.path.join(OUT_DIR, "step4_analysis.png")
         from PIL import Image
         with Image.open(path) as im:
             print("저장 — %s (%d×%d)" % (path, im.width, im.height))

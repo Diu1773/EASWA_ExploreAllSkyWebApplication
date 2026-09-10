@@ -109,8 +109,13 @@ def label_values(num):
     return got
 
 
-tabs = sorted((k[1] for k in caps if k[0] == '표'),
-              key=lambda s: (int(s.split('-')[0]), int(s.split('-')[1])))
+def _num(s):
+    """「4-19」와 「12」를 함께 정렬한다 — 부록 표를 나누면서 한 자리 번호가 생겼다."""
+    parts = [int(x) for x in s.split('-') if x.isdigit()]
+    return tuple(parts) + (0,) * (2 - len(parts))
+
+
+tabs = sorted((k[1] for k in caps if k[0] == '표'), key=_num)
 vals = {t: label_values(t) for t in tabs}
 clash = []
 for i, a in enumerate(tabs):
