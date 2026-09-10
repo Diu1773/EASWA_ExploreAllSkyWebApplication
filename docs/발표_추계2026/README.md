@@ -130,18 +130,22 @@ python -X utf8 docs/발표_추계2026/notes.py        # 노트를 넣는다
 | SIMBAD · VizieR · WorldWide Telescope · ESASky | Agent Exoplanet · DIY Planet Search · SDSS Voyages · ESA CESAR · Rubin |
 | 천체명·좌표·카탈로그에서 시작. 분석과 탐구 흐름은 서비스 밖의 몫 | 주제가 고정. 가장 가까운 Agent Exoplanet 은 2026-09 확인 시 운영 종료 |
 
-**Agent Exoplanet 을 고른 이유** — LCO 가 만든 것으로 **공개 외계행성 자료로 웹에서
-밝기를 재고 광도곡선을 만드는, 이 연구와 가장 가까운 선례다.** 캡처에 목표성·비교성·
-하늘 영역 표시가 그대로 보인다 — 6장에서 보여줄 EASWA 의 분석 조건 화면과 같은 개념이다.
+**오른쪽은 «활동을 하는 화면»이어야 한다.** 사장님 지시 — *「뭔가 교육적인걸 하는
+화면을 담고싶은데」*. 첫 화면이나 소개 페이지로는 그 갈래가 무엇을 하는지 안 보인다.
 
-그런데 첫 화면 위쪽 노란 띠가 **Mission End — 「Agent Exoplanet is no longer active,
-this is a legacy website」**다. 가장 가까운 선례가 문을 닫았다는 사실을 화면이 말해 준다.
+**Agent Exoplanet 의 활동 화면은 더 이상 없다.** 2026-09-11 확인 — 첫 화면만 남고
+`/planets/`·`/briefing/` 은 Access Denied 다. LCO 가 보존 사이트로만 남겨 두었다.
+그 첫 화면 캡처는 `사례분석_기록/agent_exoplanet_2026-09-11.png` 에 있고,
+「Mission End — no longer active」 띠가 찍혀 있다.
 
-처음에는 **SDSS Voyages** 를 골랐다가 사장님이 물리셨다 — *「아니 agents?뭐 그런걸로
-하지」*. 같은 외계행성 식현상 도메인이라 비교가 훨씬 선명하다. SDSS Voyages 캡처도
-`사례분석_기록/sdss_voyages_expeditions_2026-09-11.png` 에 남겨 두었다. 그 사이트는
-안내문에 **「자료를 그리려면 Excel 이나 Google Sheets 가 필요하다」**고 적어 두었는데,
-교육용 환경도 분석은 밖으로 넘긴다는 근거라 **3장 발표 노트에 넣어 두었다.**
+**그래서 SDSS Voyages 의 성단 활동 화면을 쓴다.** 살아 있고 실제 활동 페이지다.
+색등급도 그림과 「Color-Magnitude Diagrams ⭐⭐⭐」 절, GO 단추가 함께 보인다.
+**EASWA 의 Gaia 성단 색등급도 모듈과 같은 주제**라 비교가 직접 선다 — 저쪽은
+안내문에 **「자료를 그리려면 Excel 이나 Google Sheets 가 필요하다」**고 적어 두었고,
+EASWA 는 그 작도와 등시선 맞춤을 브라우저 안에서 한다.
+
+Planet Hunters TESS 분류 화면도 후보였으나 **튜토리얼 팝업이 첫 방문마다 떠서
+헤드리스로는 깨끗하게 찍히지 않는다**(localStorage 에 표시가 남지 않는다).
 
 아래에 **EASWA 의 자리**를 한 줄로 둔다 — 「공개 아카이브 자료를 쓰면서, 자료 구조가
 다른 세 주제를 같은 탐구 흐름 안에서 분석까지」. **「최초」라고 쓰지 않는다.**
