@@ -128,9 +128,14 @@ export function FitOverlayPlot({
     const x1 = xMax + xPad;
     const xOf = (p: number) => L + ((p - x0) / (x1 - x0)) * innerW;
 
-    // Expected model: scale the fitted model's dip by catalog/fit depth ratio.
+    // Expected model: scale the fitted model's dip so that it corresponds to the
+    // reference Rp/R* the legend names. Scaling by the catalog *depth* instead
+    // drew a curve for sqrt(depth) — 0.1552 for WASP-6 b — while the legend read
+    // "catalog Rp/R* = 0.1446" (2026-09-11, domain review). The two must agree.
     const fitDepth = fit.rpRs * fit.rpRs;
-    const k = refDepth != null && fitDepth > 0 ? refDepth / 100 / fitDepth : null;
+    const k = archiveRpRs != null && fitDepth > 0
+      ? (archiveRpRs * archiveRpRs) / fitDepth
+      : refDepth != null && fitDepth > 0 ? refDepth / 100 / fitDepth : null;
     const expected = k != null ? curve.model.map((m) => 1 - k * (1 - m)) : null;
 
     const allY = [...curve.flux, ...curve.model, ...(expected ?? [])];
@@ -249,8 +254,8 @@ export function FitOverlayPlot({
       </svg>
       <p className="transit-hops-caption">
         {ko
-          ? '점 = 내 관측(위상 접기) · 실선 = 내 적합 · 점선 = 카탈로그 깊이를 내 적합 모양에 적용한 기대 모델. 두 곡선의 깊이 차이가 곧 측정-기준 차이입니다.'
-          : 'Points = my phase-folded data · solid = my fit · dashed = expected model (catalog depth applied to my fit shape). The depth gap between the curves IS the measured-vs-reference difference.'}
+          ? '점 = 내 관측(위상 접기) · 실선 = 내 적합 · 점선 = 범례에 적힌 문헌 반지름비를 내 적합 모양에 적용한 기대 모델. 두 곡선의 깊이 차이가 곧 측정-기준 차이입니다.'
+          : 'Points = my phase-folded data · solid = my fit · dashed = expected model (the reference Rp/R* named in the legend, applied to my fit shape). The depth gap between the curves IS the measured-vs-reference difference.'}
       </p>
     </div>
   );
@@ -442,8 +447,12 @@ export function TransitComparison({ fit, target }: TransitComparisonProps) {
 
       <div className="inquiry-callout">
         {lang === 'ko'
-          ? '여기 문헌값은 NASA Exoplanet Archive가 주는 식 깊이에서 √(식 깊이)로 되짚어 계산한 것입니다. 논문이 직접 싣는 Rp/R*는 주연감광까지 함께 맞춰 얻은 값이라 이 되짚은 값과는 원래 조금 다릅니다. 그러니 두 값이 벌어졌다고 해서 측정이 틀린 것은 아닙니다. 차이가 어디서 왔는지는 위의 σ 배수와 비교성 수·산포, 잔차, 그리고 내가 쓴 구경·ROI 설정을 함께 보면서 판단해 보세요.'
-          : 'This reference comes from working backwards from the transit depth in the NASA Exoplanet Archive, as √(depth). Papers that report Rp/R* directly fit it together with limb darkening, so their value already differs a little from this back-calculation. A gap between the two does not mean your measurement is wrong. To work out where the difference came from, read the σ multiple above together with the comparison-star count and scatter, the residuals, and the aperture and ROI settings you used.'}
+          ? (rpRsDerived
+            ? '여기 문헌 Rp/R*는 아카이브에 그 값이 실려 있지 않아 식 깊이에서 √(식 깊이)로 되짚어 계산한 것입니다. 논문이 직접 싣는 Rp/R*는 주연감광까지 함께 맞춰 얻은 값이라 이 되짚은 값보다 조금 작습니다. 그러니 두 값이 벌어졌다고 해서 측정이 틀린 것은 아닙니다. 차이가 어디서 왔는지는 위의 σ 배수와 비교성 수·산포, 잔차, 그리고 내가 쓴 구경·ROI 설정을 함께 보면서 판단해 보세요.'
+            : '여기 문헌 Rp/R*는 NASA Exoplanet Archive에 실린 값입니다. 논문이 주연감광까지 함께 맞춰 얻은 값이라, 위 식 깊이 행의 문헌값에 √를 씌운 것과는 같지 않습니다. 같은 행성의 두 수치가 서로 다른 방식으로 나온 것이므로 각각 같은 종류끼리 견주세요. 차이가 어디서 왔는지는 위의 σ 배수와 비교성 수·산포, 잔차, 그리고 내가 쓴 구경·ROI 설정을 함께 보면서 판단해 보세요.')
+          : (rpRsDerived
+            ? 'The archive does not list Rp/R* for this planet, so the reference here was worked backwards from the transit depth as √(depth). Papers that report Rp/R* directly fit it together with limb darkening, so their value is a little smaller than this back-calculation. A gap between the two does not mean your measurement is wrong. To work out where the difference came from, read the σ multiple above together with the comparison-star count and scatter, the residuals, and the aperture and ROI settings you used.'
+            : 'The reference Rp/R* here is the value listed in the NASA Exoplanet Archive. Papers fit it together with limb darkening, so it is not the square root of the reference depth in the row above. The two reference numbers come from different procedures, so compare like with like. To work out where the difference came from, read the σ multiple above together with the comparison-star count and scatter, the residuals, and the aperture and ROI settings you used.')}
       </div>
     </section>
   );
