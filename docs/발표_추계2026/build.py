@@ -166,7 +166,11 @@ cite(sl, "교육부 (2022) 과학과 교육과정 [별책 9]")
 sl = S()
 y = title(sl, "기존 서비스 분석",
           "네 서비스 모두 탐구 흐름은 사용자 몫이었음")
-pic(sl, "case_stage1_entry.png", M, y, 7.1, (H - 1.28) - y - 0.15)
+f = tb(sl, M, y - 0.10, W - 2 * M, 0.36)
+put(f, "자료 제공이 주 기능인 서비스를 목적 표집함. 특정 학습 활동을 미리 담아 둔 "
+       "교육 지향 환경은 탐구 흐름을 이미 갖추고 있어 제외 (부록)", 13, GREY, first=True)
+y += 0.32
+pic(sl, "case_stage1_entry.png", M, y, 7.1, (H - 1.28) - y - 0.12)
 bullets(sl, M + 7.5, y + 0.2, W - M - 7.5 - M + 0.4, [
     ("SIMBAD — 천체명·좌표로 식별 정보와 문헌을 확인 (Wenger et al., 2000). "
      "탐구 분석용 원자료는 따로 구해야 함", BODY, False),
@@ -372,6 +376,29 @@ y += 0.30
 pic(sl, "fig_table7.png", M, y - 0.02, W - 2 * M, H - y - 0.62, root=HERE)
 cite(sl, "Daylan et al. (2021)과 같은 자료(TESS 섹터 7 · 2분 케이던스)를 별도 스크립트로 분석. "
          "플랫폼의 전체 실행 경로와는 다름. 남은 -2.8%와 비교성 효과는 나누지 못함.")
+
+# ═════ 부록 2. 교육 지향 환경 — 「왜 뺐냐」는 물음에 답한다 ═══════════
+sl = S()
+y = title(sl, "부록 · 검토했으나 사례분석에서 제외한 교육 지향 환경",
+          "학교 탐구 흐름을 이미 갖추고 있어 「자료만 주는 서비스에 무엇이 남는가」를 "
+          "묻는 이 분석의 대상이 아님")
+bullets(sl, M, y + 0.05, W - 2 * M, [
+    ("Agent Exoplanet (Las Cumbres Observatory) — 공개 외계행성 자료로 웹에서 밝기를 재고 "
+     "광도곡선을 구성. 2026년 9월 확인 시 운영 종료, 보존 안내만 표시됨", BODY, False),
+    ("DIY Planet Search — 위 후속. 학습자가 원격 망원경으로 «직접 얻은» 영상을 사용함. "
+     "공개 아카이브 자료를 쓰는 이 연구와 자료원이 다름", BODY, False),
+    ("Planet Hunters · Galaxy Zoo — 대중을 실제 관측자료의 분류·검토에 참여시킴 "
+     "(Fischer et al., 2012; Raddick et al., 2019). 분석이 아니라 분류가 과업임", BODY, False),
+    ("WorldWide Telescope 기반 교육 프로그램 (Guo et al., 2024; Udomprasert et al., 2012) · "
+     "SDSS Voyages · ESA CESAR · Rubin Observatory 온라인 탐구활동 (Herrold and Prather, 2023) — "
+     "특정 학습 주제와 활동이 미리 짜여 있음", BODY, False),
+    ("시민 과학자의 소형 망원경을 외계행성 추적 관측에 쓰는 방안도 제시됨 "
+     "(Zellem et al., 2020)", BODY, False),
+    ("", BODY, False),
+    ("→ 이 연구가 물은 것은 «학교 탐구 흐름이 없는» 자료 서비스에서 교사가 무엇을 더 "
+     "해야 하는가임. 위 환경들은 그 흐름을 이미 갖추고 있어 같은 잣대로 잴 수 없음", ACC, True),
+], size=15, gap=10)
+cite(sl, "논문 1.2 · 3.2. 목록과 서지는 논문 참고문헌에 실려 있음.")
 
 os.makedirs(DEST, exist_ok=True)
 prs.save(OUT)
