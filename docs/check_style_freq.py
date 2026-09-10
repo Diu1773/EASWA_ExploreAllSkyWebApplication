@@ -94,8 +94,12 @@ PATTERNS = [
 ASCII_ONLY = re.compile(r"^[A-Za-z0-9 ,.:;()&/-]+$")
 
 
-def sections(md):
-    """(절 이름, 문단) 목록. 표·그림·참고문헌·부록·영문초록은 뺀다."""
+def sections(md, caps=True):
+    """(절 이름, 문단) 목록. 참고문헌·부록·영문초록·표는 뺀다.
+
+    캡션도 사람이 읽는 문장이라 함께 센다. 빼 두었더니 그림 3 캡션의 「천체명이나
+    좌표가 아니라」가 본문에서 다 걷힌 뒤에도 남아 있었다(2026-09-10).
+    """
     cur, out, on = "표제부", [], False
     for ln in md.replace("\r\n", "\n").split("\n"):
         s = ln.strip()
@@ -107,8 +111,12 @@ def sections(md):
             continue
         if not on or not s or s.startswith("|") or s.startswith("![") or s == "---":
             continue
-        if re.match(r"^\*\*(표|그림)\s", s) or s.startswith("*교신저자"):
+        if s.startswith("*교신저자"):
             continue
+        if re.match(r"^\*\*(표|그림)\s", s):
+            if not caps:
+                continue
+            cur = "캡션 " + re.sub(r"^\*\*((?:표|그림) \d+)\..*$", r"\1", s)
         if ASCII_ONLY.match(s):
             continue
         out.append((cur, re.sub(r"\*\*(.+?)\*\*", r"\1", s)))
