@@ -261,36 +261,11 @@ bullets(sl, M, y, W - 2 * M, [
     ("", BODY, False),
     ("→ 산출값은 문헌값과 대조, 화면 안내 문장은 사용자 검토로 점검",
      ACC, True),
+    ("같은 자료·같은 설정을 반복 실행하면 WASP-6 b 반지름비가 0.14534로 재현됨. "
+     "처리 조건을 바꾼 민감도 점검 결과는 부록에 둠", BODY, False),
     ("개발 방식 간 비교는 하지 않았음. 시간·비용을 기록하지 않아 빨랐다고 말할 수 없음", GREY, False),
 ], size=18, gap=13)
 cite(sl, "Michels et al. (2026) · Song et al. (2026) · Uddin (2026)")
-
-# ═════ 9. 결과 ① 검증 ═════════════════════════════════════════════════
-sl = S()
-y = title(sl, "WASP-121 b 처리 조건별 결과",
-          "-12.8%가 -2.8%까지 좁혀짐")
-f = tb(sl, M, y - 0.08, W - 2 * M, 0.34)
-put(f, "같은 설정 반복 실행 시 WASP-6 b 반지름비 0.14534로 재현. "
-       "재현성과 정확도는 다른 문제임", 13, GREY, first=True)
-y += 0.30
-pic(sl, "fig_table7.png", M, y - 0.02, W - 2 * M, H - y - 0.62, root=HERE)
-cite(sl, "Daylan et al. (2021)과 같은 자료(TESS 섹터 7 · 2분 케이던스)를 별도 스크립트로 분석. "
-         "플랫폼의 전체 실행 경로와는 다르다.")
-
-# ═════ 10. 결과 ② 한계 ════════════════════════════════════════════════
-sl = S()
-y = title(sl, "점검의 한계",
-          "남은 -2.8%와 비교성의 효과는 나누지 못함")
-bullets(sl, M, y + 0.1, W - 2 * M, [
-    ("다섯 조건은 서로 다른 처리를 여러 개 함께 포함 — 표의 순서대로 누적되지 않고 "
-     "한 요인의 효과로도 읽을 수 없음", BODY, False),
-    ("남은 -2.8%에는 기준선 처리·모델 설정·적합 방법 등 통제하지 않은 차이가 함께 들어 있음", BODY, False),
-    ("표준 광도곡선 파일의 화소 범위에 비교성이 없어 비교성의 수·종류에 따른 변화는 확인하지 못함",
-     BODY, False),
-    ("", BODY, False),
-    ("교육적으로는 이 민감도가 오히려 자산임 — 조건을 드러내야 차이를 설명하는 활동이 성립",
-     ACC, True),
-], size=18, gap=14)
 
 # ═════ 11. 결과 ③ 사용자 검토 ═════════════════════════════════════════
 # 그림 둘은 다른 세션이 논문용으로 만든 정본이다(docs/make_survey_figs.py).
@@ -316,8 +291,8 @@ y = title(sl, "결론",
 bullets(sl, M, y + 0.15, W - 2 * M, [
     ("공개 천문 아카이브 세 자료를 같은 일곱 단계 흐름에 올려 코딩 없이 웹에서 "
      "분석하도록 구현함", BODY, False),
-    ("AI 코딩 도구로 만들었기에 산출값을 따로 검증함. 반복 실행에서 재현되었고 "
-     "문헌값 차이는 처리 조건으로 -12.8% → -2.8%까지 설명됨", BODY, False),
+    ("AI 코딩 도구로 만들었기에 산출값을 따로 검증함 — 반복 실행에서 재현되었고 "
+     "문헌값과 대조하였음", BODY, False),
     ("교사 26명 검토에서 실행 부담 완화는 확인, 기준값 비교 화면의 해석 지원이 "
      "다음 과제로 남음", BODY, False),
     ("", BODY, False),
@@ -332,9 +307,6 @@ put(f, "박민준 · 한국교원대학교 지구과학교육과 · pmj3265@gmai
 sl = S()
 y = title(sl, "참고문헌")
 refs = [
-    "Claret A (2017) Limb and gravity-darkening coefficients for the TESS satellite. A&A 600: A30.",
-    "Daylan T, Gunther M N, Mikal-Evans T, et al. (2021) TESS observations of the WASP-121 b phase curve. AJ 161: 131.",
-    "Delrez L, Santerne A, Almenara J-M, et al. (2016) High-precision multi-wavelength eclipse photometry of WASP-121 b. MNRAS 458: 4025-4043.",
     "Gaia Collaboration, Vallenari A, Brown A G A, et al. (2023) Gaia Data Release 3. A&A 674: A1.",
     "Kreidberg L (2015) batman: BAsic Transit Model cAlculatioN in Python. PASP 127: 1161-1165.",
     "Mandel K and Agol E (2002) Analytic light curves for planetary transit searches. ApJ 580: L171-L175.",
@@ -348,6 +320,18 @@ refs = [
 f = tb(sl, M, y, W - 2 * M, H - y - 0.6)
 for i, r in enumerate(refs):
     put(f, r, 13, BODY, space_after=6, first=(i == 0), line=1.1)
+
+# ═════ 부록. 질문이 나오면 넘긴다 ═════════════════════════════════════
+sl = S()
+y = title(sl, "부록 · WASP-121 b 처리 조건별 결과",
+          "-12.8%가 -2.8%까지 좁혀짐")
+f = tb(sl, M, y - 0.08, W - 2 * M, 0.34)
+put(f, "다섯 조건은 서로 다른 처리를 여러 개 함께 포함 — 순서대로 누적되지 않고 "
+       "한 요인의 효과로도 읽을 수 없음", 13, GREY, first=True)
+y += 0.30
+pic(sl, "fig_table7.png", M, y - 0.02, W - 2 * M, H - y - 0.62, root=HERE)
+cite(sl, "Daylan et al. (2021)과 같은 자료(TESS 섹터 7 · 2분 케이던스)를 별도 스크립트로 분석. "
+         "플랫폼의 전체 실행 경로와는 다름. 남은 -2.8%와 비교성 효과는 나누지 못함.")
 
 os.makedirs(DEST, exist_ok=True)
 prs.save(OUT)
