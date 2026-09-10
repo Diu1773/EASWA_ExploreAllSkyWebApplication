@@ -1,3 +1,4 @@
+import { catalogRadiusRatio } from '../../utils/targetFormat';
 import { useMemo } from 'react';
 import { useLangStore } from '../../i18n';
 import type { Target } from '../../types/target';
@@ -95,11 +96,14 @@ export function FitOverlayPlot({
   fit,
   refDepth,
   archiveRpRs,
+  archiveRpRsDerived,
   lang,
 }: {
   fit: SavedTransitFit;
   refDepth: number | null;
   archiveRpRs: number | null;
+  /** true 면 카탈로그 수록 Rp/R* 가 아니라 √(식 깊이) 로 환산한 값이다. */
+  archiveRpRsDerived: boolean;
   lang: string;
 }) {
   const ko = lang === 'ko';
@@ -235,8 +239,8 @@ export function FitOverlayPlot({
           <text className="hops-text" x={g.L + 50} y={g.mainT + 48}>
             {archiveRpRs != null
               ? ko
-                ? `기대 모델 (카탈로그 Rp/R* = ${fmt(archiveRpRs)})`
-                : `Expected model (catalog Rp/R* = ${fmt(archiveRpRs)})`
+                ? `기대 모델 (${archiveRpRsDerived ? '카탈로그 깊이 환산' : '카탈로그'} Rp/R* = ${fmt(archiveRpRs)})`
+                : `Expected model (${archiveRpRsDerived ? 'Rp/R* from catalog depth' : 'catalog Rp/R*'} = ${fmt(archiveRpRs)})`
               : ko
                 ? '기대 모델 (카탈로그 깊이 없음)'
                 : 'Expected model (no catalog depth)'}
@@ -260,10 +264,7 @@ export function FitOverlayPlot({
 export function TransitComparison({ fit, target }: TransitComparisonProps) {
   const lang = useLangStore((state) => state.lang);
   const measuredDepth = fit.rpRs * fit.rpRs * 100;
-  const archiveRpRs =
-    target?.transit_depth_pct != null && target.transit_depth_pct > 0
-      ? Math.sqrt(target.transit_depth_pct / 100)
-      : null;
+  const { value: archiveRpRs, derived: rpRsDerived } = catalogRadiusRatio(target);
   const refDepth = target?.transit_depth_pct ?? null;
   const refPeriod = target?.period_days ?? null;
   const hasCurve = !!(fit.curve && fit.curve.phase.length > 4);
@@ -276,7 +277,13 @@ export function TransitComparison({ fit, target }: TransitComparisonProps) {
       <h3>{target?.name ?? fit.targetId}</h3>
 
       {hasCurve && (
-        <FitOverlayPlot fit={fit} refDepth={refDepth} archiveRpRs={archiveRpRs} lang={lang} />
+        <FitOverlayPlot
+          fit={fit}
+          refDepth={refDepth}
+          archiveRpRs={archiveRpRs}
+          archiveRpRsDerived={rpRsDerived}
+          lang={lang}
+        />
       )}
 
       <div className="transit-compare-legend">

@@ -248,6 +248,13 @@ def _build_live_target(row: dict[str, Any]) -> dict[str, Any]:
         "period_days": float(row["pl_orbper"]),
         "magnitude_range": f"{host_vmag:.2f} V host",
         "transit_depth_pct": depth_pct,
+        # 카탈로그가 적합으로 구해 실은 반지름비. 식 깊이의 제곱근과는 다르다 —
+        # 주연감광 때문에 깊이는 (Rp/R*)² 보다 크므로 √깊이가 더 크게 나온다.
+        # WASP-6 b 는 수록값 0.1446 인데 √2.408% = 0.1552 다. 이 열이 없던 동안
+        # 화면이 √깊이를 「카탈로그 Rp/R*」로 표시했다 (2026-09-10).
+        "radius_ratio": (
+            float(row["pl_ratror"]) if row.get("pl_ratror") is not None else None
+        ),
         "transit_duration_hours": duration_hours,
         "description": description,
         "topic_id": "exoplanet_transit",
@@ -274,7 +281,7 @@ def _live_target_catalog(
     query = f"""
         select top {limit}
             pl_name, ra, dec, pl_orbper, sy_vmag, pl_trandep, pl_trandur,
-            st_teff, st_logg, st_met
+            pl_ratror, st_teff, st_logg, st_met
         from pscomppars
         where tran_flag = 1
             and sy_tmag is not null
@@ -337,7 +344,7 @@ def _live_target_by_id(target_id: str) -> dict[str, Any] | None:
     query = f"""
         select top 20
             pl_name, ra, dec, pl_orbper, sy_vmag, pl_trandep, pl_trandur,
-            st_teff, st_logg, st_met
+            pl_ratror, st_teff, st_logg, st_met
         from pscomppars
         where tran_flag = 1
             and sy_tmag is not null

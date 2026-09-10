@@ -1,3 +1,4 @@
+import { catalogRadiusRatio } from '../../utils/targetFormat';
 import { Link } from 'react-router-dom';
 import { useLangStore } from '../../i18n';
 import type { SavedTransitFit } from '../../workflows/transit/fitBridge';
@@ -38,8 +39,7 @@ export function TransitStep6Rail({ fit, target, moduleHref }: TransitStep6RailPr
     typeof target?.transit_depth_pct === 'number' && Number.isFinite(target.transit_depth_pct)
       ? target.transit_depth_pct
       : null;
-  const referenceRpRs =
-    referenceDepthPct !== null && referenceDepthPct >= 0 ? Math.sqrt(referenceDepthPct / 100) : null;
+  const { value: referenceRpRs, derived: referenceRpRsDerived } = catalogRadiusRatio(target);
 
   const rpRsDelta =
     referenceRpRs !== null && referenceRpRs !== 0
@@ -63,6 +63,7 @@ export function TransitStep6Rail({ fit, target, moduleHref }: TransitStep6RailPr
             fit={fit}
             refDepth={referenceDepthPct}
             archiveRpRs={referenceRpRs}
+            archiveRpRsDerived={referenceRpRsDerived}
             lang={lang}
           />
           <figcaption>

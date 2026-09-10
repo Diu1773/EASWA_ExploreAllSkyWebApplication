@@ -4,6 +4,8 @@ import type { TransitFitResponse } from '../../types/transitFit';
 export interface TransitValidationStatsInput {
   fitResult: TransitFitResponse;
   referenceDepthPct: number | null;
+  /** 카탈로그 수록 Rp/R*. 없으면 깊이에서 환산한다. */
+  referenceRadiusRatio?: number | null;
   referencePeriodDays: number | null;
   comparisonDiagnostics: TransitComparisonDiagnostic[];
 }
@@ -39,6 +41,8 @@ export interface TransitValidationStats {
   referenceComparison: {
     measuredDepthPct: number | null;
     referenceDepthPct: number | null;
+  /** 카탈로그 수록 Rp/R*. 없으면 깊이에서 환산한다. */
+  referenceRadiusRatio?: number | null;
     depthDifferencePctPoints: number | null;
     depthRelativeDifferencePct: number | null;
     measuredRpRs: number | null;
@@ -143,6 +147,7 @@ function pushFlagIf(
 export function computeTransitValidationStats({
   fitResult,
   referenceDepthPct,
+  referenceRadiusRatio,
   referencePeriodDays,
   comparisonDiagnostics,
 }: TransitValidationStatsInput): TransitValidationStats {
@@ -164,10 +169,17 @@ export function computeTransitValidationStats({
     ? fitResult.fitted_params.rp_rs
     : null;
   const measuredDepthPct = measuredRpRs === null ? null : measuredRpRs ** 2 * 100;
+  // 카탈로그가 적합으로 구한 Rp/R* 를 실어 두면 그것을 쓴다. 없을 때만 깊이에서
+  // 환산하는데, 주연감광 때문에 √깊이는 수록값보다 크게 나온다(2026-09-10).
   const referenceRpRs =
-    referenceDepthPct !== null && Number.isFinite(referenceDepthPct) && referenceDepthPct >= 0
-      ? Math.sqrt(referenceDepthPct / 100)
-      : null;
+    referenceRadiusRatio !== null &&
+    referenceRadiusRatio !== undefined &&
+    Number.isFinite(referenceRadiusRatio) &&
+    referenceRadiusRatio > 0
+      ? referenceRadiusRatio
+      : referenceDepthPct !== null && Number.isFinite(referenceDepthPct) && referenceDepthPct >= 0
+        ? Math.sqrt(referenceDepthPct / 100)
+        : null;
   const depthDifferencePctPoints =
     measuredDepthPct !== null && referenceDepthPct !== null
       ? measuredDepthPct - referenceDepthPct

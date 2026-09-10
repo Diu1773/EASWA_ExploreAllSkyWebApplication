@@ -684,6 +684,7 @@ export function TransitLab({
         ? computeTransitValidationStats({
             fitResult,
             referenceDepthPct: referenceTransitDepthPct,
+            referenceRadiusRatio: target?.radius_ratio ?? null,
             referencePeriodDays: target.period_days,
             comparisonDiagnostics: result?.comparison_diagnostics ?? [],
           })

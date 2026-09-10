@@ -25,6 +25,9 @@ export interface Target {
   period_days: number | null;
   magnitude_range: string;
   transit_depth_pct?: number | null;
+  /** 카탈로그가 적합으로 구해 실은 Rp/R*. 없으면 √(식 깊이) 로 대신하되 그때는
+   *  라벨에 「깊이 환산」을 밝힌다 — 주연감광 때문에 두 값은 같지 않다. */
+  radius_ratio?: number | null;
   transit_duration_hours?: number | null;
   description: string;
   topic_id: string;

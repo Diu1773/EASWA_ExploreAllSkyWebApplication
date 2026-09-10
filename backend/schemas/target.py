@@ -11,6 +11,8 @@ class Target(BaseModel):
     period_days: float | None = None
     magnitude_range: str
     transit_depth_pct: float | None = None
+    # 카탈로그 수록 반지름비. 없으면 화면이 √(식 깊이) 로 대신한다.
+    radius_ratio: float | None = None
     transit_duration_hours: float | None = None
     description: str
     topic_id: str

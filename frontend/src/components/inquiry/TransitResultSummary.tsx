@@ -1,3 +1,4 @@
+import { catalogRadiusRatio } from '../../utils/targetFormat';
 import { useLangStore } from '../../i18n';
 import type { SavedTransitFit } from '../../workflows/transit/fitBridge';
 import type { Target } from '../../types/target';
@@ -32,12 +33,17 @@ export function TransitResultSummary({ fit, targetName, target }: TransitResultS
     typeof target?.transit_depth_pct === 'number' && Number.isFinite(target.transit_depth_pct)
       ? target.transit_depth_pct
       : null;
-  const refRpRs = refDepthPct !== null && refDepthPct >= 0 ? Math.sqrt(refDepthPct / 100) : null;
+  const { value: refRpRs, derived: refRpRsDerived } = catalogRadiusRatio(target);
   const refPeriod =
     typeof target?.period_days === 'number' && Number.isFinite(target.period_days)
       ? target.period_days
       : null;
   const refLabel = lang === 'ko' ? '문헌' : 'ref';
+  // 카탈로그가 반지름비를 실어 두면 그 값을, 없을 때만 깊이에서 환산한 값을 쓴다.
+  // 환산한 경우에는 라벨을 달리해 학습자가 같은 방식으로 얻은 값이라고 읽지 않게 한다.
+  const refRatioLabel = refRpRsDerived
+    ? lang === 'ko' ? '문헌 깊이 환산' : 'from ref depth'
+    : refLabel;
 
   return (
     <section className="inquiry-info-panel transit-result-summary">
@@ -70,7 +76,7 @@ export function TransitResultSummary({ fit, targetName, target }: TransitResultS
           </span>
           {refRpRs !== null && (
             <span className="metric-sub">
-              {refLabel} {fmt(refRpRs)}
+              {refRatioLabel} {fmt(refRpRs)}
               {pctDelta(fit.rpRs, refRpRs) ? ` (${pctDelta(fit.rpRs, refRpRs)})` : ''}
             </span>
           )}

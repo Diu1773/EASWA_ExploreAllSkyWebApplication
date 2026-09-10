@@ -58,13 +58,23 @@ function derivedValuesFromTarget(target: Target | null | undefined): KeyValueFie
     typeof target.transit_depth_pct === 'number' && Number.isFinite(target.transit_depth_pct)
       ? target.transit_depth_pct / 100
       : null;
-  const estimatedRpRs = depthFraction !== null && depthFraction >= 0
-    ? Math.sqrt(depthFraction)
-    : null;
+  // 카탈로그 수록 Rp/R* 가 있으면 그것을, 없을 때만 √깊이를 쓴다.
+  const listedRpRs =
+    typeof target.radius_ratio === 'number' && Number.isFinite(target.radius_ratio) && target.radius_ratio > 0
+      ? target.radius_ratio
+      : null;
+  const estimatedRpRs =
+    listedRpRs ?? (depthFraction !== null && depthFraction >= 0 ? Math.sqrt(depthFraction) : null);
 
   return [
     literalField('target_depth', { ko: '카탈로그 식 깊이', en: 'Catalog transit depth' }, `${formatNumber(target.transit_depth_pct, 3)}%`),
-    literalField('estimated_rp_rs', { ko: '반지름비 Rp/R* (√depth 추정)', en: 'Radius ratio Rp/R* (√depth estimate)' }, estimatedRpRs === null ? 'n/a' : estimatedRpRs.toFixed(5)),
+    literalField(
+      'estimated_rp_rs',
+      listedRpRs !== null
+        ? { ko: '반지름비 Rp/R* (카탈로그)', en: 'Radius ratio Rp/R* (catalog)' }
+        : { ko: '반지름비 Rp/R* (√depth 추정)', en: 'Radius ratio Rp/R* (√depth estimate)' },
+      estimatedRpRs === null ? 'n/a' : estimatedRpRs.toFixed(5),
+    ),
     literalField('period', { ko: '카탈로그 주기', en: 'Catalog period' }, `${formatNumber(target.period_days, 6)} d`),
   ];
 }

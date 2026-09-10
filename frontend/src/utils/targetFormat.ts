@@ -89,3 +89,29 @@ export function buildTargetDescription(target: Target, lang: Lang): string {
   if (duration != null) text += ` Typical transit duration is ${duration.toFixed(2)} h.`;
   return text;
 }
+
+/**
+ * 카탈로그 기준 반지름비와 그 출처.
+ *
+ * 아카이브(pscomppars)는 `pl_ratror` 에 적합으로 구한 Rp/R* 를 싣는다. 그 열을
+ * 받아 오지 않던 동안 화면은 `√(pl_trandep)` 를 「카탈로그 Rp/R*」로 표시했는데,
+ * 주연감광 때문에 식 깊이는 (Rp/R*)² 보다 크므로 √깊이가 수록값보다 크게 나온다.
+ * WASP-6 b 는 수록값 0.1446 인데 √2.408% = 0.1552 였다 — 잘 맞은 측정(0.1426)이
+ * 8% 어긋난 것처럼 보였다 (2026-09-10).
+ *
+ * 수록값이 있으면 그것을 쓰고, 없을 때만 깊이에서 환산하되 `derived` 로 표시해
+ * 화면 라벨이 두 경우를 구별하게 한다.
+ */
+export function catalogRadiusRatio(
+  target: { radius_ratio?: number | null; transit_depth_pct?: number | null } | null | undefined,
+): { value: number | null; derived: boolean } {
+  const listed = target?.radius_ratio;
+  if (typeof listed === 'number' && Number.isFinite(listed) && listed > 0) {
+    return { value: listed, derived: false };
+  }
+  const depth = target?.transit_depth_pct;
+  if (typeof depth === 'number' && Number.isFinite(depth) && depth > 0) {
+    return { value: Math.sqrt(depth / 100), derived: true };
+  }
+  return { value: null, derived: false };
+}
