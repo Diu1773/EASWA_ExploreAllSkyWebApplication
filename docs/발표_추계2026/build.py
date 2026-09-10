@@ -211,6 +211,44 @@ sl = web_slide(
 cite(sl, "SDSS Voyages · Planet Hunters TESS 2026-09-11 확인. "
          "Agent Exoplanet(LCO)은 같은 갈래의 가장 가까운 선례였으나 운영 종료(부록 3).")
 
+# ═════ 개발 방식 ① 바이브 코딩 ═══════════════════════════════════════
+sl = S()
+y = title(sl, "개발 방식 ① 바이브 코딩",
+          "자연어로 의도를 적고 생성된 코드를 실행해 확인하는 방식이 전문 개발자 밖으로 퍼짐")
+bullets(sl, M, y + 0.05, W - 2 * M, [
+    ("전문 개발자가 아니어도 웹 응용을 구성할 수 있는 범위가 넓어졌음 — 실행·생산성·위험을 "
+     "함께 정리한 리뷰가 나옴 (Michels et al., 2026)", BODY, False),
+    ("K-12 교사가 이 방식으로 수업용 학습 도구를 직접 만드는 과정을 다룬 연구 — 8주 워크숍, "
+     "교사 3명·멘토 4명 (Song et al., 2026)", BODY, False),
+    ("프로그래밍 수업의 IDE 활동 기록을 읽어 학습 과정을 보여 주는 웹 응용을 며칠 만에 만들어 "
+     "수강생 160명 수업에 시범 적용 (Taveter and Lepp, 2026)", BODY, False),
+    ("코딩 배경이 없는 임상의가 진료 현장의 문제를 푸는 도구를 직접 만드는 사례 "
+     "(Ong et al., 2026)", BODY, False),
+    ("", BODY, False),
+    ("→ 도메인을 아는 사람이 «자기 문제를 푸는 도구»를 직접 만드는 흐름. 이 연구도 그 자리에 있음",
+     ACC, True),
+], size=17, gap=12)
+cite(sl, "arXiv:2608.20446 · 2607.05406 · 2607.24757 · 2604.22604. 2026-09-11 초록 확인.")
+
+# ═════ 개발 방식 ② 그래서 값을 따로 검증했음 ══════════════════════════
+sl = S()
+y = title(sl, "개발 방식 ② 그래서 값을 따로 검증했음",
+          "화면이 돌아가는 것과 값이 맞는 것은 별개임")
+bullets(sl, M, y + 0.05, W - 2 * M, [
+    ("수업 맥락을 아는 연구자가 직접 구현. 사용 범위는 프론트엔드·백엔드 코드 초안·오류 "
+     "수정·반복 구현", BODY, False),
+    ("탐구 구조와 단계 설계, 학습자에게 개방할 분석 조건, 천문 모델과 가정은 연구자가 정함",
+     BODY, False),
+    ("생성된 코드는 오류 없이 실행되면서도 산출값이 틀릴 수 있음 (Uddin, 2026)",
+     WARN, True),
+    ("", BODY, False),
+    ("→ 산출값은 문헌값과 대조하고, 화면의 안내 문장은 사용자 검토로 점검함", ACC, True),
+    ("같은 자료·같은 설정을 반복 실행하면 WASP-6 b 반지름비가 0.14534 로 재현됨. "
+     "처리 조건을 바꾼 민감도 점검은 부록 1", BODY, False),
+    ("개발 방식 간 비교는 하지 않았음. 시간·비용을 기록하지 않아 빨랐다고 말할 수 없음",
+     GREY, False),
+], size=17, gap=11)
+
 # ═════ 4. EASWA 개요 ══════════════════════════════════════════════════
 sl = S()
 y = title(sl, "EASWA의 구조",
@@ -286,42 +324,39 @@ bullets(sl, M, y + 4.12, W - 2 * M, [
 ], size=16, gap=9)
 cite(sl, "대상 WASP-6 b · 자료 MAST TESScut · 기준값 NASA Exoplanet Archive")
 
-# ═════ 8. 바이브 코딩 ═════════════════════════════════════════════════
-sl = S()
-y = title(sl, "개발 방식과 검증",
-          "AI가 쓴 코드는 실행되어도 값이 틀릴 수 있음")
-bullets(sl, M, y, W - 2 * M, [
-    ("수업 맥락을 아는 연구자가 자연어로 의도를 적고 생성된 코드를 실행해 확인하는 방식으로 직접 구현함",
-     BODY, False),
-    ("사용 범위는 프론트엔드·백엔드 코드 초안·오류 수정·반복 구현. "
-     "탐구 구조와 단계 설계, 개방할 분석 조건, 천문 모델과 가정은 연구자가 정함", BODY, False),
-    ("생성된 코드는 오류 없이 실행되면서도 산출값이 틀릴 수 있음 — "
-     "화면이 돌아간다고 값을 믿을 수 없음", WARN, True),
-    ("", BODY, False),
-    ("→ 산출값은 문헌값과 대조, 화면 안내 문장은 사용자 검토로 점검",
-     ACC, True),
-    ("같은 자료·같은 설정을 반복 실행하면 WASP-6 b 반지름비가 0.14534로 재현됨. "
-     "처리 조건을 바꾼 민감도 점검 결과는 부록에 둠", BODY, False),
-    ("개발 방식 간 비교는 하지 않았음. 시간·비용을 기록하지 않아 빨랐다고 말할 수 없음", GREY, False),
-], size=18, gap=13)
-cite(sl, "Michels et al. (2026) · Song et al. (2026) · Uddin (2026)")
-
 # ═════ 11. 결과 ③ 사용자 검토 ═════════════════════════════════════════
 # 그림 둘은 다른 세션이 논문용으로 만든 정본이다(docs/make_survey_figs.py).
 # 발표와 논문이 같은 그림을 쓰도록 그것을 그대로 가져온다. 다크판은 색만 바꾼 사본이다.
 sl = S()
 y = title(sl, "사용자 검토 결과",
           "실행 부담은 낮고 기준값 해석이 최하위였음")
-pic(sl, "fig_survey_likert.png", M, y - 0.02, W - 2 * M, H - y - 0.62, root=HERE)
-cite(sl, "1차 현직교사 중심 13명 (2026-07-24) · 2차 예비교사 13명 (2026-09-06~07). "
-         "5점 척도. * 는 역채점한 부정 진술.")
+pic(sl, "fig_survey_likert.png", M, y, 6.55, H - y - 0.75, root=HERE)
+bullets(sl, M + 6.95, y + 0.10, W - M - 6.95 - M + 0.4, [
+    ("코딩 환경 없이 분석 과정을 따라간다 — 두 조사 최고 (4.54 · 4.75)", BODY, False),
+    ("자료 출처·관측 정보 제시와 분석 조건을 직접 조정하는 기능도 상위", BODY, False),
+    ("기준값 비교 화면에서 무엇을 해석할지 어렵다 — 두 조사 모두 최하위 (3.46 · 3.23)",
+     WARN, True),
+    ("화면이 복잡해 흐름 파악이 어렵다도 하위 (3.54 · 3.92)", BODY, False),
+    ("→ 실행 부담은 낮아졌고 해석 지원이 남음", ACC, True),
+], size=14, gap=11)
+cite(sl, "1차 현직교사 중심 13명 (2026-07-24) · 2차 예비교사 13명 (2026-09-06~07). 5점 척도. "
+         "* 는 역채점한 부정 진술. 두 조사는 참여 집단과 플랫폼 버전이 함께 달라 차이를 "
+         "보완의 효과로 읽지 않았음.")
 
 # ═════ 12. 현장 적용 ══════════════════════════════════════════════════
 sl = S()
 y = title(sl, "보완 요구",
           "용어·그래프 해석과 수업용 자료에 몰림")
-pic(sl, "fig_survey_needs.png", M, y - 0.05, W - 2 * M, H - y - 0.58, root=HERE)
-cite(sl, "(a) 2차 예비교사 13명 · (b) 두 조사의 보완 요구(복수선택).")
+pic(sl, "fig_survey_needs.png", M, y, 6.55, H - y - 0.75, root=HERE)
+bullets(sl, M + 6.95, y + 0.10, W - M - 6.95 - M + 0.4, [
+    ("안내 문장의 뜻은 11명이 화면만 보고 파악함 (2차 N=13)", BODY, False),
+    ("용어·기호와 그래프 읽기는 5명이 사람의 도움을 받음", WARN, True),
+    ("보완 요구 최다는 수업용 활동지·교사용 안내 자료 (1차 6명 · 2차 10명)", BODY, False),
+    ("그래프·분석 결과 해석 도움말 (8 · 6), 기준값 비교·차이 원인 설명 강화 (7 · 6)",
+     BODY, False),
+    ("→ 자동화로 덮이지 않는 자리가 용어와 해석임", ACC, True),
+], size=14, gap=11)
+cite(sl, "(a) 이해·수행에 필요했던 도움, 2차 예비교사 13명 · (b) 두 조사의 보완 요구(복수선택).")
 
 # ═════ 11. 후속 과제 ══════════════════════════════════════════════════
 sl = S()
@@ -373,9 +408,11 @@ refs = [
     "Mandel K and Agol E (2002) Analytic light curves for planetary transit searches. ApJ 580: L171-L175.",
     "Michels D L, Abu Ghazaleh M, Lazzari F, Kassem N and Klein J (2026) Vibe coding: Practice, performance, productivity, and risk. arXiv:2608.20446.",
     "Ochsenbein F, Bauer P and Marcout J (2000) The VizieR database of astronomical catalogues. A&AS 143: 23-32.",
+    "Ong A Y, Livingstone I, Kilduff C, et al. (2026) Vibe coding for clinicians: democratising bespoke software development for digital health innovation. arXiv:2604.22604.",
     "Paczynski B (1986) Gravitational microlensing by the galactic halo. ApJ 304: 1-5.",
     "Rosenfield P, Fay J, Gilchrist R K, et al. (2018) AAS WorldWide Telescope. ApJS 236: 22.",
     "Song Y, Choi S, Kim J, Kim Y, Weisberg L and Moon J (2026) A guiding framework for K-12 teachers in creating AI-powered learning technologies through vibe coding. arXiv:2607.05406.",
+    "Taveter H and Lepp M (2026) From idea to classroom in days: Using vibe coding to create a programming process visualizer from IDE activity logs. arXiv:2607.24757.",
     "Uddin S M J (2026) Is vibe coding the future? An empirical assessment of LLM generated codes for construction safety. arXiv:2604.12311.",
     "Wenger M, Ochsenbein F, Egret D, et al. (2000) The SIMBAD astronomical database. A&AS 143: 9-22.",
     "Wong N, Elsayed R, Perez L R, Nilsen K, Daehler K R and Darche S (2026) Data-rich science instruction. Education Sciences 16: 171.",
@@ -385,7 +422,7 @@ refs = [
 ]
 f = tb(sl, M, y, W - 2 * M, H - y - 0.6)
 for i, r in enumerate(refs):
-    put(f, r, 11.5, BODY, space_after=4, first=(i == 0), line=1.08)
+    put(f, r, 10.5, BODY, space_after=3, first=(i == 0), line=1.06)
 
 # ═════ 부록. 질문이 나오면 넘긴다 ═════════════════════════════════════
 sl = S()
