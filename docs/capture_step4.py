@@ -61,6 +61,23 @@ class CDP:
         self.ws.close()
 
 
+def require_server():
+    """백엔드가 살아 있는지 먼저 본다.
+
+    죽은 채로 돌리면 모든 단계가 조용히 False 를 내고, 그 빈 화면으로 이미 잘 찍힌
+    그림을 덮어쓴다(2026-09-10 두 번). 「찍혔다」는 로그는 파일이 생겼다는 뜻일 뿐
+    내용이 옳다는 뜻이 아니다.
+    """
+    try:
+        with urllib.request.urlopen(URL, timeout=10) as r:
+            if r.status == 200:
+                return
+    except Exception as e:
+        sys.exit("백엔드가 5895 에서 응답하지 않는다 (%s).\n"
+                 "  preview_start 로 backend 를 올린 뒤 다시 돌린다." % str(e)[:60])
+    sys.exit("백엔드가 5895 에서 200 을 주지 않는다")
+
+
 def launch():
     # 프로필을 재사용하면 지난 실행의 sessionStorage 가 남아 6단계에서 시작한다
     # (2026-09-10, 「Step 1 로 (못 함)」이 그 증거였다). 매번 새로 만든다.
@@ -264,6 +281,7 @@ def snap(c, fname):
 
 
 def main():
+    require_server()
     proc, ws_url = launch()
     c = CDP(ws_url)
     try:
