@@ -5,11 +5,12 @@ v2 (2026-09-10 밤) — 사장님 지시로 구성을 바꿨다.
   늘림 : 왜 만들었나(동기) · 웹 기능 셋 · 바이브 코딩과 그래서 한 검증 · 검토 결과
   줄임 : 사례분석 절차와 설계 원리 도출 같은 «방법» 서술
 
-  python deck/build.py            흰 바탕 (academic-pptx 스킬 규정)
-  python deck/build.py --dark     EASWA 서식 (2026-07 교사연수 판)
+  python deck/build.py
+
+흰 바탕이다. 2026-09-10 밤에 EASWA 다크 서식으로도 만들어 봤으나 사장님이
+「눈에 안 들어온다」고 물리셨다. 강의실 프로젝터에서는 흰 바탕이 맞다.
 """
 import os
-import sys
 from pptx import Presentation
 from pptx.util import Inches as I, Pt, Emu
 from pptx.dml.color import RGBColor as C
@@ -21,34 +22,19 @@ FIG = r"C:/Users/bmffr/Desktop/Me/ERP2026_Cosmos/원고_그림"
 HERE = os.path.dirname(os.path.abspath(__file__))
 DEST = r"C:/Users/bmffr/Desktop/Me/ERP2026_Cosmos/추계학술발표회"
 
-DARK = "--dark" in sys.argv
-SUF = "_다크" if DARK else ""
-OUT = os.path.join(DEST, "EASWA_지구과학회_구두발표_2026-09-18%s.pptx" % SUF)
+OUT = os.path.join(DEST, "EASWA_지구과학회_구두발표_2026-09-18.pptx")
 
-if DARK:
-    BG = C(0x0E, 0x11, 0x16)
-    ACC = C(0xE8, 0x75, 0x2A)
-    ACC2 = C(0xF2, 0xA1, 0x6B)
-    GREY = C(0x98, 0xA1, 0xAD)
-    WARN = C(0xFF, 0x9A, 0x8A)
-    BODY = C(0xE8, 0xEA, 0xED)
-    HEAD = C(0xFF, 0xFF, 0xFF)
-    TBLHEAD = C(0x1B, 0x28, 0x36)
-    TBLTEXT = C(0xE8, 0xEA, 0xED)
-    RULEC = C(0x2C, 0x35, 0x41)
-else:
-    BG = C(0xFF, 0xFF, 0xFF)
-    ACC = C(0x1F, 0x4E, 0x79)
-    ACC2 = C(0x2E, 0x75, 0xB6)
-    GREY = C(0x70, 0x70, 0x70)
-    WARN = C(0xC0, 0x00, 0x00)
-    BODY = C(0x1A, 0x1A, 0x1A)
-    HEAD = C(0x1F, 0x4E, 0x79)
-    TBLHEAD = C(0x1F, 0x4E, 0x79)
-    TBLTEXT = C(0x1A, 0x1A, 0x1A)
-    RULEC = C(0xD9, 0xD9, 0xD9)
+BG = C(0xFF, 0xFF, 0xFF)
+ACC = C(0x1F, 0x4E, 0x79)
+ACC2 = C(0x2E, 0x75, 0xB6)
+GREY = C(0x70, 0x70, 0x70)
+WARN = C(0xC0, 0x00, 0x00)
+BODY = C(0x1A, 0x1A, 0x1A)
+HEAD = C(0x1F, 0x4E, 0x79)
+TBLHEAD = C(0x1F, 0x4E, 0x79)
+TBLTEXT = C(0x1A, 0x1A, 0x1A)
+RULEC = C(0xD9, 0xD9, 0xD9)
 WHITE = C(0xFF, 0xFF, 0xFF)
-CS = "_dark" if DARK else ""
 
 F = "맑은 고딕"
 W, H = 13.333, 7.5
@@ -60,12 +46,7 @@ BLANK = prs.slide_layouts[6]
 
 
 def S():
-    sl = prs.slides.add_slide(BLANK)
-    if DARK:
-        bg = sl.background.fill
-        bg.solid()
-        bg.fore_color.rgb = BG
-    return sl
+    return prs.slides.add_slide(BLANK)
 
 
 def tb(sl, x, y, w, h, align=PP_ALIGN.LEFT):
@@ -107,12 +88,33 @@ def cite(sl, text):
     put(f, text, 12, GREY, first=True)
 
 
-def pic(sl, name, x, y, maxw, maxh, root=FIG):
+def pic(sl, name, x, y, maxw, maxh, root=FIG, top=False):
     p = os.path.join(root, name)
     iw, ih = Image.open(p).size
     sc = min(maxw / iw, maxh / ih)
     w, h = iw * sc, ih * sc
-    sl.shapes.add_picture(p, I(x + (maxw - w) / 2), I(y + (maxh - h) / 2), I(w), I(h))
+    dy = 0 if top else (maxh - h) / 2
+    sl.shapes.add_picture(p, I(x + (maxw - w) / 2), I(y + dy), I(w), I(h))
+
+
+# 화면 캡처를 통째로 넣으면 강의실 뒤에서 글자가 안 읽힌다(2026-09-10 확인).
+# 내비게이션과 제목 영역을 잘라내고 내용만 남긴다. 원본은 2880×2300 이다.
+CROP = {
+    "step0_entry.png":     (225, 730, 2700, 1700),   # 탐구 질문 + 시뮬레이션 + 광도곡선
+    "step3_conditions.png": (255, 800, 2700, 2300),  # Step 3 머리부터 구경·배경 카드까지
+}
+
+
+def crop(name):
+    """잘라 둔 사본을 만들고 그 이름을 준다. 이미 있으면 그대로 쓴다."""
+    box = CROP.get(name)
+    if not box:
+        return name
+    out = "_crop_" + name
+    dst = os.path.join(HERE, out)
+    if not os.path.exists(dst):
+        Image.open(os.path.join(FIG, name)).crop(box).save(dst)
+    return out
 
 
 def bullets(sl, x, y, w, items, size=19, gap=13):
@@ -143,7 +145,7 @@ put(f, "2026년 한국지구과학회 추계학술발표회 · AS2 천문 · 9�
 
 # ═════ 2. 왜 만들었나 ═════════════════════════════════════════════════
 sl = S()
-y = title(sl, "학교에서 실제 천문자료를 쓰려면, 탐구보다 자료 준비가 먼저 온다")
+y = title(sl, "탐구보다 자료 준비가 먼저 온다")
 bullets(sl, M, y, W - 2 * M, [
     ("MAST · Gaia · KMTNet 등 공개 아카이브는 영상, 시계열 측광, 측성·측광 카탈로그를 상시 제공한다. "
      "자료는 이미 충분하다.", BODY, False),
@@ -152,14 +154,14 @@ bullets(sl, M, y, W - 2 * M, [
     ("코딩을 쓰는 교사교육 프로그램에서도 현직·예비교사 모두 파이썬 코딩을 학교 적용의 "
      "가장 큰 어려움으로 들었다.", BODY, False),
     ("", BODY, False),
-    ("그래서 만들었다 — 준비는 도구가 지고, 자료 확인과 조건 선택과 결과 해석은 학습자가 하는 웹 플랫폼.",
+    ("그래서 만들었다. 준비는 도구가 지고, 자료 확인과 조건 선택과 해석은 학습자가 한다.",
      ACC, True),
 ], gap=15)
 cite(sl, "교육부 (2022) 과학과 교육과정 · Wong et al. (2026)")
 
 # ═════ 3. 기존 서비스 (방법은 줄이고 결과만) ══════════════════════════
 sl = S()
-y = title(sl, "기존 서비스 네 곳은 자료를 주지만, 탐구 흐름은 사용자가 따로 만들어야 했다")
+y = title(sl, "네 서비스 모두 탐구 흐름은 쓰는 사람 몫이었다")
 pic(sl, "case_stage1_entry.png", M, y, 7.1, H - y - 0.9)
 bullets(sl, M + 7.5, y + 0.2, W - M - 7.5 - M + 0.4, [
     ("SIMBAD · VizieR — 천체명·좌표·카탈로그 질의에서 시작한다.", BODY, False),
@@ -170,7 +172,7 @@ cite(sl, "학교 활용 관점의 연구자 워크스루 (2026). 분석 기준�
 
 # ═════ 4. EASWA 개요 ══════════════════════════════════════════════════
 sl = S()
-y = title(sl, "자료 구조가 다른 세 모듈을 같은 일곱 단계 탐구 흐름에 올렸다",
+y = title(sl, "세 모듈을 같은 일곱 단계에 올렸다",
           "탐구 주제 소개 → 대상 선택 → 자료 확인 → 분석 준비 → 분석·시각화 → 기준값 비교 → 해석·기록")
 rows = [
     ("모듈", "공공 자료", "분석 구조", "학습자가 정하는 것"),
@@ -205,9 +207,9 @@ put(f, "다만 세부 구현과 검토 범위는 같지 않다. 사용자 검토
 
 # ═════ 5. 웹 기능 ① ═══════════════════════════════════════════════════
 sl = S()
-y = title(sl, "웹 기능 ① 천체명이 아니라 탐구 질문에서 시작한다")
-pic(sl, "step0_entry.png", M, y, 7.1, H - y - 0.9)
-bullets(sl, M + 7.5, y + 0.25, W - M - 7.5 - M + 0.4, [
+y = title(sl, "웹 기능 ① 탐구 질문에서 시작한다")
+pic(sl, crop("step0_entry.png"), M, y, 7.75, H - y - 0.75, root=HERE)
+bullets(sl, M + 8.15, y + 0.2, W - M - 8.15 - M + 0.45, [
     ("첫 화면은 세 모듈을 각각의 대표 탐구 질문과 사용 자료로 보여 준다.", BODY, False),
     ("「행성 크기를 어떻게 알아낼 수 있을까」에서 출발해 대상과 자료로 이어진다.", BODY, False),
     ("자료 확인 단계에서 섹터·케이던스·관측 기간을 먼저 읽게 한다.", BODY, False),
@@ -216,36 +218,36 @@ bullets(sl, M + 7.5, y + 0.25, W - M - 7.5 - M + 0.4, [
 
 # ═════ 6. 웹 기능 ② ═══════════════════════════════════════════════════
 sl = S()
-y = title(sl, "웹 기능 ② 분석 조건을 학습자가 정하고, 그 조건이 화면에 남는다")
-pic(sl, "step3_conditions.png", M, y, 7.1, H - y - 0.9)
-bullets(sl, M + 7.5, y + 0.25, W - M - 7.5 - M + 0.4, [
+y = title(sl, "웹 기능 ② 분석 조건을 학습자가 정한다")
+pic(sl, crop("step3_conditions.png"), M, y, 7.75, H - y - 0.75, root=HERE, top=True)
+bullets(sl, M + 8.15, y + 0.2, W - M - 8.15 - M + 0.45, [
     ("구경 반지름, 배경 고리, 비교성 선택을 학습자가 정한다. 기본값은 2.5픽셀과 4.0~6.0픽셀이다.", BODY, False),
     ("측광·모델 적합은 자동으로 돌지만 조건과 품질 지표는 가리지 않는다.", BODY, False),
-    ("조건이 산출값을 바꾼다는 사실 자체가 학습 내용이 된다.", ACC, True),
+    ("조건이 값을 바꾼다는 것 자체가 학습 내용이다.", ACC, True),
 ], size=17, gap=15)
 
 # ═════ 7. 웹 기능 ③ ═══════════════════════════════════════════════════
 sl = S()
-y = title(sl, "웹 기능 ③ 산출값을 카탈로그 기준값과 견주고, 해석을 남긴다")
+y = title(sl, "웹 기능 ③ 산출값을 기준값과 나란히 놓는다")
 pic(sl, "_panel_step5_reference-step6_record.png", M, y + 0.05, W - 2 * M, 3.95)
 bullets(sl, M, y + 4.12, W - 2 * M, [
     ("왼쪽 — 위상 접기 광도곡선에 적합 모델과 카탈로그 기대 모델을 겹치고 잔차를 함께 보인다. "
      "기준 반지름비는 아카이브 수록값을 받아 온다.", BODY, False),
-    ("오른쪽 — 해석 질문과 서술형 기록 칸을 둔다. 값을 맞히는 것이 아니라 차이의 원인을 설명하는 것이 과제다.",
+    ("오른쪽 — 해석 질문과 서술형 기록 칸을 둔다. 과제는 값을 맞히는 것이 아니라 차이를 설명하는 것이다.",
      ACC, True),
 ], size=16, gap=9)
 cite(sl, "대상 WASP-6 b · 자료 MAST TESScut · 기준값 NASA Exoplanet Archive")
 
 # ═════ 8. 바이브 코딩 ═════════════════════════════════════════════════
 sl = S()
-y = title(sl, "생성형 AI 코딩 도구로 만들었고, 그래서 산출값을 따로 검증했다")
+y = title(sl, "AI가 쓴 코드는 돌아가도 값이 틀릴 수 있다")
 bullets(sl, M, y, W - 2 * M, [
     ("수업 맥락을 아는 연구자가 자연어로 의도를 적고 생성된 코드를 실행해 확인하는 방식으로 직접 구현하였다.",
      BODY, False),
     ("사용 범위는 프론트엔드·백엔드 코드 초안, 오류 수정, 반복 구현이다. "
      "탐구 구조와 단계 설계, 학습자에게 개방할 분석 조건, 천문 모델과 가정은 연구자가 정했다.", BODY, False),
     ("생성된 코드는 오류 없이 실행되면서도 산출값이 틀릴 수 있다. "
-     "화면이 도는 것과 값이 맞는 것은 별개다.", WARN, True),
+     "화면이 돌아간다고 값을 믿을 수는 없다.", WARN, True),
     ("", BODY, False),
     ("그래서 두 가지를 따로 확인했다 — 산출값은 문헌값과 대조하고, 화면의 안내 문장은 사용자 검토로 점검했다.",
      ACC, True),
@@ -255,16 +257,16 @@ cite(sl, "Michels et al. (2026) · Song et al. (2026) · Uddin (2026)")
 
 # ═════ 9. 결과 ① 검증 ═════════════════════════════════════════════════
 sl = S()
-y = title(sl, "WASP-121 b의 -12.8% 편차는 처리 조건을 바꾸면 -2.8%까지 좁혀진다",
-          "같은 설정 반복 실행에서 WASP-6 b 반지름비는 0.14534로 재현되었다. 재현되는 것과 문헌값에 "
-          "가까운 것은 다른 문제다.")
-pic(sl, "fig_table7%s.png" % CS, M, y - 0.02, W - 2 * M, H - y - 0.62, root=HERE)
+y = title(sl, "처리 조건을 바꾸니 -12.8%가 -2.8%로 줄었다",
+          "같은 설정을 반복 실행하면 WASP-6 b 반지름비가 0.14534로 재현된다. 재현성과 정확도는 다른 "
+          "문제다.")
+pic(sl, "fig_table7.png", M, y - 0.02, W - 2 * M, H - y - 0.62, root=HERE)
 cite(sl, "Daylan et al. (2021)과 같은 자료(TESS 섹터 7 · 2분 케이던스)를 별도 스크립트로 분석. "
          "플랫폼의 전체 실행 경로와는 다르다.")
 
 # ═════ 10. 결과 ② 한계 ════════════════════════════════════════════════
 sl = S()
-y = title(sl, "남은 -2.8%와 비교성의 효과는 이 점검에서 나누지 못했다")
+y = title(sl, "남은 -2.8%는 나누지 못했다")
 bullets(sl, M, y + 0.1, W - 2 * M, [
     ("다섯 조건은 서로 다른 처리를 여러 개 함께 포함한다. 표의 순서대로 차이가 누적되지 않고, "
      "한 요인의 효과로도 읽을 수 없다.", BODY, False),
@@ -280,20 +282,20 @@ bullets(sl, M, y + 0.1, W - 2 * M, [
 # 그림 둘은 다른 세션이 논문용으로 만든 정본이다(docs/make_survey_figs.py).
 # 발표와 논문이 같은 그림을 쓰도록 그것을 그대로 가져온다. 다크판은 색만 바꾼 사본이다.
 sl = S()
-y = title(sl, "현직·예비교사 26명 검토에서 실행 부담은 낮았고, 기준값 해석은 과제로 남았다")
-pic(sl, "fig_survey_likert%s.png" % CS, M, y - 0.02, W - 2 * M, H - y - 0.62, root=HERE)
+y = title(sl, "교사 26명이 짚은 것은 해석이었다")
+pic(sl, "fig_survey_likert.png", M, y - 0.02, W - 2 * M, H - y - 0.62, root=HERE)
 cite(sl, "1차 현직교사 중심 13명 (2026-07-24) · 2차 예비교사 13명 (2026-09-06~07). "
          "5점 척도. * 는 역채점한 부정 진술.")
 
 # ═════ 12. 현장 적용 ══════════════════════════════════════════════════
 sl = S()
-y = title(sl, "해석에는 사람의 도움이 필요했고, 보완 요구는 수업 자료로 모인다")
-pic(sl, "fig_survey_needs%s.png" % CS, M, y - 0.05, W - 2 * M, H - y - 0.58, root=HERE)
+y = title(sl, "용어와 그래프에서는 사람이 필요했다")
+pic(sl, "fig_survey_needs.png", M, y - 0.05, W - 2 * M, H - y - 0.58, root=HERE)
 cite(sl, "(a) 2차 예비교사 13명 · (b) 두 조사의 보완 요구(복수선택).")
 
 # ═════ 13. 결론 ═══════════════════════════════════════════════════════
 sl = S()
-y = title(sl, "결론 — 자동화가 아니라 조건을 드러내는 것이 이 설계의 핵심이다")
+y = title(sl, "결론 — 조건을 드러내야 탐구가 된다")
 bullets(sl, M, y + 0.15, W - 2 * M, [
     ("공개 천문 아카이브의 세 자료를 같은 일곱 단계 탐구 흐름에 올려, 코딩 없이 웹에서 "
      "분석하도록 구현하였다.", BODY, False),
@@ -302,7 +304,7 @@ bullets(sl, M, y + 0.15, W - 2 * M, [
     ("교사 26명 검토에서 실행 부담 완화는 확인되었고, 기준값 비교 화면의 해석 지원이 "
      "다음 과제로 남았다.", BODY, False),
     ("", BODY, False),
-    ("기술 실행을 지원하는 일과 자료 해석을 지원하는 일은 서로 다른 설계 과제다.", ACC, True),
+    ("실행을 돕는 일과 해석을 돕는 일은 다른 과제다.", ACC, True),
 ], size=18, gap=14)
 rule(sl, H - 1.38)
 f = tb(sl, M, H - 1.20, W - 2 * M, 0.9)
