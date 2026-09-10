@@ -36,6 +36,19 @@ def _is_bundled(target_id: str, observation_id: str, sector: int) -> bool:
         return False
 
 
+# 번들 컷아웃이 없어도 목록에 남겨 둘 타깃.
+#
+# 라이브 목록은 「깊이 내림차순 상위 N」이라 깊이가 얕은 대상은 기준을 다 통과해도
+# 밀려난다. WASP-121 b 가 그렇다 — 깊이 1.502%, 주기 1.275일, V=10.4 로 기본
+# 필터(≥1.0% · ≤5일 · ≤13등급)를 모두 통과하지만 상위 20 안에 들지 못한다.
+# 이 대상은 원고 표 7 의 민감도 점검이 쓴 행성이므로 학습자가 화면에서 같은
+# 대상을 열어 볼 수 있어야 한다 (2026-09-10).
+#
+# 번들 컷아웃(62MB)을 하나 더 두는 대신 목록에만 올린다. 컷아웃은 MAST 에서
+# 받아 오므로 분석 자체는 그대로 된다.
+_PINNED_TARGET_IDS: tuple[str, ...] = ("wasp_121_b",)
+
+
 def _bundled_target_ids() -> list[str]:
     """Targets that ship with a practice cutout, read off the filenames.
 
@@ -146,7 +159,7 @@ class TransitArchive:
         # "depth >= 10%" request came back holding a 2.41% planet.
         listed_ids = {target["id"] for target in live_targets}
         pinned: list[dict[str, Any]] = []
-        for bundled_id in _bundled_target_ids():
+        for bundled_id in [*_bundled_target_ids(), *_PINNED_TARGET_IDS]:
             if bundled_id in listed_ids:
                 continue
             bundled_target = self.get_target(bundled_id)
