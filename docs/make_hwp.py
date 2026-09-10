@@ -23,6 +23,7 @@ OUT = os.path.join(BASE, 'EASWA_논문_v17_투고본.hwp')
 PAPER_W, PAPER_H = 210.0, 285.0
 M_LEFT, M_RIGHT, M_TOP, M_BOTTOM, M_HEAD, M_FOOT = 22.0, 22.0, 22.0, 15.0, 18.0, 17.0
 MM = 7200.0 / 25.4          # HWPUNIT per mm
+MM_PT = 72.0 / 25.4         # PDF 포인트 per mm
 
 
 # 글꼴은 조판 HTML 이 요소마다 style="font-family:…" 로 들고 온다. <style> 블록에
@@ -395,6 +396,67 @@ def fix_split_tables(rounds=3):
               % (len(bad), ' / '.join(c[:16] for c in bad)))
     if os.path.exists(tmp):
         os.remove(tmp)
+
+
+def pull_table_forward(rounds=2, waste_mm=80.0):
+    """**쓰지 않는다.** 앞 쪽이 빈 자리로 뒤 표를 당기려 했으나 역효과였다.
+
+    22쪽의 165mm 를 회수하려고 표 12 앞에 쪽 나누기를 넣었더니 표 11 은 당겨지지
+    않고 뒤가 밀려 33쪽이 35쪽이 됐다(2026-09-10). 빈 자리가 넷에서 여섯으로 늘었다.
+    한글은 표를 앞 쪽으로 당기지 않는다 — 쪽 나누기는 뒤로 미는 일만 한다.
+    되살리려면 넣은 뒤 쪽수와 빈 자리를 재서 나빠지면 물리는 장치가 먼저 필요하다.
+
+    원래 뜻: 앞 쪽이 크게 비었는데 표 둘이 다음 쪽에 함께 밀린 자리를 푼다.
+
+    22쪽에 표 10 하나만 있고 아래가 165mm 비었다 — 표 11 과 표 12 가 함께 23쪽으로
+    갔기 때문이다(2026-09-10 소유자 지적). 뒤 표 앞에 쪽 나누기를 넣으면 앞 표는
+    빈 자리로 당겨진다. 앞 표까지 밀려 손해가 되면 되돌린다.
+    """
+    import fitz
+    if not os.path.exists(RULES):
+        return
+    tbls = [t for t in json.load(io.open(RULES, encoding='utf-8')).get('tbls', [])
+            if t.get('cap')]
+    if len(tbls) < 2:
+        return
+    tmp = os.path.join(BASE, '_pullcheck.pdf')
+    for _ in range(rounds):
+        h = _hwp()
+        h.Open(OUT, 'HWP', 'forceopen:true')
+        if os.path.exists(tmp):
+            os.remove(tmp)
+        h.SaveAs(tmp, 'PDF', '')
+        h.Clear(1)
+        h.Quit()
+        d = fitz.open(tmp)
+        pages = [pg.get_text() for pg in d]
+        gaps = []
+        for pg in d:
+            b = [x for x in pg.get_text('blocks') if x[4].strip()
+                 and x[3] / MM_PT > 26 and x[1] / MM_PT < 258]
+            low = max([x[3] for x in b] or [0])
+            gaps.append(pg.rect.height / MM_PT - low / MM_PT - 32.0)
+        d.close()
+        os.remove(tmp)
+        move = None
+        for i, gap in enumerate(gaps[:-1]):
+            if gap < waste_mm:
+                continue
+            here = [t for t in tbls if t['cap'][:14] in pages[i + 1]]
+            if len(here) >= 2:
+                move = here[1]['cap']
+                break
+        if not move:
+            print('앞으로 당길 표 없음')
+            return
+        h = _hwp()
+        h.Open(OUT, 'HWP', 'forceopen:true')
+        if _find(h, move[:20]):
+            h.HAction.Run('BreakPage')
+            h.SaveAs(OUT, 'HWP', '')
+            print('「%s」 앞에 쪽 나누기 — 앞 표를 당긴다' % move[:20])
+        h.Clear(1)
+        h.Quit()
 
 
 def place_appendix_break(head='부록. 서술형', min_lines=6):
