@@ -165,13 +165,13 @@ cite(sl, "교육부 (2022) 과학과 교육과정 [별책 9]")
 # ═════ 3. 기존 웹의 지형 — 두 갈래를 화면으로 ═════════════════════════
 sl = S()
 y = title(sl, "기존 웹 환경",
-          "자료 제공 서비스는 탐구 흐름이 없고, 교육 지향 환경은 주제가 고정되고 분석은 밖으로 넘김")
+          "자료 제공 서비스는 탐구 흐름이 없고, 교육 지향 환경은 주제가 고정되거나 운영이 끝났음")
 
 IW = 5.92
 LX, RX = M, M + IW + 0.25
 IY, IH = y + 0.02, 3.35
 pic(sl, "svc_simbad.png", LX, IY, IW, IH, root=HERE, top=True)
-pic(sl, "svc_voyages.png", RX, IY, IW, IH, root=HERE, top=True)
+pic(sl, "svc_agent.png", RX, IY, IW, IH, root=HERE, top=True)
 
 CY = IY + IW / 1.8 + 0.16
 for x, head, sub in (
@@ -179,8 +179,8 @@ for x, head, sub in (
      "SIMBAD · VizieR · WorldWide Telescope · ESASky\n"
      "천체명·좌표·카탈로그에서 시작. 분석과 탐구 흐름은 서비스 밖의 몫"),
     (RX, "교육 지향 환경",
-     "SDSS Voyages · ESA CESAR · Rubin · Agent Exoplanet(운영 종료) 등\n"
-     "주제가 고정. 자료를 그리려면 Excel·Google Sheets 가 필요"),
+     "Agent Exoplanet · DIY Planet Search · SDSS Voyages · ESA CESAR · Rubin\n"
+     "주제가 고정. 가장 가까운 Agent Exoplanet 은 2026-09 확인 시 운영 종료"),
 ):
     f = tb(sl, x, CY, IW, 1.0)
     put(f, head, 16, ACC, True, first=True, space_after=3)
@@ -191,7 +191,7 @@ rule(sl, H - 0.98)
 f = tb(sl, M, H - 0.84, W - 2 * M, 0.5)
 put(f, "EASWA — 공개 아카이브 자료를 쓰면서, 자료 구조가 다른 세 주제를 같은 탐구 흐름 "
        "안에서 분석까지", 16, ACC, True, first=True)
-cite(sl, "SIMBAD 2026-07 워크스루 · SDSS Voyages 2026-09-11 확인. "
+cite(sl, "SIMBAD 2026-07 워크스루 · Agent Exoplanet 2026-09-11 확인. "
          "네 서비스 전체 화면과 교사 장벽 응답은 부록 2, 분석 기준은 논문 표 2·3.")
 
 # ═════ 4. EASWA 개요 ══════════════════════════════════════════════════

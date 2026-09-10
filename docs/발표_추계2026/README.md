@@ -126,14 +126,22 @@ python -X utf8 docs/발표_추계2026/notes.py        # 노트를 넣는다
 
 | 왼쪽 | 오른쪽 |
 |---|---|
-| **SIMBAD** (2026-07 워크스루 원본 캡처) | **SDSS Voyages** (2026-09-11 직접 확인해 캡처) |
-| SIMBAD · VizieR · WorldWide Telescope · ESASky | SDSS Voyages · ESA CESAR · Rubin · Agent Exoplanet(운영 종료) 등 |
-| 천체명·좌표·카탈로그에서 시작. 분석과 탐구 흐름은 서비스 밖의 몫 | 주제가 고정. 자료를 그리려면 Excel·Google Sheets 가 필요 |
+| **SIMBAD** (2026-07 워크스루 원본) | **Agent Exoplanet** (2026-09-11 직접 확인해 캡처) |
+| SIMBAD · VizieR · WorldWide Telescope · ESASky | Agent Exoplanet · DIY Planet Search · SDSS Voyages · ESA CESAR · Rubin |
+| 천체명·좌표·카탈로그에서 시작. 분석과 탐구 흐름은 서비스 밖의 몫 | 주제가 고정. 가장 가까운 Agent Exoplanet 은 2026-09 확인 시 운영 종료 |
 
-**SDSS Voyages 를 고른 이유** — 화면에 *「these projects require … the use of spreadsheet
-programs that enable the plotting of data (e.g., Excel or Google Sheets)」* 라고 적혀 있다.
-교육용으로 잘 만든 환경도 분석은 밖으로 넘긴다는 것을 **그 사이트의 문장이** 말해 준다.
-내가 붙인 해석이 아니다. 캡처 원본은 `사례분석_기록/sdss_voyages_expeditions_2026-09-11.png`.
+**Agent Exoplanet 을 고른 이유** — LCO 가 만든 것으로 **공개 외계행성 자료로 웹에서
+밝기를 재고 광도곡선을 만드는, 이 연구와 가장 가까운 선례다.** 캡처에 목표성·비교성·
+하늘 영역 표시가 그대로 보인다 — 6장에서 보여줄 EASWA 의 분석 조건 화면과 같은 개념이다.
+
+그런데 첫 화면 위쪽 노란 띠가 **Mission End — 「Agent Exoplanet is no longer active,
+this is a legacy website」**다. 가장 가까운 선례가 문을 닫았다는 사실을 화면이 말해 준다.
+
+처음에는 **SDSS Voyages** 를 골랐다가 사장님이 물리셨다 — *「아니 agents?뭐 그런걸로
+하지」*. 같은 외계행성 식현상 도메인이라 비교가 훨씬 선명하다. SDSS Voyages 캡처도
+`사례분석_기록/sdss_voyages_expeditions_2026-09-11.png` 에 남겨 두었다. 그 사이트는
+안내문에 **「자료를 그리려면 Excel 이나 Google Sheets 가 필요하다」**고 적어 두었는데,
+교육용 환경도 분석은 밖으로 넘긴다는 근거라 **3장 발표 노트에 넣어 두었다.**
 
 아래에 **EASWA 의 자리**를 한 줄로 둔다 — 「공개 아카이브 자료를 쓰면서, 자료 구조가
 다른 세 주제를 같은 탐구 흐름 안에서 분석까지」. **「최초」라고 쓰지 않는다.**
