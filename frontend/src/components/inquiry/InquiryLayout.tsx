@@ -523,6 +523,13 @@ export function InquiryLayout<TContext = unknown>({
             </dl>
           </section>
         </div>
+        {/* Records upload as they are written — from Step 2 onward, long before
+            Step 6. Telling the learner only at the end meant anyone who stopped
+            partway had their work collected without ever seeing the notice.
+            No anonSubmit guard here: that object only exists once a target is
+            picked (Step 1), which is after this screen. The notice has to come
+            before the work starts, not once it is already being saved. */}
+        <AnonCollectionNotice />
         </>
       );
     }

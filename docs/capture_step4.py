@@ -122,8 +122,23 @@ STEPS = [
      4, "step0_entry.png"),
     ("Step 1 로", "return await window.__click('다음 단계', true, 20);", 1),
     ("대상 WASP-6 b", "return await window.__click('WASP-6 b', false, 30);", 2),
-    ("Step 2 로", "return await window.__click('다음 단계', true, 20);", 3,
-     "step2_metadata.png"),
+    ("Step 2 로", """
+        if (!await window.__click('다음 단계', true, 20)) return false;
+        // DSS 원본 <img> 가 픽셀을 받을 때까지 기다린다. loading="lazy" 라 화면에
+        // 붙자마자 끝나지 않고, 「TESS 픽셀 격자」 canvas 는 그 img 를 소스로 다시
+        // 그린다. 기다리지 않고 찍으면 격자와 강조 칸만 남아, 「한 픽셀에 별이 몇
+        // 개 들어가는지 보라」는 화면에서 별이 사라진다
+        // (2026-09-10, 그림 4(b) 가 그 상태로 원고에 들어갔다).
+        const end = Date.now() + 45000;
+        while (Date.now() < end) {
+          const im = document.querySelector('.inquiry-skydata-stage img');
+          if (im && im.complete && im.naturalWidth > 0) {
+            await new Promise(r => setTimeout(r, 1200));   // canvas 다시 그리기
+            return 'dss ' + im.naturalWidth + 'px';
+          }
+          await new Promise(r => setTimeout(r, 500));
+        }
+        return 'dss-timeout';""", 3, "step2_metadata.png"),
     ("Step 3 로", "return await window.__click('다음 단계', true, 20);", 3,
      "step3_conditions.png"),
     ("생각해보기 기록", """
@@ -225,6 +240,22 @@ def snap(c, fname):
         window.scrollTo(0, 0);
         await new Promise(r => setTimeout(r, 900));
         return 1;""")
+    if fname == "step2_metadata.png":
+        # 보이는 쪽(img 또는 canvas)에 실제로 밝은 화소가 있는지 센다. 격자와
+        # 축척막대만 남은 화면도 「찍힘」으로는 성공이라 눈으로 봐야 알았다.
+        lit = c.js("""
+            const cv = document.querySelector('canvas.inquiry-skydata-binned');
+            const im = document.querySelector('.inquiry-skydata-stage img');
+            const vis = (cv && !cv.hidden) ? cv : null;
+            if (vis) {
+              const d = vis.getContext('2d')
+                  .getImageData(0, 0, vis.width, vis.height).data;
+              let n = 0;
+              for (let i = 0; i < d.length; i += 4) if (d[i] > 60) n++;
+              return 'canvas ' + n + '/' + (d.length / 4);
+            }
+            return im ? ('img ' + im.naturalWidth) : 'none';""")
+        print("    하늘 이미지 —", lit, flush=True)
     shot = c.send("Page.captureScreenshot", format="png")
     path = os.path.join(OUT_DIR, fname)
     with open(path, "wb") as f:
@@ -252,7 +283,15 @@ def main():
             print("  ! 저장소 비우기 실패 —", str(e)[:100], flush=True)
         time.sleep(6)
         c.js("%s return 1;" % HELPER)
-        for item in STEPS:
+        steps = STEPS
+        if "--upto" in sys.argv:
+            want = sys.argv[sys.argv.index("--upto") + 1]
+            cut = [i for i, it in enumerate(steps)
+                   if len(it) > 3 and it[3].startswith(want)]
+            if cut:
+                steps = steps[:cut[0] + 1]
+                print("  %s 까지만 찍는다 (%d 단계)" % (want, len(steps)), flush=True)
+        for item in steps:
             name, js, wait = item[0], item[1], item[2]
             shot_name = item[3] if len(item) > 3 else None
             try:
@@ -288,6 +327,12 @@ def main():
             f.write(base64.b64decode(shot["data"]))
         print("    찍음 step4_analysis.png", flush=True)
 
+        if len(steps) < len(STEPS):
+            # --upto 로 잘랐으면 여기서 끝낸다. 아래는 4단계 적합을 끝낸 상태를
+            # 전제로 5·6단계를 이어 찍는 코드라, 중간에서 멈춘 화면으로
+            # step4·5·6 을 덮어쓴다(2026-09-10, 위상접기 적합 그림을 날렸다).
+            print("  --upto 이므로 여기서 멈춘다", flush=True)
+            return
         # 5·6단계도 이어서
         for label, fname in (("기준값 비교", "step5_reference.png"),
                              ("해석·기록", "step6_record.png")):

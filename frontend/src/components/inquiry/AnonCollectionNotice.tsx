@@ -1,13 +1,17 @@
 import { useLangStore } from '../../i18n';
 
 /**
- * Step 6 collection notice.
+ * Anonymous collection notice.
  *
  * Replaces the old submit panel. Records now upload themselves as they are
  * written, so there is no button to press — but that is exactly why this notice
  * has to exist: without it the app would collect a learner's work with nothing
- * on screen ever saying so. It is the only place they are told the record is
- * anonymous, where it goes, and that no personal data is taken.
+ * on screen ever saying so. It tells them the record is anonymous, where it
+ * goes, and that no personal data is taken.
+ *
+ * Shown twice: once in Step 0 before any work starts, and again in Step 6 where
+ * the record fields are. Step 6 alone was too late — uploads begin at Step 2,
+ * so a learner who stopped partway never saw it.
  */
 export function AnonCollectionNotice() {
   const lang = useLangStore((s) => s.lang);
