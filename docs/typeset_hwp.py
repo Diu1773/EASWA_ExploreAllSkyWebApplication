@@ -259,10 +259,19 @@ def split_tall(src, ratio=1.15, gut=40):
         cut = lo + (r0[0] + r0[1]) // 2
         im = im0.convert("RGB")
         left, right = im.crop((0, 0, w, cut)), im.crop((0, cut, w, h))
+    # 두 쪽의 높이가 다르면 한쪽 아래가 빈다. 폭을 높이 비율의 역으로 나눠 주면
+    # 둘이 나란해진다(2026-09-10 소유자 지적: 「세로 크기를 맞추던가」).
+    from PIL import Image as _I
+    r = right.height / float(left.height)
+    total = w * 2
+    wl = int(round(total * r / (1.0 + r)))
+    wr = total - wl
+    left = left.resize((wl, max(1, round(left.height * wl / left.width))), _I.LANCZOS)
+    right = right.resize((wr, max(1, round(right.height * wr / right.width))), _I.LANCZOS)
     H = max(left.height, right.height)
-    out_im = Image.new("RGB", (w * 2 + gut, H), (255, 255, 255))
+    out_im = Image.new("RGB", (wl + gut + wr, H), (255, 255, 255))
     out_im.paste(left, (0, 0))
-    out_im.paste(right, (w + gut, 0))
+    out_im.paste(right, (wl + gut, 0))
     name = "_split_%s.png" % os.path.splitext(os.path.basename(p))[0]
     path = os.path.join(BASE, "원고_그림", name)
     out_im.save(path)
@@ -622,7 +631,7 @@ while i < len(lines):
         continue
 
     # 표 캡션 후보 — 바로 다음이 표면 위에서 캡션으로 회수한다.
-    if re.match(r"^\*\*(표|그림)\s", s) and s.endswith("**"):
+    if re.match(r"^\*\*(부록 )?(표|그림)\s", s) and s.endswith("**"):
         out.append('<p class="tcapsrc">%s</p>' % inline(s[2:-2]))
         i += 1
         continue
