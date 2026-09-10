@@ -81,8 +81,20 @@ def main():
         })()""", awaitPromise=True)
     time.sleep(2)
 
+    # 머리말과 쪽 번호. 한글 판은 HWPX 로 홀짝을 나눠 넣지만(조판규칙 참조) 크롬은
+    # 쪽마다 같은 틀을 그린다. 그래서 1쪽의 「| 연구논문 |」을 모든 쪽에 두고 짝수 쪽
+    # 제목은 넣지 않는다 — 검토용으로는 머리말이 있는 편이 없는 편보다 낫다.
+    # 쪽 번호도 한글은 바깥쪽 아래(DrawPos=8)인데 여기서는 가운데로 둔다.
+    HDR = ("<div style=\"font-size:9pt;font-family:'Malgun Gothic',sans-serif;"
+           "width:100%;padding:0 22mm;color:#000;-webkit-print-color-adjust:exact\">"
+           "<span style=\"float:left\">| 연구논문 |</span>"
+           "<span style=\"display:block;text-align:center\">현장과학교육 권(호)</span>"
+           "</div>")
+    FTR = ("<div style=\"font-size:10pt;font-family:'Malgun Gothic',sans-serif;"
+           "width:100%;padding:0 22mm;text-align:center;color:#000;"
+           "-webkit-print-color-adjust:exact\"><span class=\"pageNumber\"></span></div>")
     r = send("Page.printToPDF", printBackground=True, preferCSSPageSize=True,
-             displayHeaderFooter=False)
+             displayHeaderFooter=True, headerTemplate=HDR, footerTemplate=FTR)
     with open(OUT, "wb") as f:
         f.write(base64.b64decode(r["data"]))
     ws.close()
