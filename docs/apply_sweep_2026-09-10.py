@@ -7,7 +7,7 @@
 import io
 import sys
 
-SRC = r"C:/Users/bmffr/Desktop/Me/ERP2026_Cosmos/EASWA_논문_v17.md"
+SRC = r"C:/Users/bmffr/Desktop/Me/ERP2026_Cosmos/EASWA_논문_v18.md"
 
 E = [
  # ══ B-4. 새로 나온 여섯 ═══════════════════════════════════════════════

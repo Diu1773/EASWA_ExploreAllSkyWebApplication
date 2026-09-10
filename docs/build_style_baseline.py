@@ -38,7 +38,7 @@ CORPUS = [
     "윤진아 남윤경.pdf",
     "공병민2023.pdf",
 ]
-MINE = r"C:/Users/bmffr/Desktop/Me/ERP2026_Cosmos/EASWA_논문_v17_투고본_미리보기.pdf"
+MINE = r"C:/Users/bmffr/Desktop/Me/ERP2026_Cosmos/EASWA_논문_v18_투고본_미리보기.pdf"
 
 H1 = ("또한", "따라서", "즉", "나아가", "아울러", "게다가", "더욱이")
 # 부정 대구는 두 꼴이다. 나눠서 세야 어느 쪽이 튀는지 보인다.

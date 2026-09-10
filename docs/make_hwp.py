@@ -15,9 +15,9 @@ import time
 import win32com.client as win32
 
 BASE = r'C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos'
-SRC = os.path.join(BASE, 'EASWA_논문_v17_투고본.html')
-RULES = os.path.join(BASE, 'EASWA_논문_v17_투고본.문단.json')
-OUT = os.path.join(BASE, 'EASWA_논문_v17_투고본.hwp')
+SRC = os.path.join(BASE, 'EASWA_논문_v18_투고본.html')
+RULES = os.path.join(BASE, 'EASWA_논문_v18_투고본.문단.json')
+OUT = os.path.join(BASE, 'EASWA_논문_v18_투고본.hwp')
 
 # 논문템플릿.hwp 의 PAGE_DEF 실측값 (mm) — COM 으로 직접 읽었다(2026-09-10)
 PAPER_W, PAPER_H = 210.0, 285.0

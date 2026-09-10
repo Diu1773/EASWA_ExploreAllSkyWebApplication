@@ -18,7 +18,7 @@ import re
 import sys
 from collections import Counter, defaultdict
 
-SRC = "C:/Users/bmffr/Desktop/Me/ERP2026_Cosmos/EASWA_논문_v17.md"
+SRC = "C:/Users/bmffr/Desktop/Me/ERP2026_Cosmos/EASWA_논문_v18.md"
 FULL = "--full" in sys.argv
 
 # KatFish 코퍼스 실측값 (humanize-korean references/baseline.json v1.6, essay)

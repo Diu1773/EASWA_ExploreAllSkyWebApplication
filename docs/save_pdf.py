@@ -12,9 +12,9 @@ import sys
 import win32com.client as win32
 
 BASE = r"C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos"
-MAIN = os.path.join(BASE, "EASWA_논문_v17_투고본.hwp")
-ALT = os.path.join(BASE, "EASWA_논문_v17_투고본_새판.hwp")
-OUT = os.path.join(BASE, "EASWA_논문_v17_투고본.pdf")
+MAIN = os.path.join(BASE, "EASWA_논문_v18_투고본.hwp")
+ALT = os.path.join(BASE, "EASWA_논문_v18_투고본_새판.hwp")
+OUT = os.path.join(BASE, "EASWA_논문_v18_투고본.pdf")
 
 
 def newest():

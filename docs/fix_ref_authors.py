@@ -17,7 +17,7 @@ import io
 import re
 import sys
 
-P = sys.argv[1] if len(sys.argv) > 1 else r'C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos\EASWA_논문_v17.md'
+P = sys.argv[1] if len(sys.argv) > 1 else r'C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos\EASWA_논문_v18.md'
 L = io.open(P, encoding='utf-8').read().replace('\r\n', '\n').split('\n')
 
 i = next(n for n, x in enumerate(L) if x.startswith('# 참고문헌'))
