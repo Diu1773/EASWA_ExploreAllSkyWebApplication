@@ -142,6 +142,20 @@ def main():
     if not hard:
         print("  빨강 없음")
 
+    # 종결과 같은 종류의 반복이 하나 더 있다 — 「A, B, C」 나열이 잦으면 독자는
+    # 종결이 달라도 같은 박자를 듣는다(2026-09-10). 세 항 이상 든 문장을 센다.
+    listy = []
+    for sec in order:
+        for x in bysec[sec]:
+            c = len(re.findall(r"[가-힣A-Za-z0-9)]\s*[,·]\s*[가-힣A-Za-z(]", x))
+            if c >= 3:
+                listy.append((c, sec, x))
+    allsent = sum(len(bysec[k]) for k in order)
+    print("\n세 항 이상 나열 %d문장 (%.1f%%)   기준 «15%% 넘으면 잦다»"
+          % (len(listy), 100.0 * len(listy) / allsent))
+    for c, sec, x in sorted(listy, reverse=True)[:5]:
+        print("  %2d항 · %-16s %s..." % (c, sec[:16], x[:52]))
+
     tot = sum(r[1] for r in rows)
     allf = {}
     for sec in order:
