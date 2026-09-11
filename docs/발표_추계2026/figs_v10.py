@@ -120,7 +120,7 @@ plt.close(fig)
 print("fig_pipeline")
 
 # ══ ③ 바이브 코딩이란 ═════════════════════════════════════════════════
-fig, ax = blank((11.0, 3.0))
+fig, ax = blank((13.6, 2.92))
 T = reset_boxes("vibe")
 cyc = [("자연어로\n의도를 적는다", NAVY), ("코드가\n생성된다", BLUE),
        ("실행해\n확인한다", BLUE), ("고쳐 달라고\n다시 적는다", GREY)]
@@ -128,7 +128,7 @@ w2, g2, x0 = 0.206, 0.040, 0.018
 mid = []
 for i, (t, c) in enumerate(cyc):
     x = x0 + i * (w2 + g2)
-    box(ax, x, 0.58, w2, 0.34, t, fc="white", ec=c, tc=c, fs=13, bold=(i == 0), lw=1.8, tag=T)
+    box(ax, x, 0.58, w2, 0.34, t, fc="white", ec=c, tc=c, fs=14, bold=(i == 0), lw=1.8, tag=T)
     mid.append(x + w2 / 2)
     if i < 3:
         arrow(ax, x + w2 + 0.003, 0.75, x + w2 + g2 - 0.005, 0.75, color=c)
@@ -139,10 +139,10 @@ ax.plot([mid[3], mid[3]], [0.575, LY], color=GREY, lw=1.4, zorder=1)
 ax.plot([mid[3], mid[0]], [LY, LY], color=GREY, lw=1.4, zorder=1)
 arrow(ax, mid[0], LY, mid[0], 0.572, color=GREY, lw=1.4)
 ax.text((mid[0] + mid[3]) / 2, LY - 0.075, "고쳐 달라고 다시 적으며 되풀이한다",
-        ha="center", fontsize=11.5, color=GREY,
+        ha="center", fontsize=12.5, color=GREY,
         bbox=dict(fc="white", ec="none", pad=2))
 ax.text(0.50, 0.05, "전문 개발자가 아니어도 웹 응용을 구성할 수 있는 범위가 넓어졌다 "
-                    "(Michels et al., 2026)", ha="center", fontsize=12, color="#333333")
+                    "(Michels et al., 2026)", ha="center", fontsize=13, color="#333333")
 fig.tight_layout(rect=(0, 0, 1, 1))
 fig.savefig("deck/fig_vibe.png", facecolor="white")
 plt.close(fig)
