@@ -9,15 +9,20 @@
 그래서 **카드 테두리를 없애고 각 로고를 제 브랜드 색으로** 그린다. 슬라이드가 온통
 청색이라 이 띠가 색을 들여놓는 자리다.
 
-  Claude Code  #D97757 (주황)  ·  GitHub Copilot #000000
-  Gemini CLI   #8E75B2 (보라)  ·  Cursor         #000000
+  Claude Code  #D97757 (주황)  ·  Codex  #000000  ·  Cursor  #000000
 
-**Codex 로고는 뺐다.** 2026-09-11 확인 시 `openai` 아이콘이 simple-icons 에서 내려갔다
-(CDN 404, 3,460개 데이터에 없음). 상표권자가 배포 중지를 요청한 경우가 대부분이라
-CC0 로 받을 길이 없다. 이름은 슬라이드 글줄에 남기고 마크만 뺐다.
+사장님이 *「copilot gemini 빼고 codex넣어라」* 하셔서 셋만 둔다 —
+**Claude Code · Codex · Cursor**.
 
-아이콘은 `https://cdn.simpleicons.org/<slug>` 가 브랜드 색으로 내려 준 것을
-`logos/<slug>_color.svg` 에 받아 두었다. 아이콘은 CC0 1.0, 상표는 각 소유자의 것이다.
+**OpenAI 마크의 출처는 나머지 셋과 다르다.** 2026-09-11 확인 시 `openai` 아이콘이
+simple-icons 에서 내려가 있다(CDN 404, 3,460개 데이터에 없음). 그 사실을 말씀드렸고
+넣으라고 정하셨다. 쓰는 파일은 그 모음에 있을 때 받아 둔 `logos/openai.svg` 이고,
+CC0 1.0 은 철회되지 않는 포기 선언이라 **복제 자체는 그대로 허용된다.** 내려간 쪽은
+상표 문제로 보이며, 도구를 «가리키는» 용도(지칭적 사용)는 통상적 범위다.
+그림 안과 슬라이드 아래에 이 사정을 적는다.
+
+나머지 셋은 `https://cdn.simpleicons.org/<slug>` 가 브랜드 색으로 내려 준 것을
+`logos/<slug>_color.svg` 에 받아 두었다. 상표는 각 소유자의 것이다.
 
     python make_logos.py      →  deck/fig_tools.png
 """
@@ -32,8 +37,7 @@ CHROME = r"C:/Program Files/Google/Chrome/Application/chrome.exe"
 
 TOOLS = [
     ("claude_color.svg", "Claude Code", "Anthropic"),
-    ("githubcopilot_color.svg", "Copilot", "GitHub"),
-    ("googlegemini_color.svg", "Gemini CLI", "Google"),
+    ("openai_color.svg", "Codex", "OpenAI"),
     ("cursor_color.svg", "Cursor", "Anysphere"),
 ]
 
@@ -59,8 +63,8 @@ html = """<!doctype html><meta charset="utf-8"><style>
  .v{font-size:13px;color:#70706F}
  .f{margin-top:10px;font-size:12.5px;color:#8A8A8A;text-align:center}
 </style><div class="row">%s</div>
-<div class="f">아이콘 — simple-icons (CC0 1.0), 각 브랜드 색. 상표는 각 소유자의 것이며
-도구를 가리키는 용도로만 썼다.</div>""" % cards
+<div class="f">아이콘 — simple-icons (CC0 1.0), 각 브랜드 색. OpenAI 마크는 그 모음에
+있을 때 받아 둔 CC0 판. 상표는 각 소유자의 것이며 도구를 가리키는 용도로만 썼다.</div>""" % cards
 
 page = os.path.join(HERE, "_tools.html")
 io.open(page, "w", encoding="utf-8").write(html)
