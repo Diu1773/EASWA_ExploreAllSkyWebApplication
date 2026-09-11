@@ -56,7 +56,7 @@ def fig_procedure():
     ax.set_ylim(0, n * 11 + 8)
     ax.axis("off")
 
-    bw, bx = 62, 16          # 상자 폭·왼쪽
+    bw, bx = 62, 10          # 상자 폭·왼쪽. RQ 구간선을 뺀 만큼 당긴다
     for i, (name, m, r) in enumerate(STEPS):
         y = (n - 1 - i) * 11 + 5
         ax.add_patch(Rectangle((bx, y), bw, 7.6, fc="none", ec=RULE, lw=0.8))
@@ -67,14 +67,6 @@ def fig_procedure():
             ax.annotate("", xy=(bx + bw / 2, y - 3.0), xytext=(bx + bw / 2, y - 0.3),
                         arrowprops=dict(arrowstyle="-|>", color=RULE, lw=0.8,
                                         mutation_scale=8))
-
-    for a, b, lab in RQ_SPAN:
-        top = (n - 1 - a) * 11 + 12.6
-        bot = (n - 1 - b) * 11 + 5
-        ax.plot([bx - 4, bx - 4], [bot, top], color=RULE, lw=1.0,
-                solid_capstyle="butt")
-        ax.text(bx - 6, (top + bot) / 2, lab, fontsize=8, rotation=90,
-                va="center", ha="center", color=INK)
 
     ax.text(bx + bw + 3, n * 11 + 3.2, "방법 절 → 결과 절",
             fontsize=7.6, color=MUTE, va="center")

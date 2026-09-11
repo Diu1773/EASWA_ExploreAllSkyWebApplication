@@ -130,20 +130,20 @@ NEED = [                                   # (항목, 1차, 2차)
 def fig_b():
     import textwrap
     fig, (ax1, ax2) = plt.subplots(
-        2, 1, figsize=(W, 118 * MM), gridspec_kw={"height_ratios": [4, 7]})
+        2, 1, figsize=(W, 134 * MM), gridspec_kw={"height_ratios": [4, 8]})
 
-    ys = range(len(HELP))
+    ys = [k * 1.25 for k in range(len(HELP))]
     left = [0] * len(HELP)
     for vals, col, lab in ((  [h[1] for h in HELP], DARK,  "화면만 보고 할 수 있었다"),
                            (  [h[2] for h in HELP], LIGHT, "사람의 도움을 받아 할 수 있었다"),
                            (  [h[3] for h in HELP], GRAY,  "도움을 받아도 어려웠다")):
-        ax1.barh(list(ys), vals, left=left, color=col, height=0.55, label=lab)
+        ax1.barh(ys, vals, left=left, color=col, height=0.62, label=lab)
         for y, v, l in zip(ys, vals, left):
             if v:
                 ax1.text(l + v / 2, y, str(v), ha="center", va="center",
                          fontsize=7.5, color="white" if col != GRAY else "#333333")
         left = [a + b for a, b in zip(left, vals)]
-    ax1.set_yticks(list(ys))
+    ax1.set_yticks(ys)
     ax1.set_yticklabels([textwrap.fill(h[0], 22) for h in HELP],
                         fontsize=7.4, linespacing=1.15)
     ax1.tick_params(axis="y", length=0, pad=2)
@@ -160,8 +160,8 @@ def fig_b():
     ax1.set_title("(a) 이해·수행에 필요했던 도움 (2차 예비교사 N=13)",
                   fontsize=9, loc="left", pad=6)
 
-    ys2 = range(len(NEED))
-    h = 0.36
+    ys2 = [k * 1.3 for k in range(len(NEED))]
+    h = 0.42
     ax2.barh([y - h / 2 for y in ys2], [n[1] for n in NEED], height=h,
              color=DARK, label="1차 현직 중심 (N=13)")
     ax2.barh([y + h / 2 for y in ys2], [n[2] for n in NEED], height=h,
@@ -169,7 +169,7 @@ def fig_b():
     for y, n in zip(ys2, NEED):
         ax2.text(n[1] + 0.15, y - h / 2, str(n[1]), va="center", fontsize=7.5, color=DARK)
         ax2.text(n[2] + 0.15, y + h / 2, str(n[2]), va="center", fontsize=7.5, color=LIGHT)
-    ax2.set_yticks(list(ys2))
+    ax2.set_yticks(ys2)
     ax2.set_yticklabels([textwrap.fill(n[0], 22) for n in NEED],
                         fontsize=7.4, linespacing=1.15)
     ax2.tick_params(axis="y", length=0, pad=2)

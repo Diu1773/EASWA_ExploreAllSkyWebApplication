@@ -549,9 +549,11 @@ while i < len(lines):
             i = j
         cols = 2 if len(panels) in (2, 4) else len(panels)
         merged = montage([src for _, src in panels], cols)
+        out.append(GAP(9))
         out.append('<div class="fig"><p>%s</p>%s</div>'
                    % (img_tag(merged, panels[0][0]),
                       P("figcap", caption(cap)) if cap else ""))
+        out.append(GAP(7))
         i += 1
         continue
 
@@ -570,9 +572,11 @@ while i < len(lines):
         # 편 그림도 폭을 다 쓴다. 좁히면 그 쪽이 더 비어서(그림+캡션이 한 덩어리로
         # 움직이므로) 낭비가 오히려 늘었다 — 0.80 으로 줄였더니 빈 자리가 84mm 에서
         # 100mm 로 커졌다(2026-09-10 실측).
+        out.append(GAP(9))
         out.append('<div class="fig"><p>%s</p>%s</div>'
                    % (img_tag(wide, mi.group(1)),
                       P("figcap", caption(cap)) if cap else ""))
+        out.append(GAP(7))
         i += 1
         continue
 
@@ -604,7 +608,7 @@ while i < len(lines):
             in_ref = txt.startswith("참고문헌")
             if lvl == 1: seen_body = True
             # 장 바로 밑의 첫 절에는 간격을 주지 않는다 — 게재본이 그렇다.
-            prev = {"ch": 15, "sec": 9, "sub": 6, "sub4": 5}[role]
+            prev = {"ch": 18, "sec": 13, "sub": 9, "sub4": 7}[role]
             if heads and heads[-1]["role"] == "ch" and role == "sec":
                 prev = 0
             heads.append({"t": txt, "role": role, "prev": prev, "keep": True,
