@@ -19,6 +19,7 @@ import zipfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import hwpx_headers as H                                   # noqa: E402
+import hwpx_template_styles as T                            # noqa: E402
 
 BASE = r"C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos"
 HWP = sys.argv[1] if len(sys.argv) > 1 else os.path.join(BASE, "EASWA_논문_v18_투고본.hwp")
@@ -27,7 +28,8 @@ HWPX = os.path.join(BASE, "_투고본_스타일.hwpx")
 # 템플릿에 대응이 없어서 이름을 만들면 오히려 낯선 스타일이 생긴다.
 KEEP = {"한글제목", "한글이름", "한글소속", "영문제목", "영문이름", "영문소속",
         "요약타이틀", "국문초록", "주제어", "각주", "장제목", "소제목",
-        "소제목3", "소제목4", "본문", "참고문헌", "표제목", "그림제목", "인용"}
+        "소제목3", "소제목4", "본문", "참고문헌", "표제목", "그림제목", "인용",
+        "표내용"}
 
 
 def strip_dots(path):
@@ -144,6 +146,11 @@ def main():
     hit = strip_dots(HWPX)
     d, mv = drop_gaps(HWPX)
     print("간격 문단 %d개를 지우고 %d곳을 문단 위 간격으로 옮겼다" % (d, mv))
+    # 스타일 정의에 템플릿 글꼴을 박는 단계(hwpx_template_styles.py)는 **끄어 두었다.**
+    # charPr 을 스타일마다 베껴 주는 과정에서 스타일 여럿이 서로 다른 모양을 가리키게
+    # 되어 장제목이 6pt, 본문이 8.5pt 굵게가 됐고 쪽수가 32 → 34 로 늘었다
+    # (2026-09-12). 글자마다는 맞는 글꼴이 들어가므로 **찍힌 모습은 템플릿과 같다.**
+    # 다른 것은 한글 「스타일 편집」 창에 저장된 값뿐이다.
     print("%d쪽 · 점을 뗀 스타일 %d개: %s" % (n, len(hit), ", ".join(sorted(set(hit)))))
     out, n = H.to_hwp(HWPX, HWP)
     os.remove(HWPX)

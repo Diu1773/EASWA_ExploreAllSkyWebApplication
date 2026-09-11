@@ -66,13 +66,13 @@ ITEMS = [
 def fig_a():
     """짝 막대. 1 부터 5 까지 다 보인다 — 3 부터 자르면 차이가 과장된다.
 
-    높이는 82mm 다. 116mm 였을 때 앞 쪽 아래가 105mm 비었고, 86mm 로는 3mm 가
+    높이는 76mm 다. 116mm 였을 때 앞 쪽 아래가 105mm 비었고, 86mm 로는 3mm 가
     모자라 그대로 다음 쪽으로 넘어갔다(2026-09-11). 그림과 캡션이
     한 덩어리로 움직여 통째로 다음 쪽으로 갔기 때문이다(2026-09-11). 진술 원문은
     그대로 두고 접는 폭을 26자에서 34자로 넓혀 줄 수를 줄였다.
     """
     import textwrap
-    fig, ax = plt.subplots(figsize=(W, 82 * MM))
+    fig, ax = plt.subplots(figsize=(W, 76 * MM))
     ys = range(len(ITEMS))
     h = 0.36
     # 오차막대는 오른쪽만 그린다 — 양쪽으로 그리면 왼쪽 캡이 막대 안 숫자를 뚫는다.
@@ -134,13 +134,13 @@ NEED = [                                   # (항목, 1차, 2차)
 
 
 def fig_b():
-    """위아래 두 칸. 높이는 96mm 다 — 134mm(놓일 때 123mm) 였을 때 앞 쪽(21쪽)
+    """위아래 두 칸. 높이는 88mm 다 — 134mm(놓일 때 123mm) 였을 때 앞 쪽(21쪽)
     아래가 113mm 비었다(2026-09-11). 글자 크기는 그대로 두고 항목 이름 접는 폭을
     22자에서 34자로 넓혀 두 줄짜리를 한 줄로 만들었다.
     """
     import textwrap
     fig, (ax1, ax2) = plt.subplots(
-        2, 1, figsize=(W, 96 * MM), gridspec_kw={"height_ratios": [4, 7]})
+        2, 1, figsize=(W, 88 * MM), gridspec_kw={"height_ratios": [4, 7]})
 
     ys = [k * 1.25 for k in range(len(HELP))]
     left = [0] * len(HELP)

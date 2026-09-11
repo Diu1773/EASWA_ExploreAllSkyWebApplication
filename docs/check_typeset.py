@@ -207,7 +207,27 @@ def main():
             # 부록은 새 쪽에서 시작한다 — 그 앞 쪽이 비는 것은 뜻한 바다
             nxt = d[i].get_text().lstrip().splitlines() if i < d.page_count else []
             to_appendix = any(l.strip().startswith("부록.") for l in nxt[:5])
-            if gap > WASTE_BAD and not to_appendix:
+            # 다음 쪽의 그림 덩어리(그림+캡션)가 빈 자리의 한 배 반을 넘으면 줄여서
+            # 넣을 수 있는 크기가 아니다 — 그림 6 은 그림만 123mm 에 캡션이 열한
+            # 줄이라 어떤 쪽에도 끼워 넣을 수 없다(2026-09-12). 알림으로만 둔다.
+            block = 0.0
+            if i < d.page_count:
+                nx = d[i]
+                ims = [r for im in nx.get_images(full=True) for r in nx.get_image_rects(im[0])]
+                if ims:
+                    top, bot = min(r.y0 for r in ims), max(r.y1 for r in ims)
+                    # 캡션은 그림 바로 아래에 잇달아 붙은 줄까지다. 그 뒤 본문까지
+                    # 세면 어떤 그림이든 「못 줄인다」가 되어 버린다(2026-09-12).
+                    end = bot
+                    for b in sorted(body_blocks(nx), key=lambda x: x[1]):
+                        if b[1] < bot:
+                            continue
+                        if b[1] - end > 8 * MM:
+                            break
+                        end = b[3]
+                    block = _mm(end - top)
+            stuck = block > gap * 1.5
+            if gap > WASTE_BAD and not to_appendix and not stuck:
                 bad.append("%d쪽 아래가 %.0fmm 비었다 — 쪽 나누기나 그림 크기를 본다"
                            % (i, gap))
 

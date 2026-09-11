@@ -81,30 +81,34 @@ td.hdr{border:0;padding:0;font-size:9pt;text-align:right;vertical-align:bottom}
 .영문제목{font-size:19pt;text-align:center;line-height:1.28;margin:0 0 5mm;text-indent:0}
 .영문이름{font-size:11pt;text-align:center;margin:0 0 2.4mm;text-indent:0}
 .영문소속{font-size:11pt;font-style:italic;text-align:center;margin:0 0 9mm;text-indent:0}
-.요약타이틀{font-weight:bold;font-size:10pt;text-align:center;margin:0 0 3mm;text-indent:0}
-.국문초록{font-size:8.5pt;text-align:justify;line-height:1.52;margin:0;text-indent:8.5pt}
+.요약타이틀{font-size:10pt;text-align:center;margin:0 0 3mm;text-indent:0}
+.국문초록{font-size:8.5pt;text-align:justify;line-height:1.52;margin:0;text-indent:0}
 .주제어{font-size:8.5pt;text-align:justify;margin:3mm 0 0;text-indent:0}
-.각주{font-size:9pt;text-align:left;margin:11mm 0 0;padding-top:1.6mm;
-      border-top:.5px solid #333;text-indent:0}
-.각주+.각주{margin-top:0;padding-top:0;border-top:0}
+/* 각주는 한글 각주 기능으로 들어간다(make_hwp.py 의 place_footnote). 스타일
+   이름만 템플릿과 맞춰 둔다 — 9pt · 양쪽 정렬 · 내어쓰기 13.1pt. */
+.각주{font-size:9pt;text-align:justify;text-indent:-13.1pt;margin:0 0 0 13.1pt}
 
 /* 본문 */
-.장제목{font-weight:bold;font-size:15pt;text-align:center;margin:7mm 0 3.2mm;text-indent:0;page-break-after:avoid}
-.소제목{font-weight:bold;font-size:11pt;text-align:left;margin:4.6mm 0 1.5mm;text-indent:0;page-break-after:avoid}
+.장제목{font-size:15pt;text-align:center;margin:7mm 0 3.2mm;text-indent:0;page-break-after:avoid}
+.소제목{font-size:11pt;text-align:justify;margin:4.6mm 0 1.5mm;text-indent:0;page-break-after:avoid}
 .소제목3{font-weight:bold;font-size:10.0pt;text-align:left;margin:3.2mm 0 1mm;text-indent:0;page-break-after:avoid}
 .소제목4{font-weight:bold;font-size:9.8pt;text-align:left;margin:2.6mm 0 .8mm;text-indent:0;page-break-after:avoid}
 .본문{font-size:10pt;text-align:justify;text-indent:10pt;margin:0;line-height:1.60}
-.참고문헌{font-size:10pt;text-align:justify;text-indent:-9mm;margin:0 0 0 9mm;line-height:1.55}
+.참고문헌{font-size:10pt;text-align:justify;text-indent:-6mm;margin:0 0 0 6mm;line-height:1.55}
 .인용{font-size:9.3pt;text-align:justify;margin:1.6mm 0 1.6mm 6mm;text-indent:0}
 li{font-size:10pt;text-align:justify}
 ul,ol{margin:1.2mm 0 1.2mm 8mm;padding:0}
 
 /* 표 — 게재본은 가로선만 (굵은 선 1.14pt, 가는 선 0.36pt) */
 .tbl{margin:2.4mm 0 3.4mm}
-.표제목{font-size:10.0pt;text-align:left;margin:0 0 1.2mm;text-indent:0;page-break-after:avoid}
+.표제목{font-size:10.0pt;text-align:justify;margin:0 0 1.2mm;text-indent:1.9pt;page-break-after:avoid}
 table{border-collapse:collapse;width:100%;line-height:1.40}
-th,td,.표내용{border:0;border-top:.36px solid #333;padding:1.2mm 1.6mm;
-      vertical-align:top;font-size:8.5pt;text-align:left}
+th,td{border:0;border-top:.36px solid #333;padding:1.2mm 1.6mm;
+      vertical-align:top;font-size:8.5pt}
+/* 템플릿의 「표내용」은 8.5pt 가운데 정렬이다. 짧은 값이 든 열은 그대로 두고,
+   문장이 든 열만 칸에서 왼쪽으로 돌린다 — 긴 문장을 가운데로 놓으면 읽히지
+   않는다(2026-09-12). */
+.표내용{text-align:center}
 thead th{border-top:1.14px solid #000;border-bottom:.36px solid #333;font-weight:bold}
 tbody tr:last-child td{border-bottom:1.14px solid #000}
 .tbl.big table{page-break-inside:auto}
@@ -114,7 +118,7 @@ tbody tr:last-child td{border-bottom:1.14px solid #000}
 /* 그림 — 게재본 실측 폭 105~171mm · 높이 최대 123mm */
 .fig{margin:3.2mm 0 3.6mm;text-align:center;page-break-inside:avoid}
 .fig p{margin:0;text-indent:0}
-.그림제목{font-size:10.0pt;text-align:justify;margin:1.6mm 0 0;text-indent:0}
+.그림제목{font-size:10.0pt;text-align:center;margin:1.6mm 0 0;text-indent:1.9pt}
 /* 여러 장짜리 그림 — 표 칸에 넣어 쪽이 갈리지 않게 한다 */
 .pnltbl{width:100%;border:0;margin:0 auto}
 td.pnl{border:0;padding:0 1mm 1.5mm;text-align:center;vertical-align:top}
@@ -184,10 +188,10 @@ MAX_W_MM, MAX_H_MM = 166.0, 123.0
 # 그림만 여기에서 따로 줄인다 — 파일 이름 → 높이 상한(mm).
 FIG_CAP = {
     # 그림 3 — 103mm 일 때 11쪽 아래가 90mm 비고 표 2 마지막 행이 13쪽 맨 위에
-    # 머리글 없이 떨어졌다(2026-09-11). 66mm(폭 106mm)면 그림과 캡션이 11쪽에
+    # 머리글 없이 떨어졌다(2026-09-11). 60mm(폭 96mm)면 그림과 캡션이 11쪽에
     # 들어가고, 그 뒤가 한 쪽씩 당겨져 13쪽의 105mm 도 표 3 으로 메워진다.
     # 네 서비스 화면은 「이런 모양새」를 보이는 참고용이고 캡션이 볼 곳을 말한다.
-    "case_stage1_entry.png": 66.0,
+    "case_stage1_entry.png": 60.0,
 }
 
 
@@ -342,13 +346,14 @@ F_SANS_L  = 'KoPubWorld돋움체 Light'
 F_SANS_M  = 'KoPubWorld돋움체 Medium'
 F_SANS_B  = 'KoPubWorld돋움체 Bold'
 F_LATIN   = 'Times New Roman'
+F_TITLE   = '나눔스퀘어_ac'          # 템플릿 장제목 글꼴
 
 ROLE_FONT = {
     'hdl': F_SANS_M, 'hdr': F_SERIF, '한글제목': F_SERIF_B,
     '한글이름': F_SANS_M, '한글소속': F_SERIF,
     '영문제목': F_LATIN, '영문이름': F_LATIN, '영문소속': F_LATIN,
     '요약타이틀': F_SANS_B, '국문초록': F_SERIF, '주제어': F_SANS_M, '각주': F_SERIF,
-    '장제목': F_SANS_B, '소제목': F_SANS_B, '소제목3': F_SANS_B, '소제목4': F_SANS_B,
+    '장제목': F_TITLE, '소제목': F_SANS_M, '소제목3': F_SANS_M, '소제목4': F_SANS_M,
     '본문': F_SERIF, '표제목': F_SANS_M, '그림제목': F_SANS_M, '참고문헌': F_SERIF,
     'li': F_SERIF, '인용': F_SERIF,
 }
@@ -505,6 +510,8 @@ def balance(t):
 
 
 out, toc, heads, figs, tbls = [], [], [], [], []
+footnote = []          # 한글제목에 달 각주 — 교신저자·심사판정 두 줄
+paper_title = []       # 각주를 달 문단을 찾을 때 쓰는 한글제목 원문
 seen_body = False
 sid = 0
 i = 0
@@ -549,22 +556,34 @@ while i < len(lines):
             heads.append({"t": html.unescape(re.sub("<[^>]+>", "", cap)), "role": "표제목",
                           "prev": 9, "keep": True})
         # 표 칸은 style="font-family" 를 무시한다. <font face> 는 이름 그대로 남는다.
-        def cell(tag, c, attr=""):
+        # 열마다 정렬을 정한다 — 한 칸이라도 열두 자가 넘으면 그 열은 왼쪽이다
+        left = [any(_w(r[j]) > 12 for r in rows if j < len(r))
+                for j in range(len(hdr))]
+
+        def cell(tag, c, attr="", j=0):
+            # 클래스는 하나만 준다 — 두 개를 주면 한글이 「.표내용 왼쪽」이라는
+            # 낯선 이름의 스타일을 만든다. 왼쪽 정렬은 칸에 직접 적는다.
             if 'class=' not in attr:
                 attr += ' class="표내용"'
+            if left[j]:
+                if 'style="' in attr:
+                    attr = attr.replace('style="', 'style="text-align:left;')
+                else:
+                    attr += ' style="text-align:left"'
             return '<%s%s><font face="%s">%s</font></%s>' % (tag, attr, F_SANS_L, inline(c), tag)
         # 칸 너비는 한글이 내용과 무관하게 똑같이 나눈다. 글자 수에 맞춰 나눠 준다
         # (2026-09-09: 「수행 내용」이 좁아 여섯 줄로 접히고 「방법 절」이 넓었다).
         wid = colwidths(hdr, rows)
         t.append("<table><thead><tr>")
-        t += [cell("th", c, ' width="%d%%"' % wid[j]) for j, c in enumerate(hdr)]
+        t += [cell("th", c, ' width="%d%%"' % wid[j], j) for j, c in enumerate(hdr)]
         t.append("</tr></thead><tbody>")
         # 첫 칸이 빈 행은 위 행과 같은 무리다. 그 사이에는 선을 긋지 않는다 —
         # 20행짜리 표 12 가 행마다 선이 그어져 읽히지 않았다(2026-09-09 소유자 지적).
         for r in rows:
             same = bool(r) and not r[0].strip()
             at = ' style="border-top:none"' if same else ""
-            t.append("<tr>" + "".join(cell("td", c, at) for c in r) + "</tr>")
+            t.append("<tr>" + "".join(cell("td", c, at, j)
+                                       for j, c in enumerate(r)) + "</tr>")
         t.append("</tbody></table></div>")
         t.append(GAP(5))
         out.append("".join(t))
@@ -632,15 +651,23 @@ while i < len(lines):
             in_abs = False
             # 「| 연구논문|」과 학회지명은 본문이 아니라 머리말에 있어야 한다
             # (템플릿 실측: 1쪽 머리말 y22.0). make_hwp.py 의 set_header 가 넣는다.
-            out.append(GAP(6))
+            # 제목 앞에 빈 문단을 두지 않는다 — 템플릿은 본문 맨 위(40.0mm)에서
+            # 바로 제목이 시작한다. GAP(6) 을 두었더니 3mm 내려갔다(2026-09-12).
             # h1 으로 두면 한글 내장 개요 문단모양이 크기·정렬을 덮어쓴다.
+            # 각주를 달 자리이므로 제목 글자를 지시서에 남긴다(make_hwp 의
+            # place_footnote 가 이 문단을 찾는다). balance 가 줄을 나누므로
+            # 찾을 때는 앞 열두 글자만 쓴다.
+            paper_title[:] = [txt]
             out.append(P("한글제목", balance(inline(txt))))
             out.append(GAP(9))
             toc.append('<a class="lv1" href="#%s">%s</a>' % (aid, html.escape(txt)))
         elif txt in ("요약", "국문초록", "Abstract", "ABSTRACT"):
             out.append(GAP(11) if txt in ("요약", "국문초록") else GAP(9))
             # 템플릿은 「요 약」처럼 두 글자를 벌려 쓴다
-            out.append(P("요약타이틀", inline("요 약" if txt in ("요약", "국문초록") else txt)))
+            cap = "요 약" if txt in ("요약", "국문초록") else txt
+            heads.append({"t": cap, "role": "요약타이틀", "prev": 0,
+                          "keep": False, "align": "center"})
+            out.append(P("요약타이틀", inline(cap)))
             out.append(GAP(4))
             in_abs, in_ref = True, False
             toc.append('<a class="lv2" href="#%s">%s</a>' % (aid, html.escape(txt)))
@@ -715,9 +742,22 @@ while i < len(lines):
                 body_txt = body_txt[1:-1]           # *영문 소속*
             # au·enau 끝의 *(교신저자)와 corr 앞의 *는 그대로 둔다
             if cls == '각주':
-                # 게재본은 각주 기능으로 쪽 아래에 붙인다. 우리는 문단이라 빈 줄로
-                # 밀어 왔는데, 그 빈 줄이 1쪽을 넘겨 각주만 남은 쪽을 만들었다.
-                out.append(GAP(6))
+                # 템플릿은 이 두 줄을 **한글제목에 단 각주**로 넣어 쪽 맨 아래에
+                # 붙인다(논문템플릿.hwp 실측: 245.0~252.7mm, 본문 아래 끝).
+                # 본문 문단으로 두면 주제어 바로 밑에 붙어 45mm 위로 뜬다
+                # (2026-09-12 소유자 지적). 여기서는 흘려보내고 문단 지시서에만
+                # 적어 두면 make_hwp.py 가 한글 각주 기능으로 넣는다.
+                footnote.append(body_txt)
+                i += 1
+                continue
+            # 한글의 HTML 가져오기가 **한 줄짜리** 표제부 문단에 CENTER 대신
+            # JUSTIFY 를 준다 — 이름·요약타이틀이 왼쪽에 붙었다(2026-09-12 소유자
+            # 지적). 스타일은 CENTER 인데 문단 모양이 다르다. 변환 뒤에 직접 준다.
+            if cls in ("한글이름", "한글소속", "영문이름", "영문소속", "영문제목"):
+                key = re.sub(r"[*\[\]]", "", body_txt).strip()[:14]
+                if key:
+                    heads.append({"t": key, "role": cls, "prev": 0,
+                                  "keep": False, "align": "center"})
             out.append(P(cls, inline(body_txt)))
             if cls in ('af', 'enaf'):
                 out.append(GAP(9))
@@ -746,11 +786,15 @@ io.open(OUT, "w", encoding="utf-8", newline="\n").write(doc)
 # 문단 간격과 「다음 문단과 함께」 지시서. 한글이 CSS margin 과
 # page-break-after:avoid 를 무시하므로 docs/make_hwp.py 가 변환 뒤에 읽어 적용한다.
 io.open(OUT[:-5] + ".문단.json", "w", encoding="utf-8").write(
-    json.dumps({"paras": heads, "figs": figs, "tbls": tbls, "body_w": MAX_W_MM},
+    json.dumps({"paras": heads, "figs": figs, "tbls": tbls,
+                "footnote": footnote, "title": (paper_title or [""])[0],
+                "body_w": MAX_W_MM},
                ensure_ascii=False, indent=1))
 
 n_fig = body.count('<div class="fig"')
 n_tbl = body.count('<div class="tbl')
 print("조판 완료 — %s" % OUT)
+if footnote:
+    print("  한글제목에 달 각주 %d줄 — %s" % (len(footnote), footnote[0][:28]))
 print("  표 %d개 · 그림 %d개 · 목차 %d항목 · %,d바이트"
       .replace("%,d", "%d") % (n_tbl, n_fig, len(toc), len(doc)))

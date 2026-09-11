@@ -298,6 +298,42 @@ def set_pagenum(h):
         print('  ! 쪽 번호를 넣지 못했다')
 
 
+def place_footnote(h):
+    """교신저자·심사판정 두 줄을 한글제목에 단 **각주**로 넣는다.
+
+    학회 템플릿(`논문템플릿.hwp`)은 이 두 줄을 본문 문단이 아니라 각주로 둔다.
+    각주라야 1쪽 맨 아래에 붙는다 — 템플릿 실측 245.0~252.7mm, 본문 아래 끝이
+    253mm 다. 본문 문단으로 두면 주제어 바로 밑(200mm)에 붙어 45mm 위로 뜬다
+    (2026-09-12 소유자 지적). 템플릿 HWPX 에도 `<hp:footNote>` 가 한글제목
+    문단에 달려 있다.
+    """
+    if not os.path.exists(RULES):
+        return
+    conf = json.load(io.open(RULES, encoding='utf-8'))
+    lines = conf.get('footnote') or []
+    if not lines:
+        print('  ! 각주로 넣을 줄이 없다')
+        return
+    # 제목은 줄을 나눠 놓았으므로 앞 열두 글자로만 찾는다
+    title = (conf.get('title') or '')[:12]
+    if not title or not _find(h, title):
+        print('  ! 한글제목을 찾지 못해 각주를 넣지 않았다')
+        return
+    h.HAction.Run('MoveParaEnd')
+    if not h.HAction.Run('InsertFootnote'):
+        print('  ! 각주를 넣지 못했다')
+        return
+    for k, ln in enumerate(lines):
+        if k:
+            h.HAction.Run('BreakPara')
+        t = h.HParameterSet.HInsertText
+        h.HAction.GetDefault('InsertText', t.HSet)
+        t.Text = ln
+        h.HAction.Execute('InsertText', t.HSet)
+    h.HAction.Run('CloseEx')
+    print('한글제목에 각주 %d줄 — %s' % (len(lines), lines[0][:26]))
+
+
 def break_section(h, needle, label):
     """찾은 문단 앞에서 구역을 나눈다.
 
@@ -338,15 +374,23 @@ def free_path(path):
         os.remove(path)
         return path
     except PermissionError:
-        alt = path[:-4] + '_새판' + path[-4:]
-        print('  ! %s 가 한글에서 열려 있다 — %s 로 저장한다'
-              % (os.path.basename(path), os.path.basename(alt)))
-        if os.path.exists(alt):
-            try:
-                os.remove(alt)
-            except PermissionError:
-                pass
-        return alt
+        pass
+    # 「_새판」도 열려 있으면 번호를 올린다. 둘 다 막혔을 때 한 판을 통째로
+    # 버리고 「저장 실패」로 끝났다(2026-09-12).
+    for tag in ('_새판', '_새판2', '_새판3', '_새판4'):
+        alt = path[:-4] + tag + path[-4:]
+        if not os.path.exists(alt):
+            print('  ! %s 가 한글에서 열려 있다 — %s 로 저장한다'
+                  % (os.path.basename(path), os.path.basename(alt)))
+            return alt
+        try:
+            os.remove(alt)
+            print('  ! %s 가 한글에서 열려 있다 — %s 로 저장한다'
+                  % (os.path.basename(path), os.path.basename(alt)))
+            return alt
+        except PermissionError:
+            continue
+    sys.exit('투고본과 _새판 넷이 모두 한글에서 열려 있다 — 한글에서 닫아 주십시오')
 
 
 def fix_split_tables(rounds=3):
@@ -637,6 +681,7 @@ def main():
     place_figures(h)
     fit_tables(h)
     apply_para_rules(h)
+    place_footnote(h)
     break_section(h, 'Ⅰ. 서론', '서론')
     print('%d쪽' % h.PageCount)
 
@@ -648,6 +693,26 @@ def main():
     if not (ok and os.path.exists(OUT)):
         sys.exit('저장 실패')
     print('저장 완료 — %s (%.1f MB)' % (OUT, os.path.getsize(OUT) / 1e6))
+
+
+def apply_align(h):
+    """가운데 정렬을 **다시** 준다.
+
+    `hwpx_styles.py` 의 간격 문단 걷어내기를 지나면 표제부의 한 줄짜리 문단
+    (이름·요약타이틀)이 양쪽 정렬로 돌아간다 — `make_hwp.py` 직후에는 가운데(3)인데
+    그 단계 뒤에는 0 이다(2026-09-12 실측). 배치를 바꾸는 단계가 다 끝난 뒤에
+    한 번 더 준다.
+    """
+    if not os.path.exists(RULES):
+        return
+    items = [it for it in json.load(io.open(RULES, encoding='utf-8'))['paras']
+             if it.get('align') == 'center']
+    n = 0
+    for it in items:
+        if _find(h, it['t']):
+            h.HAction.Run('ParagraphShapeAlignCenter')
+            n += 1
+    print('가운데 정렬 %d개 다시 적용' % n)
 
 
 def after_styles(path):
@@ -663,6 +728,12 @@ def after_styles(path):
     """
     global OUT
     OUT = path
+    h = _hwp()
+    h.Open(OUT, 'HWP', 'forceopen:true')
+    apply_align(h)
+    h.SaveAs(OUT, 'HWP', '')
+    h.Clear(1)
+    h.Quit()
     place_appendix_break()
     fix_split_tables()
     fix_widow_headings()
