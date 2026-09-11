@@ -158,7 +158,7 @@ cite(sl, "2022 개정 과학과 교육과정은 디지털 탐구 도구를 활�
 
 # ═════ 3. 연구 배경 ② 그런데 교실까지 오지 않는다 ═════════════════════
 sl = S()
-y = title(sl, "연구 배경 ② 그런데 교실까지 오지 않음",
+y = title(sl, "연구 배경 ② 그런데 학교 현장에서 활용하기에 어려움이 있음",
           "탐구보다 자료 준비가 먼저 옴")
 pic(sl, "fig_pipeline.png", M, y + 0.10, W - 2 * M, 3.35, root=HERE, top=True)
 rule(sl, H - 1.30)
@@ -233,12 +233,32 @@ bullets(sl, M, y + 2.22, W - 2 * M, [
 ], size=15, gap=9)
 cite(sl, "arXiv:2608.20446 · 2607.05406 · 2607.24757 · 2604.22604. 2026-09-11 초록 확인.")
 
+# ═════ 개발 방식 ② AI 에이전트 ═══════════════════════════════════════
+sl = S()
+y = title(sl, "개발 방식 ② AI 에이전트",
+          "지시를 받아 저장소를 읽고, 고치고, 명령을 돌려 확인하고, 스스로 되풀이하는 단계로 넘어감")
+bullets(sl, M, y + 0.10, W - 2 * M, [
+    ("한 번의 물음에 답하는 방식에서, 목표를 주면 저장소를 살피고 파일을 고치고 실행해 "
+     "확인하기를 되풀이하는 방식으로 바뀜", BODY, False),
+    ("공개 저장소 1억 8천만 개를 훑은 조사에서 에이전트가 만든 커밋이 월 32만 건을 넘음. "
+     "한 도구만도 17,295개 프로젝트에서 886,122 커밋 (Khosravani and Mockus, 2026)",
+     BODY, False),
+    ("", BODY, False),
+    ("「중심 문제는 더 이상 프롬프트 공학이 아니라 공학적 과정 통제다」 (Koch, 2026)",
+     WARN, True),
+    ("자율 코드 생성은 요구사항·제약·추적성·독립 검증이 함께 있을 때만 성립한다는 지적임",
+     BODY, False),
+    ("", BODY, False),
+    ("→ 에이전트에 맡기는 폭이 넓어질수록 «무엇을 어떻게 확인했는가»를 따로 세워야 함",
+     ACC, True),
+], size=17, gap=11)
+cite(sl, "arXiv:2606.24429 · 2605.20456. 2026-09-11 초록 확인.")
+
 # ═════ 개발 방식 ② 그래서 값을 따로 검증했음 ══════════════════════════
 sl = S()
-y = title(sl, "개발 방식 ② 그래서 값을 따로 검증했음",
+y = title(sl, "개발 방식 ③ 그래서 값을 따로 검증했음",
           "화면이 돌아가는 것과 값이 맞는 것은 별개임")
-pic(sl, "fig_commits.png", M, y + 0.02, W - 2 * M, 2.35, root=HERE, top=True)
-bullets(sl, M, y + 2.52, W - 2 * M, [
+bullets(sl, M, y + 0.10, W - 2 * M, [
     ("수업 맥락을 아는 연구자가 직접 구현. 사용 범위는 프론트엔드·백엔드 코드 초안·오류 "
      "수정·반복 구현", BODY, False),
     ("탐구 구조와 단계 설계, 학습자에게 개방할 분석 조건, 천문 모델과 가정은 연구자가 정함",
@@ -251,7 +271,7 @@ bullets(sl, M, y + 2.52, W - 2 * M, [
      "처리 조건을 바꾼 민감도 점검은 부록 1", BODY, False),
     ("개발 방식 간 비교는 하지 않았음. 시간·비용을 기록하지 않아 빨랐다고 말할 수 없음",
      GREY, False),
-], size=14, gap=8)
+], size=17, gap=12)
 
 # ═════ EASWA 의 구조 — 논문 도식 그대로 ══════════════════════════════
 sl = S()
@@ -379,6 +399,8 @@ refs = [
     "Fitzgerald M T, Hollow R, Rebull L M, Danaia L and McKinnon D H (2014) A review of high school level astronomy student research projects over the last two decades. PASA 31: e037.",
     "Gaia Collaboration, Vallenari A, Brown A G A, et al. (2023) Gaia Data Release 3. A&A 674: A1.",
     "Hasan P and Hasan S N (2021) Astronomy data, virtual observatory and education. Proc. IAU 15(S367): 151-154.",
+    "Khosravani A and Mockus A (2026) Detecting AI coding agents in open source: A validated multi-method census of 180 million repositories. arXiv:2606.24429.",
+    "Koch C (2026) Agentic Agile-V: From vibe coding to verified engineering in software and hardware development. arXiv:2605.20456.",
     "Kreidberg L (2015) batman: BAsic Transit Model cAlculatioN in Python. PASP 127: 1161-1165.",
     "Mandel K and Agol E (2002) Analytic light curves for planetary transit searches. ApJ 580: L171-L175.",
     "Michels D L, Abu Ghazaleh M, Lazzari F, Kassem N and Klein J (2026) Vibe coding: Practice, performance, productivity, and risk. arXiv:2608.20446.",
@@ -432,6 +454,17 @@ put(f, "첫 화면에 목표성·비교성·하늘 영역 표시가 남아 있�
        "같은 개념. 활동 페이지는 접근 불가", 15, ACC, True, first=True)
 cite(sl, "https://agentexoplanet.lco.global · 2026-09-11 확인. "
          "「Mission End — Agent Exoplanet is no longer active, this is a legacy website」")
+
+# ═════ 머리말과 쪽 번호 ═══════════════════════════════════════════════
+# 표제는 빼고 둘째 장부터 넣는다. 부록도 이어서 매긴다.
+RUN = "천문 탐구 웹 플랫폼 EASWA의 개발과 현장 적용 방안 · 박민준 · 손정주"
+_all = list(prs.slides)
+for n, sl in enumerate(_all[1:], start=2):
+    f = tb(sl, M, 0.16, W - 2 * M - 0.9, 0.24)
+    put(f, RUN, 10, C(0x9A, 0x9A, 0x9A), first=True)
+    g = tb(sl, W - M - 0.9, 0.16, 0.9, 0.24, PP_ALIGN.RIGHT)
+    put(g, "%d / %d" % (n, len(_all)), 10, C(0x9A, 0x9A, 0x9A), first=True,
+        align=PP_ALIGN.RIGHT)
 
 os.makedirs(DEST, exist_ok=True)
 prs.save(OUT)

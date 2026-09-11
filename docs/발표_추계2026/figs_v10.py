@@ -77,8 +77,8 @@ for i, t in enumerate(steps):
     if i:
         arrow(ax, x - sg - 0.002, 0.59, x - 0.004, 0.59, color=RED, lw=1.4)
 arrow(ax, 0.140, 0.59, 0.154, 0.59, color=RED, lw=1.4)
-box(ax, 0.858, 0.42, 0.137, 0.34, "학교\n탐구활동", fc=LIGHT, ec=BLUE, tc=NAVY, fs=13, bold=True)
-arrow(ax, 0.829, 0.59, 0.851, 0.59, color=RED, lw=1.4)
+box(ax, 0.845, 0.42, 0.130, 0.34, "학교\n탐구활동", fc=LIGHT, ec=BLUE, tc=NAVY, fs=13, bold=True)
+arrow(ax, 0.822, 0.59, 0.839, 0.59, color=RED, lw=1.4)
 ax.text(0.50, 0.30, "학습 목표와 무관한 절차 — 학생이 실제 자료에 닿기 전에 모두 지나야 한다",
         ha="center", fontsize=12.5, color=RED, fontweight="bold")
 ax.text(0.50, 0.13, "교사 조사: 수업에 적합한 자료 접근 53% · 자료를 수업에 통합 47% "
@@ -91,19 +91,27 @@ plt.close(fig)
 print("fig_pipeline")
 
 # ══ ③ 바이브 코딩이란 ═════════════════════════════════════════════════
-fig, ax = blank((11.0, 2.6))
-cyc = [("자연어로\n의도를 적는다", NAVY), ("코드가\n생성된다", BLUE), ("실행해\n확인한다", BLUE),
-       ("고쳐 달라고\n다시 적는다", GREY)]
-w2, g2 = 0.205, 0.055
+fig, ax = blank((11.0, 3.0))
+cyc = [("자연어로\n의도를 적는다", NAVY), ("코드가\n생성된다", BLUE),
+       ("실행해\n확인한다", BLUE), ("고쳐 달라고\n다시 적는다", GREY)]
+w2, g2, x0 = 0.208, 0.043, 0.015
+mid = []
 for i, (t, c) in enumerate(cyc):
-    x = 0.035 + i * (w2 + g2)
-    box(ax, x, 0.40, w2, 0.40, t, fc="white", ec=c, tc=c, fs=13, bold=(i == 0), lw=1.8)
+    x = x0 + i * (w2 + g2)
+    box(ax, x, 0.58, w2, 0.34, t, fc="white", ec=c, tc=c, fs=13, bold=(i == 0), lw=1.8)
+    mid.append(x + w2 / 2)
     if i < 3:
-        arrow(ax, x + w2 + 0.004, 0.60, x + w2 + g2 - 0.006, 0.60, color=c)
-ax.annotate("", xy=(0.06, 0.36), xytext=(0.93, 0.36),
-            arrowprops=dict(arrowstyle="-|>", color=GREY, lw=1.5,
-                            connectionstyle="arc3,rad=0.22"))
-ax.text(0.50, 0.09, "전문 개발자가 아니어도 웹 응용을 구성할 수 있는 범위가 넓어졌다 "
+        arrow(ax, x + w2 + 0.003, 0.75, x + w2 + g2 - 0.005, 0.75, color=c)
+
+# 되풀이 — 상자 아래로 둘러 첫 칸으로 돌아간다. 상자를 가로지르지 않는다.
+LY = 0.42
+ax.plot([mid[3], mid[3]], [0.575, LY], color=GREY, lw=1.4, zorder=1)
+ax.plot([mid[3], mid[0]], [LY, LY], color=GREY, lw=1.4, zorder=1)
+arrow(ax, mid[0], LY, mid[0], 0.572, color=GREY, lw=1.4)
+ax.text((mid[0] + mid[3]) / 2, LY - 0.075, "고쳐 달라고 다시 적으며 되풀이한다",
+        ha="center", fontsize=11.5, color=GREY,
+        bbox=dict(fc="white", ec="none", pad=2))
+ax.text(0.50, 0.05, "전문 개발자가 아니어도 웹 응용을 구성할 수 있는 범위가 넓어졌다 "
                     "(Michels et al., 2026)", ha="center", fontsize=12, color="#333333")
 fig.tight_layout(rect=(0, 0, 1, 1))
 fig.savefig("deck/fig_vibe.png", facecolor="white")
