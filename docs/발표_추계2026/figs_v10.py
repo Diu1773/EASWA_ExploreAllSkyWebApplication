@@ -26,7 +26,13 @@ NAVY, BLUE, GREY, RED = "#1F4E79", "#2E75B6", "#8A8A8A", "#C00000"
 LIGHT = "#EAF1F8"
 
 
+PAD = 0.012
+
+
 def box(ax, x, y, w, h, text, fc="white", ec=NAVY, tc="#1A1A1A", fs=12, bold=False, lw=1.6):
+    # 둥근 상자는 pad 만큼 더 커진다. 축(0~1)을 넘으면 테두리가 잘려 사라진다.
+    assert x - PAD >= -1e-9 and x + w + PAD <= 1 + 1e-9,         "상자가 축 밖으로 나간다: x=%.3f w=%.3f → %.3f" % (x, w, x + w + PAD)
+    assert y - PAD >= -1e-9 and y + h + PAD <= 1 + 1e-9,         "상자가 축 밖으로 나간다: y=%.3f h=%.3f → %.3f" % (y, h, y + h + PAD)
     ax.add_patch(FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0.012,rounding_size=0.015",
                                 fc=fc, ec=ec, lw=lw, zorder=2))
     ax.text(x + w / 2, y + h / 2, text, ha="center", va="center", fontsize=fs,
@@ -53,12 +59,12 @@ items = [
     ("TESS", "전천을 나눠 반복 관측", "풀프레임 이미지를\n공개 아카이브로 제공"),
     ("KMTNet", "칠레·남아공·호주\n세 관측소", "관측소별 측광 결과\n공개"),
 ]
-w, gap = 0.225, 0.033
+w, gap = 0.224, 0.022
 for i, (name, big, sub) in enumerate(items):
-    x = i * (w + gap) + 0.008
-    box(ax, x, 0.60, w, 0.30, name, fc=NAVY, ec=NAVY, tc="white", fs=13, bold=True)
-    box(ax, x, 0.30, w, 0.28, big, fc=LIGHT, ec=BLUE, fs=13, bold=True, tc=NAVY)
-    box(ax, x, 0.02, w, 0.26, sub, fc="white", ec="#CFD8E3", fs=10.5, tc="#444444", lw=1.1)
+    x = 0.016 + i * (w + gap)
+    box(ax, x, 0.58, w, 0.30, name, fc=NAVY, ec=NAVY, tc="white", fs=13, bold=True)
+    box(ax, x, 0.29, w, 0.27, big, fc=LIGHT, ec=BLUE, fs=13, bold=True, tc=NAVY)
+    box(ax, x, 0.02, w, 0.25, sub, fc="white", ec="#CFD8E3", fs=10.5, tc="#444444", lw=1.1)
 fig.text(0.012, 0.02, "lsst.org/about/dm · cosmos.esa.int/web/gaia/dr3 · 2026-09-11 확인",
          fontsize=9, color=GREY)
 fig.tight_layout(rect=(0, 0.10, 1, 1))
@@ -68,17 +74,17 @@ print("fig_scale")
 
 # ══ ② 그런데 수업까지 오지 않는다 ═════════════════════════════════════
 fig, ax = blank((11.0, 3.2))
-box(ax, 0.005, 0.42, 0.13, 0.34, "공개\n아카이브", fc=NAVY, ec=NAVY, tc="white", fs=13, bold=True)
+box(ax, 0.016, 0.44, 0.128, 0.32, "공개\n아카이브", fc=NAVY, ec=NAVY, tc="white", fs=13, bold=True)
 steps = ["검색·질의", "내려받기", "형식 변환", "코딩", "반복 계산"]
 sw, sg = 0.118, 0.014
 for i, t in enumerate(steps):
-    x = 0.158 + i * (sw + sg)
-    box(ax, x, 0.42, sw, 0.34, t, fc="white", ec=RED, tc=RED, fs=12.5, lw=1.5)
+    x = 0.166 + i * (sw + sg)
+    box(ax, x, 0.44, sw, 0.32, t, fc="white", ec=RED, tc=RED, fs=12.5, lw=1.5)
     if i:
-        arrow(ax, x - sg - 0.002, 0.59, x - 0.004, 0.59, color=RED, lw=1.4)
-arrow(ax, 0.140, 0.59, 0.154, 0.59, color=RED, lw=1.4)
-box(ax, 0.845, 0.42, 0.130, 0.34, "학교\n탐구활동", fc=LIGHT, ec=BLUE, tc=NAVY, fs=13, bold=True)
-arrow(ax, 0.822, 0.59, 0.839, 0.59, color=RED, lw=1.4)
+        arrow(ax, x - sg - 0.002, 0.60, x - 0.004, 0.60, color=RED, lw=1.4)
+arrow(ax, 0.148, 0.60, 0.162, 0.60, color=RED, lw=1.4)
+box(ax, 0.842, 0.44, 0.130, 0.32, "학교\n탐구활동", fc=LIGHT, ec=BLUE, tc=NAVY, fs=13, bold=True)
+arrow(ax, 0.822, 0.60, 0.836, 0.60, color=RED, lw=1.4)
 ax.text(0.50, 0.30, "학습 목표와 무관한 절차 — 학생이 실제 자료에 닿기 전에 모두 지나야 한다",
         ha="center", fontsize=12.5, color=RED, fontweight="bold")
 ax.text(0.50, 0.13, "교사 조사: 수업에 적합한 자료 접근 53% · 자료를 수업에 통합 47% "
@@ -94,7 +100,7 @@ print("fig_pipeline")
 fig, ax = blank((11.0, 3.0))
 cyc = [("자연어로\n의도를 적는다", NAVY), ("코드가\n생성된다", BLUE),
        ("실행해\n확인한다", BLUE), ("고쳐 달라고\n다시 적는다", GREY)]
-w2, g2, x0 = 0.208, 0.043, 0.015
+w2, g2, x0 = 0.206, 0.040, 0.018
 mid = []
 for i, (t, c) in enumerate(cyc):
     x = x0 + i * (w2 + g2)
