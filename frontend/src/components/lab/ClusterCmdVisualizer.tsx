@@ -29,12 +29,16 @@ const LOG_AGE_MIN = LOG_AGES[0];
 const LOG_AGE_MAX = LOG_AGES[LOG_AGES.length - 1];
 const LOG_AGE_STEP = 0.1;
 
-// Extinction in Gaia bands per unit A_V, from Wang & Chen (2019, ApJ 877, 116),
-// Table 3: A_λ/E(B-V) = 2.50 (G), 3.24 (BP), 1.91 (RP), with R_V = 3.1.
-//   A_G / A_V        = 2.50 / 3.1 = 0.806
-//   E(BP-RP) / A_V   = (3.24 - 1.91) / 3.1 = 0.429
-const A_G_PER_AV = 0.806;
-const E_BPRP_PER_AV = 0.429;
+// Extinction in Gaia bands per unit A_V, from Wang & Chen (2019, ApJ 877, 116)
+// Table 3, column (5) A_lambda/A_V — read from the paper itself (2026-09-11):
+//   A_G  / A_V = 0.789 +- 0.005
+//   A_BP / A_V = 1.002 +- 0.007
+//   A_RP / A_V = 0.589 +- 0.004
+// so E(BP-RP) / A_V = 1.002 - 0.589 = 0.413.
+// The earlier 0.806 / 0.429 came from dividing A_lambda/E(B-V) values by R_V=3.1,
+// which are not this paper's numbers even though its name was on them.
+const A_G_PER_AV = 0.789;
+const E_BPRP_PER_AV = 0.413;
 
 const DEFAULT_LOG_AGE = 8.5; // ~316 Myr: a neutral start, not any catalog's age
 
@@ -498,8 +502,8 @@ E(BP-RP) {(E_BPRP_PER_AV * av).toFixed(2)}
           <summary>{ko ? '모델 가정' : 'Model assumptions'}</summary>
           <p>
             {ko
-              ? '모델 가정: PARSEC v1.2S 등시선, Kroupa 초기질량함수, 소광 계수 A_G/A_V 0.806과 E(BP-RP)/A_V 0.429 (Wang & Chen 2019). 쌍성과 자전은 고려하지 않습니다. 네 값은 서로 바꿔 맞출 수 있으므로 겹침이 좋다고 해서 각 값이 맞다는 뜻은 아닙니다.'
-              : 'Model assumptions: PARSEC v1.2S isochrones, Kroupa IMF, extinction coefficients A_G/A_V 0.806 and E(BP-RP)/A_V 0.429 (Wang & Chen 2019). Binaries and rotation are not modelled. The four controls trade off against each other, so a good overlay does not mean each value is right.'}
+              ? '모델 가정: PARSEC v1.2S 등시선, Kroupa 초기질량함수, 소광 계수 A_G/A_V 0.789와 E(BP-RP)/A_V 0.413 (Wang & Chen 2019). 쌍성과 자전은 고려하지 않습니다. 네 값은 서로 바꿔 맞출 수 있으므로 겹침이 좋다고 해서 각 값이 맞다는 뜻은 아닙니다.'
+              : 'Model assumptions: PARSEC v1.2S isochrones, Kroupa IMF, extinction coefficients A_G/A_V 0.789 and E(BP-RP)/A_V 0.413 (Wang & Chen 2019). Binaries and rotation are not modelled. The four controls trade off against each other, so a good overlay does not mean each value is right.'}
           </p>
         </details>
       </div>
