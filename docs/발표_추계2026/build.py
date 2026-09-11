@@ -236,7 +236,7 @@ sl = web_slide(
     ("web_hunters.png", "Planet Hunters TESS — 시민과학 분류",
      "실제 TESS 광도곡선을 보여 주고 식현상이 보이면 표시하게 함 "
      "(Fischer et al., 2012)",
-     "→ 과업이 분류임. 대상 선택도 측광도 모델 적합도 없음"))
+     "→ 탐구활동이 분류에 머묾. 대상 선택도 측광도 모델 적합도 없음"))
 cite(sl, "SDSS Voyages · Planet Hunters TESS 2026-09-11 확인. 이 두 곳은 학교 탐구 흐름을 "
          "이미 갖추고 있어 논문의 사례분석(표 2·3)에서는 제외하였음(3.2). "
          "Agent Exoplanet(LCO)은 가장 가까운 선례였으나 운영 종료(부록 3).")
