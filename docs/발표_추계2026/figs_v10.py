@@ -24,6 +24,7 @@ rcParams["axes.unicode_minus"] = False
 
 NAVY, BLUE, GREY, RED = "#1F4E79", "#2E75B6", "#8A8A8A", "#C00000"
 LIGHT = "#EAF1F8"
+PURPLE = "#6B4C9A"      # AI 가 하는 일. 사람(남색)과 갈라 보이려고 쓴다
 
 
 PAD = 0.004          # 둥근 상자가 바깥으로 더 커지는 양. 칸 사이 간격보다 작아야 한다.
@@ -122,16 +123,20 @@ print("fig_pipeline")
 # ══ ③ 바이브 코딩이란 ═════════════════════════════════════════════════
 fig, ax = blank((13.6, 2.92))
 T = reset_boxes("vibe")
-cyc = [("자연어로\n의도를 적는다", NAVY), ("코드가\n생성된다", BLUE),
-       ("실행해\n확인한다", BLUE), ("고쳐 달라고\n다시 적는다", GREY)]
+# 남색은 사람, 보라는 AI. 넷 중 하나만 보라다 — 사람이 계속 붙어 있다는 뜻이다.
+cyc = [("자연어로\n의도를 적는다", NAVY), ("코드가\n생성된다", PURPLE),
+       ("실행해\n확인한다", NAVY), ("고쳐 달라고\n다시 적는다", NAVY)]
 w2, g2, x0 = 0.206, 0.040, 0.018
 mid = []
 for i, (t, c) in enumerate(cyc):
     x = x0 + i * (w2 + g2)
-    box(ax, x, 0.58, w2, 0.34, t, fc="white", ec=c, tc=c, fs=14, bold=(i == 0), lw=1.8, tag=T)
+    box(ax, x, 0.58, w2, 0.34, t, fc=c, ec=c, tc="white", fs=14.5, bold=True, lw=1.8, tag=T)
     mid.append(x + w2 / 2)
     if i < 3:
-        arrow(ax, x + w2 + 0.003, 0.75, x + w2 + g2 - 0.005, 0.75, color=c)
+        arrow(ax, x + w2 + 0.002, 0.75, x + w2 + g2 - 0.004, 0.75, color="#5A5A5A",
+              lw=2.8, style="-|>")
+ax.text(0.018, 0.958, "남색 = 사람이 하는 일    보라 = AI 가 하는 일", fontsize=11.5,
+        color="#5A5A5A", va="center")
 
 # 되풀이 — 상자 아래로 둘러 첫 칸으로 돌아간다. 상자를 가로지르지 않는다.
 LY = 0.42
@@ -141,8 +146,9 @@ arrow(ax, mid[0], LY, mid[0], 0.572, color=GREY, lw=1.4)
 ax.text((mid[0] + mid[3]) / 2, LY - 0.075, "고쳐 달라고 다시 적으며 되풀이한다",
         ha="center", fontsize=12.5, color=GREY,
         bbox=dict(fc="white", ec="none", pad=2))
-ax.text(0.50, 0.05, "전문 개발자가 아니어도 웹 응용을 구성할 수 있는 범위가 넓어졌다 "
-                    "(Michels et al., 2026)", ha="center", fontsize=13, color="#333333")
+box(ax, 0.155, 0.015, 0.690, 0.115,
+    "전문 개발자가 아니어도 웹 응용을 구성할 수 있는 범위가 넓어졌다 (Michels et al., 2026)",
+    fc="#F4F0F9", ec=PURPLE, tc="#3A2C52", fs=13, bold=True, lw=1.8, tag=T)
 fig.tight_layout(rect=(0, 0, 1, 1))
 fig.savefig("deck/fig_vibe.png", facecolor="white")
 plt.close(fig)

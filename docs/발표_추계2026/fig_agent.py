@@ -25,7 +25,8 @@ rcParams["font.family"] = "Malgun Gothic"
 rcParams["axes.unicode_minus"] = False
 
 NAVY, BLUE, GREY, RED = "#1F4E79", "#2E75B6", "#8A8A8A", "#C00000"
-LIGHT, LOOP = "#EAF1F8", "#F3F7FB"
+LIGHT, LOOP = "#FBEDE9", "#F4F0F9"
+PURPLE = "#6B4C9A"      # AI 가 하는 일
 PAD = 0.004
 _drawn = []
 
@@ -49,9 +50,10 @@ def box(ax, x, y, w, h, text, fc="white", ec=NAVY, tc="#1A1A1A", fs=13.5,
             linespacing=1.35)
 
 
-def arrow(ax, x1, y1, x2, y2, color=NAVY, lw=1.6):
+def arrow(ax, x1, y1, x2, y2, color=NAVY, lw=1.6, ms=None):
     ax.add_patch(FancyArrowPatch((x1, y1), (x2, y2), arrowstyle="-|>",
-                                 mutation_scale=15, color=color, lw=lw, zorder=3))
+                                 mutation_scale=ms if ms else 9 + 5 * lw,
+                                 color=color, lw=lw, zorder=3))
 
 
 fig, ax = plt.subplots(figsize=(13.6, 2.62), dpi=200)
@@ -59,9 +61,11 @@ ax.set_xlim(0, 1); ax.set_ylim(0, 1); ax.axis("off")
 fig.patch.set_facecolor("white")
 
 # 되풀이가 도는 곳을 옅은 바탕으로 묶는다 (겹침 검사에서 뺀다)
-box(ax, 0.215, 0.24, 0.545, 0.68, "", fc=LOOP, ec="#D5E2EE", lw=1.2, check=False)
+box(ax, 0.215, 0.24, 0.545, 0.68, "", fc=LOOP, ec="#D6C9E8", lw=1.6, check=False)
 ax.text(0.4875, 0.875, "이 세 가지를 에이전트가 «스스로» 되풀이한다", ha="center",
-        fontsize=12, color=BLUE, zorder=4)
+        fontsize=12.5, color=PURPLE, fontweight="bold", zorder=4)
+ax.text(0.018, 0.115, "남색 = 사람이 하는 일    보라 = AI 가 하는 일", fontsize=11,
+        color="#5A5A5A", va="bottom", zorder=4)
 
 BY, BH = 0.46, 0.28
 box(ax, 0.018, BY, 0.175, BH, "사람이\n목표를 맡긴다", fc=NAVY, ec=NAVY,
@@ -71,22 +75,24 @@ loop = ["저장소·문서를\n읽는다", "무엇을 할지\n계획한다", "�
 lw_, lg = 0.163, 0.026
 for i, t in enumerate(loop):
     x = 0.234 + i * (lw_ + lg)
-    box(ax, x, BY, lw_, BH, t, fc="white", ec=BLUE, tc=BLUE, fs=13.5)
+    box(ax, x, BY, lw_, BH, t, fc=PURPLE, ec=PURPLE, tc="white", fs=13.5, bold=True)
     if i:
-        arrow(ax, x - lg + 0.002, BY + BH / 2, x - 0.006, BY + BH / 2, color=BLUE)
-arrow(ax, 0.197, BY + BH / 2, 0.230, BY + BH / 2)
+        arrow(ax, x - lg + 0.002, BY + BH / 2, x - 0.006, BY + BH / 2, color=PURPLE,
+              lw=2.6)
+arrow(ax, 0.197, BY + BH / 2, 0.230, BY + BH / 2, lw=2.6)
 
 # 시험한 결과를 보고 다시 읽기로 — 아래로 둘러 간다
 LY = 0.335
 x_last = 0.234 + 2 * (lw_ + lg)
-ax.plot([x_last + lw_ / 2, x_last + lw_ / 2], [BY - PAD, LY], color=BLUE, lw=1.4, zorder=4)
-ax.plot([x_last + lw_ / 2, 0.234 + lw_ / 2], [LY, LY], color=BLUE, lw=1.4, zorder=4)
-arrow(ax, 0.234 + lw_ / 2, LY, 0.234 + lw_ / 2, BY - PAD - 0.002, color=BLUE)
-ax.text(0.4875, LY - 0.105, "시험한 결과를 보고 다시", ha="center", fontsize=11.5, color=BLUE)
+ax.plot([x_last + lw_ / 2, x_last + lw_ / 2], [BY - PAD, LY], color=PURPLE, lw=2.2, zorder=4)
+ax.plot([x_last + lw_ / 2, 0.234 + lw_ / 2], [LY, LY], color=PURPLE, lw=2.2, zorder=4)
+arrow(ax, 0.234 + lw_ / 2, LY, 0.234 + lw_ / 2, BY - PAD - 0.002, color=PURPLE, lw=2.2)
+ax.text(0.4875, LY - 0.105, "시험한 결과를 보고 다시", ha="center", fontsize=11.5,
+        color=PURPLE)
 
 box(ax, 0.786, BY, 0.196, BH, "사람이 받는 것 —\n«도는» 코드", fc=LIGHT, ec=RED,
-    tc=RED, fs=14, bold=True)
-arrow(ax, x_last + lw_ + 0.006, BY + BH / 2, 0.782, BY + BH / 2, color=RED)
+    tc=RED, fs=14, bold=True, lw=2.6)
+arrow(ax, x_last + lw_ + 0.006, BY + BH / 2, 0.782, BY + BH / 2, color=RED, lw=3.0)
 
 ax.text(0.884, 0.255, "값이 맞는지는\n여기서 안 나온다", ha="center", fontsize=12,
         color=RED, fontweight="bold", linespacing=1.3)

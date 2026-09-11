@@ -11,6 +11,8 @@ v2 (2026-09-10 밤) — 사장님 지시로 구성을 바꿨다.
 「눈에 안 들어온다」고 물리셨다. 강의실 프로젝터에서는 흰 바탕이 맞다.
 """
 import os
+import re
+
 from pptx import Presentation
 from pptx.util import Inches as I, Pt, Emu
 from pptx.dml.color import RGBColor as C
@@ -35,6 +37,8 @@ TBLHEAD = C(0x1F, 0x4E, 0x79)
 TBLTEXT = C(0x1A, 0x1A, 0x1A)
 RULEC = C(0xD9, 0xD9, 0xD9)
 WHITE = C(0xFF, 0xFF, 0xFF)
+ORANGE = C(0xE8, 0x72, 0x2A)   # EASWA 앱 화면에서 뽑은 값 (2026-09-11 실측)
+EMPH = C(0x2E, 0x75, 0xB6)     # «…» 로 묶은 낱말 — 본문 문단에서만 색을 바꾼다
 
 F = "맑은 고딕"
 W, H = 13.333, 7.5
@@ -65,10 +69,17 @@ def put(f, text, size, color=None, bold=False, space_after=0, first=False,
         p.alignment = align
     p.line_spacing = line
     p.space_after = Pt(space_after)
-    r = p.add_run()
-    r.text = text
-    r.font.size, r.font.bold, r.font.name = Pt(size), bold, F
-    r.font.color.rgb = color if color is not None else BODY
+    base = color if color is not None else BODY
+    # «…» 로 묶은 데는 굵게 준다. 원고에서 이미 쓰던 표시라 새 문법이 아니다.
+    for part in re.split("(«[^»]*»)", text):
+        if not part:
+            continue
+        hot = part.startswith("«") and part.endswith("»")
+        r = p.add_run()
+        r.text = part
+        r.font.size, r.font.name = Pt(size), F
+        r.font.bold = True if hot else bold
+        r.font.color.rgb = EMPH if (hot and base in (BODY, GREY)) else base
     return p
 
 
@@ -94,7 +105,24 @@ def pic(sl, name, x, y, maxw, maxh, root=FIG, top=False):
     sc = min(maxw / iw, maxh / ih)
     w, h = iw * sc, ih * sc
     dy = 0 if top else (maxh - h) / 2
-    sl.shapes.add_picture(p, I(x + (maxw - w) / 2), I(y + dy), I(w), I(h))
+    px, py = x + (maxw - w) / 2, y + dy
+    sl.shapes.add_picture(p, I(px), I(py), I(w), I(h))
+    return px, py, w, h          # 그림 위에 표시를 얹으려면 놓인 자리가 필요하다
+
+
+def mark(sl, rect, x0, y0, x1, y1, color=None, lw=2.4):
+    """놓인 그림 «안에서의 분수 좌표»로 빨간 상자를 얹는다."""
+    px, py, w, h = rect
+    color = color if color is not None else WARN
+    sh = sl.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE,
+                             I(px + x0 * w), I(py + y0 * h),
+                             I((x1 - x0) * w), I((y1 - y0) * h))
+    sh.adjustments[0] = 0.14
+    sh.fill.background()
+    sh.line.color.rgb = color
+    sh.line.width = Pt(lw)
+    sh.shadow.inherit = False
+    return sh
 
 
 # 화면 캡처를 통째로 넣으면 강의실 뒤에서 글자가 안 읽힌다(2026-09-10 확인).
@@ -115,6 +143,27 @@ def crop(name):
     if not os.path.exists(dst):
         Image.open(os.path.join(FIG, name)).crop(box).save(dst)
     return out
+
+
+def chip(sl, x, y, w, h, text, size=16, color=None, fill=None):
+    """강조 상자 하나. 테두리 색으로 눈을 끈다."""
+    color = color if color is not None else ORANGE
+    sh = sl.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, I(x), I(y), I(w), I(h))
+    sh.adjustments[0] = 0.18
+    if fill is None:
+        sh.fill.background()
+    else:
+        sh.fill.solid(); sh.fill.fore_color.rgb = fill
+    sh.line.color.rgb = color
+    sh.line.width = Pt(1.8)
+    sh.shadow.inherit = False
+    tf = sh.text_frame
+    tf.word_wrap = True
+    tf.margin_left = tf.margin_right = I(0.12)
+    tf.margin_top = tf.margin_bottom = 0
+    tf.vertical_anchor = MSO_ANCHOR.MIDDLE
+    put(tf, text, size, color, True, first=True, align=PP_ALIGN.CENTER)
+    return sh
 
 
 def bullets(sl, x, y, w, items, size=19, gap=13):
@@ -172,7 +221,7 @@ y = title(sl, "연구 배경 ① 공공 천문자료는 이미 쏟아지고 있�
 pic(sl, "fig_scale.png", M, y + 0.10, W - 2 * M, 3.60, root=HERE, top=True)
 f = tb(sl, M, y + 3.92, W - 2 * M, 1.0)
 put(f, "자료의 양이나 공개 여부가 문제가 아님 — 학교가 같은 규모의 관측시설을 갖추기 "
-       "어렵다는 점을 생각하면 오히려 학교 천문탐구의 자료 기반임", 17, BODY, first=True,
+       "어렵다는 점을 생각하면 오히려 «학교 천문탐구의 자료 기반»임", 17, BODY, first=True,
     space_after=8)
 put(f, "(Fitzgerald et al., 2014; Hasan and Hasan, 2021)", 13, GREY)
 cite(sl, "2022 개정 과학과 교육과정은 디지털 탐구 도구를 활용한 자료의 수집·분석·해석을 "
@@ -185,7 +234,7 @@ y = title(sl, "연구 배경 ② 그런데 학교 현장에서 활용하기에 �
 pic(sl, "fig_pipeline.png", M, y + 0.10, W - 2 * M, 3.35, root=HERE, top=True)
 rule(sl, H - 1.30)
 f = tb(sl, M, H - 1.12, W - 2 * M, 0.8)
-put(f, "그래서 준비 절차는 EASWA 가 맡고, 학습자는 자료 확인과 조건 선택과 해석에 "
+put(f, "그래서 «준비 절차»는 EASWA 가 맡고, 학습자는 «자료 확인과 조건 선택과 해석»에 "
        "집중하게 함", 18, ACC, True, first=True)
 cite(sl, "Wong et al. (2026) · 조훈·손정주 (2022) · 공병민 외 (2023)")
 
@@ -218,7 +267,7 @@ sl = web_slide(
     "천체명·좌표·카탈로그에서 시작. 분석과 탐구 흐름은 서비스 밖의 몫",
     ("web_simbad.png", "SIMBAD",
      "천체명·좌표로 식별 정보와 문헌을 확인 (Wenger et al., 2000)",
-     "→ 탐구 질문에서 출발하는 진입 경로가 없고, 분석용 원자료는 따로 구해야 함"),
+     "→ «탐구 질문에서 출발하는 진입 경로»가 없고, 분석용 원자료는 따로 구해야 함"),
     ("web_vizier.png", "VizieR",
      "카탈로그와 표를 조건 검색 (Ochsenbein et al., 2000)",
      "→ 항목·단위 선택이 부담이고, 표를 받아도 분석은 서비스 밖에서 해야 함"))
@@ -236,7 +285,7 @@ sl = web_slide(
     ("web_hunters.png", "Planet Hunters TESS — 시민과학 분류",
      "실제 TESS 광도곡선을 보여 주고 식현상이 보이면 표시하게 함 "
      "(Fischer et al., 2012)",
-     "→ 탐구활동이 분류에 머묾. 대상 선택도 측광도 모델 적합도 없음"))
+     "→ 탐구활동이 «분류에 머묾». 대상 선택도 측광도 모델 적합도 없음"))
 cite(sl, "SDSS Voyages · Planet Hunters TESS 2026-09-11 확인. 이 두 곳은 학교 탐구 흐름을 "
          "이미 갖추고 있어 논문의 사례분석(표 2·3)에서는 제외하였음(3.2). "
          "Agent Exoplanet(LCO)은 가장 가까운 선례였으나 운영 종료(부록 3).")
@@ -245,15 +294,15 @@ cite(sl, "SDSS Voyages · Planet Hunters TESS 2026-09-11 확인. 이 두 곳은 
 sl = S()
 y = title(sl, "EASWA가 가야 할 방향",
           "앞의 두 갈래에서 갈라지는 지점 셋")
-pic(sl, "easwa_home.png", M, y + 0.04, W - 2 * M, 3.05, root=HERE, top=True)
-bullets(sl, M, y + 3.26, W - 2 * M, [
-    ("① 공개 아카이브 자료를 그대로 쓰되, 검색·내려받기·형식 변환·반복 계산은 플랫폼이 맡음",
-     BODY, False),
-    ("② 자료 구조가 다른 여러 주제를 «같은» 탐구 흐름 안에 둠 — 주제마다 다른 도구로 "
+pic(sl, "fig_bridge.png", M, y + 0.02, W - 2 * M, 3.22, root=HERE, top=True)
+bullets(sl, M, y + 3.30, W - 2 * M, [
+    ("① 공개 아카이브 자료를 그대로 쓰되, 검색·내려받기·형식 변환·반복 계산은 "
+     "«플랫폼이 맡음»", BODY, False),
+    ("② 자료 구조가 다른 여러 주제를 «같은 탐구 흐름» 안에 둠 — 주제마다 다른 도구로 "
      "흩어지지 않게", BODY, False),
-    ("③ 분석을 밖으로 넘기지 않음. 대신 분석 조건을 학습자가 정하고 그 조건을 화면에 남김",
+    ("③ 분석을 밖으로 넘기지 않음. 대신 «분석 조건을 학습자가 정하고» 그 조건을 화면에 남김",
      ACC, True),
-], size=16, gap=9)
+], size=15, gap=7)
 cite(sl, "이 방향은 사례분석·이론적 검토·교육과정 및 교과서 검토에 대조해 다섯 설계 원리로 "
          "정리하였음 — 탐구 주제 중심 접근 · 기술 실행 부담 완화 · 분석 과정의 가시화 · "
          "결과 해석의 학습자 수행 · 수업 적용 가능성 지원 (논문 표 5).")
@@ -325,15 +374,28 @@ bullets(sl, M, y + 3.90, W - 2 * M, [
      GREY, False),
 ], size=15, gap=8)
 
-# ═════ EASWA 의 구조 — 논문 도식 그대로 ══════════════════════════════
+# ═════ EASWA 의 구조 — 화면 둘 ═══════════════════════════════════════
 sl = S()
 y = title(sl, "EASWA의 구조",
           "자료가 다른 세 모듈에 같은 일곱 단계를 적용함")
-pic(sl, "fig_modules.png", M, y + 0.04, W - 2 * M, (H - 1.15) - y - 0.10, root=HERE, top=True)
-rule(sl, H - 1.10)
-f = tb(sl, M, H - 0.94, W - 2 * M, 0.7)
+# 홈 화면은 «모듈 목록까지» 담긴 것을 쓴다. 위쪽만 잘라 쓰면 세 모듈이 안 보인다.
+_GAP = 0.34
+_a = Image.open(os.path.join(HERE, "easwa_home.png")).size
+_b = Image.open(os.path.join(FIG, "step4_analysis.png")).size
+PH = (W - 2 * M - _GAP) / (_a[0] / float(_a[1]) + _b[0] / float(_b[1]))
+_wa, _wb = PH * _a[0] / _a[1], PH * _b[0] / _b[1]
+pic(sl, "easwa_home.png", M, y + 0.06, _wa, PH, root=HERE, top=True)
+pic(sl, "step4_analysis.png", M + _wa + _GAP, y + 0.06, _wb, PH, top=True)
+f = tb(sl, M, y + PH + 0.16, _wa, 0.3, PP_ALIGN.CENTER)
+put(f, "홈 화면 — 세 모듈을 «대표 탐구 질문»과 함께 제시", 14, BODY, first=True,
+    align=PP_ALIGN.CENTER)
+g = tb(sl, M + _wa + _GAP, y + PH + 0.16, _wb, 0.3, PP_ALIGN.CENTER)
+put(g, "모듈 안 — «조건·품질 지표»를 한 화면에", 14, BODY, first=True,
+    align=PP_ALIGN.CENTER)
+chip(sl, 3.30, 5.68, 6.73, 0.52, "직접 열어 보실 수 있음 — easwa-webapp.onrender.com", 17)
+f = tb(sl, M, 6.46, W - 2 * M, 0.5)
 put(f, "설치·로그인 없이 브라우저에서 바로 열림. 다만 세부 구현과 검토 범위는 같지 않음 — "
-       "사용자 검토를 받은 것은 식현상 모듈뿐임", 16, WARN, True, first=True)
+       "사용자 검토를 받은 것은 «식현상 모듈뿐»임", 14, WARN, True, first=True)
 
 # ═════ 5. 웹 기능 ① ═══════════════════════════════════════════════════
 sl = S()
@@ -344,7 +406,7 @@ bullets(sl, M + 8.15, y + 0.2, W - M - 8.15 - M + 0.45, [
     ("첫 화면에 세 모듈을 대표 탐구 질문·사용 자료와 함께 제시", BODY, False),
     ("「행성 크기를 어떻게 알아낼 수 있을까」에서 출발해 대상과 자료로 연결", BODY, False),
     ("자료 확인 단계에서 섹터·케이던스·관측 기간을 먼저 읽게 함", BODY, False),
-    ("자료를 고르는 일 자체가 탐구의 일부임", ACC, True),
+    ("«자료를 고르는 일» 자체가 탐구의 일부임", ACC, True),
 ], size=17, gap=15)
 
 # ═════ 6. 웹 기능 ② ═══════════════════════════════════════════════════
@@ -355,7 +417,7 @@ pic(sl, crop("step3_conditions.png"), M, y, 7.75, H - y - 0.75, root=HERE, top=T
 bullets(sl, M + 8.15, y + 0.2, W - M - 8.15 - M + 0.45, [
     ("구경 반지름·배경 고리·비교성을 학습자가 정함 (기본 2.5픽셀 · 4.0~6.0픽셀)", BODY, False),
     ("측광·모델 적합은 자동이나 조건과 품질 지표는 가리지 않음", BODY, False),
-    ("조건이 값을 바꾼다는 것 자체가 학습 내용임", ACC, True),
+    ("«조건이 값을 바꾼다»는 것 자체가 학습 내용임", ACC, True),
 ], size=17, gap=15)
 
 # ═════ 7. 웹 기능 ③ ═══════════════════════════════════════════════════
@@ -366,7 +428,7 @@ pic(sl, "_panel_step5_reference-step6_record.png", M, y + 0.05, W - 2 * M, 3.95)
 bullets(sl, M, y + 4.12, W - 2 * M, [
     ("왼쪽 — 위상 접기 광도곡선에 적합 모델과 카탈로그 기대 모델을 겹치고 잔차를 함께 제시. "
      "기준 반지름비는 아카이브 수록값을 받아 옴", BODY, False),
-    ("오른쪽 — 해석 질문과 서술형 기록 칸. 과제는 값 맞히기가 아니라 차이 설명임",
+    ("오른쪽 — 해석 질문과 서술형 기록 칸. 과제는 값 맞히기가 아니라 «차이 설명»임",
      ACC, True),
 ], size=16, gap=9)
 cite(sl, "대상 WASP-6 b · 자료 MAST TESScut · 기준값 NASA Exoplanet Archive")
@@ -377,14 +439,16 @@ cite(sl, "대상 WASP-6 b · 자료 MAST TESScut · 기준값 NASA Exoplanet Arc
 sl = S()
 y = title(sl, "사용자 검토 결과",
           "실행 부담은 낮고 기준값 해석이 최하위였음")
-pic(sl, "fig_survey_likert.png", M, y, 6.55, H - y - 0.75, root=HERE)
+_r = pic(sl, "fig_survey_likert.png", M, y, 6.55, H - y - 0.75, root=HERE)
+mark(sl, _r, 0.012, 0.066, 0.900, 0.146)     # 두 조사 최고
+mark(sl, _r, 0.012, 0.768, 0.620, 0.856)     # 두 조사 모두 최하위
 bullets(sl, M + 6.95, y + 0.10, W - M - 6.95 - M + 0.4, [
     ("코딩 환경 없이 분석 과정을 따라간다 — 두 조사 최고 (4.54 · 4.75)", BODY, False),
     ("자료 출처·관측 정보 제시와 분석 조건을 직접 조정하는 기능도 상위", BODY, False),
     ("기준값 비교 화면에서 무엇을 해석할지 어렵다 — 두 조사 모두 최하위 (3.46 · 3.23)",
      WARN, True),
     ("화면이 복잡해 흐름 파악이 어렵다도 하위 (3.54 · 3.92)", BODY, False),
-    ("→ 실행 부담은 낮아졌고 해석 지원이 남음", ACC, True),
+    ("→ 실행 부담은 낮아졌고 «해석 지원»이 남음", ACC, True),
 ], size=14, gap=11)
 cite(sl, "1차 현직교사 중심 13명 (2026-07-24) · 2차 예비교사 13명 (2026-09-06~07). 5점 척도. "
          "* 는 역채점한 부정 진술. 두 조사는 참여 집단과 플랫폼 버전이 함께 달라 차이를 "
@@ -394,14 +458,16 @@ cite(sl, "1차 현직교사 중심 13명 (2026-07-24) · 2차 예비교사 13명
 sl = S()
 y = title(sl, "보완 요구",
           "용어·그래프 해석과 수업용 자료에 몰림")
-pic(sl, "fig_survey_needs.png", M, y, 6.55, H - y - 0.75, root=HERE)
+_r = pic(sl, "fig_survey_needs.png", M, y, 6.55, H - y - 0.75, root=HERE)
+mark(sl, _r, 0.012, 0.176, 0.955, 0.291)     # (a) 용어·기호 · 그래프 읽기
+mark(sl, _r, 0.012, 0.492, 0.955, 0.556)     # (b) 보완 요구 최다
 bullets(sl, M + 6.95, y + 0.10, W - M - 6.95 - M + 0.4, [
     ("안내 문장의 뜻은 11명이 화면만 보고 파악함 (2차 N=13)", BODY, False),
     ("용어·기호와 그래프 읽기는 5명이 사람의 도움을 받음", WARN, True),
     ("보완 요구 최다는 수업용 활동지·교사용 안내 자료 (1차 6명 · 2차 10명)", BODY, False),
     ("그래프·분석 결과 해석 도움말 (8 · 6), 기준값 비교·차이 원인 설명 강화 (7 · 6)",
      BODY, False),
-    ("→ 자동화만으로는 용어와 해석이 해결되지 않음", ACC, True),
+    ("→ 자동화만으로는 «용어와 해석»이 해결되지 않음", ACC, True),
 ], size=14, gap=11)
 cite(sl, "(a) 이해·수행에 필요했던 도움, 2차 예비교사 13명 · (b) 두 조사의 보완 요구(복수선택).")
 
@@ -420,7 +486,7 @@ bullets(sl, M, y + 0.05, W - 2 * M, [
      "추가하는 조건에서 공통 흐름의 재사용 가능성을 검토", BODY, False),
     ("⑤ 학습자의 숙련에 따라 안내와 분석 조건의 개방 정도를 조절하는 설계", BODY, False),
     ("", BODY, False),
-    ("→ ①②가 먼저임. 해석 지원이 남은 과제로 확인된 이상 학생이 실제로 어디서 "
+    ("→ «①②가 먼저»임. 해석 지원이 남은 과제로 확인된 이상 학생이 실제로 어디서 "
      "막히는지부터 봐야 함", ACC, True),
 ], size=17, gap=11)
 
@@ -436,7 +502,7 @@ bullets(sl, M, y + 0.15, W - 2 * M, [
     ("교사 26명 검토에서 실행 부담 완화는 확인, 기준값 비교 화면의 해석 지원이 "
      "다음 과제로 남음", BODY, False),
     ("", BODY, False),
-    ("실행을 돕는 일과 해석을 돕는 일은 다른 과제임", ACC, True),
+    ("«실행을 돕는 일»과 «해석을 돕는 일»은 다른 과제임", ACC, True),
 ], size=18, gap=14)
 rule(sl, H - 1.38)
 f = tb(sl, M, H - 1.20, W - 2 * M, 0.9)

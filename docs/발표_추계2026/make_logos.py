@@ -1,15 +1,23 @@
 # -*- coding: utf-8 -*-
-"""코딩 에이전트 도구 로고 띠를 만든다 (2026-09-11).
+"""코딩 에이전트 도구 로고 띠 (2026-09-11).
 
-사장님 지시 — *「바이브코딩이나 ai에이전트쪽엔 claude codex 로고 넣자」*.
+사장님 지시 —
+  *「바이브코딩이나 ai에이전트쪽엔 claude codex 로고 넣자」*
+  *「전체적으로 색감이 하늘색?파란색?청색?이라 그 ai로고들넣은거는 실제 로고들만
+    넣는게 나을듯 카드없애고」*
 
-로고는 상표다. **아무 데서나 긁어 오지 않고 `simple-icons` 의 CC0 아이콘을 쓴다.**
-아이콘 자체는 CC0 1.0 이고 상표권은 각 소유자에게 있으며, 도구를 «가리키는» 용도로
-쓰는 것은 통상적 범위다. 슬라이드에 출처를 적는다.
+그래서 **카드 테두리를 없애고 각 로고를 제 브랜드 색으로** 그린다. 슬라이드가 온통
+청색이라 이 띠가 색을 들여놓는 자리다.
 
-가로로 길고 낮게 뽑는다. 슬라이드 폭에 맞춰 늘릴 때 글자가 작아지지 않도록
-캡처 자체를 1,280픽셀로 좁게 잡고 글자를 크게 쓴다 — 1,280px 를 12.09인치에 놓으면
-19px 글자가 약 13pt 가 된다.
+  Claude Code  #D97757 (주황)  ·  GitHub Copilot #000000
+  Gemini CLI   #8E75B2 (보라)  ·  Cursor         #000000
+
+**Codex 로고는 뺐다.** 2026-09-11 확인 시 `openai` 아이콘이 simple-icons 에서 내려갔다
+(CDN 404, 3,460개 데이터에 없음). 상표권자가 배포 중지를 요청한 경우가 대부분이라
+CC0 로 받을 길이 없다. 이름은 슬라이드 글줄에 남기고 마크만 뺐다.
+
+아이콘은 `https://cdn.simpleicons.org/<slug>` 가 브랜드 색으로 내려 준 것을
+`logos/<slug>_color.svg` 에 받아 두었다. 아이콘은 CC0 1.0, 상표는 각 소유자의 것이다.
 
     python make_logos.py      →  deck/fig_tools.png
 """
@@ -23,17 +31,17 @@ SRC = os.path.join(os.path.dirname(HERE), "logos")
 CHROME = r"C:/Program Files/Google/Chrome/Application/chrome.exe"
 
 TOOLS = [
-    ("claude.svg", "Claude Code", "Anthropic"),
-    ("openai.svg", "Codex", "OpenAI"),
-    ("githubcopilot.svg", "Copilot", "GitHub"),
-    ("googlegemini.svg", "Gemini CLI", "Google"),
+    ("claude_color.svg", "Claude Code", "Anthropic"),
+    ("githubcopilot_color.svg", "Copilot", "GitHub"),
+    ("googlegemini_color.svg", "Gemini CLI", "Google"),
+    ("cursor_color.svg", "Cursor", "Anysphere"),
 ]
 
 
 def inline(name):
     s = io.open(os.path.join(SRC, name), encoding="utf-8").read()
-    s = re.sub(r'\s(width|height|fill)="[^"]*"', "", s)
-    return s.replace("<svg", '<svg width="34" height="34" fill="currentColor"', 1)
+    s = re.sub(r'\s(width|height)="[^"]*"', "", s)
+    return s.replace("<svg", '<svg width="46" height="46"', 1)
 
 
 cards = "".join(
@@ -43,17 +51,16 @@ cards = "".join(
 
 html = """<!doctype html><meta charset="utf-8"><style>
  *{box-sizing:border-box;margin:0}
- body{font-family:"Malgun Gothic",sans-serif;background:#fff;padding:12px 16px}
- .row{display:flex;gap:18px}
- .c{flex:1;display:flex;align-items:center;gap:12px;
-    border:1.4px solid #D3DDE8;border-radius:9px;padding:10px 14px;color:#1F4E79}
- .t{text-align:left;line-height:1.25}
- .n{font-size:19px;font-weight:700;color:#1F4E79}
+ body{font-family:"Malgun Gothic",sans-serif;background:#fff;padding:10px 18px}
+ .row{display:flex;gap:14px}
+ .c{flex:1;display:flex;align-items:center;justify-content:center;gap:13px}
+ .t{text-align:left;line-height:1.22}
+ .n{font-size:20px;font-weight:700;color:#1A1A1A}
  .v{font-size:13px;color:#70706F}
- .f{margin-top:10px;font-size:13px;color:#8A8A8A}
+ .f{margin-top:10px;font-size:12.5px;color:#8A8A8A;text-align:center}
 </style><div class="row">%s</div>
-<div class="f">아이콘 — simple-icons (CC0 1.0). 상표는 각 소유자의 것이며 도구를 가리키는
-용도로만 썼다.</div>""" % cards
+<div class="f">아이콘 — simple-icons (CC0 1.0), 각 브랜드 색. 상표는 각 소유자의 것이며
+도구를 가리키는 용도로만 썼다.</div>""" % cards
 
 page = os.path.join(HERE, "_tools.html")
 io.open(page, "w", encoding="utf-8").write(html)
