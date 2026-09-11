@@ -64,7 +64,17 @@ def main():
                     return m.get("result", {})
 
         send("Page.enable")
-        send("Page.navigate", url=url)
+        seed = os.environ.get("SEED_LS")          # "키=값;키=값"
+        if seed:
+            send("Page.navigate", url=url)
+            time.sleep(6)
+            for kv in seed.split(";"):
+                k, v = kv.split("=", 1)
+                send("Runtime.evaluate",
+                     expression="localStorage.setItem(%r,%r)" % (k, v))
+            send("Page.reload")
+        else:
+            send("Page.navigate", url=url)
         time.sleep(14)                          # 광도곡선이 그려질 때까지 넉넉히
         for sel in kill:
             send("Runtime.evaluate", expression=

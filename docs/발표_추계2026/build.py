@@ -143,24 +143,29 @@ put(f, "박민준 · 손정주", 20, BODY, True, first=True, space_after=6)
 put(f, "한국교원대학교 지구과학교육과", 16, GREY, space_after=18)
 put(f, "2026년 한국지구과학회 추계학술발표회 · AS2 천문 · 9월 18일 11:15", 14, GREY)
 
-# ═════ 2. 왜 만들었나 ═════════════════════════════════════════════════
+# ═════ 2. 연구 배경 ① 자료는 쏟아진다 ════════════════════════════════
 sl = S()
-y = title(sl, "연구 배경",
-          "자료는 공개되어 있으나 수업에서 쓰려면 준비 절차가 앞섬")
-bullets(sl, M, y, W - 2 * M, [
-    ("MAST · Gaia · KMTNet 등 공개 아카이브가 영상·시계열 측광·측성 카탈로그를 상시 제공 — "
-     "자료는 이미 충분함 (Fitzgerald et al., 2014; Hasan and Hasan, 2021)", BODY, False),
-    ("그러나 수업에서 쓰려면 검색 → 내려받기 → 형식 변환 → 코딩 → 반복 계산을 먼저 지나야 함. "
-     "학습 목표와 무관한 절차임", BODY, False),
-    ("교사 조사에서도 수업에 적합한 자료에 접근하는 일(53%)과 자료를 수업에 통합하는 "
-     "일(47%)이 가장 큰 어려움으로 보고됨 (Wong et al., 2026)", BODY, False),
-    ("코딩 기반 교사교육에서도 현직·예비교사 모두 파이썬 코딩을 학교 적용의 "
-     "가장 큰 어려움으로 꼽았음 (조훈·손정주, 2022; 공병민 외, 2023)", BODY, False),
-    ("", BODY, False),
-    ("→ 준비는 도구가 지고, 자료 확인·조건 선택·해석은 학습자가 하도록 설계함",
-     ACC, True),
-], size=18, gap=11)
-cite(sl, "교육부 (2022) 과학과 교육과정 [별책 9]")
+y = title(sl, "연구 배경 ① 공공 천문자료는 이미 쏟아지고 있음",
+          "전천탐사와 우주망원경이 영상·시계열 측광·측성 카탈로그를 상시 공개함")
+pic(sl, "fig_scale.png", M, y + 0.10, W - 2 * M, 3.60, root=HERE, top=True)
+f = tb(sl, M, y + 3.92, W - 2 * M, 1.0)
+put(f, "자료의 양이나 공개 여부가 문제가 아님 — 학교가 같은 규모의 관측시설을 갖추기 "
+       "어렵다는 점을 생각하면 오히려 학교 천문탐구의 자료 기반임", 17, BODY, first=True,
+    space_after=8)
+put(f, "(Fitzgerald et al., 2014; Hasan and Hasan, 2021)", 13, GREY)
+cite(sl, "2022 개정 과학과 교육과정은 디지털 탐구 도구를 활용한 자료의 수집·분석·해석을 "
+         "강조함 (교육부, 2022).")
+
+# ═════ 3. 연구 배경 ② 그런데 교실까지 오지 않는다 ═════════════════════
+sl = S()
+y = title(sl, "연구 배경 ② 그런데 교실까지 오지 않음",
+          "탐구보다 자료 준비가 먼저 옴")
+pic(sl, "fig_pipeline.png", M, y + 0.10, W - 2 * M, 3.35, root=HERE, top=True)
+rule(sl, H - 1.30)
+f = tb(sl, M, H - 1.12, W - 2 * M, 0.8)
+put(f, "이 연구가 잡은 자리 — 플랫폼이 준비 절차를 맡고, 학습자는 자료 확인과 조건 선택과 "
+       "해석을 맡음", 18, ACC, True, first=True)
+cite(sl, "Wong et al. (2026) · 조훈·손정주 (2022) · 공병민 외 (2023)")
 
 # ═════ 3·4. 기존 웹 환경 — 갈래마다 한 장씩 ═══════════════════════════
 IW = 5.93
@@ -215,26 +220,25 @@ cite(sl, "SDSS Voyages · Planet Hunters TESS 2026-09-11 확인. "
 sl = S()
 y = title(sl, "개발 방식 ① 바이브 코딩",
           "자연어로 의도를 적고 생성된 코드를 실행해 확인하는 방식이 전문 개발자 밖으로 퍼짐")
-bullets(sl, M, y + 0.05, W - 2 * M, [
-    ("전문 개발자가 아니어도 웹 응용을 구성할 수 있는 범위가 넓어졌음 — 실행·생산성·위험을 "
-     "함께 정리한 리뷰가 나옴 (Michels et al., 2026)", BODY, False),
+pic(sl, "fig_vibe.png", M, y + 0.02, W - 2 * M, 2.05, root=HERE, top=True)
+bullets(sl, M, y + 2.22, W - 2 * M, [
     ("K-12 교사가 이 방식으로 수업용 학습 도구를 직접 만드는 과정을 다룬 연구 — 8주 워크숍, "
      "교사 3명·멘토 4명 (Song et al., 2026)", BODY, False),
     ("프로그래밍 수업의 IDE 활동 기록을 읽어 학습 과정을 보여 주는 웹 응용을 며칠 만에 만들어 "
      "수강생 160명 수업에 시범 적용 (Taveter and Lepp, 2026)", BODY, False),
     ("코딩 배경이 없는 임상의가 진료 현장의 문제를 푸는 도구를 직접 만드는 사례 "
      "(Ong et al., 2026)", BODY, False),
-    ("", BODY, False),
     ("→ 도메인을 아는 사람이 «자기 문제를 푸는 도구»를 직접 만드는 흐름. 이 연구도 그 자리에 있음",
      ACC, True),
-], size=17, gap=12)
+], size=15, gap=9)
 cite(sl, "arXiv:2608.20446 · 2607.05406 · 2607.24757 · 2604.22604. 2026-09-11 초록 확인.")
 
 # ═════ 개발 방식 ② 그래서 값을 따로 검증했음 ══════════════════════════
 sl = S()
 y = title(sl, "개발 방식 ② 그래서 값을 따로 검증했음",
           "화면이 돌아가는 것과 값이 맞는 것은 별개임")
-bullets(sl, M, y + 0.05, W - 2 * M, [
+pic(sl, "fig_commits.png", M, y + 0.02, W - 2 * M, 2.35, root=HERE, top=True)
+bullets(sl, M, y + 2.52, W - 2 * M, [
     ("수업 맥락을 아는 연구자가 직접 구현. 사용 범위는 프론트엔드·백엔드 코드 초안·오류 "
      "수정·반복 구현", BODY, False),
     ("탐구 구조와 단계 설계, 학습자에게 개방할 분석 조건, 천문 모델과 가정은 연구자가 정함",
@@ -247,46 +251,17 @@ bullets(sl, M, y + 0.05, W - 2 * M, [
      "처리 조건을 바꾼 민감도 점검은 부록 1", BODY, False),
     ("개발 방식 간 비교는 하지 않았음. 시간·비용을 기록하지 않아 빨랐다고 말할 수 없음",
      GREY, False),
-], size=17, gap=11)
+], size=14, gap=8)
 
-# ═════ 4. EASWA 개요 ══════════════════════════════════════════════════
+# ═════ EASWA 의 구조 — 논문 도식 그대로 ══════════════════════════════
 sl = S()
 y = title(sl, "EASWA의 구조",
           "자료가 다른 세 모듈에 같은 일곱 단계를 적용함")
-f = tb(sl, M, y - 0.08, W - 2 * M, 0.34)
-put(f, "탐구 주제 소개 → 대상 선택 → 자료 확인 → 분석 준비 → 분석·시각화 → "
-       "기준값 비교 → 해석·기록", 13, GREY, first=True)
-y += 0.30
-rows = [
-    ("모듈", "공공 자료", "분석 구조", "학습자가 정하는 것"),
-    ("TESS 외계행성 식현상", "TESS FFI 컷아웃", "구경·차등측광 → 식현상 모델 적합", "측광 구경 · 배경 · 비교성"),
-    ("KMTNet 미시중력렌즈", "관측소별 공개 측광표", "다지점 병합 → 점렌즈 모델 적합", "적합 대상 · 조건 확인"),
-    ("Gaia 성단 색등급도", "Gaia DR3 카탈로그", "구성원 선별 → 색등급도 → 등시선 맞춤", "선별 엄격도 · 나이 · 거리 · 소광"),
-]
-tw = W - 2 * M
-tbl = sl.shapes.add_table(4, 4, I(M), I(y + 0.10), I(tw), I(2.4)).table
-for c, wd in zip(range(4), (3.05, 2.85, 4.30, 3.90)):
-    tbl.columns[c].width = I(tw * wd / 14.1)
-for r, row in enumerate(rows):
-    tbl.rows[r].height = I(0.60 if r else 0.44)
-    for c, v in enumerate(row):
-        cell = tbl.cell(r, c)
-        cell.text = v
-        cell.vertical_anchor = MSO_ANCHOR.MIDDLE
-        cell.margin_left = cell.margin_right = I(0.10)
-        cell.fill.solid()
-        cell.fill.fore_color.rgb = TBLHEAD if r == 0 else BG
-        p = cell.text_frame.paragraphs[0]
-        p.line_spacing = 1.1
-        for run in p.runs:
-            run.font.size = Pt(14)
-            run.font.name = F
-            run.font.bold = (r == 0)
-            run.font.color.rgb = WHITE if r == 0 else TBLTEXT
-f = tb(sl, M, y + 2.72, tw, 1.1)
-put(f, "설치·로그인 없이 브라우저에서 바로 열림", 17, BODY, first=True, space_after=8)
-put(f, "다만 세부 구현과 검토 범위는 같지 않음 — 사용자 검토를 받은 것은 식현상 모듈뿐임",
-    17, WARN, True)
+pic(sl, "fig_modules.png", M, y + 0.04, W - 2 * M, (H - 1.15) - y - 0.10, root=HERE, top=True)
+rule(sl, H - 1.10)
+f = tb(sl, M, H - 0.94, W - 2 * M, 0.7)
+put(f, "설치·로그인 없이 브라우저에서 바로 열림. 다만 세부 구현과 검토 범위는 같지 않음 — "
+       "사용자 검토를 받은 것은 식현상 모듈뿐임", 16, WARN, True, first=True)
 
 # ═════ 5. 웹 기능 ① ═══════════════════════════════════════════════════
 sl = S()
