@@ -75,35 +75,36 @@ img{border:0}
 td.hdl{border:0;padding:0;font-size:11pt;text-align:left}
 td.hdr{border:0;padding:0;font-size:9pt;text-align:right;vertical-align:bottom}
 .gap{margin:0;line-height:1;text-indent:0}
-.doctitle{font-size:22pt;text-align:center;line-height:1.30;margin:0 0 6mm;text-indent:0}
-.au{font-size:11pt;text-align:center;margin:0 0 2.4mm;text-indent:0}
-.af{font-size:10pt;text-align:center;margin:0 0 8mm;text-indent:0}
-.entitle{font-size:19pt;text-align:center;line-height:1.28;margin:0 0 5mm;text-indent:0}
-.enau{font-size:11pt;text-align:center;margin:0 0 2.4mm;text-indent:0}
-.enaf{font-size:11pt;font-style:italic;text-align:center;margin:0 0 9mm;text-indent:0}
-.abshead{font-weight:bold;font-size:10pt;text-align:center;margin:0 0 3mm;text-indent:0}
-.abs{font-size:8.5pt;text-align:justify;line-height:1.52;margin:0;text-indent:8.5pt}
-.kw{font-size:8.5pt;text-align:justify;margin:3mm 0 0;text-indent:0}
-.corr{font-size:9pt;text-align:left;margin:11mm 0 0;padding-top:1.6mm;
+.한글제목{font-size:22pt;text-align:center;line-height:1.30;margin:0 0 6mm;text-indent:0}
+.한글이름{font-size:11pt;text-align:center;margin:0 0 2.4mm;text-indent:0}
+.한글소속{font-size:10pt;text-align:center;margin:0 0 8mm;text-indent:0}
+.영문제목{font-size:19pt;text-align:center;line-height:1.28;margin:0 0 5mm;text-indent:0}
+.영문이름{font-size:11pt;text-align:center;margin:0 0 2.4mm;text-indent:0}
+.영문소속{font-size:11pt;font-style:italic;text-align:center;margin:0 0 9mm;text-indent:0}
+.요약타이틀{font-weight:bold;font-size:10pt;text-align:center;margin:0 0 3mm;text-indent:0}
+.국문초록{font-size:8.5pt;text-align:justify;line-height:1.52;margin:0;text-indent:8.5pt}
+.주제어{font-size:8.5pt;text-align:justify;margin:3mm 0 0;text-indent:0}
+.각주{font-size:9pt;text-align:left;margin:11mm 0 0;padding-top:1.6mm;
       border-top:.5px solid #333;text-indent:0}
+.각주+.각주{margin-top:0;padding-top:0;border-top:0}
 
 /* 본문 */
-.ch{font-weight:bold;font-size:15pt;text-align:center;margin:7mm 0 3.2mm;text-indent:0;page-break-after:avoid}
-.sec{font-weight:bold;font-size:10.7pt;text-align:left;margin:4.6mm 0 1.5mm;text-indent:0;page-break-after:avoid}
-.sub{font-weight:bold;font-size:10.0pt;text-align:left;margin:3.2mm 0 1mm;text-indent:0;page-break-after:avoid}
-.sub4{font-weight:bold;font-size:9.8pt;text-align:left;margin:2.6mm 0 .8mm;text-indent:0;page-break-after:avoid}
-.bd{font-size:9.7pt;text-align:justify;text-indent:9.7pt;margin:0}
-.ref{font-size:9.7pt;text-align:justify;text-indent:-9mm;margin:0 0 0 9mm;line-height:1.55}
-.quote{font-size:9.3pt;text-align:justify;margin:1.6mm 0 1.6mm 6mm;text-indent:0}
-li{font-size:9.7pt;text-align:justify}
+.장제목{font-weight:bold;font-size:15pt;text-align:center;margin:7mm 0 3.2mm;text-indent:0;page-break-after:avoid}
+.소제목{font-weight:bold;font-size:11pt;text-align:left;margin:4.6mm 0 1.5mm;text-indent:0;page-break-after:avoid}
+.소제목3{font-weight:bold;font-size:10.0pt;text-align:left;margin:3.2mm 0 1mm;text-indent:0;page-break-after:avoid}
+.소제목4{font-weight:bold;font-size:9.8pt;text-align:left;margin:2.6mm 0 .8mm;text-indent:0;page-break-after:avoid}
+.본문{font-size:10pt;text-align:justify;text-indent:10pt;margin:0;line-height:1.60}
+.참고문헌{font-size:10pt;text-align:justify;text-indent:-9mm;margin:0 0 0 9mm;line-height:1.55}
+.인용{font-size:9.3pt;text-align:justify;margin:1.6mm 0 1.6mm 6mm;text-indent:0}
+li{font-size:10pt;text-align:justify}
 ul,ol{margin:1.2mm 0 1.2mm 8mm;padding:0}
 
 /* 표 — 게재본은 가로선만 (굵은 선 1.14pt, 가는 선 0.36pt) */
 .tbl{margin:2.4mm 0 3.4mm}
-.cap{font-size:10.0pt;text-align:left;margin:0 0 1.2mm;text-indent:0;page-break-after:avoid}
+.표제목{font-size:10.0pt;text-align:left;margin:0 0 1.2mm;text-indent:0;page-break-after:avoid}
 table{border-collapse:collapse;width:100%;line-height:1.40}
-th,td{border:0;border-top:.36px solid #333;padding:1.2mm 1.6mm;
-      vertical-align:top;font-size:8.4pt;text-align:left}
+th,td,.표내용{border:0;border-top:.36px solid #333;padding:1.2mm 1.6mm;
+      vertical-align:top;font-size:8.5pt;text-align:left}
 thead th{border-top:1.14px solid #000;border-bottom:.36px solid #333;font-weight:bold}
 tbody tr:last-child td{border-bottom:1.14px solid #000}
 .tbl.big table{page-break-inside:auto}
@@ -113,7 +114,7 @@ tbody tr:last-child td{border-bottom:1.14px solid #000}
 /* 그림 — 게재본 실측 폭 105~171mm · 높이 최대 123mm */
 .fig{margin:3.2mm 0 3.6mm;text-align:center;page-break-inside:avoid}
 .fig p{margin:0;text-indent:0}
-.figcap{font-size:10.0pt;text-align:justify;margin:1.6mm 0 0;text-indent:0}
+.그림제목{font-size:10.0pt;text-align:justify;margin:1.6mm 0 0;text-indent:0}
 /* 여러 장짜리 그림 — 표 칸에 넣어 쪽이 갈리지 않게 한다 */
 .pnltbl{width:100%;border:0;margin:0 auto}
 td.pnl{border:0;padding:0 1mm 1.5mm;text-align:center;vertical-align:top}
@@ -157,18 +158,18 @@ def inline(t):
 def _titlepage_class(s):
     """표제부 한 줄이 어느 자리인지 판정한다 (게재본 배열 기준)."""
     t = s.strip()
-    if t.startswith('*교신저자'):
-        return 'corr'
+    if t.startswith('*교신저자') or t.startswith('▶'):
+        return '각주'
     if re.match(r'^\*\*[A-Z].+\*\*$', t):          # **영문 제목**
-        return 'entitle'
+        return '영문제목'
     if re.match(r'^\*[A-Z].+\*$', t):                # *영문 소속*
-        return 'enaf'
+        return '영문소속'
     if re.match(r'^[가-힣]{2,4}( ?[·,] ?[가-힣]{2,4})+\*?$', t):
-        return 'au'
+        return '한글이름'
     if '대학교' in t and len(t) < 60:
-        return 'af'
+        return '한글소속'
     if re.match(r'^[A-Z][a-z]+ [A-Z][a-z]+( ?[·,] ?[A-Z][a-z]+ [A-Z][a-z]+)+\*?$', t):
-        return 'enau'
+        return '영문이름'
     return None
 
 
@@ -178,6 +179,16 @@ def _titlepage_class(s):
 # 태그에 적지 않고 변환 뒤 COM 으로 mm 단위로 준다(docs/make_hwp.py).
 # 게재본 실측: 그림 폭 105~171mm · 높이 최대 123mm (김미림·손정주 2022 그림 2).
 MAX_W_MM, MAX_H_MM = 166.0, 123.0
+# 그림 하나 때문에 앞 쪽이 통째로 비는 자리가 있다. 그림과 캡션은 한 덩어리로
+# 움직이므로 앞 쪽에 남은 자리보다 조금만 커도 통째로 다음 쪽으로 간다. 그런
+# 그림만 여기에서 따로 줄인다 — 파일 이름 → 높이 상한(mm).
+FIG_CAP = {
+    # 그림 3 — 103mm 일 때 11쪽 아래가 90mm 비고 표 2 마지막 행이 13쪽 맨 위에
+    # 머리글 없이 떨어졌다(2026-09-11). 66mm(폭 106mm)면 그림과 캡션이 11쪽에
+    # 들어가고, 그 뒤가 한 쪽씩 당겨져 13쪽의 105mm 도 표 3 으로 메워진다.
+    # 네 서비스 화면은 「이런 모양새」를 보이는 참고용이고 캡션이 볼 곳을 말한다.
+    "case_stage1_entry.png": 66.0,
+}
 
 
 def img_mm(src, share=1.0):
@@ -191,8 +202,9 @@ def img_mm(src, share=1.0):
         return None
     ratio = h0 / float(w0)
     w_mm = MAX_W_MM * share
-    if w_mm * ratio > MAX_H_MM:
-        w_mm = MAX_H_MM / ratio
+    cap = min(MAX_H_MM, FIG_CAP.get(os.path.basename(p), MAX_H_MM))
+    if w_mm * ratio > cap:
+        w_mm = cap / ratio
     return w_mm, w_mm * ratio
 
 
@@ -332,13 +344,13 @@ F_SANS_B  = 'KoPubWorld돋움체 Bold'
 F_LATIN   = 'Times New Roman'
 
 ROLE_FONT = {
-    'hdl': F_SANS_M, 'hdr': F_SERIF, 'doctitle': F_SERIF_B,
-    'au': F_SANS_M, 'af': F_SERIF,
-    'entitle': F_LATIN, 'enau': F_LATIN, 'enaf': F_LATIN,
-    'abshead': F_SANS_B, 'abs': F_SERIF, 'kw': F_SANS_M, 'corr': F_SERIF,
-    'ch': F_SANS_B, 'sec': F_SANS_B, 'sub': F_SANS_B, 'sub4': F_SANS_B,
-    'bd': F_SERIF, 'cap': F_SANS_M, 'figcap': F_SANS_M, 'ref': F_SERIF,
-    'li': F_SERIF, 'quote': F_SERIF,
+    'hdl': F_SANS_M, 'hdr': F_SERIF, '한글제목': F_SERIF_B,
+    '한글이름': F_SANS_M, '한글소속': F_SERIF,
+    '영문제목': F_LATIN, '영문이름': F_LATIN, '영문소속': F_LATIN,
+    '요약타이틀': F_SANS_B, '국문초록': F_SERIF, '주제어': F_SANS_M, '각주': F_SERIF,
+    '장제목': F_SANS_B, '소제목': F_SANS_B, '소제목3': F_SANS_B, '소제목4': F_SANS_B,
+    '본문': F_SERIF, '표제목': F_SANS_M, '그림제목': F_SANS_M, '참고문헌': F_SERIF,
+    'li': F_SERIF, '인용': F_SERIF,
 }
 
 
@@ -421,6 +433,30 @@ def colwidths(hdr, rows, lo=7, hi=45):
     return out
 
 
+def note_caption(cap, heads):
+    """그림 캡션을 문단 지시서에 올린다 — 「문단 보호」를 주기 위해서다.
+
+    캡션이 두 줄 이상일 때 한글은 첫 줄만 그림 쪽에 남기고 나머지를 다음 쪽으로
+    넘긴다(2026-09-11, 18쪽 끝에 그림 8 캡션 첫 줄만 남았다). 그림 문단의
+    「다음 문단과 함께」는 다음 문단의 **첫 줄**까지만 붙잡으므로, 캡션 쪽에
+    「문단 보호」를 걸어야 캡션 전체가 그림을 따라간다.
+
+    찾을 문자열은 굵은 제목 부분만 쓴다 — 그 뒤는 `&nbsp;` 가 섞여 본문과
+    글자가 다르다.
+    """
+    m = re.match(r"^\*\*(.+?)\*\*", cap.strip())
+    t = (m.group(1) if m else re.sub(r"[*]", "", cap)).strip()
+    if not t:
+        return
+    # 문단 보호는 **짧은 캡션에만** 준다. 열 줄짜리 캡션까지 통째로 묶으면 그림과
+    # 캡션이 한 덩어리로 190mm 를 넘어 앞 쪽이 통째로 빈다(2026-09-11, 16쪽 99mm).
+    # 긴 캡션은 갈려도 읽는 데 걸리지 않지만, 두 줄짜리가 한 줄만 남는 것은 눈에 띈다.
+    body = re.sub(r"[*]", "", cap).strip()
+    lines = _w(body) / 50.0                       # 한 줄에 전각 50자 안팎
+    heads.append({"t": t, "role": "그림제목", "prev": 0,
+                  "keep": False, "keeplines": lines <= 4.0})
+
+
 def caption(t):
     """캡션 한 줄. 굵은 제목 뒤의 한 칸이 한글 변환에서 사라져 붙어 버린다."""
     return inline(t).replace("</strong> ", "</strong>&nbsp;")
@@ -501,7 +537,7 @@ while i < len(lines):
         # 마지막 행에서 빈칸이 아닌 첫 칸 — 표가 쪽에서 갈렸는지 재는 표시가 된다
         last = next((c for c in (rows[-1] if rows else []) if c.strip()), "")
         tbls.append({"rows": len(rows), "cols": len(hdr), "big": big,
-                     "cap": html.unescape(re.sub("<[^>]+>", "", cap)) if cap else "",
+                     "표제목": html.unescape(re.sub("<[^>]+>", "", cap)) if cap else "",
                      "last": html.unescape(re.sub("<[^>]+>", "", last))})
         # 표 캡션 앞 간격. 한글이 CSS margin 을 무시해서 앞 문단과 붙어 버린다
         # (2026-09-10, 표 6 이 「…하였다.표 6. 세 탐구모듈의」로 이어졌다).
@@ -509,11 +545,13 @@ while i < len(lines):
         # 붙는다. 빈 문단을 앞에 하나 두면 어느 경우에도 떨어진다.
         t = [GAP(6), '<div class="tbl%s">' % (" big" if big else "")]
         if cap:
-            t.append(P("cap", cap.replace("</strong> ", "</strong>&nbsp;")))
-            heads.append({"t": html.unescape(re.sub("<[^>]+>", "", cap)), "role": "cap",
+            t.append(P("표제목", cap.replace("</strong> ", "</strong>&nbsp;")))
+            heads.append({"t": html.unescape(re.sub("<[^>]+>", "", cap)), "role": "표제목",
                           "prev": 9, "keep": True})
         # 표 칸은 style="font-family" 를 무시한다. <font face> 는 이름 그대로 남는다.
         def cell(tag, c, attr=""):
+            if 'class=' not in attr:
+                attr += ' class="표내용"'
             return '<%s%s><font face="%s">%s</font></%s>' % (tag, attr, F_SANS_L, inline(c), tag)
         # 칸 너비는 한글이 내용과 무관하게 똑같이 나눈다. 글자 수에 맞춰 나눠 준다
         # (2026-09-09: 「수행 내용」이 좁아 여섯 줄로 접히고 「방법 절」이 넓었다).
@@ -550,9 +588,11 @@ while i < len(lines):
         cols = 2 if len(panels) in (2, 4) else len(panels)
         merged = montage([src for _, src in panels], cols)
         out.append(GAP(9))
+        if cap:
+            note_caption(cap, heads)
         out.append('<div class="fig"><p>%s</p>%s</div>'
                    % (img_tag(merged, panels[0][0]),
-                      P("figcap", caption(cap)) if cap else ""))
+                      P("그림제목", caption(cap)) if cap else ""))
         out.append(GAP(7))
         i += 1
         continue
@@ -573,9 +613,11 @@ while i < len(lines):
         # 움직이므로) 낭비가 오히려 늘었다 — 0.80 으로 줄였더니 빈 자리가 84mm 에서
         # 100mm 로 커졌다(2026-09-10 실측).
         out.append(GAP(9))
+        if cap:
+            note_caption(cap, heads)
         out.append('<div class="fig"><p>%s</p>%s</div>'
                    % (img_tag(wide, mi.group(1)),
-                      P("figcap", caption(cap)) if cap else ""))
+                      P("그림제목", caption(cap)) if cap else ""))
         out.append(GAP(7))
         i += 1
         continue
@@ -592,27 +634,27 @@ while i < len(lines):
             # (템플릿 실측: 1쪽 머리말 y22.0). make_hwp.py 의 set_header 가 넣는다.
             out.append(GAP(6))
             # h1 으로 두면 한글 내장 개요 문단모양이 크기·정렬을 덮어쓴다.
-            out.append(P("doctitle", balance(inline(txt))))
+            out.append(P("한글제목", balance(inline(txt))))
             out.append(GAP(9))
             toc.append('<a class="lv1" href="#%s">%s</a>' % (aid, html.escape(txt)))
         elif txt in ("요약", "국문초록", "Abstract", "ABSTRACT"):
             out.append(GAP(11) if txt in ("요약", "국문초록") else GAP(9))
             # 템플릿은 「요 약」처럼 두 글자를 벌려 쓴다
-            out.append(P("abshead", inline("요 약" if txt in ("요약", "국문초록") else txt)))
+            out.append(P("요약타이틀", inline("요 약" if txt in ("요약", "국문초록") else txt)))
             out.append(GAP(4))
             in_abs, in_ref = True, False
             toc.append('<a class="lv2" href="#%s">%s</a>' % (aid, html.escape(txt)))
         else:
-            role = {1: "ch", 2: "sec", 3: "sub", 4: "sub4"}[lvl]
+            role = {1: "장제목", 2: "소제목", 3: "소제목3", 4: "소제목4"}[lvl]
             in_abs = False
             in_ref = txt.startswith("참고문헌")
             if lvl == 1: seen_body = True
             # 장 바로 밑의 첫 절에는 간격을 주지 않는다 — 게재본이 그렇다.
-            prev = {"ch": 18, "sec": 13, "sub": 9, "sub4": 7}[role]
-            if heads and heads[-1]["role"] == "ch" and role == "sec":
+            prev = {"장제목": 18, "소제목": 13, "소제목3": 9, "소제목4": 7}[role]
+            if heads and heads[-1]["role"] == "장제목" and role == "소제목":
                 prev = 0
             heads.append({"t": txt, "role": role, "prev": prev, "keep": True,
-                          "align": "center" if role == "ch" else None})
+                          "align": "center" if role == "장제목" else None})
             out.append(P(role, inline(txt)))
             if lvl <= 2:
                 toc.append('<a class="lv%d" href="#%s">%s</a>' % (lvl, aid, html.escape(txt)))
@@ -631,7 +673,7 @@ while i < len(lines):
             i += 1
         if in_ref:
             # 참고문헌은 글머리표 없이 내어쓰기로 — 게재본과 같다.
-            out += [P("ref", x) for x in items]
+            out += [P("참고문헌", x) for x in items]
         else:
             lst = ' style="font-family:%s"' % F_SERIF
             out.append("<ul>" + "".join("<li%s>%s</li>" % (lst, x) for x in items) + "</ul>")
@@ -649,7 +691,7 @@ while i < len(lines):
         while i < len(lines) and lines[i].strip().startswith(">"):
             q.append(inline(lines[i].strip().lstrip(">").strip()))
             i += 1
-        out.append(P("quote", " ".join(q)))
+        out.append(P("인용", " ".join(q)))
         continue
 
     # 표 캡션 후보 — 바로 다음이 표면 위에서 캡션으로 회수한다.
@@ -659,7 +701,7 @@ while i < len(lines):
         continue
     if s.startswith("**주제어:**") or s.startswith("**Keywords:**"):
         out.append(GAP(5))
-        out.append(P("kw", inline(s)))
+        out.append(P("주제어", inline(s)))
         i += 1
         continue
 
@@ -667,27 +709,27 @@ while i < len(lines):
         cls = _titlepage_class(s)
         if cls:
             body_txt = s.strip()
-            if cls == 'entitle':
+            if cls == '영문제목':
                 body_txt = body_txt[2:-2]           # **영문 제목**
-            elif cls == 'enaf':
+            elif cls == '영문소속':
                 body_txt = body_txt[1:-1]           # *영문 소속*
             # au·enau 끝의 *(교신저자)와 corr 앞의 *는 그대로 둔다
-            if cls == 'corr':
+            if cls == '각주':
                 # 게재본은 각주 기능으로 쪽 아래에 붙인다. 우리는 문단이라 빈 줄로
                 # 밀어 왔는데, 그 빈 줄이 1쪽을 넘겨 각주만 남은 쪽을 만들었다.
                 out.append(GAP(6))
             out.append(P(cls, inline(body_txt)))
             if cls in ('af', 'enaf'):
                 out.append(GAP(9))
-            elif cls == 'entitle':
+            elif cls == '영문제목':
                 out.append(GAP(9))
             i += 1
             continue
-    out.append(P("abs" if in_abs else ("ref" if in_ref else "bd"), inline(s)))
+    out.append(P("국문초록" if in_abs else ("참고문헌" if in_ref else "본문"), inline(s)))
     i += 1
 
 body = "".join(out).replace('<p class="tcapsrc">',
-                            '<p class="cap" style="font-family:%s">' % F_SANS_M)
+                            '<p class="표제목" style="font-family:%s">' % F_SANS_M)
 title = re.sub(r"^#\s+", "", lines[0]).strip()
 
 doc = """<!doctype html><html lang="ko"><head><meta charset="utf-8">

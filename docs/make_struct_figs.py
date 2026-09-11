@@ -111,14 +111,15 @@ def fig_modules():
     fw = 100 / len(FLOW)
     for i, t in enumerate(FLOW):
         x = i * fw
-        ax.add_patch(Rectangle((x + 0.7, 50.5), fw - 2.0, 7.0,
+        ax.add_patch(Rectangle((x + 0.7, 50.5), fw - 3.0, 7.0,
                                fc="none", ec=RULE, lw=0.8))
-        ax.text(x + (fw - 1.3) / 2 + 0.7, 54.0, t, fontsize=6.9,
+        ax.text(x + (fw - 3.0) / 2 + 0.7, 54.0, t, fontsize=6.9,
                 ha="center", va="center", color=INK, linespacing=1.25)
         if i < len(FLOW) - 1:
-            ax.annotate("", xy=(x + fw - 0.15, 54.0), xytext=(x + fw - 1.25, 54.0),
-                        arrowprops=dict(arrowstyle="-|>", color=RULE, lw=0.8,
-                                        mutation_scale=7))
+            ax.annotate("", xy=(x + fw + 0.35, 54.0), xytext=(x + fw - 2.0, 54.0),
+                        arrowprops=dict(arrowstyle="-|>", color=RULE, lw=0.9,
+                                        mutation_scale=9,
+                                        shrinkA=0, shrinkB=0))
     ax.text(0, 58.4, "세 모듈이 공유하는 일곱 단계 탐구 흐름",
             fontsize=8.4, color=INK, va="bottom")
 

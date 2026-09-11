@@ -64,9 +64,15 @@ ITEMS = [
 
 
 def fig_a():
-    """짝 막대. 1 부터 5 까지 다 보인다 — 3 부터 자르면 차이가 과장된다."""
+    """짝 막대. 1 부터 5 까지 다 보인다 — 3 부터 자르면 차이가 과장된다.
+
+    높이는 82mm 다. 116mm 였을 때 앞 쪽 아래가 105mm 비었고, 86mm 로는 3mm 가
+    모자라 그대로 다음 쪽으로 넘어갔다(2026-09-11). 그림과 캡션이
+    한 덩어리로 움직여 통째로 다음 쪽으로 갔기 때문이다(2026-09-11). 진술 원문은
+    그대로 두고 접는 폭을 26자에서 34자로 넓혀 줄 수를 줄였다.
+    """
     import textwrap
-    fig, ax = plt.subplots(figsize=(W, 116 * MM))
+    fig, ax = plt.subplots(figsize=(W, 82 * MM))
     ys = range(len(ITEMS))
     h = 0.36
     # 오차막대는 오른쪽만 그린다 — 양쪽으로 그리면 왼쪽 캡이 막대 안 숫자를 뚫는다.
@@ -85,7 +91,7 @@ def fig_a():
                 va="center", ha="right", fontsize=6.8, color="white")
     ax.set_yticks(list(ys))
     ax.set_yticklabels(
-        [textwrap.fill("%d. %s%s" % (n, t, " *" if r else ""), 26)
+        [textwrap.fill("%d. %s%s" % (n, t, " *" if r else ""), 34)
          for n, t, _, _, _, _, r in ITEMS], fontsize=7.2, linespacing=1.15)
     ax.invert_yaxis()
     ax.axvline(3, color="#999999", lw=0.9, ls="--", zorder=0)
@@ -128,9 +134,13 @@ NEED = [                                   # (항목, 1차, 2차)
 
 
 def fig_b():
+    """위아래 두 칸. 높이는 96mm 다 — 134mm(놓일 때 123mm) 였을 때 앞 쪽(21쪽)
+    아래가 113mm 비었다(2026-09-11). 글자 크기는 그대로 두고 항목 이름 접는 폭을
+    22자에서 34자로 넓혀 두 줄짜리를 한 줄로 만들었다.
+    """
     import textwrap
     fig, (ax1, ax2) = plt.subplots(
-        2, 1, figsize=(W, 134 * MM), gridspec_kw={"height_ratios": [4, 8]})
+        2, 1, figsize=(W, 96 * MM), gridspec_kw={"height_ratios": [4, 7]})
 
     ys = [k * 1.25 for k in range(len(HELP))]
     left = [0] * len(HELP)
@@ -144,7 +154,7 @@ def fig_b():
                          fontsize=7.5, color="white" if col != GRAY else "#333333")
         left = [a + b for a, b in zip(left, vals)]
     ax1.set_yticks(ys)
-    ax1.set_yticklabels([textwrap.fill(h[0], 22) for h in HELP],
+    ax1.set_yticklabels([textwrap.fill(h[0], 34) for h in HELP],
                         fontsize=7.4, linespacing=1.15)
     ax1.tick_params(axis="y", length=0, pad=2)
     ax1.invert_yaxis()
@@ -154,9 +164,6 @@ def fig_b():
     ax1.set_xticks([])
     for s in ("top", "right", "left", "bottom"):
         ax1.spines[s].set_visible(False)
-    ax1.legend(loc="upper center", fontsize=6.9, frameon=False, ncol=3,
-               bbox_to_anchor=(0.5, -0.08), columnspacing=1.1,
-               handletextpad=0.5, handlelength=1.4)
     ax1.set_title("(a) 이해·수행에 필요했던 도움 (2차 예비교사 N=13)",
                   fontsize=9, loc="left", pad=6)
 
@@ -170,7 +177,7 @@ def fig_b():
         ax2.text(n[1] + 0.15, y - h / 2, str(n[1]), va="center", fontsize=7.5, color=DARK)
         ax2.text(n[2] + 0.15, y + h / 2, str(n[2]), va="center", fontsize=7.5, color=LIGHT)
     ax2.set_yticks(ys2)
-    ax2.set_yticklabels([textwrap.fill(n[0], 22) for n in NEED],
+    ax2.set_yticklabels([textwrap.fill(n[0], 34) for n in NEED],
                         fontsize=7.4, linespacing=1.15)
     ax2.tick_params(axis="y", length=0, pad=2)
     ax2.invert_yaxis()
@@ -182,7 +189,14 @@ def fig_b():
     ax2.legend(loc="lower right", fontsize=7.5, frameon=False)
     ax2.set_title("(b) 보완 요구", fontsize=9, loc="left", pad=6)
 
-    fig.tight_layout(pad=0.5, h_pad=2.2)
+    fig.tight_layout(pad=0.5, h_pad=3.4)
+    # (a) 의 범례는 자리를 잡은 **뒤에** 종이 폭 한가운데로 놓는다. 막대 영역에
+    # 맞추면 항목 이름이 넓어진 만큼 오른쪽으로 밀려 「도움을 받아도 어려웠다」가
+    # 종이 밖으로 잘렸다(2026-09-11).
+    y0 = ax1.get_position().y0
+    ax1.legend(loc="upper center", fontsize=6.9, frameon=False, ncol=3,
+               bbox_to_anchor=(0.5, y0 - 0.005), bbox_transform=fig.transFigure,
+               columnspacing=1.1, handletextpad=0.5, handlelength=1.4)
     p = os.path.join(OUT, "fig_survey_needs.png")
     fig.savefig(p, dpi=400)
     plt.close(fig)
@@ -216,68 +230,53 @@ CATS = [
     ("긍정 평가", [("긍정 평가", 6, 11)]),
     ("기타", [("학습자의 흥미·동기", 0, 1)]),
 ]
-LEFT_GROUPS, RIGHT_GROUPS = CATS[:3], CATS[3:]
 
 
-def _panel(ax, groups, xmax):
-    """상위 틀도 눈금 라벨로 넣는다 — 막대 영역에 겹쳐 놓으면 값과 부딪친다."""
+def fig_c():
+    """한 단으로 편다. 두 단으로 나누면 짧은 쪽 아래가 휑하게 비고, 행 간격을
+    맞추면 x 축이 어긋난다 — 둘 다 만족하는 배치가 없었다(2026-09-11)."""
     import textwrap
-    ticks, bars, rules = [], [], []
+    rows, ticks, bars, rules = [], [], [], []
     y = 0.0
-    for name, rows in groups:
+    for name, items in CATS:
         ticks.append((y, name, True))
         rules.append(y + 0.55)
         y += 1.0
-        for lab, a, b in rows:
-            ticks.append((y, textwrap.fill(lab, 14), False))
+        for lab, a, b in items:
+            ticks.append((y, textwrap.fill(lab, 24), False))
             bars.append((y, a, b))
-            y += 1.15
-        y += 0.25
-    h = 0.38
+            y += 1.1
+        y += 0.3
+
+    fig, ax = plt.subplots(figsize=(W, 132 * MM))
+    h = 0.40
     ax.barh([t - h / 2 for t, _, _ in bars], [a for _, a, _ in bars],
             height=h, color=DARK, label="1차 현직 중심 (N=13)")
     ax.barh([t + h / 2 for t, _, _ in bars], [b for _, _, b in bars],
             height=h, color=LIGHT, label="2차 예비교사 (N=13)")
     for t, a, b in bars:
-        ax.text(a + 0.2, t - h / 2, "%d" % a if a else "—", va="center",
-                fontsize=6.8, color=DARK if a else "#777777")
-        ax.text(b + 0.2, t + h / 2, "%d" % b if b else "—", va="center",
-                fontsize=6.8, color=LIGHT if b else "#777777")
+        ax.text(a + 0.16, t - h / 2, "%d" % a if a else "—", va="center",
+                fontsize=7.6, color=DARK if a else "#777777")
+        ax.text(b + 0.16, t + h / 2, "%d" % b if b else "—", va="center",
+                fontsize=7.6, color=LIGHT if b else "#777777")
     for r in rules:
         ax.axhline(r, color="#cccccc", lw=0.5, zorder=0)
     ax.set_yticks([t for t, _, _ in ticks])
-    ax.set_yticklabels([s for _, s, _ in ticks], fontsize=6.8, linespacing=1.1)
-    for lbl, (_, _, is_grp) in zip(ax.get_yticklabels(), ticks):
-        if is_grp:
+    ax.set_yticklabels([s for _, s, _ in ticks], fontsize=8, linespacing=1.1)
+    for lbl, (_, _, grp) in zip(ax.get_yticklabels(), ticks):
+        if grp:
             lbl.set_fontweight("bold")
-            lbl.set_fontsize(7.4)
-    ax.tick_params(axis="y", length=0, pad=2)
-    ax.set_ylim(y - 1.15, -0.7)
-    ax.set_xlim(0, xmax)
-    ax.set_xticks(range(0, xmax, 3))
-    ax.tick_params(axis="x", labelsize=7)
+            lbl.set_fontsize(8.4)
+    ax.tick_params(axis="y", length=0, pad=3)
+    ax.set_ylim(y - 0.7, -0.8)
+    ax.set_xlim(0, 12.6)
+    ax.set_xticks(range(0, 13, 2))
+    ax.tick_params(axis="x", labelsize=8)
     for sp in ("top", "right", "left"):
         ax.spines[sp].set_visible(False)
-    return y
-
-
-def fig_c():
-    """두 단의 행 높이를 같게 하려면 축 높이를 슬롯 수에 비례시켜야 한다 —
-    같은 크기의 두 칸에 12행과 16행을 채우면 왼쪽 행이 커지고, 아래를 맞추면
-    왼쪽에 네 행짜리 빈자리가 남는다(2026-09-11)."""
-    fig = plt.figure(figsize=(W, 84 * MM))
-    nl = sum(1 + len(r) for _, r in LEFT_GROUPS)
-    nr = sum(1 + len(r) for _, r in RIGHT_GROUPS)
-    B, H = 0.105, 0.80                      # 오른쪽(긴) 단의 아래·높이
-    hl = H * nl / nr
-    axl = fig.add_axes([0.210, B + H - hl, 0.250, hl])
-    axr = fig.add_axes([0.715, B, 0.265, H])
-    _panel(axl, LEFT_GROUPS, 13)
-    _panel(axr, RIGHT_GROUPS, 13)
-    for ax in (axl, axr):
-        ax.set_xlabel("언급 인원", fontsize=8, labelpad=2)
-    fig.legend(*axl.get_legend_handles_labels(), loc="upper center",
-               fontsize=7.8, frameon=False, ncol=2, bbox_to_anchor=(0.5, 1.005))
+    ax.set_xlabel("언급 인원", fontsize=8.5, labelpad=2)
+    ax.legend(loc="lower right", fontsize=8, frameon=False)
+    fig.tight_layout(pad=0.4)
     p = os.path.join(OUT, "fig_survey_categories.png")
     fig.savefig(p, dpi=400)
     plt.close(fig)

@@ -10,6 +10,7 @@
 함께 찍는다.
 """
 import io
+import json
 import os
 import re
 import sys
@@ -26,7 +27,8 @@ MM = 72.0 / 25.4                      # 1 mm = 2.835 pt
 HEAD_Y, FOOT_Y = 26.0, 258.0          # 이 밖은 머리말·쪽 번호이므로 본문에서 뺀다
 TOP_MIN, TOP_MAX = 38.0, 48.0         # 본문 첫 줄이 시작할 위쪽 범위 (mm)
 BOTTOM_MIN = 12.0                     # 본문 아래 여백 최소
-WASTE_MM = 55.0                       # 쪽 아래가 이만큼 넘게 비면 알린다
+WASTE_MM = 45.0                       # 쪽 아래가 이만큼 넘게 비면 알린다
+WASTE_BAD = 70.0                      # 이만큼 비면 알림이 아니라 어김이다 (OPERATOR C-212)
 STACK_RUN = 3                         # 한 글자짜리 줄이 이만큼 이어지면 세로 쌓임
 LEFTOVER = ("[[FIG", "**", "~~", "](", "<br>", "&nbsp;", "|---")
 
@@ -167,7 +169,30 @@ def main():
     for i, cap in caption_orphans(d):
         bad.append("%d쪽 끝에 캡션 「%s」만 남았다 — 본체가 다음 쪽으로 갔다" % (i, cap))
 
-    # 7. 쪽 아래 빈 자리 — 어김이 아니라 알림
+    # 8. 쪽에서 갈린 표 — 머리글 없는 조각이 다음 쪽 맨 위에 남는다.
+    #    표 2 의 마지막 행이 13쪽 맨 위에 떨어져 있었는데 아무 검사도 잡지 못했다
+    #    (2026-09-11, Main/FAILURES.md F-327).
+    if os.path.exists(RULES):
+        conf = json.load(io.open(RULES, encoding="utf-8"))
+        texts = [pg.get_text() for pg in d]
+        ok = set(conf.get("split_ok", []))
+        for t in conf.get("tbls", []):
+            cap = t.get("표제목") or t.get("cap")
+            if cap in ok:
+                continue          # 밀어도 한 쪽에 안 들어가는 표
+            last = t.get("last")
+            if not cap or not last:
+                continue
+            cp = next((i for i, x in enumerate(texts) if cap[:14] in x), None)
+            if cp is None:
+                continue
+            lp = next((i for i in range(cp, len(texts)) if last in texts[i]), None)
+            if lp is not None and lp > cp:
+                bad.append("「%s」 가 %d~%d쪽으로 갈렸다 — 머리글 없는 조각이 남는다"
+                           % (cap[:18], cp + 1, lp + 1))
+
+    # 7. 쪽 아래 빈 자리 — 70mm 를 넘으면 어김이다.
+    #    재 놓고 「비었습니다」로 넘긴 적이 두 번 있다(OPERATOR C-212 승격).
     waste = []
     for i, pg in enumerate(d, 1):
         blocks = body_blocks(pg)
@@ -179,6 +204,12 @@ def main():
         gap = _mm(pg.rect.height - low) - 32.0
         if gap > WASTE_MM and i not in (d.page_count,):
             waste.append((i, round(gap)))
+            # 부록은 새 쪽에서 시작한다 — 그 앞 쪽이 비는 것은 뜻한 바다
+            nxt = d[i].get_text().lstrip().splitlines() if i < d.page_count else []
+            to_appendix = any(l.strip().startswith("부록.") for l in nxt[:5])
+            if gap > WASTE_BAD and not to_appendix:
+                bad.append("%d쪽 아래가 %.0fmm 비었다 — 쪽 나누기나 그림 크기를 본다"
+                           % (i, gap))
 
     chars = sum(len(pg.get_text()) for pg in d)
     print("투고본 %d쪽 · 쪽당 %d자 · 그림 %d개" % (d.page_count, chars // d.page_count, got))

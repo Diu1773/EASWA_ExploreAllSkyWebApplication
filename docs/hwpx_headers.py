@@ -32,7 +32,7 @@ import zipfile
 import win32com.client as win32
 
 BASE = r"C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos"
-HWP = os.path.join(BASE, "EASWA_논문_v18_투고본.hwp")
+HWP = sys.argv[1] if len(sys.argv) > 1 else os.path.join(BASE, "EASWA_논문_v18_투고본.hwp")
 HWPX = os.path.join(BASE, "_투고본_머리말.hwpx")
 MD = os.path.join(BASE, "EASWA_논문_v18.md")
 

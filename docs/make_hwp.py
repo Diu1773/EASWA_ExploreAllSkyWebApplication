@@ -46,6 +46,9 @@ def _find(h, needle):
     return True
 
 
+_KEEPLINES_WARNED = False
+
+
 def apply_para_rules(h):
     """제목·캡션 문단에 위 간격과 「다음 문단과 함께」를 준다.
 
@@ -66,6 +69,16 @@ def apply_para_rules(h):
         ps = h.HParameterSet.HParaShape
         h.HAction.GetDefault('ParagraphShape', ps.HSet)
         ps.KeepWithNext = 1 if it['keep'] else 0
+        # 「문단 보호」 — 캡션이 두 줄 이상일 때 첫 줄만 그림 쪽에 남는 것을 막는다.
+        # 「다음 문단과 함께」는 다음 문단의 첫 줄까지만 붙잡는다(2026-09-11).
+        if it.get('keeplines'):
+            try:
+                ps.KeepLinesTogether = 1
+            except Exception:
+                global _KEEPLINES_WARNED
+                if not _KEEPLINES_WARNED:
+                    print('  ! 문단 보호(KeepLinesTogether)를 줄 수 없다')
+                    _KEEPLINES_WARNED = True
         ps.PrevSpacing = int(it['prev'] * 100)      # 1pt = 100 HWPUNIT
         h.HAction.Execute('ParagraphShape', ps.HSet)
         # 장 제목은 가운데 — 템플릿의 「서론」·「연구 방법」·「참고문헌」이 모두 가운데다
@@ -122,7 +135,11 @@ def fix_widow_headings(rounds=3):
     """
     if not os.path.exists(RULES):
         return
-    items = json.load(io.open(RULES, encoding='utf-8'))['paras']
+    # 그림 캡션은 빼야 한다. 캡션은 뒤에 본문이 따라올 필요가 없고, 앞의 그림을
+    # 따라다녀야 한다 — 여기서 캡션 앞에 쪽 나누기를 넣으면 그림과 캡션이 갈린다
+    # (2026-09-11, 그림 8·9 의 캡션만 다음 쪽 맨 위에 남았다).
+    items = [it for it in json.load(io.open(RULES, encoding='utf-8'))['paras']
+             if it.get('role') != '그림제목']
     tmp = os.path.join(BASE, '_widowcheck.pdf')
     for _ in range(rounds):
         # PDF 로 내보낸 문서를 그대로 다시 저장하면 한글이 그림을 96dpi 로 줄여
@@ -344,9 +361,15 @@ def fix_split_tables(rounds=3):
     import fitz
     if not os.path.exists(RULES):
         return
-    tbls = [t for t in json.load(io.open(RULES, encoding='utf-8')).get('tbls', [])
-            if not t['big'] and t.get('cap') and t.get('last')]
+    # 캡션 열쇠는 「표제목」이다. 조판기의 CSS 클래스를 한글 스타일 이름으로 바꿀 때
+    # 규칙 파일의 열쇠도 함께 바뀌었는데(2026-09-11) 여기만 옛 이름 'cap' 을 보고 있어
+    # 목록이 늘 비었다 — 그래서 이 함수가 세 판 내리 아무 일도 하지 않았고 표 2 의
+    # 마지막 행이 13쪽 맨 위에 머리글 없이 떨어졌다(F-327).
+    tbls = [dict(t, cap=t.get('표제목') or t.get('cap'))
+            for t in json.load(io.open(RULES, encoding='utf-8')).get('tbls', [])]
+    tbls = [t for t in tbls if not t['big'] and t['cap'] and t.get('last')]
     if not tbls:
+        print('  ! 규칙 파일에 표 캡션이 없다 — 갈린 표를 보지 않는다')
         return
     tmp = os.path.join(BASE, '_splitcheck.pdf')
     done = set()          # 한 번 민 표는 다시 밀지 않는다
@@ -436,6 +459,12 @@ def fix_split_tables(rounds=3):
               % (len(bad), ' / '.join(c[:16] for c in bad)))
     if os.path.exists(tmp):
         os.remove(tmp)
+    # 밀어도 한 쪽에 안 들어가는 표는 갈린 채로 둔다 — 점검기가 이것을 결함으로
+    # 세지 않도록 규칙 파일에 남긴다(2026-09-11).
+    conf = json.load(io.open(RULES, encoding='utf-8'))
+    conf['split_ok'] = sorted(never)
+    io.open(RULES, 'w', encoding='utf-8').write(
+        json.dumps(conf, ensure_ascii=False, indent=1))
 
 
 def pull_table_forward(rounds=2, waste_mm=80.0):
@@ -499,7 +528,23 @@ def pull_table_forward(rounds=2, waste_mm=80.0):
         h.Quit()
 
 
-def place_appendix_break(head='부록', min_lines=14):
+def appendix_head():
+    """부록 제목의 앞머리를 원고에서 읽는다.
+
+    '부록' 두 글자만 찾으면 본문의 「…부록에 제시하였다」·「(부록 표 1)」이 먼저
+    걸린다. 그 자리에 쪽 나누기가 들어가 11쪽이 186mm 비었다(2026-09-11,
+    F-324). 제목 줄 전체를 쓰면 본문 언급과 겹치지 않는다.
+    """
+    md = os.path.join(BASE, 'EASWA_논문_v18.md')
+    if os.path.exists(md):
+        for ln in io.open(md, encoding='utf-8'):
+            t = ln.strip().lstrip('#').strip()
+            if ln.startswith('#') and t.startswith('부록'):
+                return t[:18]
+    return '부록. '
+
+
+def place_appendix_break(head=None, min_lines=14):
     """부록을 새 쪽에서 시작시킨다 — 앞 쪽이 거의 비지 않을 때만.
 
     조건 없이 밀었더니 참고문헌 마지막 한 줄만 있는 쪽이 생겼다(2026-09-10,
@@ -507,6 +552,7 @@ def place_appendix_break(head='부록', min_lines=14):
     PDF 로 재서 그 쪽에 몇 줄이 남는지 세고 판단한다.
     """
     import fitz
+    head = head or appendix_head()
     tmp = os.path.join(BASE, '_appendix.pdf')
     h = _hwp()
     h.Open(OUT, 'HWP', 'forceopen:true')
@@ -601,11 +647,29 @@ def main():
     h.Quit()
     if not (ok and os.path.exists(OUT)):
         sys.exit('저장 실패')
-    place_appendix_break()
-    fix_split_tables()
-    fix_widow_headings()
     print('저장 완료 — %s (%.1f MB)' % (OUT, os.path.getsize(OUT) / 1e6))
 
 
+def after_styles(path):
+    """쪽 나누기는 **스타일을 손본 뒤에** 정한다.
+
+    `hwpx_styles.py` 의 `drop_gaps` 가 간격용 빈 문단 45개를 지우고 그 값을 문단
+    위 간격으로 옮기면 쪽나눔 자리가 통째로 달라진다. 그 앞에서 재고 판단하면
+    필요 없는 쪽 나누기가 남는다 — 표 5 앞에 넣은 것 때문에 20쪽이 153mm
+    비었다(2026-09-11). 그래서 이 셋은 스타일 단계 뒤로 뺐다.
+
+        typeset_hwp → make_hwp → hwpx_styles → **make_hwp --쪽나눔** →
+        hwpx_headers → save_pdf
+    """
+    global OUT
+    OUT = path
+    place_appendix_break()
+    fix_split_tables()
+    fix_widow_headings()
+
+
 if __name__ == '__main__':
-    main()
+    if len(sys.argv) > 2 and sys.argv[1] == '--쪽나눔':
+        after_styles(sys.argv[2])
+    else:
+        main()
