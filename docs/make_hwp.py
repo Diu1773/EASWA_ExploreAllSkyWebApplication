@@ -499,7 +499,7 @@ def pull_table_forward(rounds=2, waste_mm=80.0):
         h.Quit()
 
 
-def place_appendix_break(head='부록. 서술형', min_lines=14):
+def place_appendix_break(head='부록', min_lines=14):
     """부록을 새 쪽에서 시작시킨다 — 앞 쪽이 거의 비지 않을 때만.
 
     조건 없이 밀었더니 참고문헌 마지막 한 줄만 있는 쪽이 생겼다(2026-09-10,
