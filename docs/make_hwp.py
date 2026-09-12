@@ -487,9 +487,13 @@ def fix_split_tables(rounds=3):
                 print('  넣었던 쪽 나누기 %d개를 도로 뺐다' % n)
             h.Clear(1)
             h.Quit()
-        if not bad:
+        if not bad and not undo:
             print('쪽에서 갈린 표 없음 (밀 수 있는 것 기준)')
             break
+        if not bad:
+            # 되돌린 판은 배치가 달라졌다. 다시 재지 않고 끝내면 되돌리는 과정에서
+            # 새로 갈린 표를 놓친다(2026-09-12, 부록 표 3 이 31~32쪽으로 갈렸다).
+            continue
         done |= set(bad)
         h = _hwp()
         h.Open(OUT, 'HWP', 'forceopen:true')
