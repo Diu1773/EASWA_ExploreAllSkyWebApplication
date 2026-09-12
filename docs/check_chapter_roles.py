@@ -226,7 +226,10 @@ BAN = {"견주": "비교하다", "겨냥": "다루다·대상으로 하다", "�
        "출렁": "밝기가 변하다", "평정": "점수로 매기다", "귀속": "분류하다·넣다",
        "가 그것이다": "각각 살펴야 한다", "에 의해": "주어를 세운다",
        "범위에 두지 않": "무엇을 했는지로 쓴다"}
-APPENDIX = next((n for n, l in enumerate(L) if l.startswith("# 부록 A")), len(L))
+# 부록 제목이 「# 부록 A」에서 「# 부록. 서술형…」으로 바뀌었는데 여기만 안 따라와,
+# 검사에서 뺀다고 적어 둔 부록 45행이 그대로 들어가고 있었다(2026-09-13).
+# 세 스크립트가 같은 경계를 서로 다른 문자열로 찾는다 — 설정 파일로 묶어야 한다.
+APPENDIX = next((n for n, l in enumerate(L) if l.startswith("# 부록")), len(L))
 for n in range(APPENDIX):          # 부록의 참여자 원문은 한 글자도 고치지 않으므로 검사에서 뺀다
     line = L[n]
     if line.startswith("|") and n > APPENDIX:

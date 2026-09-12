@@ -38,7 +38,7 @@ CORPUS = [
     "윤진아 남윤경.pdf",
     "공병민2023.pdf",
 ]
-MINE = r"C:/Users/bmffr/Desktop/Me/ERP2026_Cosmos/EASWA_논문_v18_투고본_미리보기.pdf"
+MINE = r"C:/Users/bmffr/Desktop/Me/ERP2026_Cosmos/EASWA_논문_v18_투고본.pdf"
 
 H1 = ("또한", "따라서", "즉", "나아가", "아울러", "게다가", "더욱이")
 # 부정 대구는 두 꼴이다. 나눠서 세야 어느 쪽이 튀는지 보인다.
@@ -163,7 +163,7 @@ def measure(sents):
 # 2026-09-13 부터는 투고처 학회지를 통째로 쓴다. 옛 CORPUS 는 여러 학회지가 섞였고
 # 그중 셋이 학위논문·교육과정 보고서였다 — 평균 문장 길이가 11.4~43.1 어절로 벌어진
 # 원인이다. 내려받기는 `docs/fetch_corpus_kosss.py`.
-CORPUS_DIR = r"C:/Users/bmffr/Desktop/Research/코퍼스_현장과학교육/pdf"
+CORPUS_DIR = r"C:/Users/bmffr/Desktop/Research/코퍼스_국문학술/01_현장과학교육/pdf"
 MAX_PAGES = 40      # 넘으면 학위논문이나 보고서다. 학술지 논문은 30쪽을 넘지 않는다.
 
 
