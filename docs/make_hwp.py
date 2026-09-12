@@ -426,12 +426,19 @@ def fix_split_tables(rounds=3):
         h.SaveAs(tmp, 'PDF', '')
         h.Clear(1)
         h.Quit()
-        pages, firsts, gaps = [], [], []
+        pages, gaps = [], []
         d = fitz.open(tmp)
+        tops = []          # 쪽마다 {캡션 앞머리: 그 캡션의 y(mm)} — 문서를 닫기
+                           # 전에 재 둔다
+        heads = [t['cap'][:14] for t in tbls]
         for pg in d:
             pages.append(pg.get_text())
-            ls = [x.strip() for x in pg.get_text().splitlines() if x.strip()]
-            firsts.append(ls[3] if len(ls) > 3 else '')   # 머리말 두 줄과 쪽 번호를 건너뛴다
+            here = {}
+            for hd in heads:
+                r = pg.search_for(hd)
+                if r:
+                    here[hd] = min(x.y0 for x in r) / MM_PT
+            tops.append(here)
             b = [x for x in pg.get_text('blocks') if x[4].strip()
                  and x[3] / MM_PT > 26 and x[1] / MM_PT < 258]
             low = max([x[3] for x in b] or [0]) / MM_PT
@@ -448,7 +455,12 @@ def fix_split_tables(rounds=3):
             lp = next((i for i in range(cp, len(pages)) if t['last'] in pages[i]), None)
             if lp is None or lp <= cp:
                 continue
-            if t['cap'] in done or firsts[cp].startswith(head):
+            # 「이미 쪽 맨 위인가」는 **자리로** 잰다. 줄 순서로 보면 표가 많은
+            # 쪽에서 읽는 순서와 위치가 달라 엉뚱한 표가 걸린다(2026-09-12,
+            # 부록 표 3 이 31쪽 223mm 에 있는데 맨 위로 판정됐다).
+            y = tops[cp].get(head)
+            at_top = y is not None and y < 50.0
+            if t['cap'] in done or at_top:
                 # 이미 쪽 맨 위인데도 갈린다 — 한 쪽에 안 들어가는 표다. 더 밀면
                 # 앞 쪽만 비운다(2026-09-10, 표 6 이 세 번 밀렸다).
                 stuck.append(t['cap'])
@@ -472,6 +484,8 @@ def fix_split_tables(rounds=3):
                   % ' / '.join(c[:16] for c in stuck))
         # 밀어 봐야 갈리는 표는 앞서 넣은 쪽 나누기를 도로 뺀다 — 그것 때문에 앞 쪽이
         # 통째로 빈다(2026-09-10, 14쪽이 134mm 비었는데 표 6 은 26mm 였다).
+        undo = list(dict.fromkeys(undo))     # 같은 표가 두 번 들어가면 두 번째
+                                             # DeleteBack 이 진짜 글자를 지운다
         if undo:
             h = _hwp()
             h.Open(OUT, 'HWP', 'forceopen:true')
