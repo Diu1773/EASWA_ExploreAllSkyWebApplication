@@ -107,15 +107,27 @@ def split_figure_caption(d):
 
 
 def caption_orphans(d):
-    """표·그림 캡션만 쪽 끝에 남고 본체가 다음 쪽으로 넘어간 자리."""
+    """표·그림 캡션만 쪽 끝에 남고 본체가 다음 쪽으로 넘어간 자리.
+
+    **그림 캡션은 그림 아래에 온다.** 캡션이 쪽 마지막 글이어도 그 위에 그림이
+    있으면 갈린 것이 아니다 — 그림 8 을 한 줄 캡션으로 줄였더니 이 검사가
+    멀쩡한 자리를 잡았다(2026-09-12). 표 캡션은 표 위에 오므로 그대로 본다.
+    """
     bad = []
     for i, pg in enumerate(d, 1):
         lines = [x.strip() for x in pg.get_text().splitlines() if x.strip()]
         if not lines:
             continue
-        for k, l in enumerate(lines[-2:], len(lines) - 2):
-            if re.match(r"^(표|그림)\s*\d+\.", l) and k >= len(lines) - 1:
-                bad.append((i, l[:40]))
+        last = lines[-1]
+        m = re.match(r"^(표|그림)\s*\d+\.", last)
+        if not m:
+            continue
+        if m.group(1) == "그림":
+            hit = pg.search_for(last[:24])
+            ims = [r for im in pg.get_images(full=True) for r in pg.get_image_rects(im[0])]
+            if hit and ims and min(r.y1 for r in ims) < min(x.y0 for x in hit):
+                continue          # 바로 위에 그림이 있다 — 갈리지 않았다
+        bad.append((i, last[:40]))
     return bad
 
 

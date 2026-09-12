@@ -39,6 +39,14 @@ CONJ_RX = r"^(?:%s)(?=[\s,])" % "|".join(CONJ)
 END_FAMILY = ["하였다", "되었다", "이었다", "있었다", "였다", "한다", "된다", "이다",
               "있다", "없다", "않았다", "않는다", "았다", "었다", "겠다"]
 
+# 게재 논문 11편 2,702문장 실측 (백 문장당). 2026-09-12.
+# **건수만 보면 판정이 안 된다.** 「쉼표 68회」·「~할 수 있다 42회」를 많다고 보고했다가
+# 게재 논문이 더 쓴다는 것을 확인하고 물렸다(OPERATOR C-236). 배수로 읽는다.
+BASELINE = {
+    "C-11 연결어미 뒤 쉼표": 21.1, "A-10 ~할 수 있다": 22.4, "접속어 문두": 5.1,
+    "I-5  ~이 필요하다": 0.8, "A-2  ~를 통해/통하여": 4.8, "A-1  ~에 대한/대하여": 19.7,
+}
+
 PATTERNS = [
     ("A-1  ~에 대한/대하여", r"에 (?:대한|대하여|대해서|대해)\b"),
     ("A-2  ~를 통해/통하여", r"(?:을|를) 통(?:해|하여|한)\b"),
@@ -366,8 +374,13 @@ def main():
     for c, name, per in sorted(hits, reverse=True):
         top = sorted(per.items(), key=lambda kv: -len(kv[1]))[:3]
         where = " / ".join("%s %d" % (k[:18], len(v)) for k, v in top)
-        print("    %-26s %3d회  문장 %d개당 1회  %s"
-              % (name, c, round(n / c), where))
+        key = next((k for k in BASELINE if k.startswith(name[:6])), None)
+        extra = ""
+        if key and len(sents):
+            r = 100.0 * c / len(sents)
+            extra = "  게재대비 %.1f배" % (r / BASELINE[key]) if BASELINE[key] else ""
+        print("    %-26s %3d회  문장 %d개당 1회%s  %s"
+              % (name, c, round(n / c), extra, where))
         if FULL and top:
             print("        예) %s..." % top[0][1][0][:72])
 
