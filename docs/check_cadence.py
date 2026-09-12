@@ -117,13 +117,23 @@ def main():
     md = io.open(SRC, encoding="utf-8").read()
     paras = sections(md)
 
-    # 절 단위로 모은다. 캡션과 표는 본문 리듬이 아니므로 뺀다.
-    order, bysec = [], {}
+    # 본문 절만 절별 표에 올린다. 논문 제목·저자·소속·고지·사사는 정형 진술이라
+    # 종결이 고를 수밖에 없고, 절로 세면 「5문장이 전부 같은 기능」으로 잡힌다
+    # (2026-09-13, 표제부가 최상위로 올라왔다).
+    BODY = re.compile(r"^(요약|\d+\.\d+\.|[ⅠⅡⅢⅣⅤⅥ]\.)")
+    # 캡션은 사람이 읽는 문장이므로 문서 단위 통계에는 넣는다. 다만 캡션 하나가
+    # 「절」이 되면 분포가 흔들리므로 절별 표에서는 한 묶음으로 합친다.
+    order, bysec, caps = [], {}, []
     for sec, p in paras:
-        if sec.startswith("캡션") or sec.startswith("표 "):
+        body = bool(BODY.match(sec))
+        cap = sec.startswith("캡션")
+        if not body and not cap:
             continue
         for s in split_sent(p):
             if s.startswith("|") or s.startswith("**표") or s.startswith("**그림"):
+                continue
+            if cap:
+                caps.append(s)
                 continue
             if sec not in bysec:
                 bysec[sec] = []
@@ -226,7 +236,8 @@ def main():
         print("  %-8s %4d  %5.1f%%  %s" % (f, c, 100.0 * c / tot, bar(c / tot)))
 
     # 문서 단위 — 게재 논문 267편 분포와 곧바로 견줄 수 있는 유일한 자리다.
-    allsents = [x for sec in order for x in bysec[sec]]
+    # 문서 단위에는 캡션도 넣는다 — 사람이 읽는 문장이다(SKILL.md 13절 3번).
+    allsents = [x for sec in order for x in bysec[sec]] + caps
     fs = ["당위+유보" if func(x) in ("당위", "유보") else func(x) for x in allsents]
     longest = run = 1
     prev = None
