@@ -19,9 +19,12 @@ import io
 import os
 import re
 import sys
+import os as _os
+sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
 
 BASE = r"C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos"
-SRC = os.path.join(BASE, "EASWA_논문_v18.md")
+from paper_config import CFG   # noqa: E402
+SRC = CFG.원고("마크다운")
 FULL = "--full" in sys.argv
 VERIFY = "--검증" in sys.argv or "--verify" in sys.argv
 

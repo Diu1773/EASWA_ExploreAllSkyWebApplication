@@ -19,12 +19,15 @@ import io
 import os
 import re
 import sys
+import os as _os
+sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
 from collections import defaultdict
 
 DEFAULT = r'C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos\EASWA_논문_v18.md'
 P = sys.argv[1] if len(sys.argv) > 1 else DEFAULT
 L = io.open(P, encoding='utf-8').read().replace('\r\n', '\n').split('\n')
-APP = next((n for n, x in enumerate(L) if x.startswith('# 부록')), len(L))
+from paper_config import CFG   # noqa: E402
+APP = next((n for n, x in enumerate(L) if x.startswith(CFG.경계('부록시작'))), len(L))
 # 번호는 2026-09-09 에 「표 3-1」에서 「표 1」로 바뀌었다. 옛 형식만 찾다가 캡션을
 # 0개로 읽고 「0건 통과」를 냈다. 두 형식을 다 받는다.
 

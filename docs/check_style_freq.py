@@ -16,9 +16,12 @@
 import io
 import re
 import sys
+import os as _os
+sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
 from collections import Counter, defaultdict
 
-SRC = "C:/Users/bmffr/Desktop/Me/ERP2026_Cosmos/EASWA_논문_v18.md"
+from paper_config import CFG   # noqa: E402
+SRC = CFG.원고("마크다운")
 FULL = "--full" in sys.argv
 
 # KatFish 코퍼스 실측값 (humanize-korean references/baseline.json v1.6, essay)

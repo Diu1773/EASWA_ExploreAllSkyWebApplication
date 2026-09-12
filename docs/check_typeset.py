@@ -14,11 +14,14 @@ import json
 import os
 import re
 import sys
+import os as _os
+sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
 
 import fitz
 
 BASE = r"C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos"
-PDF = os.path.join(BASE, "EASWA_논문_v18_투고본.pdf")
+from paper_config import CFG   # noqa: E402
+PDF = CFG.원고("조판PDF")
 MD = os.path.join(BASE, "EASWA_논문_v18.md")
 RULES = os.path.join(BASE, "EASWA_논문_v18_투고본.문단.json")
 

@@ -17,7 +17,8 @@ PATH_OUT = P
 L = io.open(P, encoding='utf-8').read().replace('\r\n', '\n').split('\n')
 # v17 에서 부록이 「# 부록. 용어 풀이」 하나로 줄었다. 옛 이름만 찾으면 표를 한 줄도
 # 못 읽고 「0건」으로 통과한다 — 둘 다 받는다.
-APP = next((n for n, x in enumerate(L) if x.startswith('# 부록')), len(L))
+from paper_config import CFG   # noqa: E402
+APP = next((n for n, x in enumerate(L) if x.startswith(CFG.경계('부록시작'))), len(L))
 if APP == len(L):
     raise SystemExit('부록을 찾지 못했다 — 제목이 「# 부록」으로 시작하는지 본다')
 BODY = next((n for n, x in enumerate(L) if x.startswith('# Ⅰ')), 0)   # 초록은 절이 없으므로 뺀다
