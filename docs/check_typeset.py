@@ -239,6 +239,20 @@ def main():
                         end = b[3]
                     block = _mm(end - top)
             stuck = block > gap * 1.5
+            # 다음 쪽이 표로 시작하면 그 표를 끌어올릴 수 있었는지 재 본다. 표는
+            # 그림과 달리 줄여서 끼울 수 없으므로 빈 자리보다 크기만 하면 못 올린다
+            # — 어절 단위로 줄을 끊자 표 3 이 13쪽에 안 들어가 73mm 가 비었다
+            # (2026-09-12). 「빈 쪽」이 아니라 「표가 통째로 넘어간 자리」다.
+            if not stuck and i < d.page_count:
+                nx = d[i]
+                head = [b for b in sorted(body_blocks(nx), key=lambda x: x[1])]
+                if head and re.match(r"(부록 )?표 \d+\.", head[0][4].strip()):
+                    end = head[0][3]
+                    for b in head[1:]:
+                        if b[1] - end > 8 * MM:
+                            break
+                        end = b[3]
+                    stuck = _mm(end - head[0][1]) > gap
             if gap > WASTE_BAD and not to_appendix and not stuck:
                 bad.append("%d쪽 아래가 %.0fmm 비었다 — 쪽 나누기나 그림 크기를 본다"
                            % (i, gap))

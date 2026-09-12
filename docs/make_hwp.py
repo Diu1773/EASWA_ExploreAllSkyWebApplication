@@ -713,6 +713,70 @@ def main():
     print('저장 완료 — %s (%.1f MB)' % (OUT, os.path.getsize(OUT) / 1e6))
 
 
+def keep_word(h):
+    """줄이 넘어갈 때 **어절 단위**로 끊게 한다 — 문서 전체에.
+
+    한글 문단 모양 「확장 → 줄 나눔 기준 → 한글: 어절」이다. HTML 을 읽어 온
+    문단은 글자 단위(`BreakNonLatinWord=1`)라 낱말 한가운데서 갈렸다 — 초록에서
+    「공 / 공 천문자료」·「설계 원 / 리로」처럼 갈린 자리가 192군데였다
+    (2026-09-12 소유자 지적).
+
+    **hwpx 의 `breakNonLatinWord` 속성만으로는 안 된다.** 그 속성을 KEEP_WORD 로
+    고쳐도 한글이 읽어 들이면 문단 모양은 그대로 1(글자)이었다. 한글 자신에게
+    시켜야 바뀐다. 온 문서를 잡고 이 항목 하나만 바꾸면 정렬·들여쓰기·줄 간격은
+    그대로 남는다(실측 — 장제목 가운데 정렬·참고문헌 내어쓰기·줄 간격 15.94pt
+    모두 같았다).
+
+    **쪽수가 는다** — 한 줄에 덜 들어가므로 32쪽이 33쪽이 됐다. 그래서 쪽 나누기를
+    정하기 **전에** 준다.
+    """
+    h.HAction.Run('SelectAll')
+    t = h.HParameterSet.HParaShape
+    h.HAction.GetDefault('ParagraphShape', t.HSet)
+    t.BreakNonLatinWord = 0
+    h.HAction.Execute('ParagraphShape', t.HSet)
+    h.HAction.Run('Cancel')
+    print('줄 나눔을 어절 단위로 — 본문 · %d쪽' % h.PageCount)
+    print('  표 안 %d칸 · %d쪽' % (keep_word_cells(h), h.PageCount))
+
+
+def keep_word_cells(h):
+    """표 안에도 같은 것을 준다 — 칸을 하나씩 돌면서.
+
+    `SelectAll` 은 표 **바깥** 문단만 잡는다. 표를 `FindCtrl` 로 잡아도 문단
+    모양은 표를 품은 문단에 걸릴 뿐 칸 안까지 가지 않는다(2026-09-12 실측 —
+    표 8개에 걸었는데 갈린 자리가 36 그대로였다). hwpx 의
+    `breakNonLatinWord` 속성을 고치는 길도 막혀 있다 — 한글이 hwp 로 되돌릴 때
+    그 값을 버린다(같은 날 실측, 열한 군데를 고쳐도 PDF 가 한 글자도 안 바뀌었다).
+    남은 길은 칸마다 캐럿을 옮기며 주는 것뿐이고, 200칸에 4초 걸린다.
+    """
+    n = 0
+    c = h.HeadCtrl
+    while c:
+        if c.CtrlID == 'tbl':
+            h.SetPosBySet(c.GetAnchorPos(0))
+            h.FindCtrl()
+            h.HAction.Run('ShapeObjTableSelCell')
+            h.HAction.Run('Cancel')
+            seen = set()
+            while True:
+                pos = h.GetPos()
+                if pos in seen or len(seen) > 400:
+                    break
+                seen.add(pos)
+                t = h.HParameterSet.HParaShape
+                h.HAction.GetDefault('ParagraphShape', t.HSet)
+                if t.BreakNonLatinWord != 0:
+                    t.BreakNonLatinWord = 0
+                    h.HAction.Execute('ParagraphShape', t.HSet)
+                    n += 1
+                if not h.HAction.Run('TableRightCell'):
+                    break
+            h.HAction.Run('Cancel')
+        c = c.Next
+    return n
+
+
 def apply_align(h):
     """가운데 정렬을 **다시** 준다.
 
@@ -748,6 +812,7 @@ def after_styles(path):
     OUT = path
     h = _hwp()
     h.Open(OUT, 'HWP', 'forceopen:true')
+    keep_word(h)
     apply_align(h)
     h.SaveAs(OUT, 'HWP', '')
     h.Clear(1)

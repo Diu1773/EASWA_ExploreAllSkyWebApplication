@@ -58,6 +58,20 @@ def strip_dots(path):
     return hit
 
 
+def keep_word(path):
+    """**쓰지 않는다.** hwpx 의 `breakNonLatinWord` 는 되돌릴 때 버려진다.
+
+    줄 나눔을 어절 단위로 바꾸려고 이 속성을 고쳐 봤다(2026-09-12). 한글이 hwpx 를
+    hwp 로 되돌리면서 그 값을 버린다 — 열한 군데를 고치고 PDF 를 다시 뽑았는데 갈린
+    자리가 36 에서 하나도 줄지 않았다. 게다가 이름이 뜻과 거꾸로다: 한글이 내보낸
+    파일에서 어절 단위 문단이 `BREAK_WORD`, 글자 단위 문단이 `KEEP_WORD` 로 찍힌다.
+
+    실제로 바꾸는 것은 `make_hwp.py` 의 `keep_word(h)` 와 `keep_word_cells(h)` 다.
+    한글에게 직접 시킨다. 이 함수는 같은 길을 다시 시도하지 않도록 남겨 둔다.
+    """
+    raise NotImplementedError("make_hwp.py 의 keep_word(h) 를 쓴다")
+
+
 def drop_gaps(path):
     """간격용 빈 문단을 지우고 그만큼을 다음 문단의 위 간격으로 옮긴다.
 
