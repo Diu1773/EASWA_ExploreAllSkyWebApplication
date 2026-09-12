@@ -126,6 +126,31 @@ def retext(ctrl, text, apply_to, new_id):
     return out
 
 
+def hide_note_number(xml):
+    """각주 번호를 안 보이게 한다 — 제목 뒤의 「1)」과 쪽 아래의 「1) 」.
+
+    교신저자·심사판정 두 줄은 각주로 달아야 1쪽 맨 아래에 붙는다. 그런데 각주를
+    달면 제목 끝에 번호가 붙는다(2026-09-12 소유자 지적). 템플릿은 쪽 아래에
+    번호 없이 「*교신저자…」로 시작한다 — 번호 모양을 사용자 기호로 두고 기호를
+    비워 둔 것이다. 여기서도 같게 만든다.
+
+    한글 COM 의 `FootnoteShape` 로는 안 된다. `NumberFormat` 을 0~13 무엇으로
+    줘도 결과가 「1)」 그대로였다(같은 날 열네 값을 다 시험했다). XML 은 먹는다.
+    """
+    def fix(m):
+        blk = m.group(0)
+        blk = blk.replace('type="DIGIT"', 'type="USER_CHAR"')
+        # 기호를 빈칸 하나로 두면 각주 줄이 2mm 들여쓴 채 찍힌다. 빈 문자열이라야
+        # 템플릿처럼 왼쪽 끝에서 「*교신저자」가 시작한다(2026-09-12 실측).
+        blk = re.sub(r'userChar="[^"]*"', 'userChar=""', blk)
+        return blk.replace('suffixChar=")"', 'suffixChar=""')
+
+    xml = re.sub(r"<hp:footNotePr>.*?</hp:footNotePr>", fix, xml, flags=re.S)
+    # 각주마다 제 번호와 괄호를 들고 있다 — 41 은 ')' 의 문자 번호다
+    xml = re.sub(r'(<hp:footNote [^>]*?)suffixChar="41"', r'\1suffixChar="0"', xml)
+    return xml
+
+
 def main():
     if not os.path.exists(HWP):
         sys.exit("투고본 한글 파일이 없다 — 먼저 docs/make_hwp.py 를 돌린다")
@@ -179,6 +204,10 @@ def main():
             even = retext(model, title, "EVEN", 2)
             xml = xml[:at] + odd + even + xml[at:]
             print("  본문 구역: 홀수 「%s」 · 짝수 「%s…」" % (JOURNAL, title[:26]))
+        note = xml.count("<hp:footNote ")
+        xml = hide_note_number(xml)
+        if note:
+            print("  각주 %d개의 번호를 안 보이게 — 제목 뒤 「1)」" % note)
         data[name] = xml.encode("utf-8")
 
     os.remove(HWPX)

@@ -50,27 +50,40 @@ RQ_SPAN = [(1, 1, "RQ 1"), (3, 5, "RQ 2"), (6, 7, "RQ 3")]
 
 
 def fig_procedure():
+    """세로로 96mm 를 쓰던 것을 68mm 로 줄인다 (2026-09-12 소유자 지시).
+
+    상자가 본문 폭을 다 쓰면서 글자는 왼쪽에 몰려 있어 상자 안이 비어 보였다.
+    상자 폭을 글자에 맞추고 글자를 가운데로 옮겼다.
+
+    **자리 단위는 mm 다.** `typeset_hwp.py` 가 그림을 본문 폭(166mm)으로 늘리므로
+    바탕을 166mm 로 잡고 도식을 그 가운데에 놓는다. 이러면 늘어나도 1:1 이라
+    글자 크기가 8.6pt 그대로 찍힌다. 바탕을 120mm 로 잡으면 1.38배로 불어난다.
+    """
     n = len(STEPS)
-    fig, ax = plt.subplots(figsize=(W, 96 * MM))
-    ax.set_xlim(0, 100)
-    ax.set_ylim(0, n * 11 + 8)
+    w_mm, h_mm = 166.0, 68.0
+    fig, ax = plt.subplots(figsize=(w_mm * MM, h_mm * MM))
+    ax.set_xlim(0, w_mm)
+    ax.set_ylim(0, h_mm)
     ax.axis("off")
 
-    bw, bx = 62, 10          # 상자 폭·왼쪽. RQ 구간선을 뺀 만큼 당긴다
+    bx, bw, bh, pitch = 29.0, 78.0, 5.4, 8.0
+    top = h_mm - 5.0
     for i, (name, m, r) in enumerate(STEPS):
-        y = (n - 1 - i) * 11 + 5
-        ax.add_patch(Rectangle((bx, y), bw, 7.6, fc="none", ec=RULE, lw=0.8))
-        ax.text(bx + 3, y + 3.8, name, fontsize=8.6, va="center", color=INK)
-        ax.text(bx + bw + 3, y + 3.8, "%s → %s" % (m, r),
+        y = top - i * pitch - bh
+        ax.add_patch(Rectangle((bx, y), bw, bh, fc="none", ec=RULE, lw=0.8))
+        ax.text(bx + bw / 2, y + bh / 2, name, fontsize=8.6,
+                ha="center", va="center", color=INK)
+        ax.text(bx + bw + 3.0, y + bh / 2, "%s → %s" % (m, r),
                 fontsize=7.6, va="center", color=MUTE)
         if i < n - 1:
-            ax.annotate("", xy=(bx + bw / 2, y - 3.0), xytext=(bx + bw / 2, y - 0.3),
+            ax.annotate("", xy=(bx + bw / 2, y - pitch + bh),
+                        xytext=(bx + bw / 2, y - 0.2),
                         arrowprops=dict(arrowstyle="-|>", color=RULE, lw=0.8,
-                                        mutation_scale=8))
+                                        mutation_scale=7))
 
-    ax.text(bx + bw + 3, n * 11 + 3.2, "방법 절 → 결과 절",
+    ax.text(bx + bw + 3.0, top + 2.4, "방법 절 → 결과 절",
             fontsize=7.6, color=MUTE, va="center")
-    fig.tight_layout(pad=0.3)
+    fig.subplots_adjust(0, 0, 1, 1)
     p = os.path.join(OUT, "fig_procedure.png")
     fig.savefig(p, dpi=400)
     plt.close(fig)
