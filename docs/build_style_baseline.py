@@ -72,34 +72,66 @@ def find(name):
     return hit[0] if hit else None
 
 
-def prose(path):
+# 학술 문장의 상한. 넘는 것은 표·목록·설문 문항이 한 덩이로 붙은 것이다.
+# 2026-09-13 에 「윤진아 남윤경」에서 669어절짜리 「문장」이 나왔다 — Table 9 전체였다.
+MAX_EOJEOL = 60
+
+# 쪽 머리글. 「2024, Vol. 28, No. 4 331」이 문장 안에 박혀 어절 수를 부풀린다.
+HEADER = re.compile(r"\d{4},\s*Vol\.\s*\d+,\s*No\.\s*\d+\s*\d*")
+
+# 본문이 끝나는 자리. 부록부터는 설문 문항·평가 문항이라 문체가 다르다.
+TAIL = ("참고문헌", "[부록", "부록 1", "부록1", "Appendix", "APPENDIX")
+
+
+def prose(path, report=False):
     """PDF 에서 한국어 본문 문장만 뽑는다.
 
-    표·머리글·영문·참고문헌을 거르려고 세 조건을 모두 건다 — 「다.」로 끝나고,
-    한글이 절반을 넘고, 다섯 어절 이상. 모든 문서에 같은 잣대를 쓴다.
+    「다.」로 끝나고, 한글이 절반을 넘고, 다섯 어절 이상 예순 어절 이하인 것만 센다.
+    모든 문서에 같은 잣대를 쓴다.
+
+    **거른 개수를 함께 돌려준다.** 무엇을 몇 개 읽었는지 안 찍으면 조용히 통과한다
+    (2026-09-13, 학위논문 앞머리의 저작권 고지가 본문 827문장으로 잡혔다).
     """
     import fitz
     d = fitz.open(path)
-    txt = []
+    txt, skipped = [], 0
     for pg in d:
         t = pg.get_text()
-        cut = t.find("참고문헌")
-        txt.append(t[:cut] if cut > 200 else t)
+        # 학위논문 앞머리의 저작권 고지 — 본문이 아니다
+        if "저작자표시" in t and "이용허락" in t:
+            skipped += 1
+            continue
+        txt.append(t)
     d.close()
     t = "\n".join(txt)
+    t = HEADER.sub(" ", t)
     t = re.sub(r"-\n", "", t)                       # 줄 끝 붙임표
     t = re.sub(r"\s*\n\s*", " ", t)                 # 줄바꿈을 한 칸으로
+    cuts = [t.find(m) for m in TAIL]
+    cuts = [c for c in cuts if c > 2000]
+    if cuts:
+        t = t[:min(cuts)]                           # 본문 뒤를 자른다
     t = re.sub(r"(?<=[A-Za-z])\.(?=\s)", "\x00", t)
     t = re.sub(r"(?<=\d)\.(?=\d)", "\x01", t)
-    out = []
+    out, longs, shorts, ens = [], 0, 0, 0
     for s in re.split(r"(?<=다\.)\s+", t):
         s = s.replace("\x00", ".").replace("\x01", ".").strip()
-        if not s.endswith("다.") or len(s.split()) < 5:
+        if not s.endswith("다."):
+            continue
+        n = len(s.split())
+        if n < 5:
+            shorts += 1
+            continue
+        if n > MAX_EOJEOL:
+            longs += 1
             continue
         ko = len(re.findall(r"[가-힣]", s))
         if ko / max(1, len(s)) < 0.5:
+            ens += 1
             continue
         out.append(s)
+    if report:
+        return out, {"고지쪽": skipped, "긴덩이": longs, "짧음": shorts, "한글부족": ens}
     return out
 
 
@@ -128,13 +160,49 @@ def measure(sents):
     }
 
 
+# 2026-09-13 부터는 투고처 학회지를 통째로 쓴다. 옛 CORPUS 는 여러 학회지가 섞였고
+# 그중 셋이 학위논문·교육과정 보고서였다 — 평균 문장 길이가 11.4~43.1 어절로 벌어진
+# 원인이다. 내려받기는 `docs/fetch_corpus_kosss.py`.
+CORPUS_DIR = r"C:/Users/bmffr/Desktop/Research/코퍼스_현장과학교육/pdf"
+MAX_PAGES = 40      # 넘으면 학위논문이나 보고서다. 학술지 논문은 30쪽을 넘지 않는다.
+
+
+def scan_corpus():
+    """코퍼스 폴더의 PDF 를 훑어 «학술지 게재 논문」만 남긴다.
+
+    거른 것과 그 까닭을 함께 돌려준다 — 몇 개를 왜 뺐는지 안 찍으면 조용히 통과한다.
+    """
+    import fitz
+    keep, drop = [], []
+    for p in sorted(glob.glob(os.path.join(CORPUS_DIR, "*.pdf"))):
+        nm = os.path.basename(p)
+        try:
+            d = fitz.open(p)
+            pages = len(d)
+            head = "".join(pg.get_text() for pg in list(d)[:2])
+            d.close()
+        except Exception as e:
+            drop.append((nm, "열 수 없다: %s" % str(e)[:30]))
+            continue
+        if pages > MAX_PAGES:
+            drop.append((nm, "%d쪽 — 학위논문·보고서" % pages))
+            continue
+        ko = len(re.findall(r"[가-힣]", head))
+        en = len(re.findall(r"[A-Za-z]", head))
+        if ko < en * 0.3:
+            drop.append((nm, "영문 논문"))
+            continue
+        keep.append(p)
+    return keep, drop
+
+
 def main():
     rows, missing = {}, []
-    for name in CORPUS:
-        p = find(name)
-        if not p:
-            missing.append(name)
-            continue
+    paths, dropped = scan_corpus()
+    print("코퍼스 폴더에서 PDF %d편 · 거른 것 %d편\n" % (len(paths), len(dropped)),
+          flush=True)
+    for p in paths:
+        name = os.path.basename(p)
         m = measure(prose(p))
         if m:
             rows[os.path.splitext(name)[0][:38]] = m
@@ -152,7 +220,7 @@ def main():
             print("\n못 찾은 것 %d: %s" % (len(missing), " / ".join(missing)))
         return
 
-    print("한국어 과학교육 논문 %d편으로 만든 기준선" % len(rows))
+    print("현장과학교육 게재 논문 %d편으로 만든 기준선" % len(rows))
     print("모든 문서에 같은 잣대 — PDF 본문에서 「다.」로 끝나고 한글이 절반 넘는")
     print("다섯 어절 이상 문장만. 참고문헌은 잘랐다.\n")
     print("%-24s %8s %8s %8s   %8s  %s" % ("지표", "최소", "중앙값", "최대", "이 원고", "자리"))
