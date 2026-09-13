@@ -83,6 +83,10 @@ BASELINE = {
     "최장연속": {"p50": 9.0, "p75": 13.0, "p90": 17.0, "p95": 20.0, "p99": 32.0},
     "창쏠림":   {"p50": 0.80, "p75": 0.90, "p90": 0.95, "p95": 1.00, "p99": 1.00},
     "나열비율": {"p50": 5.85, "p75": 8.82, "p90": 14.00, "p95": 16.56, "p99": 23.81},
+    # 네 묶음 어디에도 안 걸리는 문장의 비율. 높으면 구어체·문예체가 섞였다는 뜻이다.
+    # 2026-09-13: Liner Scholar 가 5장을 「문예적 구어체」로 짚었는데 우리 검사기는
+    # 그 문장들을 「기타」로 **버려서** 5장을 통과시켰다. 버리지 말고 센다.
+    "기타비율": {"p50": 7.0, "p75": 11.5, "p90": 17.5, "p95": 19.8, "p99": 26.0},
 }
 
 
@@ -165,7 +169,8 @@ def main():
     print("    낮게 나온다. 판정에 쓸 것은 맨 아래 문서 전체 값이다.")
     print("  · 뜻이 맞는지. 종결이 고르다고 좋은 글이라는 뜻이 아니다.")
     print()
-    print("%-*s %4s %5s %5s %-20s %s" % (LABEL_W, "절", "문장", "최다", "연속", "쏠림", "자리"))
+    print("%-*s %4s %5s %5s %5s %-14s %s"
+          % (LABEL_W, "절", "문장", "최다", "연속", "기타", "쏠림", "자리"))
     print("-" * 88)
 
     rows = []
@@ -192,19 +197,23 @@ def main():
             else:
                 run, prev = 1, f
         ratio = topn / n
-        rows.append((sec, n, top, topn, ratio, longest))
+        etc = 100.0 * cnt.get("기타", 0) / n
+        rows.append((sec, n, top, topn, ratio, longest, etc))
 
-    for sec, n, top, topn, ratio, longest in rows:
+    for sec, n, top, topn, ratio, longest, etc in rows:
         g = grade(ratio, longest, n)
+        # 기타가 잦은 절은 학술 종결 밖 문장이 많다는 뜻이다 — 구어체·문예체 신호.
+        # 267편 p95 가 19.8% 다.
+        emark = "★" if etc >= 19.8 else (" " if etc < 11.5 else "·")
         mark = "  " if g in ("노랑", "—") else "**"
-        print("%s%-*s %4d %5s %5d %-20s %s"
+        print("%s%-*s %4d %5s %5d %4.0f%%%s %-14s %s"
               % (mark, LABEL_W - 2, sec[:LABEL_W - 2], n,
-                 "%d/%d" % (topn, n), longest, bar(ratio), g))
+                 "%d/%d" % (topn, n), longest, etc, emark, bar(ratio, 14), g))
 
     print("\n절 가운데 위쪽에 있는 것")
-    hard = [r for r in rows if grade(r[4], r[5], r[1]).startswith("상위")]
-    hard.sort(key=lambda r: (-r[5], -r[4]))
-    for sec, n, top, topn, ratio, longest in hard[:8]:
+    hard = [r for r in rows if grade(r[4], r[5], r[1]).startswith("상위") or r[6] >= 19.8]
+    hard.sort(key=lambda r: (-r[6], -r[5]))
+    for sec, n, top, topn, ratio, longest, etc in hard[:8]:
         print("  %-*s %d문장 중 %d개가 «%s» · 최장 %d연속"
               % (LABEL_W, sec[:LABEL_W], n, topn, top, longest))
     if not hard:
@@ -257,9 +266,11 @@ def main():
     print("\n문서 전체를 게재 논문 267편과 견주면")
     print("  %-20s %8s %8s   %s" % ("지표", "이 원고", "267편 중앙", "자리"))
     print("  " + "-" * 56)
+    etc = 100.0 * sum(1 for x in allsents if func(x) == "기타") / len(allsents)
     for nm, key, v in [("같은 기능 최장 연속", "최장연속", float(longest)),
                        ("20문장 창 최대 쏠림", "창쏠림", win),
-                       ("세 항 이상 나열(%)", "나열비율", lst)]:
+                       ("세 항 이상 나열(%)", "나열비율", lst),
+                       ("학술 종결 밖 문장(%)", "기타비율", etc)]:
         print("  %-20s %8.2f %8.2f   %s"
               % (nm, v, BASELINE[key]["p50"], where(key, v)))
     print("  주. 셋을 곱해 판정하지 않는다. 지표끼리 상관이 있어 셋 다 상위 20% 인")
