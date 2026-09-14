@@ -1,170 +1,236 @@
 # -*- coding: utf-8 -*-
-"""표 1(연구 절차)과 표 6(세 모듈)을 도식으로 그린다 — 시안 (2026-09-11).
+"""그림 2(연구 절차)와 그림 4(세 모듈의 공통 구조)를 그린다.
 
-표로는 안 보이는 것이 있다.
-
-  · 표 1 은 여덟 단계가 **순서대로 이어진다**는 것이 핵심인데, 행으로 늘어놓으면
-    그 이어짐이 보이지 않는다. 방법 절과 결과 절이 짝을 이루는 것도 열로는
-    떨어져 보인다.
-  · 표 6 은 세 모듈이 **같은 흐름을 공유한다**는 것이 핵심인데, 행으로 늘어놓으면
-    각 모듈이 따로 보인다.
+2026-09-14 소유자가 고른 가로형 도식의 구성을 사용하되, 연구 절차에서는
+1차 사용자 검토와 보완, 2차 사용자 검토를 분리하여 실제 절차를 보존한다.
+다운로드한 시안은 참고본으로만 두고, 논문에는 한글이 정확하고 400 dpi인
+재현 가능한 그림을 넣는다.
 
     python -X utf8 docs/make_struct_figs.py
 """
-import os
+from pathlib import Path
 
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt                       # noqa: E402
-from matplotlib.patches import FancyBboxPatch, FancyArrow, Rectangle   # noqa: E402
 from matplotlib import font_manager                   # noqa: E402
+from matplotlib.patches import Circle, FancyBboxPatch, Rectangle  # noqa: E402
 
-OUT = r"C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos\원고_그림"
+OUT = Path(r"C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos\원고_그림")
 MM = 1 / 25.4
-W = 166 * MM
+PAPER_W = 166.0
 
-for cand in ("Malgun Gothic", "HCR Dotum", "Gulim", "Batang"):
+for cand in ("HCR Batang", "Batang", "HYSinMyeongJo-Medium", "Malgun Gothic"):
     if any(f.name == cand for f in font_manager.fontManager.ttflist):
         plt.rcParams["font.family"] = cand
         break
 plt.rcParams["axes.unicode_minus"] = False
 
-# 학술 도식은 검은 선과 빈 바탕이다. 채운 색과 둥근 모서리는 발표 슬라이드의
-# 어법이지 논문 그림의 어법이 아니다(2026-09-11 소유자 지적).
-INK, MUTE, RULE = "#000000", "#555555", "#000000"
+INK = "#111111"
+LINE = "#737373"
+ARROW = "#666666"
+HEAD_FILL = "#ececec"
+LABEL_FILL = "#f3f3f3"
+BOX_FILL = "#f7f7f7"
 
-# ── 표 1 ────────────────────────────────────────────────────────────
-STEPS = [
-    ("초기 구상과 시험 구현", "3.1", "—"),
-    ("기존 서비스 사례분석", "3.2", "4.1"),
-    ("교육과정·교과서 검토", "3.3", "4.2"),
-    ("설계 원리와 공통 탐구 흐름 정리", "3.4", "4.3"),
-    ("세 탐구모듈 구현", "3.4", "4.3"),
-    ("식현상 모듈의 분석 기능 점검", "3.5", "4.4"),
-    ("1차 사용자 검토와 보완", "3.6", "4.5"),
-    ("2차 사용자 검토", "3.6", "4.6"),
+
+def save(fig, name):
+    OUT.mkdir(parents=True, exist_ok=True)
+    path = OUT / name
+    fig.savefig(path, dpi=400, facecolor="white")
+    plt.close(fig)
+    print("  %s" % path.name)
+
+
+# ── 그림 2: 연구 절차 ────────────────────────────────────────────────
+
+PROCEDURE = [
+    "초기 구상·\n시험 구현",
+    "기존 서비스\n사례분석",
+    "교육과정·\n교과서 검토",
+    "설계 원리·\n공통 탐구 흐름\n정리",
+    "세 탐구모듈\n구현",
+    "식현상 모듈\n기능 점검",
+    "1차 사용자\n검토·보완",
+    "2차 사용자\n검토",
 ]
-# 연구문제와의 대응 — 표 1 아래 문장이 말하던 것을 그림 안으로 옮긴다
-RQ = {1: "RQ1", 6: "RQ3", 7: "RQ3"}
-RQ_SPAN = [(1, 1, "RQ 1"), (3, 5, "RQ 2"), (6, 7, "RQ 3")]
 
 
 def fig_procedure():
-    """세로로 96mm 를 쓰던 것을 68mm 로 줄인다 (2026-09-12 소유자 지시).
-
-    상자가 본문 폭을 다 쓰면서 글자는 왼쪽에 몰려 있어 상자 안이 비어 보였다.
-    상자 폭을 글자에 맞추고 글자를 가운데로 옮겼다.
-
-    **자리 단위는 mm 다.** `typeset_hwp.py` 가 그림을 본문 폭(166mm)으로 늘리므로
-    바탕을 166mm 로 잡고 도식을 그 가운데에 놓는다. 이러면 늘어나도 1:1 이라
-    글자 크기가 8.6pt 그대로 찍힌다. 바탕을 120mm 로 잡으면 1.38배로 불어난다.
-    """
-    n = len(STEPS)
-    w_mm, h_mm = 166.0, 68.0
+    """사용자가 고른 가로형 도식을 실제 연구 순서에 맞춘 8단계로 그린다."""
+    w_mm, h_mm = PAPER_W, 52.0
     fig, ax = plt.subplots(figsize=(w_mm * MM, h_mm * MM))
     ax.set_xlim(0, w_mm)
     ax.set_ylim(0, h_mm)
     ax.axis("off")
 
-    bx, bw, bh, pitch = 29.0, 78.0, 5.4, 8.0
-    top = h_mm - 5.0
-    for i, (name, m, r) in enumerate(STEPS):
-        y = top - i * pitch - bh
-        ax.add_patch(Rectangle((bx, y), bw, bh, fc="none", ec=RULE, lw=0.8))
-        ax.text(bx + bw / 2, y + bh / 2, name, fontsize=8.6,
-                ha="center", va="center", color=INK)
-        ax.text(bx + bw + 3.0, y + bh / 2, "%s → %s" % (m, r),
-                fontsize=7.6, va="center", color=MUTE)
+    ax.text(w_mm / 2, 46.0, "연구 절차", fontsize=12.0, fontweight="bold",
+            ha="center", va="center", color=INK)
+
+    n = len(PROCEDURE)
+    left, right, gap = 1.5, 1.5, 2.7
+    bw = (w_mm - left - right - gap * (n - 1)) / n
+    by, bh = 9.0, 22.0
+    cy, cr = 34.1, 2.65
+
+    for i, label in enumerate(PROCEDURE):
+        x = left + i * (bw + gap)
+        ax.add_patch(FancyBboxPatch(
+            (x, by), bw, bh,
+            boxstyle="round,pad=0.25,rounding_size=1.25",
+            fc=BOX_FILL, ec=LINE, lw=0.75,
+        ))
+        ax.add_patch(Circle((x + bw / 2, cy), cr, fc="#6d6d6d", ec="none"))
+        ax.text(x + bw / 2, cy, str(i + 1), fontsize=7.3, color="white",
+                ha="center", va="center")
+        ax.text(x + bw / 2, by + bh / 2 - 0.2, label, fontsize=7.0,
+                ha="center", va="center", color=INK, linespacing=1.35)
+
         if i < n - 1:
-            ax.annotate("", xy=(bx + bw / 2, y - pitch + bh),
-                        xytext=(bx + bw / 2, y - 0.2),
-                        arrowprops=dict(arrowstyle="-|>", color=RULE, lw=0.8,
-                                        mutation_scale=7))
+            x0 = x + bw + 0.35
+            x1 = x + bw + gap - 0.35
+            ax.annotate("", xy=(x1, by + bh / 2), xytext=(x0, by + bh / 2),
+                        arrowprops=dict(arrowstyle="->", color=ARROW, lw=0.9,
+                                        shrinkA=0, shrinkB=0, mutation_scale=8))
 
-    ax.text(bx + bw + 3.0, top + 2.4, "방법 절 → 결과 절",
-            fontsize=7.6, color=MUTE, va="center")
     fig.subplots_adjust(0, 0, 1, 1)
-    p = os.path.join(OUT, "fig_procedure.png")
-    fig.savefig(p, dpi=400)
-    plt.close(fig)
-    print("  %s" % os.path.basename(p))
+    save(fig, "fig_procedure.png")
 
 
-# ── 표 6 ────────────────────────────────────────────────────────────
-FLOW = ["탐구 주제\n소개", "탐구 대상\n선택", "자료\n확인", "분석\n준비",
-        "분석 실행·\n시각화", "기준 자료와\n비교", "해석·\n기록"]
-# 값은 표 6 원문 그대로다. 옮겨 적으면서 「소광」을 「금속량」으로 바꾸고
-# 「등」을 빼먹은 적이 있다(2026-09-11).
-# 값은 표 6 원문 그대로다. 옮겨 적으면서 「소광」을 「금속량」으로 바꾸고
-# 「등」을 빼먹은 적이 있다(2026-09-11).
-MODULES = [
-    ("TESS 외계행성 식현상", "TESS FFI 컷아웃",
-     "구경·차등측광 →\n식현상 모델 적합", "측광 구경·배경·\n비교성 등",
-     "반지름비 등\n모델 파라미터"),
-    ("KMTNet 미시중력렌즈", "관측소별 공개 측광표",
-     "다지점 병합 →\n점렌즈 모델 적합", "적합 대상·조건 확인",
-     "최대 증광 시각·충격 변수·\n아인슈타인 시간"),
-    ("Gaia 성단 색등급도", "Gaia DR3 카탈로그",
-     "구성원 선별 → 색등급도\n→ 등시선 맞춤",
-     "구성원 선별 엄격도,\n나이·금속함량·\n거리지수·소광",
-     "성단 나이·거리·소광"),
+# ── 그림 4: 공통 탐구 흐름과 모듈별 구조 ─────────────────────────────
+
+FLOW = [
+    ("Step 0", "탐구 주제 소개"),
+    ("Step 1", "탐구 대상 선택"),
+    ("Step 2", "자료 확인"),
+    ("Step 3", "분석 준비"),
+    ("Step 4", "분석 실행·시각화"),
+    ("Step 5", "기준 자료와 비교"),
+    ("Step 6", "해석·기록"),
 ]
 
-ROWS = ["공공 자료", "분석 구조", "학습자가 조작하는 값", "주요 산출"]
+MODULES = [
+    (
+        "TESS 외계행성 식현상",
+        [
+            "TESS FFI 컷아웃",
+            "구경측광·차등측광·\n식현상 모델 적합",
+            "측광 구경·배경·비교성 등",
+            "반지름비 등 모델 파라미터",
+        ],
+    ),
+    (
+        "KMTNet 미시중력렌즈",
+        [
+            "관측소별 공개 측광표",
+            "다지점 병합·점렌즈 모델 적합",
+            "적합 대상·조건 확인",
+            "최대 증광 시각·충격 변수·\n아인슈타인 시간",
+        ],
+    ),
+    (
+        "Gaia DR3 성단 색등급도",
+        [
+            "Gaia DR3 카탈로그",
+            "구성원 선별·색등급도·\n등시선 맞춤",
+            "구성원 선별 엄격도·나이·\n금속함량·거리지수·소광",
+            "성단 나이·거리·소광",
+        ],
+    ),
+]
+
+ROW_LABELS = ["공공 자료", "분석 구조", "학습자가\n조작하는 값", "주요 산출"]
 
 
 def fig_modules():
-    fig, ax = plt.subplots(figsize=(W, 92 * MM))
-    ax.set_xlim(0, 100)
-    # 아래를 0 으로 두면 마지막 행이 0.4 만큼 잘린다(2026-09-11).
-    ax.set_ylim(-8.0, 60)
+    """공통 흐름은 위에, 세 모듈의 같은 비교 항목은 아래 표에 맞춰 그린다."""
+    w_mm, h_mm = PAPER_W, 112.0
+    fig, ax = plt.subplots(figsize=(w_mm * MM, h_mm * MM))
+    ax.set_xlim(0, w_mm)
+    ax.set_ylim(0, h_mm)
     ax.axis("off")
 
-    # 위 — 세 모듈이 함께 쓰는 일곱 단계
-    fw = 100 / len(FLOW)
-    for i, t in enumerate(FLOW):
-        x = i * fw
-        ax.add_patch(Rectangle((x + 0.7, 50.5), fw - 3.0, 7.0,
-                               fc="none", ec=RULE, lw=0.8))
-        ax.text(x + (fw - 3.0) / 2 + 0.7, 54.0, t, fontsize=6.9,
-                ha="center", va="center", color=INK, linespacing=1.25)
-        if i < len(FLOW) - 1:
-            ax.annotate("", xy=(x + fw + 0.35, 54.0), xytext=(x + fw - 2.0, 54.0),
-                        arrowprops=dict(arrowstyle="-|>", color=RULE, lw=0.9,
-                                        mutation_scale=9,
-                                        shrinkA=0, shrinkB=0))
-    ax.text(0, 58.4, "세 모듈이 공유하는 일곱 단계 탐구 흐름",
-            fontsize=8.4, color=INK, va="bottom")
+    ax.text(w_mm / 2, 107.0,
+            "세 탐구모듈의 공통 탐구 흐름과 모듈별 자료·분석 구조",
+            fontsize=11.3, fontweight="bold", ha="center", va="center", color=INK)
 
-    # 아래 — 모듈별. 행 높이를 세 열에서 같게 맞춘다(어긋나면 비교가 안 된다).
-    cw = 100 / 3
-    ax.text(0, 46.2, "모듈별 자료와 분석 구조", fontsize=8.4, color=INK, va="bottom")
-    NL = chr(10)
-    # 7.4pt 글자는 한 줄에 2.4 단위를 먹는다. 3.2+3.3n 으로 잡았더니 「공공 자료」
-    # 한 줄짜리 값이 상자 아래 선에 닿았다(2026-09-11).
-    heights = [5.4 + max(m[k + 1].count(NL) + 1 for m in MODULES) * 2.4
-               for k in range(len(ROWS))]
-    for j, (title, *cells) in enumerate(MODULES):
-        x = j * cw
-        ax.add_patch(Rectangle((x + 0.8, 39.6), cw - 1.6, 5.2, fc="none", ec=RULE, lw=1.2))
-        ax.text(x + cw / 2, 42.2, title, fontsize=8.0, ha="center", va="center",
-                color=INK)
-        y = 38.2
-        for lab, cell, hgt in zip(ROWS, cells, heights):
-            ax.add_patch(Rectangle((x + 0.8, y - hgt), cw - 1.6, hgt,
-                                   fc="none", ec=RULE, lw=0.5))
-            ax.text(x + 2.2, y - 2.4, lab, fontsize=6.6, color=MUTE, va="top")
-            ax.text(x + 2.2, y - 4.9, cell, fontsize=7.4, color=INK,
-                    va="top", linespacing=1.3)
-            y -= hgt + 0.9
-    fig.tight_layout(pad=0.3)
-    p = os.path.join(OUT, "fig_modules.png")
-    fig.savefig(p, dpi=400)
-    plt.close(fig)
-    print("  %s" % os.path.basename(p))
+    # 위쪽 공통 탐구 흐름
+    px, py, pw, ph = 1.5, 70.0, 163.0, 30.8
+    ax.add_patch(FancyBboxPatch(
+        (px, py), pw, ph,
+        boxstyle="round,pad=0.18,rounding_size=1.15",
+        fc="white", ec=LINE, lw=0.7,
+    ))
+    ax.add_patch(Rectangle((px + 0.2, py + ph - 8.0), pw - 0.4, 7.8,
+                           fc=HEAD_FILL, ec="none"))
+    ax.text(px + 3.0, py + ph - 4.0, "공통 탐구 흐름", fontsize=8.3,
+            ha="left", va="center", color=INK)
+
+    fx0, fy, fgap = px + 3.0, py + 4.2, 3.55
+    fw = (pw - 6.0 - fgap * 6) / 7
+    fh = 13.5
+    for i, (step, label) in enumerate(FLOW):
+        x = fx0 + i * (fw + fgap)
+        ax.add_patch(FancyBboxPatch(
+            (x, fy), fw, fh,
+            boxstyle="round,pad=0.18,rounding_size=0.9",
+            fc=BOX_FILL, ec=LINE, lw=0.65,
+        ))
+        ax.text(x + fw / 2, fy + 8.5, step, fontsize=6.4, fontstyle="italic",
+                ha="center", va="center", color=INK)
+        ax.text(x + fw / 2, fy + 4.2, label, fontsize=6.2,
+                ha="center", va="center", color=INK)
+        if i < 6:
+            ax.annotate("", xy=(x + fw + fgap - 0.35, fy + fh / 2),
+                        xytext=(x + fw + 0.35, fy + fh / 2),
+                        arrowprops=dict(arrowstyle="-|>", color=ARROW, lw=0.75,
+                                        shrinkA=0, shrinkB=0, mutation_scale=7.5))
+
+    # 아래쪽 세 모듈 표
+    table_y, table_h = 2.0, 60.0
+    gap = 2.5
+    table_w = (w_mm - 3.0 - gap * 2) / 3
+    title_h = 9.0
+    row_h = (table_h - title_h) / 4
+    label_w = 15.6
+
+    for j, (title, values) in enumerate(MODULES):
+        x = 1.5 + j * (table_w + gap)
+        cx = x + table_w / 2
+
+        ax.annotate("", xy=(cx, py - 0.2), xytext=(cx, table_y + table_h + 0.1),
+                    arrowprops=dict(arrowstyle="-|>", color=ARROW, lw=0.85,
+                                    shrinkA=0, shrinkB=0, mutation_scale=8.5))
+
+        ax.add_patch(FancyBboxPatch(
+            (x, table_y), table_w, table_h,
+            boxstyle="round,pad=0.0,rounding_size=0.75",
+            fc="white", ec=LINE, lw=0.75,
+        ))
+        ax.add_patch(Rectangle((x + 0.1, table_y + table_h - title_h),
+                               table_w - 0.2, title_h - 0.1,
+                               fc=HEAD_FILL, ec="none"))
+        ax.text(cx, table_y + table_h - title_h / 2, title, fontsize=7.5,
+                fontweight="bold", ha="center", va="center", color=INK)
+
+        y_top = table_y + table_h - title_h
+        for i, (label, value) in enumerate(zip(ROW_LABELS, values)):
+            y = y_top - (i + 1) * row_h
+            ax.add_patch(Rectangle((x, y), label_w, row_h,
+                                   fc=LABEL_FILL, ec="none"))
+            ax.plot([x, x + table_w], [y, y], color=LINE, lw=0.45)
+            ax.plot([x + label_w, x + label_w], [y, y + row_h], color=LINE, lw=0.45)
+            ax.text(x + label_w / 2, y + row_h / 2, label, fontsize=6.1,
+                    ha="center", va="center", color=INK, linespacing=1.25)
+            ax.text(x + label_w + 2.0, y + row_h / 2, value, fontsize=6.05,
+                    ha="left", va="center", color=INK, linespacing=1.27)
+        ax.plot([x, x + table_w], [y_top, y_top], color=LINE, lw=0.5)
+
+    fig.subplots_adjust(0, 0, 1, 1)
+    save(fig, "fig_modules.png")
 
 
 if __name__ == "__main__":
-    print("구조 도식 시안")
+    print("논문 구조 도식")
     fig_procedure()
     fig_modules()
