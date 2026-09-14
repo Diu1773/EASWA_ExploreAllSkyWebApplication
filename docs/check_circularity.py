@@ -33,7 +33,7 @@ import os
 import re
 import sys
 
-DEFAULT = r"C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos\EASWA_논문_v18.md"
+DEFAULT = r"C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos\EASWA_논문_v22.md"
 P = sys.argv[1] if len(sys.argv) > 1 else DEFAULT
 
 # 「A 때문에 B」를 만드는 말들. 이것이 없으면 두 낱말이 한 문장에 있어도 인과가 아니다.

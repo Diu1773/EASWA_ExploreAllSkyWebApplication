@@ -32,9 +32,9 @@ import zipfile
 import win32com.client as win32
 
 BASE = r"C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos"
-HWP = sys.argv[1] if len(sys.argv) > 1 else os.path.join(BASE, "EASWA_논문_v18_투고본.hwp")
+HWP = sys.argv[1] if len(sys.argv) > 1 else os.path.join(BASE, "EASWA_논문_v22_투고본.hwp")
 HWPX = os.path.join(BASE, "_투고본_머리말.hwpx")
-MD = os.path.join(BASE, "EASWA_논문_v18.md")
+MD = os.path.join(BASE, "EASWA_논문_v22.md")
 
 LEFT = "| 연구논문 |"          # 템플릿 1쪽 왼쪽
 JOURNAL = "현장과학교육 권(호)"   # 템플릿 홀수 쪽

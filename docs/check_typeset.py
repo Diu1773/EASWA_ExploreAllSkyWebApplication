@@ -22,8 +22,8 @@ import fitz
 BASE = r"C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos"
 from paper_config import CFG   # noqa: E402
 PDF = CFG.원고("조판PDF")
-MD = os.path.join(BASE, "EASWA_논문_v18.md")
-RULES = os.path.join(BASE, "EASWA_논문_v18_투고본.문단.json")
+MD = os.path.join(BASE, "EASWA_논문_v22.md")
+RULES = os.path.join(BASE, "EASWA_논문_v22_투고본.문단.json")
 
 MM = 72.0 / 25.4                      # 1 mm = 2.835 pt
 # 템플릿 실측: 위 여백 22 + 머리말 18 = 본문 40mm 부터. 아래 15 + 꼬리말 17.

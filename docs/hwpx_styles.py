@@ -22,7 +22,7 @@ import hwpx_headers as H                                   # noqa: E402
 import hwpx_template_styles as T                            # noqa: E402
 
 BASE = r"C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos"
-HWP = sys.argv[1] if len(sys.argv) > 1 else os.path.join(BASE, "EASWA_논문_v18_투고본.hwp")
+HWP = sys.argv[1] if len(sys.argv) > 1 else os.path.join(BASE, "EASWA_논문_v22_투고본.hwp")
 HWPX = os.path.join(BASE, "_투고본_스타일.hwpx")
 # 템플릿에 있는 이름만 점을 뗀다. 컨테이너용 클래스(GAP·FIG·TBL)는 그대로 둔다 —
 # 템플릿에 대응이 없어서 이름을 만들면 오히려 낯선 스타일이 생긴다.

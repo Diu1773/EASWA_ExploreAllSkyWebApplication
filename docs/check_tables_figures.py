@@ -23,7 +23,7 @@ import os as _os
 sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
 from collections import defaultdict
 
-DEFAULT = r'C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos\EASWA_논문_v18.md'
+DEFAULT = r'C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos\EASWA_논문_v22.md'
 P = sys.argv[1] if len(sys.argv) > 1 else DEFAULT
 L = io.open(P, encoding='utf-8').read().replace('\r\n', '\n').split('\n')
 from paper_config import CFG   # noqa: E402

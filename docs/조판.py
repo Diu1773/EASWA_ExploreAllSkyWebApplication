@@ -22,9 +22,9 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 BASE = r"C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos"
-MAIN = os.path.join(BASE, "EASWA_논문_v18_투고본.hwp")
+MAIN = os.path.join(BASE, "EASWA_논문_v22_투고본.hwp")
 import glob
-ALT = os.path.join(BASE, "EASWA_논문_v18_투고본_새판*.hwp")   # 열려 있을 때 비켜 간 판
+ALT = os.path.join(BASE, "EASWA_논문_v22_투고본_새판*.hwp")   # 열려 있을 때 비켜 간 판
 
 
 def newest():

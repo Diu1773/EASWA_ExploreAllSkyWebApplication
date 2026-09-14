@@ -15,9 +15,9 @@ import time
 import win32com.client as win32
 
 BASE = r'C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos'
-SRC = os.path.join(BASE, 'EASWA_논문_v18_투고본.html')
-RULES = os.path.join(BASE, 'EASWA_논문_v18_투고본.문단.json')
-OUT = os.path.join(BASE, 'EASWA_논문_v18_투고본.hwp')
+SRC = os.path.join(BASE, 'EASWA_논문_v22_투고본.html')
+RULES = os.path.join(BASE, 'EASWA_논문_v22_투고본.문단.json')
+OUT = os.path.join(BASE, 'EASWA_논문_v22_투고본.hwp')
 
 # 논문템플릿.hwp 의 PAGE_DEF 실측값 (mm) — COM 으로 직접 읽었다(2026-09-10)
 PAPER_W, PAPER_H = 210.0, 285.0
@@ -597,7 +597,7 @@ def appendix_head():
     걸린다. 그 자리에 쪽 나누기가 들어가 11쪽이 186mm 비었다(2026-09-11,
     F-324). 제목 줄 전체를 쓰면 본문 언급과 겹치지 않는다.
     """
-    md = os.path.join(BASE, 'EASWA_논문_v18.md')
+    md = os.path.join(BASE, 'EASWA_논문_v22.md')
     if os.path.exists(md):
         for ln in io.open(md, encoding='utf-8'):
             t = ln.strip().lstrip('#').strip()
