@@ -64,3 +64,4 @@ docs/survey/data/
 # WASP-121 분해 검증이 받아 두는 FITS·중간 산출물 (재실행하면 다시 받는다)
 docs/validation/_wasp121_cache/
 docs/proofread_work/
+tmp/
