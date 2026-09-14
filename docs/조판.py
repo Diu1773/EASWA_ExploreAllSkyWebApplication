@@ -3,7 +3,7 @@
 
     python -X utf8 docs/조판.py
 
-일곱 단계를 순서대로 돌린다. 손으로 돌리면 한 단계씩 빠진다 — 머리말 단계를 네 판
+여덟 단계를 순서대로 돌린다. 손으로 돌리면 한 단계씩 빠진다 — 머리말 단계를 네 판
 내리 빠뜨렸고(`Main/FAILURES.md` F-323), 쪽 나누기를 스타일 앞에서 정해 쪽이
 비었다(F-328). 순서 자체가 규칙이므로 여기 한 곳에만 적는다.
 
@@ -12,8 +12,9 @@
     3. hwpx_styles.py      스타일 이름의 점 떼기 + 간격용 빈 문단 걷어내기
     4. make_hwp.py --쪽나눔 부록 앞·갈린 표 앞 쪽 나누기 (3 뒤에 와야 한다)
     5. hwpx_headers.py     1쪽·홀수·짝수 머리말 세 종류
-    6. check_hwp_template_contract.py 글자·문단·스타일의 템플릿 일치 확인
-    7. save_pdf.py         한글이 뽑은 PDF
+    6. set_character_breaks.py 한글 줄 나눔을 글자 단위로 최종 고정
+    7. check_hwp_template_contract.py 글자·문단·스타일의 템플릿 일치 확인
+    8. save_pdf.py         한글이 뽑은 PDF
 
 끝나면 check_typeset.py 로 점검한다.
 """
@@ -51,6 +52,9 @@ def main():
     run("hwpx_styles.py", hwp)
     run("make_hwp.py", "--쪽나눔", hwp)
     run("hwpx_headers.py", hwp)
+    # HWPX 왕복은 breakNonLatinWord를 버릴 수 있다. 같은 학회 게재본과 사용자
+    # 확정에 맞춘 글자 단위 줄 나눔을 모든 HWPX 작업 뒤에 다시 고정한다.
+    run("set_character_breaks.py", "--in-place", hwp)
     run("check_hwp_template_contract.py", hwp)
     # 검사한 바로 그 HWP에서 PDF를 만든다. 수정 시각이 더 늦은 옛 `_새판`이
     # 폴더에 남아 있어도 다른 파일을 집지 않는다.

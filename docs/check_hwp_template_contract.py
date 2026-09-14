@@ -124,9 +124,14 @@ def para_signature(item):
 
 
 def actual_para_signature(item):
-    """쪽걸침·번호·표 셀 정렬을 빼고 스타일 계약에 속한 값만 비교한다."""
+    """쪽걸침·번호·표 셀 정렬·한글 줄 나눔을 뺀 스타일 계약을 비교한다.
+
+    한글 줄 나눔은 템플릿 스타일의 기본값을 복제하지 않고, 같은 학회 게재본과
+    소유자 확정에 따라 실제 문단에 글자 단위로 직접 준다. 아래 본문 순회에서
+    ``KEEP_WORD``인지 별도로 검사한다.
+    """
     full = para_signature(item)
-    return full[4:]  # prev·next·줄간격·condense·tab·한글 낱말 나눔
+    return full[4:-1]  # prev·next·줄간격·condense·tab
 
 
 def in_ancestor(element, name):
@@ -168,6 +173,7 @@ def main():
     checked_paras = 0
     checked_runs = 0
     table_wrong = 0
+    character_break_wrong = 0
     for root in dst[5]:
         for paragraph in root.xpath('.//*[local-name()="p"]'):
             style = dst[3].get(paragraph.get("styleIDRef"))
@@ -181,6 +187,9 @@ def main():
             actual_para = dst[2][paragraph.get("paraPrIDRef")]
             if actual_para_signature(actual_para) != actual_para_signature(base_para):
                 bad.append("실제 문단 모양 불일치: %s" % name)
+            break_setting = actual_para.find("hh:breakSetting", NS)
+            if break_setting is None or break_setting.get("breakNonLatinWord") != "KEEP_WORD":
+                character_break_wrong += 1
             base_char = dst[1][style.get("charPrIDRef")]
             for run in paragraph.findall("hp:run", NS):
                 text = run.find("hp:t", NS)
@@ -194,6 +203,8 @@ def main():
                     bad.append("실제 글자 모양 불일치: %s" % name)
     if table_wrong:
         bad.append("표내용 스타일이 아닌 표 셀 문단: %d" % table_wrong)
+    if character_break_wrong:
+        bad.append("글자 단위 한글 줄 나눔이 아닌 실제 문단: %d" % character_break_wrong)
 
     if bad:
         print("템플릿 서식 불일치 %d건" % len(bad))

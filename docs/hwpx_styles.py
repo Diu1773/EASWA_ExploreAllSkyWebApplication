@@ -66,10 +66,11 @@ def keep_word(path):
     자리가 36 에서 하나도 줄지 않았다. 게다가 이름이 뜻과 거꾸로다: 한글이 내보낸
     파일에서 어절 단위 문단이 `BREAK_WORD`, 글자 단위 문단이 `KEEP_WORD` 로 찍힌다.
 
-    실제로 바꾸는 것은 `make_hwp.py` 의 `keep_word(h)` 와 `keep_word_cells(h)` 다.
+    실제로 바꾸는 것은 `make_hwp.py` 의 `break_korean_by_character(h)` 와
+    `break_korean_by_character_cells(h)` 다.
     한글에게 직접 시킨다. 이 함수는 같은 길을 다시 시도하지 않도록 남겨 둔다.
     """
-    raise NotImplementedError("make_hwp.py 의 keep_word(h) 를 쓴다")
+    raise NotImplementedError("make_hwp.py 의 break_korean_by_character(h) 를 쓴다")
 
 
 def drop_gaps(path):

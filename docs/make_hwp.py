@@ -713,34 +713,28 @@ def main():
     print('저장 완료 — %s (%.1f MB)' % (OUT, os.path.getsize(OUT) / 1e6))
 
 
-def keep_word(h):
-    """줄이 넘어갈 때 **어절 단위**로 끊게 한다 — 문서 전체에.
+def break_korean_by_character(h):
+    """한글 줄 나눔을 **글자 단위**로 맞춘다 — 문서 전체에.
 
-    한글 문단 모양 「확장 → 줄 나눔 기준 → 한글: 어절」이다. HTML 을 읽어 온
-    문단은 글자 단위(`BreakNonLatinWord=1`)라 낱말 한가운데서 갈렸다 — 초록에서
-    「공 / 공 천문자료」·「설계 원 / 리로」처럼 갈린 자리가 192군데였다
-    (2026-09-12 소유자 지적).
+    2026-09-15 최종 투고본에서 어절 단위를 쓰자 양쪽 정렬이 짧은 줄의 공백을
+    과도하게 늘렸다. 같은 학회 게재본은 좁은 2단에서도 글자 단위로 줄을 나누며,
+    이쪽이 공백 폭을 안정적으로 유지했다. 한글 COM의 `BreakNonLatinWord=1`을
+    본문과 표 셀에 직접 준다. HWPX 속성만 고치면 HWP 왕복에서 버려질 수 있으므로
+    최종 HWP에도 `set_character_breaks.py`가 같은 값을 한 번 더 적용한다.
 
-    **hwpx 의 `breakNonLatinWord` 속성만으로는 안 된다.** 그 속성을 KEEP_WORD 로
-    고쳐도 한글이 읽어 들이면 문단 모양은 그대로 1(글자)이었다. 한글 자신에게
-    시켜야 바뀐다. 온 문서를 잡고 이 항목 하나만 바꾸면 정렬·들여쓰기·줄 간격은
-    그대로 남는다(실측 — 장제목 가운데 정렬·참고문헌 내어쓰기·줄 간격 15.94pt
-    모두 같았다).
-
-    **쪽수가 는다** — 한 줄에 덜 들어가므로 32쪽이 33쪽이 됐다. 그래서 쪽 나누기를
-    정하기 **전에** 준다.
+    쪽 나누기 위치가 실제 제출판과 같도록 표·그림 쪽 나누기를 정하기 **전에** 준다.
     """
     h.HAction.Run('SelectAll')
     t = h.HParameterSet.HParaShape
     h.HAction.GetDefault('ParagraphShape', t.HSet)
-    t.BreakNonLatinWord = 0
+    t.BreakNonLatinWord = 1
     h.HAction.Execute('ParagraphShape', t.HSet)
     h.HAction.Run('Cancel')
-    print('줄 나눔을 어절 단위로 — 본문 · %d쪽' % h.PageCount)
-    print('  표 안 %d칸 · %d쪽' % (keep_word_cells(h), h.PageCount))
+    print('줄 나눔을 글자 단위로 — 본문 · %d쪽' % h.PageCount)
+    print('  표 안 %d칸 · %d쪽' % (break_korean_by_character_cells(h), h.PageCount))
 
 
-def keep_word_cells(h):
+def break_korean_by_character_cells(h):
     """표 안에도 같은 것을 준다 — 칸을 하나씩 돌면서.
 
     `SelectAll` 은 표 **바깥** 문단만 잡는다. 표를 `FindCtrl` 로 잡아도 문단
@@ -766,8 +760,8 @@ def keep_word_cells(h):
                 seen.add(pos)
                 t = h.HParameterSet.HParaShape
                 h.HAction.GetDefault('ParagraphShape', t.HSet)
-                if t.BreakNonLatinWord != 0:
-                    t.BreakNonLatinWord = 0
+                if t.BreakNonLatinWord != 1:
+                    t.BreakNonLatinWord = 1
                     h.HAction.Execute('ParagraphShape', t.HSet)
                     n += 1
                 if not h.HAction.Run('TableRightCell'):
@@ -812,7 +806,7 @@ def after_styles(path):
     OUT = path
     h = _hwp()
     h.Open(OUT, 'HWP', 'forceopen:true')
-    keep_word(h)
+    break_korean_by_character(h)
     apply_align(h)
     h.SaveAs(OUT, 'HWP', '')
     h.Clear(1)
