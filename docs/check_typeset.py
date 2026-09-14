@@ -21,7 +21,7 @@ import fitz
 
 BASE = r"C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos"
 from paper_config import CFG   # noqa: E402
-PDF = CFG.원고("조판PDF")
+PDF = os.path.abspath(sys.argv[1]) if len(sys.argv) > 1 else CFG.원고("조판PDF")
 MD = os.path.join(BASE, "EASWA_논문_v22.md")
 RULES = os.path.join(BASE, "EASWA_논문_v22_투고본.문단.json")
 
@@ -162,9 +162,14 @@ def main():
             continue
         top = min([x[1] for x in blocks] + [r[0].y0 for r in ims if r] or [0])
         low = max([x[3] for x in blocks] + [r[0].y1 for r in ims if r] or [0])
-        if not (TOP_MIN <= _mm(top) <= TOP_MAX):
+        first = min(blocks, key=lambda x: x[1])[4].strip() if blocks else ""
+        # 템플릿의 장제목은 위 간격 30pt를 갖는다. 장이 새 쪽에서 시작하면 본문보다
+        # 약 3mm 아래에 놓이는 것이 정상이며, 이를 페이지 여백 오류로 세지 않는다.
+        chapter_start = bool(re.match(r"^[ⅠⅡⅢⅣⅤⅥ]+\.\s|^부록[.]", first))
+        top_max = TOP_MAX + 5.0 if chapter_start else TOP_MAX
+        if not (TOP_MIN <= _mm(top) <= top_max):
             bad.append("%d쪽 위 여백이 %.1fmm (규격 %.0f~%.0f) — @page 가 아니라 요소 여백으로 "
-                       "주면 첫 쪽에만 생긴다" % (i, _mm(top), TOP_MIN, TOP_MAX))
+                       "주면 첫 쪽에만 생긴다" % (i, _mm(top), TOP_MIN, top_max))
         if _mm(pg.rect.height - low) < BOTTOM_MIN:
             bad.append("%d쪽 아래 여백이 %.1fmm 로 규격 미만" % (i, _mm(pg.rect.height - low)))
 
@@ -221,7 +226,10 @@ def main():
             waste.append((i, round(gap)))
             # 부록은 새 쪽에서 시작한다 — 그 앞 쪽이 비는 것은 뜻한 바다
             nxt = d[i].get_text().lstrip().splitlines() if i < d.page_count else []
-            to_appendix = any(l.strip().startswith("부록.") for l in nxt[:5])
+            to_new_section = any(
+                l.strip().startswith("부록.") or l.strip() in {"Abstract", "참고문헌"}
+                for l in nxt[:5]
+            )
             # 다음 쪽의 그림 덩어리(그림+캡션)가 빈 자리의 한 배 반을 넘으면 줄여서
             # 넣을 수 있는 크기가 아니다 — 그림 6 은 그림만 123mm 에 캡션이 열한
             # 줄이라 어떤 쪽에도 끼워 넣을 수 없다(2026-09-12). 알림으로만 둔다.
@@ -241,7 +249,9 @@ def main():
                             break
                         end = b[3]
                     block = _mm(end - top)
-            stuck = block > gap * 1.5
+            # 빈칸에 넣으려면 10% 넘게 축소해야 하는 그림은 글자와 축 눈금의
+            # 가독성을 해치므로 현재 크기를 유지한다.
+            stuck = block > gap * 1.1
             # 다음 쪽이 표로 시작하면 그 표를 끌어올릴 수 있었는지 재 본다. 표는
             # 그림과 달리 줄여서 끼울 수 없으므로 빈 자리보다 크기만 하면 못 올린다
             # — 어절 단위로 줄을 끊자 표 3 이 13쪽에 안 들어가 73mm 가 비었다
@@ -256,7 +266,7 @@ def main():
                             break
                         end = b[3]
                     stuck = _mm(end - head[0][1]) > gap
-            if gap > WASTE_BAD and not to_appendix and not stuck:
+            if gap > WASTE_BAD and not to_new_section and not stuck:
                 bad.append("%d쪽 아래가 %.0fmm 비었다 — 쪽 나누기나 그림 크기를 본다"
                            % (i, gap))
 

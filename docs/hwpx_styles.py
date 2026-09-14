@@ -19,7 +19,7 @@ import zipfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import hwpx_headers as H                                   # noqa: E402
-import hwpx_template_styles as T                            # noqa: E402
+import hwpx_template_contract as T                          # noqa: E402
 
 BASE = r"C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos"
 HWP = sys.argv[1] if len(sys.argv) > 1 else os.path.join(BASE, "EASWA_논문_v22_투고본.hwp")
@@ -160,11 +160,10 @@ def main():
     hit = strip_dots(HWPX)
     d, mv = drop_gaps(HWPX)
     print("간격 문단 %d개를 지우고 %d곳을 문단 위 간격으로 옮겼다" % (d, mv))
-    # 스타일 정의에 템플릿 글꼴을 박는 단계(hwpx_template_styles.py)는 **끄어 두었다.**
-    # charPr 을 스타일마다 베껴 주는 과정에서 스타일 여럿이 서로 다른 모양을 가리키게
-    # 되어 장제목이 6pt, 본문이 8.5pt 굵게가 됐고 쪽수가 32 → 34 로 늘었다
-    # (2026-09-12). 글자마다는 맞는 글꼴이 들어가므로 **찍힌 모습은 템플릿과 같다.**
-    # 다른 것은 한글 「스타일 편집」 창에 저장된 값뿐이다.
+    # 이름만 맞추면 스타일 편집 창과 실제 문단의 장평·자간·문단 여백이 템플릿과
+    # 달라진다. 전체 charPr·paraPr 계약을 스타일 정의와 실제 문단에 함께 적용한다.
+    synced = T.apply(HWPX, KEEP)
+    print("템플릿과 실제 값까지 맞춘 스타일 %d개" % len(synced))
     print("%d쪽 · 점을 뗀 스타일 %d개: %s" % (n, len(hit), ", ".join(sorted(set(hit)))))
     out, n = H.to_hwp(HWPX, HWP)
     os.remove(HWPX)

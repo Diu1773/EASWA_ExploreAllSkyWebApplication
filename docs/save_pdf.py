@@ -28,7 +28,10 @@ def newest():
 
 
 def main():
-    src = newest()
+    src = os.path.abspath(sys.argv[1]) if len(sys.argv) > 1 else newest()
+    out_requested = os.path.abspath(sys.argv[2]) if len(sys.argv) > 2 else OUT
+    if not os.path.exists(src):
+        sys.exit("한글 파일이 없다 — %s" % src)
     h = win32.Dispatch("HWPFrame.HwpObject")
     try:
         h.RegisterModule("FilePathCheckDLL", "FilePathCheckerModule")
@@ -38,7 +41,7 @@ def main():
     if not h.Open(src, "HWP", "forceopen:true"):
         h.Quit()
         sys.exit("한글 파일 열기 실패 — %s" % src)
-    out = OUT
+    out = out_requested
     if os.path.exists(out):
         try:
             os.remove(out)
