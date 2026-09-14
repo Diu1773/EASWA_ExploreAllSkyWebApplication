@@ -21,6 +21,22 @@ def report(message):
     print(message, flush=True)
 
 
+def restore_table_caption_style(hwp, needle):
+    """DeleteBack이 캡션 첫 run의 글자 모양을 앞 문단에서 물려받지 않게 한다."""
+    if not _find(hwp, needle):
+        raise RuntimeError("쪽 나누기 제거 뒤 대상 문단을 다시 찾지 못했다: %s" % needle)
+    hwp.HAction.Run("MoveParaBegin")
+    style = hwp.HParameterSet.HStyle
+    style.HSet.SetItem("StyleName", "표제목")
+    if not hwp.HAction.Execute("Style", style.HSet):
+        raise RuntimeError("표제목 스타일을 복구하지 못했다")
+    shape = hwp.HParameterSet.HParaShape
+    hwp.HAction.GetDefault("ParagraphShape", shape.HSet)
+    shape.KeepWithNext = 1
+    shape.BreakNonLatinWord = 0
+    hwp.HAction.Execute("ParagraphShape", shape.HSet)
+
+
 def main():
     if len(sys.argv) != 5:
         sys.exit("SOURCE.hwp TARGET.hwp TARGET.pdf NEEDLE을 지정해야 한다")
@@ -52,6 +68,7 @@ def main():
         hwp.HAction.Run("MoveLineBegin")
         if not hwp.HAction.Run("DeleteBack"):
             raise RuntimeError("대상 문단 앞의 쪽 나누기를 제거하지 못했다")
+        restore_table_caption_style(hwp, needle)
         after = hwp.GetTextFile("TEXT", "")
         report("[4/6] 본문 문자열 대조")
         if before != after:

@@ -3,8 +3,9 @@
 
 같은 학회 게재본은 좁은 2단에서도 한글 어절 내부의 줄 나눔을 허용하여 양쪽
 정렬의 공백이 과도하게 벌어지지 않는다. 한글 COM의 ``BreakNonLatinWord``는
-``1``이 글자 단위, ``0``이 어절 단위다. HWPX 속성만 고치면 HWP 왕복에서 값이
-버려질 수 있으므로, 모든 HWPX 작업이 끝난 최종 HWP에 한글 COM으로 직접 준다.
+이 문서와 한글 2022에서 ``0``이 글자 단위, ``1``이 어절 단위로 동작했다.
+HWPX 속성만 고치면 HWP 왕복에서 값이 버려질 수 있으므로, 모든 HWPX 작업이 끝난
+최종 HWP에 한글 COM으로 직접 준다.
 
     python -X utf8 docs/set_character_breaks.py SOURCE.hwp TARGET.hwp TARGET.pdf
     python -X utf8 docs/set_character_breaks.py --in-place SOURCE.hwp
@@ -46,8 +47,8 @@ def set_table_cells(hwp):
                 shape = hwp.HParameterSet.HParaShape
                 hwp.HAction.GetDefault("ParagraphShape", shape.HSet)
                 visited += 1
-                if shape.BreakNonLatinWord != 1:
-                    shape.BreakNonLatinWord = 1
+                if shape.BreakNonLatinWord != 0:
+                    shape.BreakNonLatinWord = 0
                     hwp.HAction.Execute("ParagraphShape", shape.HSet)
                     changed += 1
                 if not hwp.HAction.Run("TableRightCell"):
@@ -55,6 +56,36 @@ def set_table_cells(hwp):
             hwp.HAction.Run("Cancel")
         ctrl = ctrl.Next
     return visited, changed
+
+
+def find_paragraph(hwp, needle):
+    """본문 선택에서 빠지는 각주 문단을 문자열로 찾는다."""
+    hwp.MovePos(2, 0, 0)
+    find = hwp.HParameterSet.HFindReplace
+    hwp.HAction.GetDefault("RepeatFind", find.HSet)
+    find.FindString = needle
+    find.IgnoreMessage = 1
+    find.Direction = 0
+    if not hwp.HAction.Execute("RepeatFind", find.HSet):
+        return False
+    hwp.HAction.Run("Cancel")
+    hwp.HAction.Run("MoveParaBegin")
+    return True
+
+
+def set_note_paragraphs(hwp):
+    """SelectAll에서 빠지는 교신저자·접수일 각주에도 같은 값을 적용한다."""
+    changed = 0
+    for needle in ("*교신저자 이메일 주소", "▶ 접수:"):
+        if not find_paragraph(hwp, needle):
+            continue
+        shape = hwp.HParameterSet.HParaShape
+        hwp.HAction.GetDefault("ParagraphShape", shape.HSet)
+        if shape.BreakNonLatinWord != 0:
+            shape.BreakNonLatinWord = 0
+            hwp.HAction.Execute("ParagraphShape", shape.HSet)
+            changed += 1
+    return changed
 
 
 def main():
@@ -87,6 +118,7 @@ def main():
     pages = 0
     cells = 0
     cells_changed = 0
+    notes_changed = 0
     try:
         report("[2/9] 파일 경로 검사 모듈 등록")
         try:
@@ -105,11 +137,12 @@ def main():
         hwp.HAction.Run("SelectAll")
         shape = hwp.HParameterSet.HParaShape
         hwp.HAction.GetDefault("ParagraphShape", shape.HSet)
-        shape.BreakNonLatinWord = 1
+        shape.BreakNonLatinWord = 0
         hwp.HAction.Execute("ParagraphShape", shape.HSet)
         hwp.HAction.Run("Cancel")
         report("[6/9] 표 셀 문단 속성 변경")
         cells, cells_changed = set_table_cells(hwp)
+        notes_changed = set_note_paragraphs(hwp)
         report("[7/9] 변경 후 본문 대조")
         after = hwp.GetTextFile("TEXT", "")
         if before != after:
@@ -140,8 +173,8 @@ def main():
         os.replace(target_hwp, source)
         target_hwp = source
     report(
-        "글자 단위 줄 나눔 적용 — 본문 전체 · 표 %d칸(%d칸 변경) · %d쪽"
-        % (cells, cells_changed, pages)
+        "글자 단위 줄 나눔 적용 — 본문 전체 · 표 %d칸(%d칸 변경) · 각주 %d개 변경 · %d쪽"
+        % (cells, cells_changed, notes_changed, pages)
     )
     if target_pdf is None:
         report("본문 문자열 동일 · %s" % target_hwp)

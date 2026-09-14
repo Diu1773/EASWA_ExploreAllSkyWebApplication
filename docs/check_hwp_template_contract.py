@@ -128,7 +128,8 @@ def actual_para_signature(item):
 
     한글 줄 나눔은 템플릿 스타일의 기본값을 복제하지 않고, 같은 학회 게재본과
     소유자 확정에 따라 실제 문단에 글자 단위로 직접 준다. 아래 본문 순회에서
-    ``KEEP_WORD``인지 별도로 검사한다.
+    ``BREAK_WORD``인지 별도로 검사한다. 이 문서에서 COM
+    ``BreakNonLatinWord=0``을 적용한 뒤 HWPX로 내보내면 이 값이 기록된다.
     """
     full = para_signature(item)
     return full[4:-1]  # prev·next·줄간격·condense·tab
@@ -136,6 +137,11 @@ def actual_para_signature(item):
 
 def in_ancestor(element, name):
     return any(etree.QName(x).localname == name for x in element.iterancestors())
+
+
+def paragraph_excerpt(paragraph, limit=60):
+    text = "".join(paragraph.itertext()).replace("\n", " ").strip()
+    return text[:limit] or "<빈 문단>"
 
 
 def main():
@@ -174,6 +180,7 @@ def main():
     checked_runs = 0
     table_wrong = 0
     character_break_wrong = 0
+    character_break_samples = []
     for root in dst[5]:
         for paragraph in root.xpath('.//*[local-name()="p"]'):
             style = dst[3].get(paragraph.get("styleIDRef"))
@@ -188,8 +195,13 @@ def main():
             if actual_para_signature(actual_para) != actual_para_signature(base_para):
                 bad.append("실제 문단 모양 불일치: %s" % name)
             break_setting = actual_para.find("hh:breakSetting", NS)
-            if break_setting is None or break_setting.get("breakNonLatinWord") != "KEEP_WORD":
+            break_value = break_setting.get("breakNonLatinWord") if break_setting is not None else None
+            if break_value != "BREAK_WORD":
                 character_break_wrong += 1
+                if len(character_break_samples) < 10:
+                    character_break_samples.append(
+                        "%s=%s: %s" % (name, break_value, paragraph_excerpt(paragraph))
+                    )
             base_char = dst[1][style.get("charPrIDRef")]
             for run in paragraph.findall("hp:run", NS):
                 text = run.find("hp:t", NS)
@@ -200,11 +212,15 @@ def main():
                 if char_signature(actual_char, dst[0], semantic=False) != char_signature(
                     base_char, dst[0], semantic=False
                 ):
-                    bad.append("실제 글자 모양 불일치: %s" % name)
+                    bad.append(
+                        "실제 글자 모양 불일치: %s: %s"
+                        % (name, paragraph_excerpt(paragraph))
+                    )
     if table_wrong:
         bad.append("표내용 스타일이 아닌 표 셀 문단: %d" % table_wrong)
     if character_break_wrong:
         bad.append("글자 단위 한글 줄 나눔이 아닌 실제 문단: %d" % character_break_wrong)
+        bad.extend("줄 나눔 값: " + item for item in character_break_samples)
 
     if bad:
         print("템플릿 서식 불일치 %d건" % len(bad))

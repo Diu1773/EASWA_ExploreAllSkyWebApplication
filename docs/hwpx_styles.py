@@ -63,8 +63,8 @@ def keep_word(path):
 
     줄 나눔을 어절 단위로 바꾸려고 이 속성을 고쳐 봤다(2026-09-12). 한글이 hwpx 를
     hwp 로 되돌리면서 그 값을 버린다 — 열한 군데를 고치고 PDF 를 다시 뽑았는데 갈린
-    자리가 36 에서 하나도 줄지 않았다. 게다가 이름이 뜻과 거꾸로다: 한글이 내보낸
-    파일에서 어절 단위 문단이 `BREAK_WORD`, 글자 단위 문단이 `KEEP_WORD` 로 찍힌다.
+    자리가 36 에서 하나도 줄지 않았다. 이 문서의 실제 A/B 저장 결과에서는 한글이
+    내보낸 파일에 어절 단위가 `KEEP_WORD`, 글자 단위가 `BREAK_WORD`로 찍혔다.
 
     실제로 바꾸는 것은 `make_hwp.py` 의 `break_korean_by_character(h)` 와
     `break_korean_by_character_cells(h)` 다.
