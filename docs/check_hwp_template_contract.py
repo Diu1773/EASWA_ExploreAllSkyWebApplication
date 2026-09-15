@@ -182,6 +182,12 @@ def main():
     character_break_wrong = 0
     character_break_samples = []
     for root in dst[5]:
+        for even in root.xpath('.//*[local-name()="header" and @applyPageType="EVEN"]'):
+            for header_paragraph in even.xpath('.//*[local-name()="p"]'):
+                header_para = dst[2].get(header_paragraph.get("paraPrIDRef"))
+                align = header_para.find("hh:align", NS) if header_para is not None else None
+                if align is None or align.get("horizontal") != "CENTER":
+                    bad.append("짝수 쪽 논문 제목 머리말이 가운데 정렬이 아님")
         for paragraph in root.xpath('.//*[local-name()="p"]'):
             style = dst[3].get(paragraph.get("styleIDRef"))
             name = style.get("name") if style is not None else None
@@ -192,21 +198,25 @@ def main():
             checked_paras += 1
             base_para = dst[2][style.get("paraPrIDRef")]
             actual_para = dst[2][paragraph.get("paraPrIDRef")]
-            # 표 앞 간격은 템플릿 스타일 자체를 바꾸지 않고 해당 표제목 문단의
-            # ``prev``에, 표를 담은 문단의 ``next``에만 6pt(600 HWPUNIT)로 준다.
-            # 허용 범위를 통째로 빼지 않고 두 값도 정확히 검사한다.
-            if name == "표제목":
-                actual = actual_para_signature(actual_para)
-                expected = list(actual_para_signature(base_para))
-                contains_table = bool(paragraph.xpath('.//*[local-name()="tbl"]'))
-                if contains_table and not in_ancestor(paragraph, "tc"):
-                    expected[1] = "600"
-                else:
-                    expected[0] = "600"
-                expected = tuple(expected)
-            else:
-                actual = actual_para_signature(actual_para)
-                expected = actual_para_signature(base_para)
+            # 표 제목 위 10pt, 표 다음 문단 위 10pt, 그림 캡션 뒤 8pt는 스타일
+            # 정의를 바꾸지 않고 실제 문단에만 적용한다. 허용 범위를 넓히지 않고
+            # 문맥에 따라 세 값을 정확히 검사한다.
+            actual = actual_para_signature(actual_para)
+            expected = list(actual_para_signature(base_para))
+            contains_table = bool(paragraph.xpath('.//*[local-name()="tbl"]'))
+            previous = paragraph.getprevious()
+            follows_table = (
+                previous is not None
+                and etree.QName(previous).localname == "p"
+                and bool(previous.xpath('.//*[local-name()="tbl"]'))
+            )
+            if name == "표제목" and not contains_table:
+                expected[0] = "1000"
+            if follows_table:
+                expected[0] = "1000"
+            if name == "그림제목":
+                expected[1] = "800"
+            expected = tuple(expected)
             if actual != expected:
                 bad.append("실제 문단 모양 불일치: %s" % name)
             break_setting = actual_para.find("hh:breakSetting", NS)
@@ -230,6 +240,13 @@ def main():
                     bad.append(
                         "실제 글자 모양 불일치: %s: %s"
                         % (name, paragraph_excerpt(paragraph))
+                    )
+                if name == "그림제목" and char_signature(
+                    actual_char, dst[0], semantic=True
+                ) != char_signature(base_char, dst[0], semantic=True):
+                    bad.append(
+                        "그림 캡션 굵기·기울임 불일치: %s"
+                        % paragraph_excerpt(paragraph)
                     )
     if table_wrong:
         bad.append("표내용 스타일이 아닌 표 셀 문단: %d" % table_wrong)

@@ -222,12 +222,13 @@ def superscript_author_marks(data, names):
     return changed
 
 
-def add_table_spacing(data, names, before=600, after=600):
-    """표 제목 앞과 표 뒤에 각각 6pt의 실제 문단 간격을 둔다.
+def add_table_spacing(data, names, before=1000, after=1000):
+    """표 제목 앞과 표 뒤에 각각 10pt의 실제 문단 간격을 둔다.
 
     템플릿 스타일 정의는 그대로 두고 해당 문단에만 paraPr 변형을 적용한다. 표 제목
-    위에는 ``prev``를, 표를 담은 바깥 문단에는 ``next``를 주므로 표 안의 셀 간격은
-    바뀌지 않는다.
+    위에는 ``prev``를 준다. 표를 담은 문단의 ``next``는 여러 쪽에 걸친 표에서 실제
+    PDF 간격으로 나타나지 않았으므로, 표 다음 바깥 문단의 ``prev``에 간격을 준다.
+    표 안의 셀 간격은 바뀌지 않는다.
     """
     header = etree.fromstring(data["Contents/header.xml"])
     styles = {
@@ -263,6 +264,7 @@ def add_table_spacing(data, names, before=600, after=600):
                     node.set("value", str(next_ * factor))
         para_box.append(clone)
         cache[key] = str(next_id)
+        paras[str(next_id)] = clone
         next_id += 1
         return cache[key]
 
@@ -271,25 +273,134 @@ def add_table_spacing(data, names, before=600, after=600):
         if not re.search(r"section\d+\.xml$", name):
             continue
         root = etree.fromstring(data[name])
-        for paragraph in root.xpath('.//*[local-name()="p"]'):
+        outer = root.xpath(
+            './/*[local-name()="p" and not(ancestor::*[local-name()="tc"])]'
+        )
+        for paragraph in outer:
             source_id = paragraph.get("paraPrIDRef")
             if source_id not in paras:
                 continue
             contains_table = bool(paragraph.xpath('.//*[local-name()="tbl"]'))
-            inside_cell = any(etree.QName(item).localname == "tc"
-                              for item in paragraph.iterancestors())
-            if contains_table and not inside_cell:
-                paragraph.set("paraPrIDRef", variant(source_id, next_=after))
-                tables += 1
-            elif paragraph.get("styleIDRef") in table_caption_styles:
+            if not contains_table and paragraph.get("styleIDRef") in table_caption_styles:
                 paragraph.set("paraPrIDRef", variant(source_id, prev=before))
                 captions += 1
+
+        # 표 뒤 간격은 다음 바깥 문단이 직접 갖게 한다. 연속한 표라면 다음 표 제목의
+        # 위 간격과 겹치지 않도록 별도로 적용하지 않는다.
+        for index, paragraph in enumerate(outer[:-1]):
+            if not paragraph.xpath('.//*[local-name()="tbl"]'):
+                continue
+            tables += 1
+            following = outer[index + 1]
+            if following.get("styleIDRef") in table_caption_styles:
+                continue
+            source_id = following.get("paraPrIDRef")
+            if source_id in paras:
+                following.set("paraPrIDRef", variant(source_id, prev=after))
         data[name] = _xml_bytes(root)
 
     if cache:
         para_box.set("itemCnt", str(len(para_box)))
         data["Contents/header.xml"] = _xml_bytes(header)
     return captions, tables
+
+
+def format_figure_captions(data, names, after=800):
+    """그림 캡션을 템플릿의 보통 굵기로 맞추고 뒤에 8pt 간격을 둔다."""
+    header = etree.fromstring(data["Contents/header.xml"])
+    styles = {
+        item.get("id"): item
+        for item in header.xpath('.//*[local-name()="style"]')
+    }
+    figure_styles = {
+        sid: item for sid, item in styles.items() if item.get("name") == "그림제목"
+    }
+    paras = {
+        item.get("id"): item
+        for item in header.xpath('.//*[local-name()="paraPr"]')
+    }
+    para_box = header.xpath('.//*[local-name()="paraProperties"]')[0]
+    next_id = max(int(key) for key in paras) + 1
+    variants = {}
+
+    def with_after(source_id):
+        nonlocal next_id
+        if source_id in variants:
+            return variants[source_id]
+        clone = copy.deepcopy(paras[source_id])
+        clone.set("id", str(next_id))
+        for index, margin in enumerate(clone.xpath('.//*[local-name()="margin"]')):
+            node = margin.find("hc:next", NS)
+            if node is not None:
+                node.set("value", str(after * (1 if index == 0 else 2)))
+        para_box.append(clone)
+        variants[source_id] = str(next_id)
+        next_id += 1
+        return variants[source_id]
+
+    changed = 0
+    for name in names:
+        if not re.search(r"section\d+\.xml$", name):
+            continue
+        root = etree.fromstring(data[name])
+        for paragraph in root.xpath('.//*[local-name()="p"]'):
+            style = figure_styles.get(paragraph.get("styleIDRef"))
+            if style is None:
+                continue
+            source_id = paragraph.get("paraPrIDRef")
+            if source_id in paras:
+                paragraph.set("paraPrIDRef", with_after(source_id))
+            base_char = style.get("charPrIDRef")
+            for run in paragraph.findall("hp:run", NS):
+                if "".join(run.itertext()).strip():
+                    run.set("charPrIDRef", base_char)
+            changed += 1
+        data[name] = _xml_bytes(root)
+
+    if variants:
+        para_box.set("itemCnt", str(len(para_box)))
+        data["Contents/header.xml"] = _xml_bytes(header)
+    return changed
+
+
+def center_even_headers(data, names):
+    """짝수 쪽의 논문 제목 머리말을 실제 가운데 정렬 문단으로 만든다."""
+    header = etree.fromstring(data["Contents/header.xml"])
+    paras = {
+        item.get("id"): item
+        for item in header.xpath('.//*[local-name()="paraPr"]')
+    }
+    para_box = header.xpath('.//*[local-name()="paraProperties"]')[0]
+    next_id = max(int(key) for key in paras) + 1
+    variants = {}
+    changed = 0
+
+    for name in names:
+        if not re.search(r"section\d+\.xml$", name):
+            continue
+        root = etree.fromstring(data[name])
+        for even in root.xpath('.//*[local-name()="header" and @applyPageType="EVEN"]'):
+            for paragraph in even.xpath('.//*[local-name()="p"]'):
+                source_id = paragraph.get("paraPrIDRef")
+                if source_id not in paras:
+                    continue
+                if source_id not in variants:
+                    clone = copy.deepcopy(paras[source_id])
+                    clone.set("id", str(next_id))
+                    align = clone.find("hh:align", NS)
+                    if align is not None:
+                        align.set("horizontal", "CENTER")
+                    para_box.append(clone)
+                    variants[source_id] = str(next_id)
+                    next_id += 1
+                paragraph.set("paraPrIDRef", variants[source_id])
+                changed += 1
+        data[name] = _xml_bytes(root)
+
+    if variants:
+        para_box.set("itemCnt", str(len(para_box)))
+        data["Contents/header.xml"] = _xml_bytes(header)
+    return changed
 
 
 def main():
@@ -351,10 +462,14 @@ def main():
             print("  각주 %d개의 번호를 안 보이게 — 제목 뒤 「1)」" % note)
         data[name] = xml.encode("utf-8")
 
+    centered = center_even_headers(data, names)
     supers = superscript_author_marks(data, names)
     captions, tables = add_table_spacing(data, names)
+    figures = format_figure_captions(data, names)
+    print("  짝수 쪽 논문 제목 머리말 가운데 정렬 %d곳" % centered)
     print("  교신저자 별표 윗첨자 %d곳" % supers)
-    print("  표 위·아래 6pt 간격: 제목 %d개 · 표 %d개" % (captions, tables))
+    print("  표 위·아래 10pt 간격: 제목 %d개 · 표 %d개" % (captions, tables))
+    print("  그림 캡션 보통 굵기·뒤 8pt 간격: %d개" % figures)
 
     os.remove(HWPX)
     zo = zipfile.ZipFile(HWPX, "w", zipfile.ZIP_DEFLATED)

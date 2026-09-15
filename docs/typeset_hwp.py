@@ -463,8 +463,12 @@ def note_caption(cap, heads):
 
 
 def caption(t):
-    """캡션 한 줄. 굵은 제목 뒤의 한 칸이 한글 변환에서 사라져 붙어 버린다."""
-    return inline(t).replace("</strong> ", "</strong>&nbsp;")
+    """캡션 한 줄을 템플릿의 보통 굵기로 넘긴다.
+
+    마크다운의 굵은 표시는 캡션을 식별하기 위한 표기일 뿐이다. 현재 학회 템플릿의
+    ``그림제목`` 스타일은 KoPubWorld돋움체 Medium 10pt의 보통 굵기다.
+    """
+    return re.sub(r"</?strong>", "", inline(t))
 
 
 def GAP(pt):
