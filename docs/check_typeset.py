@@ -22,12 +22,14 @@ import fitz
 BASE = r"C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos"
 from paper_config import CFG   # noqa: E402
 PDF = os.path.abspath(sys.argv[1]) if len(sys.argv) > 1 else CFG.원고("조판PDF")
-MD = os.path.join(BASE, "EASWA_논문_v22.md")
-RULES = os.path.join(BASE, "EASWA_논문_v22_투고본.문단.json")
+MD = os.path.join(BASE, "EASWA_논문_v23.md")
+RULES = os.path.join(BASE, "EASWA_논문_v23_투고본.문단.json")
 
 MM = 72.0 / 25.4                      # 1 mm = 2.835 pt
 # 템플릿 실측: 위 여백 22 + 머리말 18 = 본문 40mm 부터. 아래 15 + 꼬리말 17.
-HEAD_Y, FOOT_Y = 26.0, 258.0          # 이 밖은 머리말·쪽 번호이므로 본문에서 뺀다
+# 짝수 쪽의 논문 제목 러닝 헤더는 두 줄이어서 아래끝이 26mm를 넘는다. 35mm
+# 위쪽은 모두 머리말 영역으로 빼야 러닝 헤더를 본문 첫 줄로 오인하지 않는다.
+HEAD_Y, FOOT_Y = 35.0, 258.0          # 이 밖은 머리말·쪽 번호이므로 본문에서 뺀다
 TOP_MIN, TOP_MAX = 38.0, 48.0         # 본문 첫 줄이 시작할 위쪽 범위 (mm)
 BOTTOM_MIN = 12.0                     # 본문 아래 여백 최소
 WASTE_MM = 45.0                       # 쪽 아래가 이만큼 넘게 비면 알린다
@@ -266,9 +268,22 @@ def main():
                             break
                         end = b[3]
                     stuck = _mm(end - head[0][1]) > gap
-            if gap > WASTE_BAD and not to_new_section and not stuck:
-                bad.append("%d쪽 아래가 %.0fmm 비었다 — 쪽 나누기나 그림 크기를 본다"
-                           % (i, gap))
+        # 큰 그림과 그 캡션만 온전히 놓인 그림 전용 쪽은 빈 쪽이 아니다. 다음
+        # 그림까지 줄여 붙이면 화면 글자와 축 눈금의 가독성이 먼저 나빠진다.
+        # 본문 문단이 함께 있는 쪽은 이 예외에 들어가지 않는다.
+        here_images = [r for im in pg.get_images(full=True) for r in pg.get_image_rects(im[0])]
+        here_text = sorted([b for b in blocks if b[4].strip()], key=lambda b: b[1])
+        # 한 캡션이 PDF 추출에서 두세 블록으로 갈릴 수 있으므로 첫 블록의 표지만
+        # 보고, 모든 글자 블록이 그림 바로 아래 25mm 안에 모인 경우로 한정한다.
+        figure_plate = bool(
+            here_images and here_text and
+            re.match(r"^그림\s*\d+\.", here_text[0][4].strip()) and
+            min(b[1] for b in here_text) >= max(r.y1 for r in here_images) - 2 * MM and
+            _mm(max(b[3] for b in here_text) - min(b[1] for b in here_text)) <= 25.0
+        )
+        if gap > WASTE_BAD and not to_new_section and not stuck and not figure_plate:
+            bad.append("%d쪽 아래가 %.0fmm 비었다 — 쪽 나누기나 그림 크기를 본다"
+                       % (i, gap))
 
     chars = sum(len(pg.get_text()) for pg in d)
     print("투고본 %d쪽 · 쪽당 %d자 · 그림 %d개" % (d.page_count, chars // d.page_count, got))

@@ -30,7 +30,7 @@ import re
 import sys
 
 BASE = "C:/Users/bmffr/Desktop/Me/ERP2026_Cosmos"
-SRC = BASE + "/EASWA_논문_v22.md"
+SRC = BASE + "/EASWA_논문_v23.md"
 STYLE_FROM = BASE + "/EASWA_논문_v15_조판.html"
 # 두 판을 따로 돌리면 한쪽이 옛 내용으로 남는다(2026-09-09, 소유자가 그 판을 보고
 # 이미 지운 문장을 지적했다). --only-plain 을 주지 않으면 두 판을 모두 만든다.
@@ -40,8 +40,8 @@ INLINE = "--inline" in sys.argv
 # 잡았다). --preview 는 사람이 눈으로 볼 판이다 — 그림을 실제로 넣고 여백은
 # @page 로 준다. 한글에 넣을 판은 옵션 없이 돌린 것이다.
 PREVIEW = "--preview" in sys.argv
-OUT = BASE + ("/EASWA_논문_v22_투고본_미리보기.html" if PREVIEW
-              else "/EASWA_논문_v22_투고본.html")
+OUT = BASE + ("/EASWA_논문_v23_투고본_미리보기.html" if PREVIEW
+              else "/EASWA_논문_v23_투고본.html")
 
 
 def img_src(rel):

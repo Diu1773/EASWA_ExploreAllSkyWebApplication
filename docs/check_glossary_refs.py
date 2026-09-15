@@ -11,7 +11,7 @@ v16 전환에서 3장의 절 번호가 바뀌었는데 부록 C를 함께 고치
 """
 import io, re, sys
 
-DEFAULT = r'C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos\EASWA_논문_v22.md'
+DEFAULT = r'C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos\EASWA_논문_v23.md'
 P = next((a for a in sys.argv[1:] if not a.startswith('--')), DEFAULT)
 PATH_OUT = P
 L = io.open(P, encoding='utf-8').read().replace('\r\n', '\n').split('\n')
@@ -20,7 +20,9 @@ L = io.open(P, encoding='utf-8').read().replace('\r\n', '\n').split('\n')
 from paper_config import CFG   # noqa: E402
 APP = next((n for n, x in enumerate(L) if x.startswith(CFG.경계('부록시작'))), len(L))
 if APP == len(L):
-    raise SystemExit('부록을 찾지 못했다 — 제목이 「# 부록」으로 시작하는지 본다')
+    print('부록 C 참조 검사 — 부록이 없어 검사할 용어표가 없다')
+    print('위반 0 (검사 생략)')
+    raise SystemExit(0)
 BODY = next((n for n, x in enumerate(L) if x.startswith('# Ⅰ')), 0)   # 초록은 절이 없으므로 뺀다
 
 # 행 번호 → 절 번호

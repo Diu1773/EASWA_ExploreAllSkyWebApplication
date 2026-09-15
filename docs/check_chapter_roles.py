@@ -9,7 +9,7 @@
 """
 import io, re, sys, collections
 
-DEFAULT = r"C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos\EASWA_논문_v22.md"
+DEFAULT = r"C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos\EASWA_논문_v23.md"
 P = sys.argv[1] if len(sys.argv) > 1 else DEFAULT
 s = io.open(P, encoding="utf-8").read().replace("\r\n", "\n")
 L = s.split("\n")
@@ -23,7 +23,8 @@ BOUNDS = [
     ("3장",  "# Ⅲ.",     "# Ⅳ."),
     ("4장",  "# Ⅳ.",     "# Ⅴ."),
     ("5장",  "# Ⅴ.",     "# Ⅵ."),
-    ("6장",  "# Ⅵ.",     "## 생성형 AI"),
+    ("6장",  "# Ⅵ.",     "# Ⅶ."),
+    ("7장",  "# Ⅶ.",     "## 생성형 AI"),
 ]
 CH = {}
 for name, a, b in BOUNDS:
@@ -49,7 +50,8 @@ def phrases(text, n=15):
             if re.search(r"[가-힣]{4}", w) and not re.search(r"\d\.\d", w):
                 out.add(w)
     return out
-PAIRS = [("서론", "2장"), ("서론", "3장"), ("2장", "3장"), ("4장", "5장"), ("5장", "6장"), ("서론", "5장")]
+PAIRS = [("서론", "2장"), ("서론", "3장"), ("2장", "3장"), ("4장", "5장"),
+         ("5장", "6장"), ("6장", "7장"), ("서론", "6장")]
 
 KEEP = lambda l: (l.strip() and not l.startswith("#") and l != "---"
                   and not l.startswith("|") and not l.startswith("**표") and not l.startswith("**그림"))
@@ -61,9 +63,9 @@ def text_before(ch, heading):
     return chr(10).join(l for l in ls[:k] if KEEP(l))
 
 def body_of(ch):
-    """5장은 «범위와 한계»를 뺀 본론만 비교한다 — 한계 항목이 6장 후속과제와 짝을 이루는 것은
+    """6장은 «범위와 한계»를 뺀 본론만 비교한다 — 한계 항목이 7장 후속과제와 짝을 이루는 것은
     학술 관행이므로 문구가 겹치는 것을 결함으로 보지 않는다."""
-    return text_before("5장", "## 5.5.") if ch == "5장" else CH[ch]["text"]
+    return text_before("6장", "## 6.5.") if ch == "6장" else CH[ch]["text"]
 
 for a, b in PAIRS:
     common = phrases(body_of(a)) & phrases(body_of(b))
@@ -146,10 +148,10 @@ for m in re.finditer(r"[^.]{0,60}(?:장벽을 완화하면서도|균형을 이�
                      r"해결할 수 있다|보장한다|확보한다)[^.]{0,60}", ch2["text"]):
     add("상", "2장", "2장이 균형·부담 문제를 해결했다고 선언한다 (6-C.2)", "「%s」" % m.group(0).strip()[:80])
 
-# 5장이 2장을 「예상대로」로 회수하면 사후 정당화로 읽힌다
+# 6장이 2장을 「예상대로」로 회수하면 사후 정당화로 읽힌다
 for m in re.finditer(r"[^.]{0,40}(?:예상한 대로|예측한 대로|예상대로|예측대로)[^.]{0,40}",
-                     CH["5장"]["text"]):
-    add("상", "5장", "2장을 예상 적중으로 회수한다 — 「…이 미해결이라고 한 지점에서」로 (6-C)",
+                     CH["6장"]["text"]):
+    add("상", "6장", "2장을 예상 적중으로 회수한다 — 「…이 미해결이라고 한 지점에서」로 (6-C)",
         "「%s」" % m.group(0).strip()[:80])
 
 # ── D. 3장 — 결과·해석 동사 ─────────────────────────────────────────
@@ -182,30 +184,30 @@ for v in ["해야 한다", "필요가 있다", "되어야 한다", "바람직하
     c = ch4["text"].count(v)
     if c: add("중", "4장", "결과 장에 당위 「%s」" % v, "%d회" % c)
 
-# ── F. 5장 — 서론에 없는 회수어·4장에 없는 수치 ──────────────────
-ch5 = CH["5장"]
-for w in ["공백"]:
-    if w in ch5["text"] and w not in intro["text"]:
-        add("상", "5장", "서론에 없는 말 「%s」을 서론에서 받은 것처럼 회수" % w, "%d회" % ch5["text"].count(w))
-nums4 = set(re.findall(r"\d+(?:\.\d+)?%|\d+명|\d+건|0\.\d{3,4}", "\n".join(CH[k]["text"] for k in ("서론", "2장", "3장", "4장"))))
-nums5 = set(re.findall(r"\d+(?:\.\d+)?%|\d+명|\d+건|0\.\d{3,4}",
-                       text_before("5장", "## 5.5.")))   # 한계 절의 조사 조건 수치는 뺀다
-for x in sorted(nums5 - nums4):
-    add("중", "5장", "1~4장 어디에도 없는 수치가 논의에 등장", x)
-for v in ["나타났다", "응답하였다"]:
-    c = len(re.findall(v, ch5["text"]))
-    if c > 3: add("하", "5장", "결과 재서술 동사 「%s」 다수 — 4장 반복인지 확인" % v, "%d회" % c)
-
-# ── G. 6장 — 연구문제 수와 답 수·5장 반복·새 인용 ─────────────────
+# ── F. 6장 — 서론에 없는 회수어·1~5장에 없는 수치 ────────────────
 ch6 = CH["6장"]
+for w in ["공백"]:
+    if w in ch6["text"] and w not in intro["text"]:
+        add("상", "6장", "서론에 없는 말 「%s」을 서론에서 받은 것처럼 회수" % w, "%d회" % ch6["text"].count(w))
+nums5 = set(re.findall(r"\d+(?:\.\d+)?%|\d+명|\d+건|0\.\d{3,4}", "\n".join(CH[k]["text"] for k in ("서론", "2장", "3장", "4장", "5장"))))
+nums6 = set(re.findall(r"\d+(?:\.\d+)?%|\d+명|\d+건|0\.\d{3,4}",
+                       text_before("6장", "## 6.5.")))   # 한계 절의 조사 조건 수치는 뺀다
+for x in sorted(nums6 - nums5):
+    add("중", "6장", "1~5장 어디에도 없는 수치가 토의에 등장", x)
+for v in ["나타났다", "응답하였다"]:
+    c = len(re.findall(v, ch6["text"]))
+    if c > 3: add("하", "6장", "결과 재서술 동사 「%s」 다수 — 4·5장 반복인지 확인" % v, "%d회" % c)
+
+# ── G. 7장 — 연구문제 수와 답 수·6장 반복·새 인용 ─────────────────
+ch7 = CH["7장"]
 rq = len([l for l in intro["lines"] if re.match(r"^\d\. ", l.strip())])
 # 서수는 줄 시작뿐 아니라 한 문단 안 문장 시작에도 온다(「… 하였다. 둘째, …」).
-ords = re.findall(r"(?:^|\n|[.] )(첫째|둘째|셋째|넷째|다섯째),", CH["6장"]["text"])
+ords = re.findall(r"(?:^|\n|[.] )(첫째|둘째|셋째|넷째|다섯째),", CH["7장"]["text"])
 if ords and len(ords) != rq:
-    add("중", "6장", "6.1의 「첫째~」 개수와 연구문제 수 불일치", "첫째~ %d개 vs 연구문제 %d개 — 둘째·셋째가 같은 연구문제를 나눠 답하면 그 사실을 문장에 적을 것" % (len(ords), rq))
-new6 = cite(ch6["text"]) - cite(intro["text"]) - cite(ch2["text"]) - cite(CH["3장"]["text"]) - cite(CH["4장"]["text"]) - cite(ch5["text"])
-for au, yr in sorted(new6):
-    add("하", "6장", "결론에서 처음 등장하는 인용", "%s (%s)" % (au, yr))
+    add("중", "7장", "결론의 「첫째~」 개수와 연구문제 수 불일치", "첫째~ %d개 vs 연구문제 %d개 — 둘째·셋째가 같은 연구문제를 나눠 답하면 그 사실을 문장에 적을 것" % (len(ords), rq))
+new7 = cite(ch7["text"]) - cite(intro["text"]) - cite(ch2["text"]) - cite(CH["3장"]["text"]) - cite(CH["4장"]["text"]) - cite(CH["5장"]["text"]) - cite(ch6["text"])
+for au, yr in sorted(new7):
+    add("하", "7장", "결론에서 처음 등장하는 인용", "%s (%s)" % (au, yr))
 
 # ── H. 못 하는 주장 (전 장) ───────────────────────────────────────────
 BANNED = [("학습 효과", "학생 대상 조사 없음"), ("성취 향상", "학생 대상 조사 없음"),
@@ -293,7 +295,7 @@ _down = []
 for _line in _body.split("\n"):
     for _sent in re.split(r"(?<=다\.)\s+", _line):
         # 3.8%p 같은 수치는 절 번호가 아니다. 숫자 뒤에 % 나 배·명·건이 붙으면 뺀다.
-        _ns = [float(x) for x in re.findall(r"(?<![\d.])([1-6]\.[1-9])(?![\d]|%|배|명|건|쪽|초|일|픽셀|시간|분|점)", _sent)]
+        _ns = [float(x) for x in re.findall(r"(?<![\d.])([1-7]\.[1-9])(?![\d]|%|배|명|건|쪽|초|일|픽셀|시간|분|점)", _sent)]
         if len(_ns) < 2:
             continue
         if any(b < a for a, b in zip(_ns, _ns[1:])):
@@ -311,7 +313,7 @@ _titles = dict(re.findall(r"^## (\d\.\d)\.\s*(.+)$", _body if False else
                           io.open(P, encoding="utf-8").read(), flags=re.M))
 _refs = []
 for _n, _line in enumerate(_body.split("\n"), 1):
-    for _m in re.finditer(r"(?<![\d.])([1-6]\.[1-9])(?![\d]|%|배|명|건|쪽|초|일|픽셀|시간|분|점)", _line):
+    for _m in re.finditer(r"(?<![\d.])([1-7]\.[1-9])(?![\d]|%|배|명|건|쪽|초|일|픽셀|시간|분|점)", _line):
         _refs.append((_m.group(1), _titles.get(_m.group(1), "?? 없는 절"),
                       _line[max(0, _m.start() - 38):_m.start() + 22]))
 print()

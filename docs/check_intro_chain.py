@@ -12,7 +12,7 @@
 import io, os, sys
 
 P = os.environ.get('EASWA_PAPER',
-                   r'C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos\EASWA_논문_v22.md')
+                   r'C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos\EASWA_논문_v23.md')
 
 # 서론이 답으로 내놓는 것들. 처음 나오는 자리에 「왜 그것인가」가 붙어 있어야 한다.
 CLAIMS = ['웹', '브라우저', '플랫폼', '자동', '단계', '교사', '예비교사', '학생']
