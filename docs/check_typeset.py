@@ -224,6 +224,10 @@ def main():
         low = max([x[3] for x in blocks] + [r[0].y1 for r in ims if r] or [0])
         # 종이 끝이 아니라 본문 영역 끝까지를 잰다 — 아래 여백 15 + 꼬리말 17 은 규격이다
         gap = _mm(pg.rect.height - low) - 32.0
+        # 두 값은 큰 빈칸을 세부 판정할 때만 바뀐다. 빈칸이 알림 기준보다 작아도
+        # 아래의 최종 조건에서 참조하므로 쪽마다 먼저 초기화한다.
+        to_new_section = False
+        stuck = False
         if gap > WASTE_MM and i not in (d.page_count,):
             waste.append((i, round(gap)))
             # 부록은 새 쪽에서 시작한다 — 그 앞 쪽이 비는 것은 뜻한 바다
@@ -281,7 +285,8 @@ def main():
             min(b[1] for b in here_text) >= max(r.y1 for r in here_images) - 2 * MM and
             _mm(max(b[3] for b in here_text) - min(b[1] for b in here_text)) <= 25.0
         )
-        if gap > WASTE_BAD and not to_new_section and not stuck and not figure_plate:
+        if (gap > WASTE_BAD and i not in (d.page_count,) and
+                not to_new_section and not stuck and not figure_plate):
             bad.append("%d쪽 아래가 %.0fmm 비었다 — 쪽 나누기나 그림 크기를 본다"
                        % (i, gap))
 

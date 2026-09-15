@@ -22,6 +22,7 @@ HWPX 는 ZIP + XML 이라 머리말이 이렇게 보인다.
 한글 2022(12.0)에서 확인했다. HWPX 왕복은 서식을 보존하지만, 돌린 뒤에는
 `docs/save_pdf.py` 와 `docs/check_typeset.py` 로 반드시 다시 확인한다.
 """
+import copy
 import html
 import io
 import os
@@ -30,6 +31,7 @@ import sys
 import zipfile
 
 import win32com.client as win32
+from lxml import etree
 
 BASE = r"C:\Users\bmffr\Desktop\Me\ERP2026_Cosmos"
 HWP = sys.argv[1] if len(sys.argv) > 1 else os.path.join(BASE, "EASWA_논문_v23_투고본.hwp")
@@ -39,6 +41,11 @@ MD = os.path.join(BASE, "EASWA_논문_v23.md")
 LEFT = "| 연구논문 |"          # 템플릿 1쪽 왼쪽
 JOURNAL = "현장과학교육 권(호)"   # 템플릿 홀수 쪽
 TAB = '<hp:tab width="0" leader="0" type="0"/>'   # 1쪽에서 둘 사이를 벌린다
+NS = {
+    "hh": "http://www.hancom.co.kr/hwpml/2011/head",
+    "hp": "http://www.hancom.co.kr/hwpml/2011/paragraph",
+    "hc": "http://www.hancom.co.kr/hwpml/2011/core",
+}
 
 
 def paper_title():
@@ -151,6 +158,140 @@ def hide_note_number(xml):
     return xml
 
 
+def _xml_bytes(root):
+    return etree.tostring(root, encoding="utf-8", xml_declaration=True, standalone=True)
+
+
+def superscript_author_marks(data, names):
+    """국·영문 저자명 끝의 교신저자 별표만 윗첨자로 만든다.
+
+    템플릿의 저자명은 본문과 별표를 서로 다른 글자 run으로 나누고, 별표 run의
+    charPr에 ``hh:supscript``를 둔다. HTML의 ``<sup>``는 템플릿 스타일 동기화에서
+    사라질 수 있으므로 모든 스타일 처리가 끝난 이 HWPX 단계에서 같은 구조를 만든다.
+    """
+    header = etree.fromstring(data["Contents/header.xml"])
+    styles = {
+        item.get("id"): item.get("name")
+        for item in header.xpath('.//*[local-name()="style"]')
+    }
+    author_styles = {sid for sid, name in styles.items()
+                     if name in {"한글이름", "영문이름"}}
+    chars = {
+        item.get("id"): item
+        for item in header.xpath('.//*[local-name()="charPr"]')
+    }
+    char_box = header.xpath('.//*[local-name()="charProperties"]')[0]
+    next_id = max(int(key) for key in chars) + 1
+    supers = {}
+    changed = 0
+
+    for name in names:
+        if not re.search(r"section\d+\.xml$", name):
+            continue
+        root = etree.fromstring(data[name])
+        for paragraph in root.xpath('.//*[local-name()="p"]'):
+            if paragraph.get("styleIDRef") not in author_styles:
+                continue
+            for run in list(paragraph.findall("hp:run", NS)):
+                text = run.find("hp:t", NS)
+                if text is None or len(text) or not (text.text or "").endswith("*"):
+                    continue
+                source_id = run.get("charPrIDRef")
+                if source_id not in supers:
+                    clone = copy.deepcopy(chars[source_id])
+                    clone.set("id", str(next_id))
+                    if clone.find("hh:supscript", NS) is None:
+                        etree.SubElement(clone, "{%s}supscript" % NS["hh"])
+                    char_box.append(clone)
+                    supers[source_id] = str(next_id)
+                    next_id += 1
+                text.text = text.text[:-1]
+                star_run = copy.deepcopy(run)
+                star_run.set("charPrIDRef", supers[source_id])
+                for child in list(star_run):
+                    star_run.remove(child)
+                star = etree.SubElement(star_run, "{%s}t" % NS["hp"])
+                star.text = "*"
+                paragraph.insert(paragraph.index(run) + 1, star_run)
+                changed += 1
+        data[name] = _xml_bytes(root)
+
+    if changed:
+        char_box.set("itemCnt", str(len(char_box)))
+        data["Contents/header.xml"] = _xml_bytes(header)
+    return changed
+
+
+def add_table_spacing(data, names, before=600, after=600):
+    """표 제목 앞과 표 뒤에 각각 6pt의 실제 문단 간격을 둔다.
+
+    템플릿 스타일 정의는 그대로 두고 해당 문단에만 paraPr 변형을 적용한다. 표 제목
+    위에는 ``prev``를, 표를 담은 바깥 문단에는 ``next``를 주므로 표 안의 셀 간격은
+    바뀌지 않는다.
+    """
+    header = etree.fromstring(data["Contents/header.xml"])
+    styles = {
+        item.get("id"): item.get("name")
+        for item in header.xpath('.//*[local-name()="style"]')
+    }
+    table_caption_styles = {sid for sid, name in styles.items() if name == "표제목"}
+    paras = {
+        item.get("id"): item
+        for item in header.xpath('.//*[local-name()="paraPr"]')
+    }
+    para_box = header.xpath('.//*[local-name()="paraProperties"]')[0]
+    next_id = max(int(key) for key in paras) + 1
+    cache = {}
+
+    def variant(source_id, prev=None, next_=None):
+        nonlocal next_id
+        key = (source_id, prev, next_)
+        if key in cache:
+            return cache[key]
+        clone = copy.deepcopy(paras[source_id])
+        clone.set("id", str(next_id))
+        margins = clone.xpath('.//*[local-name()="margin"]')
+        for index, margin in enumerate(margins):
+            factor = 1 if index == 0 else 2
+            if prev is not None:
+                node = margin.find("hc:prev", NS)
+                if node is not None:
+                    node.set("value", str(prev * factor))
+            if next_ is not None:
+                node = margin.find("hc:next", NS)
+                if node is not None:
+                    node.set("value", str(next_ * factor))
+        para_box.append(clone)
+        cache[key] = str(next_id)
+        next_id += 1
+        return cache[key]
+
+    captions = tables = 0
+    for name in names:
+        if not re.search(r"section\d+\.xml$", name):
+            continue
+        root = etree.fromstring(data[name])
+        for paragraph in root.xpath('.//*[local-name()="p"]'):
+            source_id = paragraph.get("paraPrIDRef")
+            if source_id not in paras:
+                continue
+            contains_table = bool(paragraph.xpath('.//*[local-name()="tbl"]'))
+            inside_cell = any(etree.QName(item).localname == "tc"
+                              for item in paragraph.iterancestors())
+            if contains_table and not inside_cell:
+                paragraph.set("paraPrIDRef", variant(source_id, next_=after))
+                tables += 1
+            elif paragraph.get("styleIDRef") in table_caption_styles:
+                paragraph.set("paraPrIDRef", variant(source_id, prev=before))
+                captions += 1
+        data[name] = _xml_bytes(root)
+
+    if cache:
+        para_box.set("itemCnt", str(len(para_box)))
+        data["Contents/header.xml"] = _xml_bytes(header)
+    return captions, tables
+
+
 def main():
     if not os.path.exists(HWP):
         sys.exit("투고본 한글 파일이 없다 — 먼저 docs/make_hwp.py 를 돌린다")
@@ -209,6 +350,11 @@ def main():
         if note:
             print("  각주 %d개의 번호를 안 보이게 — 제목 뒤 「1)」" % note)
         data[name] = xml.encode("utf-8")
+
+    supers = superscript_author_marks(data, names)
+    captions, tables = add_table_spacing(data, names)
+    print("  교신저자 별표 윗첨자 %d곳" % supers)
+    print("  표 위·아래 6pt 간격: 제목 %d개 · 표 %d개" % (captions, tables))
 
     os.remove(HWPX)
     zo = zipfile.ZipFile(HWPX, "w", zipfile.ZIP_DEFLATED)

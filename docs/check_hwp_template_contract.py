@@ -192,7 +192,22 @@ def main():
             checked_paras += 1
             base_para = dst[2][style.get("paraPrIDRef")]
             actual_para = dst[2][paragraph.get("paraPrIDRef")]
-            if actual_para_signature(actual_para) != actual_para_signature(base_para):
+            # 표 앞 간격은 템플릿 스타일 자체를 바꾸지 않고 해당 표제목 문단의
+            # ``prev``에, 표를 담은 문단의 ``next``에만 6pt(600 HWPUNIT)로 준다.
+            # 허용 범위를 통째로 빼지 않고 두 값도 정확히 검사한다.
+            if name == "표제목":
+                actual = actual_para_signature(actual_para)
+                expected = list(actual_para_signature(base_para))
+                contains_table = bool(paragraph.xpath('.//*[local-name()="tbl"]'))
+                if contains_table and not in_ancestor(paragraph, "tc"):
+                    expected[1] = "600"
+                else:
+                    expected[0] = "600"
+                expected = tuple(expected)
+            else:
+                actual = actual_para_signature(actual_para)
+                expected = actual_para_signature(base_para)
+            if actual != expected:
                 bad.append("실제 문단 모양 불일치: %s" % name)
             break_setting = actual_para.find("hh:breakSetting", NS)
             break_value = break_setting.get("breakNonLatinWord") if break_setting is not None else None
