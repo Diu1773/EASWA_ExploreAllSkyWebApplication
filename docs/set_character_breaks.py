@@ -3,7 +3,7 @@
 
 같은 학회 게재본은 좁은 2단에서도 한글 어절 내부의 줄 나눔을 허용하여 양쪽
 정렬의 공백이 과도하게 벌어지지 않는다. 한글 COM의 ``BreakNonLatinWord``는
-이 문서와 한글 2022에서 ``0``이 글자 단위, ``1``이 어절 단위로 동작했다.
+공식 자동화 사양대로 ``1``이 글자 단위, ``0``이 어절 단위다.
 HWPX 속성만 고치면 HWP 왕복에서 값이 버려질 수 있으므로, 모든 HWPX 작업이 끝난
 최종 HWP에 한글 COM으로 직접 준다.
 
@@ -27,6 +27,34 @@ def report(message):
     print(message, flush=True)
 
 
+def set_body_paragraphs(hwp):
+    """본문의 각 문단으로 직접 이동해 글자 단위 줄 나눔을 적용한다.
+
+    ``SelectAll`` 뒤 문단 모양을 한 번 실행하면 표 바깥 본문에 변경값이 저장되지
+    않는 경우가 있었다. 적용했다고 가정하지 않고 문단 시작 위치를 하나씩 방문한다.
+    표 셀과 각주 문단은 별도 함수에서 처리한다.
+    """
+    visited = 0
+    changed = 0
+    seen = set()
+    hwp.MovePos(2, 0, 0)
+    while True:
+        pos = tuple(hwp.GetPos())
+        if pos in seen or len(seen) > 2000:
+            break
+        seen.add(pos)
+        shape = hwp.HParameterSet.HParaShape
+        hwp.HAction.GetDefault("ParagraphShape", shape.HSet)
+        visited += 1
+        if shape.BreakNonLatinWord != 1:
+            shape.BreakNonLatinWord = 1
+            hwp.HAction.Execute("ParagraphShape", shape.HSet)
+            changed += 1
+        if not hwp.HAction.Run("MoveNextParaBegin"):
+            break
+    return visited, changed
+
+
 def set_table_cells(hwp):
     """표의 모든 칸에 글자 단위 줄 나눔을 적용한다."""
     visited = 0
@@ -47,8 +75,8 @@ def set_table_cells(hwp):
                 shape = hwp.HParameterSet.HParaShape
                 hwp.HAction.GetDefault("ParagraphShape", shape.HSet)
                 visited += 1
-                if shape.BreakNonLatinWord != 0:
-                    shape.BreakNonLatinWord = 0
+                if shape.BreakNonLatinWord != 1:
+                    shape.BreakNonLatinWord = 1
                     hwp.HAction.Execute("ParagraphShape", shape.HSet)
                     changed += 1
                 if not hwp.HAction.Run("TableRightCell"):
@@ -81,8 +109,8 @@ def set_note_paragraphs(hwp):
             continue
         shape = hwp.HParameterSet.HParaShape
         hwp.HAction.GetDefault("ParagraphShape", shape.HSet)
-        if shape.BreakNonLatinWord != 0:
-            shape.BreakNonLatinWord = 0
+        if shape.BreakNonLatinWord != 1:
+            shape.BreakNonLatinWord = 1
             hwp.HAction.Execute("ParagraphShape", shape.HSet)
             changed += 1
     return changed
@@ -116,6 +144,8 @@ def main():
     hwp = win32.Dispatch("HWPFrame.HwpObject")
     opened = False
     pages = 0
+    body_paras = 0
+    body_changed = 0
     cells = 0
     cells_changed = 0
     notes_changed = 0
@@ -134,12 +164,7 @@ def main():
         report("[4/9] 변경 전 본문 추출")
         before = hwp.GetTextFile("TEXT", "")
         report("[5/9] 본문 문단 속성 변경")
-        hwp.HAction.Run("SelectAll")
-        shape = hwp.HParameterSet.HParaShape
-        hwp.HAction.GetDefault("ParagraphShape", shape.HSet)
-        shape.BreakNonLatinWord = 0
-        hwp.HAction.Execute("ParagraphShape", shape.HSet)
-        hwp.HAction.Run("Cancel")
+        body_paras, body_changed = set_body_paragraphs(hwp)
         report("[6/9] 표 셀 문단 속성 변경")
         cells, cells_changed = set_table_cells(hwp)
         notes_changed = set_note_paragraphs(hwp)
@@ -173,8 +198,8 @@ def main():
         os.replace(target_hwp, source)
         target_hwp = source
     report(
-        "글자 단위 줄 나눔 적용 — 본문 전체 · 표 %d칸(%d칸 변경) · 각주 %d개 변경 · %d쪽"
-        % (cells, cells_changed, notes_changed, pages)
+        "글자 단위 줄 나눔 적용 — 본문 %d문단(%d문단 변경) · 표 %d칸(%d칸 변경) · 각주 %d개 변경 · %d쪽"
+        % (body_paras, body_changed, cells, cells_changed, notes_changed, pages)
     )
     if target_pdf is None:
         report("본문 문자열 동일 · %s" % target_hwp)

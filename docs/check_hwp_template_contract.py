@@ -128,8 +128,8 @@ def actual_para_signature(item):
 
     한글 줄 나눔은 템플릿 스타일의 기본값을 복제하지 않고, 같은 학회 게재본과
     소유자 확정에 따라 실제 문단에 글자 단위로 직접 준다. 아래 본문 순회에서
-    ``BREAK_WORD``인지 별도로 검사한다. 이 문서에서 COM
-    ``BreakNonLatinWord=0``을 적용한 뒤 HWPX로 내보내면 이 값이 기록된다.
+    ``KEEP_WORD``인지 별도로 검사한다. 한글 2022에서 COM
+    ``BreakNonLatinWord=1``을 적용한 뒤 HWPX로 내보내면 이 값이 기록된다.
     """
     full = para_signature(item)
     return full[4:-1]  # prev·next·줄간격·condense·tab
@@ -196,7 +196,7 @@ def main():
                 bad.append("실제 문단 모양 불일치: %s" % name)
             break_setting = actual_para.find("hh:breakSetting", NS)
             break_value = break_setting.get("breakNonLatinWord") if break_setting is not None else None
-            if break_value != "BREAK_WORD":
+            if break_value != "KEEP_WORD":
                 character_break_wrong += 1
                 if len(character_break_samples) < 10:
                     character_break_samples.append(

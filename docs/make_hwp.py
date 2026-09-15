@@ -718,20 +718,31 @@ def break_korean_by_character(h):
 
     2026-09-15 최종 투고본에서 어절 단위를 쓰자 양쪽 정렬이 짧은 줄의 공백을
     과도하게 늘렸다. 같은 학회 게재본은 좁은 2단에서도 글자 단위로 줄을 나누며,
-    이쪽이 공백 폭을 안정적으로 유지했다. 이 문서와 한글 2022에서는 한글 COM의
-    `BreakNonLatinWord=0`이 글자 단위로 동작했으므로
+    이쪽이 공백 폭을 안정적으로 유지한다. 한글 COM 공식 자동화 사양에서
+    `BreakNonLatinWord=1`이 글자 단위이므로
     본문과 표 셀에 직접 준다. HWPX 속성만 고치면 HWP 왕복에서 버려질 수 있으므로
     최종 HWP에도 `set_character_breaks.py`가 같은 값을 한 번 더 적용한다.
 
     쪽 나누기 위치가 실제 제출판과 같도록 표·그림 쪽 나누기를 정하기 **전에** 준다.
     """
-    h.HAction.Run('SelectAll')
-    t = h.HParameterSet.HParaShape
-    h.HAction.GetDefault('ParagraphShape', t.HSet)
-    t.BreakNonLatinWord = 0
-    h.HAction.Execute('ParagraphShape', t.HSet)
-    h.HAction.Run('Cancel')
-    print('줄 나눔을 글자 단위로 — 본문 · %d쪽' % h.PageCount)
+    seen = set()
+    changed = 0
+    h.MovePos(2, 0, 0)
+    while True:
+        pos = tuple(h.GetPos())
+        if pos in seen or len(seen) > 2000:
+            break
+        seen.add(pos)
+        t = h.HParameterSet.HParaShape
+        h.HAction.GetDefault('ParagraphShape', t.HSet)
+        if t.BreakNonLatinWord != 1:
+            t.BreakNonLatinWord = 1
+            h.HAction.Execute('ParagraphShape', t.HSet)
+            changed += 1
+        if not h.HAction.Run('MoveNextParaBegin'):
+            break
+    print('줄 나눔을 글자 단위로 — 본문 %d문단(%d문단 변경) · %d쪽'
+          % (len(seen), changed, h.PageCount))
     print('  표 안 %d칸 · %d쪽' % (break_korean_by_character_cells(h), h.PageCount))
 
 
@@ -761,8 +772,8 @@ def break_korean_by_character_cells(h):
                 seen.add(pos)
                 t = h.HParameterSet.HParaShape
                 h.HAction.GetDefault('ParagraphShape', t.HSet)
-                if t.BreakNonLatinWord != 0:
-                    t.BreakNonLatinWord = 0
+                if t.BreakNonLatinWord != 1:
+                    t.BreakNonLatinWord = 1
                     h.HAction.Execute('ParagraphShape', t.HSet)
                     n += 1
                 if not h.HAction.Run('TableRightCell'):
